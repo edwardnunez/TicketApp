@@ -7,9 +7,7 @@ const fs = require("fs");
 const app = express();
 const port = 8000;
 
-const authServiceUrl = process.env.AUTH_SERVICE_URL || "http://localhost:8002";
 const userServiceUrl = process.env.USER_SERVICE_URL || "http://localhost:8001";
-const statsServiceUrl = process.env.STATS_SERVICE_URL || "http://localhost:8004";
 
 app.use(cors());
 app.use(express.json());
@@ -29,7 +27,7 @@ let returnError = (res, error) => {
 app.post("/login", async (req, res) => {
   try {
     // Forward the login request to the authentication service
-    const authResponse = await axios.post(authServiceUrl + "/login", req.body);
+    const authResponse = await axios.post(userServiceUrl + "/login", req.body);
     res.json(authResponse.data);
   } catch (error) {
     returnError(res, error);
