@@ -5,10 +5,25 @@ const jwt = require('jsonwebtoken');
 const User = require('./user-model')
 
 const app = express();
-const port = 8002; 
+const port = 8001; 
 
 // Middleware to parse JSON in request body
 app.use(express.json());
+
+const cors = require("cors");
+
+const corsOptions = {
+  origin: [
+    process.env.AUTH_SERVICE_URL || "http://localhost:8000",
+    process.env.USER_SERVICE_URL || "http://localhost:8001",
+    process.env.MONGODB_URI || "mongodb://localhost:27017/userdb",
+  ],
+};
+
+app.use(cors(corsOptions));
+
+// Middleware to parse JSON in request body
+app.use(bodyParser.json());
 
 // Connect to MongoDB
 const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/userdb';
