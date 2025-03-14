@@ -14,7 +14,6 @@ const cors = require("cors");
 
 const corsOptions = {
   origin: [
-    process.env.AUTH_SERVICE_URL || "http://localhost:8000",
     process.env.USER_SERVICE_URL || "http://localhost:8001",
     process.env.MONGODB_URI || "mongodb://localhost:27017/userdb",
   ],

@@ -57,20 +57,20 @@ const Profile = () => {
         <Divider />
 
         {/* Purchased Tickets Section */}
-        <Title level={3} style={{ color: "#52c41a" }}>🎟️ My Tickets</Title>
+        <Title level={3} style={{ color: "#52c41a" }}>🎟️ My tickets</Title>
         {user.tickets.length > 0 ? (
-          user.tickets.map((ticket) => (
-            <Card key={ticket.id} style={{ marginBottom: "10px", border: "1px solid #1890ff" }}>
-              <Text strong>{ticket.eventName}</Text>
-              <br />
-              <Text><CalendarOutlined /> {ticket.date} - {ticket.location}</Text>
-              <br />
-              <Text>🎫 {ticket.quantity} Ticket(s) - 💲 {ticket.price * ticket.quantity}</Text>
-            </Card>
-          ))
-        ) : (
-          <Text>You haven't purchased any tickets yet.</Text>
-        )}
+            user.tickets.map((ticket) => (
+                <Card key={ticket._id} style={{ marginBottom: "10px", border: "1px solid #1890ff" }}>
+                <Text strong>{ticket.event.name}</Text>
+                <br />
+                <Text><CalendarOutlined /> {dayjs(ticket.event.date).format("MMMM D, YYYY")} - {ticket.event.location}</Text>
+                <br />
+                <Text>🎫 {ticket.quantity} Ticket(s) - 💲 {ticket.price * ticket.quantity}</Text>
+                </Card>
+            ))
+            ) : (
+            <Text>You haven't purchased any tickets yet.</Text>
+            )}
       </Content>
     </Layout>
   );

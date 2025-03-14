@@ -1,0 +1,53 @@
+const express = require("express");
+const mongoose = require("mongoose");
+const Event = require("./event-model");
+
+const app = express();
+const port = 8003;
+
+app.use(express.json());
+const cors = require("cors");
+app.use(cors({ origin: "http://localhost:8003" }));
+
+const mongoUri = process.env.MONGODB_URI || "mongodb://localhost:27017/eventdb";
+mongoose.connect(mongoUri, { useNewUrlParser: true, useUnifiedTopology: true });
+
+// Create a new event
+app.post("/events", async (req, res) => {
+  try {
+    const { name, date, location, price } = req.body;
+    if (!name || !date || !location || !price) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const newEvent = new Event({
+      name,
+      date,
+      location,
+      price,
+    });
+
+    await newEvent.save();
+    res.status(201).json(newEvent);
+  } catch (error) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// Get event by ID
+app.get("/events/:eventId", async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.eventId);
+    if (!event) return res.status(404).json({ error: "Event not found" });
+    res.status(200).json(event);
+  } catch (error) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+const server = app.listen(port, () => {
+  console.log(`Event Service listening at http://localhost:${port}`);
+});
+
+server.on("close", () => mongoose.connection.close());
+module.exports = server;
