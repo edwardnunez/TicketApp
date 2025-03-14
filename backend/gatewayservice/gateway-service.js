@@ -1,13 +1,14 @@
 const express = require("express");
 const axios = require("axios");
 const cors = require("cors");
-const promBundle = require("express-prom-bundle");
-const YAML = require('yaml');
-const fs = require("fs");
+
 const app = express();
 const port = 8000;
 
+// Microservice URLs
 const userServiceUrl = process.env.USER_SERVICE_URL || "http://localhost:8001";
+const ticketServiceUrl = process.env.TICKET_SERVICE_URL || "http://localhost:8002";
+const eventServiceUrl = process.env.EVENT_SERVICE_URL || "http://localhost:8003";
 
 app.use(cors());
 app.use(express.json());
@@ -19,15 +20,20 @@ app.get("/health", (req, res) => {
   res.json({ status: "OK" });
 });
 
-let returnError = (res, error) => {
+// Generic function to handle errors
+const returnError = (res, error) => {
   console.log(error);
-  res.status(error.response.status).json({ error: error.response.data.error });
-}
+  if (error.response) {
+    res.status(error.response.status).json({ error: error.response.data.error });
+  } else {
+    res.status(500).json({ error: "Internal Gateway Error" });
+  }
+};
 
+// 🟢 **User Routes**
 app.post("/login", async (req, res) => {
   try {
-    // Forward the login request to the authentication service
-    const authResponse = await axios.post(userServiceUrl + "/login", req.body);
+    const authResponse = await axios.post(`${userServiceUrl}/login`, req.body);
     res.json(authResponse.data);
   } catch (error) {
     returnError(res, error);
@@ -36,12 +42,66 @@ app.post("/login", async (req, res) => {
 
 app.post("/adduser", async (req, res) => {
   try {
-    // Forward the add user request to the user service
-    const userResponse = await axios.post(
-      userServiceUrl + "/adduser",
-      req.body
-    );
+    const userResponse = await axios.post(`${userServiceUrl}/adduser`, req.body);
     res.json(userResponse.data);
+  } catch (error) {
+    returnError(res, error);
+  }
+});
+
+app.get("/users", async (req, res) => {
+  try {
+    const usersResponse = await axios.get(`${userServiceUrl}/users`);
+    res.json(usersResponse.data);
+  } catch (error) {
+    returnError(res, error);
+  }
+});
+
+// 🔵 **Ticket Routes**
+app.post("/tickets", async (req, res) => {
+  try {
+    const ticketResponse = await axios.post(`${ticketServiceUrl}/tickets`, req.body, {
+      headers: { Authorization: req.header("Authorization") },
+    });
+    res.json(ticketResponse.data);
+  } catch (error) {
+    returnError(res, error);
+  }
+});
+
+app.get("/tickets/user/:userId", async (req, res) => {
+  try {
+    const ticketResponse = await axios.get(`${ticketServiceUrl}/tickets/user/${req.params.userId}`);
+    res.json(ticketResponse.data);
+  } catch (error) {
+    returnError(res, error);
+  }
+});
+
+// 🟠 **Event Routes**
+app.post("/events", async (req, res) => {
+  try {
+    const eventResponse = await axios.post(`${eventServiceUrl}/events`, req.body);
+    res.json(eventResponse.data);
+  } catch (error) {
+    returnError(res, error);
+  }
+});
+
+app.get("/events", async (req, res) => {
+  try {
+    const eventsResponse = await axios.get(`${eventServiceUrl}/events`);
+    res.json(eventsResponse.data);
+  } catch (error) {
+    returnError(res, error);
+  }
+});
+
+app.get("/events/:eventId", async (req, res) => {
+  try {
+    const eventResponse = await axios.get(`${eventServiceUrl}/events/${req.params.eventId}`);
+    res.json(eventResponse.data);
   } catch (error) {
     returnError(res, error);
   }
