@@ -2,7 +2,7 @@
 FROM node:20
 
 # Set the working directory in the container
-WORKDIR /usr/src/userservice
+WORKDIR /usr/src/eventservice
 
 # Copy package.json and package-lock.json to the working directory
 COPY package*.json ./
@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 8002
 
 # Define the command to run your app
-CMD ["node", "user-service.js"]
+CMD ["node", "event-service.js"]
