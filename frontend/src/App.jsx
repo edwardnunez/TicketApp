@@ -3,6 +3,7 @@ import Home from "./pages/Home";
 import EventDetails from "./pages/EventDetails";
 import Checkout from "./pages/Checkout";
 import Profile from "./pages/Profile";
+import EditProfile from "./pages/EditProfile";
 import Navbar from "./components/Navbar";
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
         <Route path="/event/:id" element={<EventDetails />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/edit-profile" element={<EditProfile />} />
       </Routes>
     </div>
   );
