@@ -74,11 +74,17 @@ function checkInput(input) {
 app.post("/adduser", async (req, res) => {
   try {
     // Check if required fields are present in the request body
-    validateRequiredFields(req, ["username", "name", "email", "password"]);
+    validateRequiredFields(req, ["username", "name", "email", "password", "confirmPassword"]);
 
-    const username = req.body.username;
-    const password= req.body.password;
-    
+    const { username, password, confirmPassword } = req.body;
+
+    // Check if passwords match
+    if (password !== confirmPassword) {
+      return res.status(400).json({
+        error: "Passwords do not match.",
+      });
+    }
+
     const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
     if (!passwordRegex.test(password)) {
       return res.status(401).json({
@@ -87,7 +93,7 @@ app.post("/adduser", async (req, res) => {
     }
 
     // Check if the username already exists
-    const existingUser = await User.findOne({ username: username });
+    const existingUser = await User.findOne({ username });
     if (existingUser) {
       return res
         .status(400)
@@ -97,23 +103,23 @@ app.post("/adduser", async (req, res) => {
     }
 
     // Encrypt the password before saving it
-    const hashedPassword = await bcrypt.hash(req.body.password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = new User({
-      username: req.body.username,
+      username,
+      name: req.body.name,
+      email: req.body.email,
       password: hashedPassword,
     });
 
     await newUser.save();
 
-    const token = jwt.sign({ userId: newUser._id }, "your-secret-key", {
-      expiresIn: "1h",
-    });
+    const token = jwt.sign({ userId: newUser._id }, "your-secret-key", { expiresIn: "1h" });
 
     res.status(200).json({
       username: newUser.username,
       createdAt: newUser.createdAt,
-      token: token,
+      token,
     });
   } catch (error) {
     res.status(400).json({ error: error.message });
