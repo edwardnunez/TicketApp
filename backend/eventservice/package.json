@@ -1,0 +1,15 @@
+{
+    "name": "eventservice",
+    "version": "1.0.0",
+    "main": "event-service.js",
+    "type": "module",
+    "scripts": {
+      "start": "node event-service.js"
+    },
+    "dependencies": {
+      "cors": "^2.8.5",
+      "express": "^4.18.2",
+      "mongoose": "^7.2.2"
+    }
+  }
+  

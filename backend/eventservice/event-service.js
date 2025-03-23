@@ -1,12 +1,13 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const Event = require("./event-model");
+import express from 'express';
+import mongoose from 'mongoose';
+import cors from 'cors';
+import Event from "./event-model.js";
 
 const app = express();
 const port = 8003;
 
 app.use(express.json());
-const cors = require("cors");
+
 app.use(cors({ origin: "http://localhost:8003" }));
 
 const mongoUri = process.env.MONGODB_URI || "mongodb://localhost:27017/eventdb";
@@ -50,4 +51,4 @@ const server = app.listen(port, () => {
 });
 
 server.on("close", () => mongoose.connection.close());
-module.exports = server;
+export default server;

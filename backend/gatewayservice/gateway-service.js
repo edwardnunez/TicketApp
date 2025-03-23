@@ -1,6 +1,6 @@
-const express = require("express");
-const axios = require("axios");
-const cors = require("cors");
+import express from 'express';
+import axios from 'axios';
+import cors from 'cors';
 
 const app = express();
 const port = 8000;
@@ -30,7 +30,7 @@ const returnError = (res, error) => {
   }
 };
 
-// 🟢 **User Routes**
+// **User Routes**
 app.post("/login", async (req, res) => {
   try {
     const authResponse = await axios.post(`${userServiceUrl}/login`, req.body);
@@ -58,7 +58,7 @@ app.get("/users", async (req, res) => {
   }
 });
 
-// 🔵 **Ticket Routes**
+// **Ticket Routes**
 app.post("/tickets", async (req, res) => {
   try {
     const ticketResponse = await axios.post(`${ticketServiceUrl}/tickets`, req.body, {
@@ -79,7 +79,19 @@ app.get("/tickets/user/:userId", async (req, res) => {
   }
 });
 
-// 🟠 **Event Routes**
+app.get("/tickets/user/:userId/details", async (req, res) => {
+  try {
+    const response = await axios.get(`${ticketServiceUrl}/tickets/user/${req.params.userId}/details`, {
+      headers: { Authorization: req.header("Authorization") },
+    });
+    res.json(response.data);
+  } catch (error) {
+    returnError(res, error);
+  }
+});
+
+
+// **Event Routes**
 app.post("/events", async (req, res) => {
   try {
     const eventResponse = await axios.post(`${eventServiceUrl}/events`, req.body);
@@ -112,4 +124,4 @@ const server = app.listen(port, () => {
   console.log(`Gateway Service listening at http://localhost:${port}`);
 });
 
-module.exports = server;
+export default server;

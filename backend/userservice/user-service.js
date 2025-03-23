@@ -1,16 +1,16 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const User = require('./user-model')
+import express from 'express';
+import mongoose from 'mongoose';
+import bodyParser from 'body-parser';
+import cors from 'cors';
+import User from "./user-model.js";
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 
 const app = express();
 const port = 8001; 
 
 // Middleware to parse JSON in request body
 app.use(express.json());
-
-const cors = require("cors");
 
 const corsOptions = {
   origin: [
@@ -170,4 +170,4 @@ server.on('close', () => {
     mongoose.connection.close();
   });
 
-module.exports = server
+  export default server;
