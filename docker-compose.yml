@@ -1,0 +1,62 @@
+version: "3.8"
+
+services:
+  mongo:
+    image: mongo
+    container_name: mongo
+    ports:
+      - "27017:27017"
+
+  userservice:
+    build: ./backend/userservice
+    container_name: userservice
+    ports:
+      - "8001:8001"
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/userdb
+    depends_on:
+      - mongo
+
+  ticketservice:
+    build: ./backend/ticketservice
+    container_name: ticketservice
+    ports:
+      - "8002:8002"
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/ticketdb
+    depends_on:
+      - mongo
+
+  eventservice:
+    build: ./backend/eventservice
+    container_name: eventservice
+    ports:
+      - "8003:8003"
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/eventdb
+    depends_on:
+      - mongo
+
+  gateway:
+    build: ./backend/gatewayservice
+    container_name: gateway
+    ports:
+      - "8000:8000"
+    environment:
+      - USER_SERVICE_URL=http://userservice:8001
+      - TICKET_SERVICE_URL=http://ticketservice:8002
+      - EVENT_SERVICE_URL=http://eventservice:8003
+    depends_on:
+      - userservice
+      - ticketservice
+      - eventservice
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_API_URL=http://gateway:8000
+    depends_on:
+      - gateway

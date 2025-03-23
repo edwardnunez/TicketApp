@@ -1,14 +1,14 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const jwt = require("jsonwebtoken");
-const axios = require("axios"); // Fetch event details
-const Ticket = require("./ticket-model");
+import express from 'express';
+import mongoose from 'mongoose';
+import cors from 'cors';
+import Ticket from "./ticket-model.js";
+import jwt from 'jsonwebtoken';
+import axios from 'axios';
 
 const app = express();
 const port = 8002;
 
 app.use(express.json());
-const cors = require("cors");
 app.use(cors({ origin: "http://localhost:8002" }));
 
 const mongoUri = process.env.MONGODB_URI || "mongodb://localhost:27017/ticketdb";
@@ -70,5 +70,29 @@ const server = app.listen(port, () => {
   console.log(`Tickets Service listening at http://localhost:${port}`);
 });
 
+app.get("/tickets/user/:userId/details", async (req, res) => {
+  try {
+    const tickets = await Ticket.find({ userId: req.params.userId });
+
+    // Obtener info de cada evento
+    const detailedTickets = await Promise.all(
+      tickets.map(async (ticket) => {
+        try {
+          const eventRes = await axios.get(`http://event-service:8003/events/${ticket.eventId}`);
+          return { ...ticket.toObject(), event: eventRes.data };
+        } catch (e) {
+          return { ...ticket.toObject(), event: null };
+        }
+      })
+    );
+
+    res.status(200).json(detailedTickets);
+  } catch (error) {
+    console.error("Error fetching detailed tickets", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 server.on("close", () => mongoose.connection.close());
-module.exports = server;
+
+export default server;
