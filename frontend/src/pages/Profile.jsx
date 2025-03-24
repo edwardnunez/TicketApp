@@ -10,19 +10,23 @@ const { Title, Text } = Typography;
 
 const Profile = () => {
   const [user, setUser] = useState(null);
+  const [userId, setUserId] = useState(null);
   const [tickets, setTickets] = useState([]);
-  const userId = localStorage.getItem("userId");
+  const username = localStorage.getItem("username");
   const token = localStorage.getItem("token");
   const gatewayUrl = process.env.REACT_API_ENDPOINT || "http://localhost:8000";
 
   useEffect(() => {
-    if (!userId || !token) return;
+    if (!username || !token) return;
 
     // Obtener usuario
     axios.get(gatewayUrl+`/users`)
       .then((res) => {
-        const u = res.data.find(u => u._id === userId);
-        if (u) setUser(u);
+        const u = res.data.find(u => u.username === username);
+        if (u) {
+          setUser(u);
+          setUserId(u._id);
+        }
       })
       .catch(err => console.error("Error al cargar el usuario:", err));
 
@@ -33,8 +37,7 @@ const Profile = () => {
       .then(res => setTickets(res.data))
       .catch(err => console.error("Error al cargar las entradas:", err));
   }, [userId, token]);
-  console.log(userId);
-  console.log(user);
+
   if (!user) return <p>Cargando perfil...</p>;
 
   return (
