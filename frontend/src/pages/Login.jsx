@@ -10,14 +10,15 @@ const { Title } = Typography;
 const Login = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
 
   const onFinish = async (values) => {
     setLoading(true);
     try {
-      const response = await axios.post("http://localhost:8000/login", values);
+      const response = await axios.post(gatewayUrl+"/login", values);
       localStorage.setItem("token", response.data.token); // Store JWT token
       message.success("Login successful!");
-      navigate("/profile"); // Redirect to profile page
+      navigate("/home"); // Redirect to profile page
     } catch (error) {
       setLoading(false);
       message.error("Invalid credentials!");
@@ -63,7 +64,7 @@ const Login = () => {
             loading={loading}
             style={{ marginTop: "10px" }}
           >
-            Log In
+            Log in
           </Button>
         </Form>
       </Content>

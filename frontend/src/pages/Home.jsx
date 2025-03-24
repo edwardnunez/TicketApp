@@ -13,9 +13,10 @@ const Home = () => {
   const [allEvents, setAllEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [myEvents, setMyEvents] = useState([]);
+  const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
 
   useEffect(() => {
-    axios.get("http://localhost:8000/events")
+    axios.get(gatewayUrl+"/events")
       .then((res) => {
         const events = res.data.map(event => ({
           ...event,

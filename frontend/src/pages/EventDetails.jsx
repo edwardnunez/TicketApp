@@ -5,9 +5,10 @@ import axios from "axios";
 const EventDetails = () => {
   const { id } = useParams();
   const [event, setEvent] = useState(null);
+  const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
 
   useEffect(() => {
-    axios.get(`http://localhost:8000/events/${id}`)
+    axios.get(gatewayUrl+`/events/${id}`)
       .then((res) => setEvent(res.data))
       .catch((err) => console.error("Error loading event", err));
   }, [id]);

@@ -92,9 +92,9 @@ app.get("/tickets/user/:userId/details", async (req, res) => {
 
 
 // **Event Routes**
-app.post("/events", async (req, res) => {
+app.post("/event", async (req, res) => {
   try {
-    const eventResponse = await axios.post(`${eventServiceUrl}/events`, req.body);
+    const eventResponse = await axios.post(`${eventServiceUrl}/event`, req.body);
     res.json(eventResponse.data);
   } catch (error) {
     returnError(res, error);
