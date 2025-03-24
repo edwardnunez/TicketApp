@@ -1,23 +1,40 @@
+import { useEffect, useState } from "react";
 import { Layout, Typography, Card, Avatar, Button, Row, Col, Divider } from "antd";
 import { UserOutlined, MailOutlined, EditOutlined, CalendarOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
+import axios from "axios";
 import dayjs from "dayjs";
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
 
 const Profile = () => {
-  // Example user data (Replace with API response)
-  const user = {
-    name: "John Doe",
-    email: "johndoe@example.com",
-    avatar: "/avatars/avatar1.png", // Selected avatar
-    createdAt: "2024-03-10T14:30:00Z", // Example creation date
-    tickets: [
-      { id: 1, eventName: "Rock Concert", date: "2025-06-15", location: "Madrid", price: 50, quantity: 2 },
-      { id: 2, eventName: "Jazz Festival", date: "2025-07-20", location: "Barcelona", price: 40, quantity: 1 },
-    ],
-  };
+  const [user, setUser] = useState(null);
+  const [tickets, setTickets] = useState([]);
+  const userId = localStorage.getItem("userId");
+  const token = localStorage.getItem("token");
+  const gatewayUrl = process.env.REACT_API_ENDPOINT || "http://localhost:8000";
+
+  useEffect(() => {
+    if (!userId || !token) return;
+
+    // Obtener usuario
+    axios.get(gatewayUrl+`/users`)
+      .then((res) => {
+        const u = res.data.find(u => u._id === userId);
+        if (u) setUser(u);
+      })
+      .catch(err => console.error("Error al cargar el usuario:", err));
+
+    // Obtener entradas del usuario
+    axios.get(gatewayUrl+`tickets/user/${userId}/details`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => setTickets(res.data))
+      .catch(err => console.error("Error al cargar las entradas:", err));
+  }, [userId, token]);
+
+  if (!user) return <p>Cargando perfil...</p>;
 
   return (
     <Layout style={{ backgroundColor: "#f0f2f5", minHeight: "100vh", padding: "40px" }}>
@@ -32,10 +49,9 @@ const Profile = () => {
         }}
       >
         <div style={{ textAlign: "center", marginBottom: "20px" }}>
-          <Avatar size={100} src={user.avatar} />
+          <Avatar size={100} src="/avatars/avatar1.png" icon={<UserOutlined />} />
           <Title level={2} style={{ marginTop: "10px" }}>{user.name}</Title>
-          <Text type="secondary"><MailOutlined /> {user.email}</Text>
-          <br />
+          <Text type="secondary"><MailOutlined /> {user.email}</Text><br />
           <Text type="secondary">
             <CalendarOutlined /> Member since {dayjs(user.createdAt).format("MMMM D, YYYY")}
           </Text>
@@ -58,19 +74,17 @@ const Profile = () => {
 
         {/* Purchased Tickets Section */}
         <Title level={3} style={{ color: "#52c41a" }}>🎟️ My tickets</Title>
-        {user.tickets.length > 0 ? (
-            user.tickets.map((ticket) => (
-                <Card key={ticket._id} style={{ marginBottom: "10px", border: "1px solid #1890ff" }}>
-                <Text strong>{ticket.event.name}</Text>
-                <br />
-                <Text><CalendarOutlined /> {dayjs(ticket.event.date).format("MMMM D, YYYY")} - {ticket.event.location}</Text>
-                <br />
-                <Text>🎫 {ticket.quantity} Ticket(s) - 💲 {ticket.price * ticket.quantity}</Text>
-                </Card>
-            ))
-            ) : (
-            <Text>You haven't purchased any tickets yet.</Text>
-            )}
+        {tickets.length > 0 ? (
+          tickets.map((ticket) => (
+            <Card key={ticket._id} style={{ marginBottom: "10px", border: "1px solid #1890ff" }}>
+              <Text strong>{ticket.event?.name || "Evento desconocido"}</Text><br />
+              <Text><CalendarOutlined /> {dayjs(ticket.event?.date).format("MMMM D, YYYY")} - {ticket.event?.location}</Text><br />
+              <Text>🎫 {ticket.quantity} Ticket(s) - 💲{ticket.price * ticket.quantity}</Text>
+            </Card>
+          ))
+        ) : (
+          <Text>You haven't purchased any tickets yet.</Text>
+        )}
       </Content>
     </Layout>
   );

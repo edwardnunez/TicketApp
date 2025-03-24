@@ -14,7 +14,7 @@ const mongoUri = process.env.MONGODB_URI || "mongodb://localhost:27017/eventdb";
 mongoose.connect(mongoUri, { useNewUrlParser: true, useUnifiedTopology: true });
 
 // Create a new event
-app.post("/events", async (req, res) => {
+app.post("/event", async (req, res) => {
   try {
     const { name, date, location, price } = req.body;
     if (!name || !date || !location || !price) {
@@ -30,6 +30,17 @@ app.post("/events", async (req, res) => {
 
     await newEvent.save();
     res.status(201).json(newEvent);
+  } catch (error) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+//Get events
+app.get("/events", async (req, res) => {
+  try {
+    const events = await Event.findAll();
+    if (!events) return res.status(404).json({ error: "No events found" });
+    res.status(200).json(events);
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error" });
   }

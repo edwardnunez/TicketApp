@@ -5,12 +5,13 @@ const Checkout = () => {
   const [tickets, setTickets] = useState([]);
   const userId = localStorage.getItem("userId");
   const token = localStorage.getItem("token");
+  const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
 
   useEffect(() => {
     if (!userId || !token) return;
 
     axios
-      .get(`http://localhost:8000/tickets/user/${userId}/details`, {
+      .get(`/tickets/user/${userId}/details`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => setTickets(res.data))
