@@ -17,7 +17,9 @@ const Register = () => {
     try {
       const response = await axios.post(gatewayUrl+"/adduser", values);
       message.success("Registration successful!");
-      navigate("/login");
+      localStorage.setItem("token", response.data.token); // Store JWT token
+      localStorage.setItem("username", response.data.username);
+      navigate("/");
     } catch (error) {
       setLoading(false);
       message.error(error.response?.data?.error || "Something went wrong!");

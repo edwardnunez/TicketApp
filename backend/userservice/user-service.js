@@ -119,7 +119,7 @@ app.post("/adduser", async (req, res) => {
     res.status(200).json({
       username: newUser.username,
       createdAt: newUser.createdAt,
-      token,
+      token: token,
     });
   } catch (error) {
     res.status(400).json({ error: error.message });

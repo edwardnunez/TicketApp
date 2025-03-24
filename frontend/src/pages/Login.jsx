@@ -17,8 +17,9 @@ const Login = () => {
     try {
       const response = await axios.post(gatewayUrl+"/login", values);
       localStorage.setItem("token", response.data.token); // Store JWT token
+      localStorage.setItem("username", response.data.username);
       message.success("Login successful!");
-      navigate("/home"); // Redirect to profile page
+      navigate("/");
     } catch (error) {
       setLoading(false);
       message.error("Invalid credentials!");

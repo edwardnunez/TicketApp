@@ -33,7 +33,8 @@ const Profile = () => {
       .then(res => setTickets(res.data))
       .catch(err => console.error("Error al cargar las entradas:", err));
   }, [userId, token]);
-
+  console.log(userId);
+  console.log(user);
   if (!user) return <p>Cargando perfil...</p>;
 
   return (
