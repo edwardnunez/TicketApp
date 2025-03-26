@@ -31,7 +31,7 @@ const Profile = () => {
       .catch(err => console.error("Error al cargar el usuario:", err));
 
     // Obtener entradas del usuario
-    axios.get(gatewayUrl+`tickets/user/${userId}/details`, {
+    axios.get(gatewayUrl+`/tickets/user/${userId}/details`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => setTickets(res.data))
