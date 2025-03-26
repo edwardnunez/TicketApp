@@ -58,6 +58,32 @@ app.get("/users", async (req, res) => {
   }
 });
 
+app.get("/users/search", async (req, res) => {
+  try {
+    const usersResponse = await axios.get(`${userServiceUrl}/users/search`);
+    res.json(usersResponse.data);
+  } catch (error) {
+    returnError(res, error);
+  }
+});
+
+app.put("/edit-user/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const updatedUserData = req.body;
+    const response = await axios.put(`${userServiceUrl}/edit-user/${userId}`, updatedUserData);
+
+    res.status(200).json(response.data);
+  } catch (error) {
+    console.error("Error updating user data:", error);
+    if (error.response) {
+      res.status(error.response.status).json({ error: error.response.data.error });
+    } else {
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
+});
+
 // **Ticket Routes**
 app.post("/tickets", async (req, res) => {
   try {
