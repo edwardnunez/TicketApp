@@ -138,27 +138,33 @@ app.get("/users", async (req, res) => {
 
 app.get("/users/search", async (req, res) => {
   try {
-    const { username } = req.query;
+    const { username } = req.query.username;
+
     // Search for the user by username
-    const currentUser = await User.findOne({ username });
+    const currentUser = await User.findOne({ username:username });
+    console.log(currentUser);
+    console.log(username);
     if (!currentUser) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    // Find all users that are not friends of the current user
-    const un = username;
-    const currentUserFriends = currentUser.friends;
-
-    // Find all users that are not friends of the current user
-    const users = await User.find({
-      username: { $ne: un, $nin: currentUserFriends },
-    });
-
-    res.status(200).json(users);
+    res.status(200).json(currentUser);
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+// Actualizar usuario
+app.put("/edit-user/:userId", async (req, res) => {
+  try {
+    const updatedUser = await User.findByIdAndUpdate(req.params.userId, req.body, { new: true });
+    if (!updatedUser) return res.status(404).json({ error: "User not found" });
+    res.status(200).json(updatedUser);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to update user" });
+  }
+});
+
 
 // Start the server
 const server = app.listen(port, () => {
