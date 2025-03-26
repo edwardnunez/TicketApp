@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Layout, Typography, Form, Input, Button, Avatar, message, Radio, Space } from "antd";
 import { UserOutlined, MailOutlined, LockOutlined } from "@ant-design/icons";
+import axios from "axios";
 
 const { Content } = Layout;
 const { Title } = Typography;
@@ -18,14 +19,62 @@ const EditProfile = () => {
   const [form] = Form.useForm();
   const [selectedAvatar, setSelectedAvatar] = useState(avatars[0]); // Default avatar
   const [showAvatarSelection, setShowAvatarSelection] = useState(false); // Toggle avatar selection
+  const [userData, setUserData] = useState({ name: "", email: "", username: "" });
+  const [userId, setUserId] = useState(null);
+  
+  const gatewayUrl = process.env.REACT_API_ENDPOINT || "http://localhost:8000";
+  
+  const username = localStorage.getItem("username");
+  const token = localStorage.getItem("token");
 
+  // Fetch user data on component mount
+  useEffect(() => {
+    if (username && token) {
+      axios.get(gatewayUrl+`/users`)
+      .then((res) => {
+        
+      })
+      .catch(err => console.error("Error al cargar el usuario:", err));
+      axios
+        .get(gatewayUrl+`/users`)
+        .then((res) => {
+          const u = res.data.find(u => u.username === username);
+
+          setUserData({
+            name: u.name,
+            email: u.email,
+            username: u.username,
+          });
+          setUserId(u._id);  
+          setSelectedAvatar(u.avatar || avatars[0]);
+        })
+        .catch((err) => {
+          console.error("Error fetching user data:", err);
+          message.error("Failed to load user data.");
+        });
+    }
+  }, [username, token]);
+
+  // Handle avatar selection
   const handleAvatarChange = (e) => {
     setSelectedAvatar(e.target.value);
   };
 
+  // Handle form submission
   const handleSubmit = (values) => {
-    console.log("Updated Profile:", { ...values, avatar: selectedAvatar });
-    message.success("Profile updated successfully!");
+    const updatedUser = { ...values, avatar: selectedAvatar };
+
+    axios
+      .put(gatewayUrl+`/edit-user/${userId}`, updatedUser, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => {
+        message.success("Profile updated successfully!");
+      })
+      .catch((err) => {
+        console.error("Error updating profile:", err);
+        message.error("Failed to update profile.");
+      });
   };
 
   return (
@@ -68,22 +117,46 @@ const EditProfile = () => {
         )}
 
         {/* Profile Edit Form */}
-        <Form layout="vertical" form={form} onFinish={handleSubmit}>
-          <Form.Item name="name" label="Full Name" rules={[{ required: true, message: "Please enter your name!" }]}>
-            <Input prefix={<UserOutlined />} placeholder="Enter your name" />
+        <Form layout="vertical" form={form} onFinish={handleSubmit} initialValues={userData}>
+          <Form.Item
+            name="username"
+            label="Username"
+            initialValue={userData.username}
+            rules={[{ required: true, message: "Please enter your username!" }]}
+          >
+            <Input prefix={<UserOutlined />} placeholder={userData.username}/>
           </Form.Item>
 
-          <Form.Item name="email" label="Email" rules={[{ required: true, type: "email", message: "Please enter a valid email!" }]}>
-            <Input prefix={<MailOutlined />} placeholder="Enter your email" />
+          <Form.Item
+            name="name"
+            label="Full name"
+            initialValue={userData.name}
+            rules={[{ required: true, message: "Please enter your name!" }]}
+          >
+            <Input prefix={<UserOutlined />} placeholder={userData.name} />
           </Form.Item>
 
-          <Form.Item name="password" label="New Password" rules={[{ min: 6, message: "Password must be at least 6 characters long!" }]}>
+          <Form.Item
+            name="email"
+            label="Email"
+            initialValue={userData.email}
+            rules={[{ required: true, type: "email", message: "Please enter a valid email!" }]}
+          >
+            <Input prefix={<MailOutlined />} placeholder={userData.email} />
+          </Form.Item>
+
+          <Form.Item
+            name="password"
+            label="New Password"
+            rules={[{ min: 6, message: "Password must be at least 6 characters long!" }]}
+          >
             <Input.Password prefix={<LockOutlined />} placeholder="Enter new password" />
           </Form.Item>
-
-          <Button type="primary" htmlType="submit" block>
-            Save changes
-          </Button>
+          <Link to="/profile">
+            <Button type="primary" htmlType="submit" block>
+              Save changes
+            </Button>
+            </Link>
         </Form>
       </Content>
     </Layout>
@@ -91,4 +164,3 @@ const EditProfile = () => {
 };
 
 export default EditProfile;
-

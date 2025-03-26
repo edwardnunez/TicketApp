@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Layout, Menu, Button, Avatar, Dropdown } from "antd";
 import { ShoppingCartOutlined, HomeOutlined, UserOutlined } from "@ant-design/icons";
 
@@ -11,10 +11,27 @@ const menu = (
       <Link to="/profile">👤 My profile</Link>
     </Menu.Item>
     <Menu.Item key="logout">
-      <a href="#">🔒 Log out</a>
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          handleLogout();
+        }}
+      >
+        🔒 Log out
+      </a>
     </Menu.Item>
   </Menu>
 );
+
+const navigate = useNavigate();
+
+const handleLogout = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("username");
+
+  navigate("/login");
+};
 
 const Navbar = () => {
   return (

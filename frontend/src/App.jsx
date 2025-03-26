@@ -7,6 +7,7 @@ import Checkout from "./pages/Checkout";
 import Profile from "./pages/Profile";
 import EditProfile from "./pages/EditProfile";
 import Navbar from "./components/Navbar";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
@@ -18,8 +19,10 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/event/:id" element={<EventDetails />} />
         <Route path="/checkout" element={<Checkout />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/edit-profile" element={<EditProfile />} />
+
+        {/* Rutas protegidas */}
+        <Route path="/profile" element={<ProtectedRoute element={<Profile />} />} />
+        <Route path="/edit-profile" element={<ProtectedRoute element={<EditProfile />} />} />
       </Routes>
     </div>
   );
