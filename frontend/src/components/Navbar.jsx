@@ -1,11 +1,11 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // Importa useNavigate
 import { Layout, Menu, Button, Avatar, Dropdown } from "antd";
 import { ShoppingCartOutlined, HomeOutlined, UserOutlined } from "@ant-design/icons";
 
 const { Header } = Layout;
 
 // Dropdown menu for user profile
-const menu = (
+const menu = (handleLogout) => (
   <Menu>
     <Menu.Item key="profile">
       <Link to="/profile">👤 My profile</Link>
@@ -15,7 +15,7 @@ const menu = (
         href="#"
         onClick={(e) => {
           e.preventDefault();
-          handleLogout();
+          handleLogout();  // Llama a handleLogout cuando se hace clic
         }}
       >
         🔒 Log out
@@ -24,16 +24,16 @@ const menu = (
   </Menu>
 );
 
-const navigate = useNavigate();
-
-const handleLogout = () => {
-  localStorage.removeItem("token");
-  localStorage.removeItem("username");
-
-  navigate("/login");
-};
-
 const Navbar = () => {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("username");
+
+    navigate("/login");
+  };
+
   return (
     <Header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", backgroundColor: "#1890ff" }}>
 
@@ -57,7 +57,7 @@ const Navbar = () => {
         </Link>
 
         {/* Avatar with Dropdown Menu */}
-        <Dropdown overlay={menu} placement="bottomRight">
+        <Dropdown overlay={menu(handleLogout)} placement="bottomRight">
           <Avatar size="large" icon={<UserOutlined />} style={{ cursor: "pointer", backgroundColor: "white", color: "#1890ff" }} />
         </Dropdown>
       </div>
@@ -66,6 +66,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-
-
-
