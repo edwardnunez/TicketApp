@@ -76,7 +76,7 @@ app.post("/adduser", async (req, res) => {
     // Check if required fields are present in the request body
     validateRequiredFields(req, ["username", "name", "email", "password", "confirmPassword"]);
 
-    const { username, password, confirmPassword } = req.body;
+    const { username, password, confirmPassword, role } = req.body;
 
     // Check if passwords match
     if (password !== confirmPassword) {
@@ -109,6 +109,7 @@ app.post("/adduser", async (req, res) => {
       username,
       name: req.body.name,
       email: req.body.email,
+      role: req.body.role || "user",
       password: hashedPassword,
     });
 
@@ -120,6 +121,7 @@ app.post("/adduser", async (req, res) => {
       username: newUser.username,
       createdAt: newUser.createdAt,
       token: token,
+      role: newUser.role,
     });
   } catch (error) {
     res.status(400).json({ error: error.message });

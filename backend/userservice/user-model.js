@@ -7,6 +7,7 @@ const userSchema = new mongoose.Schema({
     password: String,
     createdAt: Date,
     avatar: String,
+    role: { type: String, default: "user" },
     tickets: [{ type: mongoose.Schema.Types.ObjectId, ref: "Ticket" }]
 });
 
