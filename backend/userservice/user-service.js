@@ -117,11 +117,17 @@ app.post("/adduser", async (req, res) => {
 
     const token = jwt.sign({ userId: newUser._id }, "your-secret-key", { expiresIn: "1h" });
 
+    const roleToken = jwt.sign(
+      { userId: newUser._id, role: newUser.role },
+      'your-secret-key', 
+      { expiresIn: '1h' }
+    );
+
     res.status(200).json({
       username: newUser.username,
       createdAt: newUser.createdAt,
       token: token,
-      role: newUser.role,
+      roleToken: roleToken,
     });
   } catch (error) {
     res.status(400).json({ error: error.message });
