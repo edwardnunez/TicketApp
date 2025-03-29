@@ -38,7 +38,7 @@ app.post("/event", async (req, res) => {
 //Get events
 app.get("/events", async (req, res) => {
   try {
-    const events = await Event.findAll();
+    const events = await Event.find();
     if (!events) return res.status(404).json({ error: "No events found" });
     res.status(200).json(events);
   } catch (error) {
