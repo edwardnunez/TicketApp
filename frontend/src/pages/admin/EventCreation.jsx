@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { Layout, Form, Input, Button, DatePicker, message } from 'antd';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const { Content } = Layout;
 
 const EventCreation = () => {
   const [loading, setLoading] = useState(false);
-  const history = useHistory();
+  const navigate = useNavigate();
   const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
 
   const onFinish = async (values) => {
@@ -15,7 +15,7 @@ const EventCreation = () => {
     try {
       await axios.post(gatewayUrl + "/event", values);
       message.success('Event created successfully');
-      history.push('/admin'); // Redirect to the admin dashboard after event creation
+      navigate('/admin'); // Redirect to the admin dashboard after event creation
     } catch (error) {
       console.error("Error creating the event:", error);
       message.error('There was an error creating the event');

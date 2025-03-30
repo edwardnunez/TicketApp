@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Layout, Typography, Form, Input, Button, message} from "antd";
+import { Layout, Typography, Form, Input, Button, message } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -15,14 +15,22 @@ const Login = () => {
   const onFinish = async (values) => {
     setLoading(true);
     try {
-      const response = await axios.post(gatewayUrl+"/login", values);
+      const response = await axios.post(gatewayUrl + "/login", values);
+      // Store JWT token and other necessary data
       localStorage.setItem("token", response.data.token); // Store JWT token
+      localStorage.setItem("roleToken", response.data.roleToken); // Store JWT token
       localStorage.setItem("username", response.data.username);
       message.success("Login successful!");
-      navigate("/");
+      navigate("/"); // Redirect to the homepage or dashboard
     } catch (error) {
       setLoading(false);
-      message.error("Invalid credentials!");
+
+      // Check if the error is related to invalid credentials and show the message
+      if (error.response && error.response.status === 401) {
+        message.error("Invalid credentials! Please check your username and password.");
+      } else {
+        message.error("Something went wrong! Please try again later.");
+      }
     }
   };
 

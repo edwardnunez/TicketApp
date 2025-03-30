@@ -40,22 +40,23 @@ function validateRequiredFields(req, requiredFields) {
 // Route for user login
 app.post('/login', async (req, res) => {
   try {
-    // Check if required fields are present in the request body
     validateRequiredFields(req, ['username', 'password']);
 
     const { username, password } = req.body;
 
-    // Find the user by username in the database
     const user = await User.findOne({ username });
 
-    // Check if the user exists and verify the password
     if (user && await bcrypt.compare(password, user.password)) {
-      // Generate a JWT token
+
       const token = jwt.sign({ userId: user._id }, 'your-secret-key', { expiresIn: '1h' });
-      //Almacenamos el token del usuario para su autentificación
-      
-      // Respond with the token and user information
-      res.json({ token: token, username: username, createdAt: user.createdAt });
+
+      const roleToken = jwt.sign(
+        { userId: newUser._id, role: newUser.role },
+        'your-secret-key', 
+        { expiresIn: '1h' }
+      );
+  
+      res.json({ token: token, roleToken:roleToken, username: username, createdAt: user.createdAt });
     } else {
       res.status(401).json({ error: 'Invalid credentials' });
     }
@@ -99,6 +100,15 @@ app.post("/adduser", async (req, res) => {
         .status(400)
         .json({
           error: "Username already exists. Please choose a different username.",
+        });
+    }
+
+    const existingEmail = await User.findOne({ email: req.body.email });
+    if (existingEmail) {
+      return res
+        .status(400)
+        .json({
+          error: "Email already exists. Please choose a different email.",
         });
     }
 

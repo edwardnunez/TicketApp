@@ -6,11 +6,14 @@ import EventDetails from "./pages/EventDetails";
 import Checkout from "./pages/Checkout";
 import Profile from "./pages/Profile";
 import EditProfile from "./pages/EditProfile";
+import ErrorPage from "./pages/ErrorPage";
+import AboutUs from "./pages/AboutUs";
 
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import EventCreation from "./pages/admin/EventCreation";
 
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
 
@@ -24,13 +27,17 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/event/:id" element={<EventDetails />} />
         <Route path="/checkout" element={<Checkout />} />
+        <Route path="/about-us" element={<AboutUs />} />
 
         <Route path="/profile" element={<ProtectedRoute element={<Profile />} />} />
         <Route path="/edit-profile" element={<ProtectedRoute element={<EditProfile />} />} />
 
         <Route path="/admin" element={<AdminRoute element={<AdminDashboard />} />} />
         <Route path="/create-event" element={<AdminRoute element={<EventCreation />} />} />
+
+        <Route path="*" element={<ErrorPage />} /> 
       </Routes>
+      <Footer />
     </div>
   );
 }
