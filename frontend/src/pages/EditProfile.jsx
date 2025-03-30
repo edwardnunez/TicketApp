@@ -54,7 +54,7 @@ const EditProfile = () => {
           message.error("Failed to load user data.");
         });
     }
-  }, [username, token]);
+  }, [username, token, gatewayUrl]);
 
   // Handle avatar selection
   const handleAvatarChange = (e) => {

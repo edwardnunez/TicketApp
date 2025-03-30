@@ -24,7 +24,7 @@ const AdminDashboard = () => {
         console.error("Error loading events", err);
         setLoading(false);
       });
-  }, []);
+  }, [gatewayUrl]);
 
   const columns = [
     {

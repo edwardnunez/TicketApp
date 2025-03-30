@@ -27,7 +27,7 @@ const Home = () => {
         setFilteredEvents(events);
       })
       .catch((err) => console.error("Error loading events", err));
-  }, []);
+  }, [gatewayUrl]);
 
   const handleSearch = (e) => {
     const searchTerm = e.target.value.toLowerCase();

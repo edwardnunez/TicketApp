@@ -84,6 +84,15 @@ app.put("/edit-user/:userId", async (req, res) => {
   }
 });
 
+app.post("/verifyToken", async (req, res) => {
+  try {
+    const userResponse = await axios.post(`${userServiceUrl}/verifyToken`, req.body);
+    res.json(userResponse.data);
+  } catch (error) {
+    returnError(res, error);
+  }
+});
+
 // **Ticket Routes**
 app.post("/tickets", async (req, res) => {
   try {
