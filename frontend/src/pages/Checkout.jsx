@@ -16,7 +16,7 @@ const Checkout = () => {
       })
       .then((res) => setTickets(res.data))
       .catch((err) => console.error("Error fetching tickets", err));
-  }, [userId, token]);
+  }, [userId, token, gatewayUrl]);
 
   return (
     <div className="container mx-auto p-6">

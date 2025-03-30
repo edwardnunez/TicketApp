@@ -11,7 +11,7 @@ const EventDetails = () => {
     axios.get(gatewayUrl+`/events/${id}`)
       .then((res) => setEvent(res.data))
       .catch((err) => console.error("Error loading event", err));
-  }, [id]);
+  }, [id, gatewayUrl]);
 
   if (!event) return <p>Evento no encontrado o cargando...</p>;
 

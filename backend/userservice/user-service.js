@@ -9,6 +9,8 @@ import bcrypt from 'bcrypt';
 const app = express();
 const port = 8001; 
 
+const secretKey='your-secret-key';
+
 // Middleware to parse JSON in request body
 app.use(express.json());
 
@@ -48,11 +50,11 @@ app.post('/login', async (req, res) => {
 
     if (user && await bcrypt.compare(password, user.password)) {
 
-      const token = jwt.sign({ userId: user._id }, 'your-secret-key', { expiresIn: '1h' });
+      const token = jwt.sign({ userId: user._id }, secretKey, { expiresIn: '1h' });
 
       const roleToken = jwt.sign(
         { userId: newUser._id, role: newUser.role },
-        'your-secret-key', 
+       secretKey, 
         { expiresIn: '1h' }
       );
   
@@ -125,11 +127,11 @@ app.post("/adduser", async (req, res) => {
 
     await newUser.save();
 
-    const token = jwt.sign({ userId: newUser._id }, "your-secret-key", { expiresIn: "1h" });
+    const token = jwt.sign({ userId: newUser._id }, secretKey, { expiresIn: "1h" });
 
     const roleToken = jwt.sign(
       { userId: newUser._id, role: newUser.role },
-      'your-secret-key', 
+      secretKey, 
       { expiresIn: '1h' }
     );
 
@@ -180,6 +182,27 @@ app.put("/edit-user/:userId", async (req, res) => {
     res.status(200).json(updatedUser);
   } catch (err) {
     res.status(500).json({ error: "Failed to update user" });
+  }
+});
+
+app.post('/verifyToken', (req, res) => {
+  const { token } = req.body;
+
+  if (!token) {
+    return res.status(400).json({ error: 'Token is required' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, secretKey);
+    const role = decoded.role;
+
+    if (role === 'admin') {
+      res.status(200).json({ role });
+    } else {
+      res.status(403).json({ error: 'Forbidden' });
+    }
+  } catch (error) {
+    res.status(401).json({ error: 'Invalid or expired token' });
   }
 });
 
