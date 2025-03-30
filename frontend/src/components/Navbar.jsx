@@ -45,6 +45,10 @@ const Navbar = () => {
         <Menu.Item key="home" icon={<HomeOutlined />}>
           <Link to="/">Home</Link>
         </Menu.Item>
+
+        <Menu.Item key="adminDashboard" icon={<UserOutlined />}>
+          <Link to="/admin">Admin dashboard</Link>
+        </Menu.Item>
       </Menu>
 
       {/* Profile Section */}
@@ -56,7 +60,6 @@ const Navbar = () => {
           </Button>
         </Link>
 
-        {/* Avatar with Dropdown Menu */}
         <Dropdown overlay={menu(handleLogout)} placement="bottomRight">
           <Avatar size="large" icon={<UserOutlined />} style={{ cursor: "pointer", backgroundColor: "white", color: "#1890ff" }} />
         </Dropdown>
