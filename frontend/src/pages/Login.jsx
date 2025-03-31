@@ -16,16 +16,14 @@ const Login = () => {
     setLoading(true);
     try {
       const response = await axios.post(gatewayUrl + "/login", values);
-      // Store JWT token and other necessary data
-      localStorage.setItem("token", response.data.token); // Store JWT token
-      localStorage.setItem("roleToken", response.data.roleToken); // Store JWT token
+      console.log(response);
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("roleToken", response.data.roleToken);
       localStorage.setItem("username", response.data.username);
       message.success("Login successful!");
-      navigate("/"); // Redirect to the homepage or dashboard
+      navigate("/");
     } catch (error) {
       setLoading(false);
-
-      // Check if the error is related to invalid credentials and show the message
       if (error.response && error.response.status === 401) {
         message.error("Invalid credentials! Please check your username and password.");
       } else {

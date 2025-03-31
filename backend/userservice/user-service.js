@@ -53,7 +53,7 @@ app.post('/login', async (req, res) => {
       const token = jwt.sign({ userId: user._id }, secretKey, { expiresIn: '1h' });
 
       const roleToken = jwt.sign(
-        { userId: newUser._id, role: newUser.role },
+        { userId: user._id, role: user.role },
        secretKey, 
         { expiresIn: '1h' }
       );
@@ -95,7 +95,6 @@ app.post("/adduser", async (req, res) => {
       });
     }
 
-    // Check if the username already exists
     const existingUser = await User.findOne({ username });
     if (existingUser) {
       return res
@@ -114,7 +113,6 @@ app.post("/adduser", async (req, res) => {
         });
     }
 
-    // Encrypt the password before saving it
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = new User({
@@ -195,7 +193,6 @@ app.post('/verifyToken', (req, res) => {
   try {
     const decoded = jwt.verify(token, secretKey);
     const role = decoded.role;
-
     if (role === 'admin') {
       res.status(200).json({ role });
     } else {

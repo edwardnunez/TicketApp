@@ -4,7 +4,6 @@ import { ShoppingCartOutlined, HomeOutlined, UserOutlined } from "@ant-design/ic
 
 const { Header } = Layout;
 
-// Dropdown menu for user profile
 const menu = (handleLogout) => (
   <Menu>
     <Menu.Item key="profile">
@@ -15,7 +14,7 @@ const menu = (handleLogout) => (
         href="#"
         onClick={(e) => {
           e.preventDefault();
-          handleLogout();  // Llama a handleLogout cuando se hace clic
+          handleLogout();
         }}
       >
         🔒 Log out
@@ -30,6 +29,7 @@ const Navbar = () => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("username");
+    localStorage.removeItem("roleToken");
 
     navigate("/login");
   };
