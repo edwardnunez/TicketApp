@@ -16,16 +16,15 @@ mongoose.connect(mongoUri, { useNewUrlParser: true, useUnifiedTopology: true });
 // Create a new event
 app.post("/event", async (req, res) => {
   try {
-    const { name, date, location, price } = req.body;
-    if (!name || !date || !location || !price) {
+    const { name, date, location} = req.body;
+    if (!name || !date || !location) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
     const newEvent = new Event({
       name,
       date,
-      location,
-      price,
+      location
     });
 
     await newEvent.save();

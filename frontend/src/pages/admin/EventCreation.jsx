@@ -15,7 +15,7 @@ const EventCreation = () => {
     try {
       await axios.post(gatewayUrl + "/event", values);
       message.success('Event created successfully');
-      navigate('/admin'); // Redirect to the admin dashboard after event creation
+      navigate('/admin');
     } catch (error) {
       console.error("Error creating the event:", error);
       message.error('There was an error creating the event');
