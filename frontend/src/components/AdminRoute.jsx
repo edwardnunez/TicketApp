@@ -15,7 +15,7 @@ const AdminRoute = ({ element }) => {
       const role = response.data.role;
 
       if (role !== "admin") {
-        return <Navigate to="/home" />;
+        return <Navigate to="/" />;
       }
       return element;
     })
