@@ -76,12 +76,10 @@ function checkInput(input) {
 
 app.post("/adduser", async (req, res) => {
   try {
-    // Check if required fields are present in the request body
     validateRequiredFields(req, ["username", "name", "email", "password", "confirmPassword"]);
 
     const { username, password, confirmPassword, role } = req.body;
 
-    // Check if passwords match
     if (password !== confirmPassword) {
       return res.status(400).json({
         error: "Passwords do not match.",
@@ -144,7 +142,6 @@ app.post("/adduser", async (req, res) => {
   }
 });
 
-// Route to get all users
 app.get("/users", async (req, res) => {
   try {
     const users = await User.find({}, { password: 0});
@@ -158,7 +155,6 @@ app.get("/users/search", async (req, res) => {
   try {
     const { username } = req.query.username;
 
-    // Search for the user by username
     const currentUser = await User.findOne({ username:username });
     console.log(currentUser);
     console.log(username);
@@ -172,7 +168,6 @@ app.get("/users/search", async (req, res) => {
   }
 });
 
-// Actualizar usuario
 app.put("/edit-user/:userId", async (req, res) => {
   try {
     const updatedUser = await User.findByIdAndUpdate(req.params.userId, req.body, { new: true });

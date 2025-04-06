@@ -26,11 +26,9 @@ const EventCreation = () => {
     fetchLocations();
   }, [gatewayUrl]);
 
-  // Filtra las localizaciones según el tipo de evento
   useEffect(() => {
     if (eventType) {
       const filteredLocations = locations.filter(location => {
-        // Filtra según el tipo de evento
         if (eventType === 'football') {
           return location.category === 'stadium';
         } else if (eventType === 'cinema') {
@@ -41,6 +39,8 @@ const EventCreation = () => {
         return false;
       });
       setLocationOptions(filteredLocations);
+    } else{
+      setLocationOptions(locations);
     }
   }, [eventType, locations]);
 
@@ -61,7 +61,7 @@ const EventCreation = () => {
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Content style={{ padding: '40px' }}>
-        <h2>Create Event</h2>
+        <h2>Create event</h2>
 
         <Form
           name="create_event"
@@ -70,7 +70,7 @@ const EventCreation = () => {
           wrapperCol={{ span: 16 }}
         >
           <Form.Item
-            label="Event Name"
+            label="Event name"
             name="name"
             rules={[{ required: true, message: 'Please enter the event name' }]}
           >
@@ -86,7 +86,7 @@ const EventCreation = () => {
           </Form.Item>
 
           <Form.Item
-            label="Event Type"
+            label="Event type"
             name="eventType"
             rules={[{ required: true, message: 'Please select the event type' }]}
           >
@@ -94,7 +94,7 @@ const EventCreation = () => {
               placeholder="Select event type"
               onChange={(value) => setEventType(value)}
             >
-              <Option value="football">Football</Option>
+              <Option value="football">Football match</Option>
               <Option value="cinema">Cinema</Option>
               <Option value="concert">Concert</Option>
             </Select>
@@ -107,7 +107,7 @@ const EventCreation = () => {
           >
             <Select placeholder="Select location">
               {locationOptions.map((location) => (
-                <Option key={location.id} value={location.name}>
+                <Option key={location._id} value={location._id}>
                   {location.name}
                 </Option>
               ))}
@@ -116,7 +116,7 @@ const EventCreation = () => {
 
           <Form.Item>
             <Button type="primary" htmlType="submit" loading={loading} style={{ width: '100%' }}>
-              Create Event
+              Create
             </Button>
           </Form.Item>
         </Form>
