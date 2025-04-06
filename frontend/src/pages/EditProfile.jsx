@@ -31,23 +31,22 @@ const EditProfile = () => {
   // Fetch user data on component mount
   useEffect(() => {
     if (username && token) {
-      axios.get(gatewayUrl+`/users`)
-      .then((res) => {
-        
-      })
-      .catch(err => console.error("Error al cargar el usuario:", err));
       axios
-        .get(gatewayUrl+`/users`)
+        .get(gatewayUrl + `/users`)
         .then((res) => {
-          const u = res.data.find(u => u.username === username);
-
-          setUserData({
-            name: u.name,
-            email: u.email,
-            username: u.username,
-          });
-          setUserId(u._id);  
-          setSelectedAvatar(u.avatar || avatars[0]);
+          const u = res.data.find((u) => u.username === username);
+  
+          if (u) {
+            setUserData({
+              name: u.name,
+              email: u.email,
+              username: u.username,
+            });
+            setUserId(u._id);
+            setSelectedAvatar(u.avatar || avatars[0]);
+          } else {
+            message.error("User not found.");
+          }
         })
         .catch((err) => {
           console.error("Error fetching user data:", err);

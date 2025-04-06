@@ -17,26 +17,29 @@ const Profile = () => {
   const gatewayUrl = process.env.REACT_API_ENDPOINT || "http://localhost:8000";
 
   useEffect(() => {
-    if (!username || !token) return;
-
-    // Obtener usuario
-    axios.get(gatewayUrl+`/users`)
-      .then((res) => {
-        const u = res.data.find(u => u.username === username);
-        if (u) {
-          setUser(u);
-          setUserId(u._id);
-        }
+    if (!token) return;
+  
+    // Obtener usuario por ObjectId
+    axios
+      .get(gatewayUrl + `/users/search?userId=${userId}`, {
+        headers: { Authorization: `Bearer ${token}` },
       })
-      .catch(err => console.error("Error al cargar el usuario:", err));
-
+      .then((res) => {
+        setUser(res.data);
+        setUserId(res.data._id);
+      })
+      .catch((err) => console.error("Error al cargar el usuario:", err));
+  
     // Obtener entradas del usuario
-    axios.get(gatewayUrl+`/tickets/user/${userId}/details`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => setTickets(res.data))
-      .catch(err => console.error("Error al cargar las entradas:", err));
-  }, [userId, token, gatewayUrl, username]);
+    if (userId) {
+      axios
+        .get(gatewayUrl + `/tickets/user/${userId}/details`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((res) => setTickets(res.data))
+        .catch((err) => console.error("Error al cargar las entradas:", err));
+    }
+  }, [userId, token, gatewayUrl]);
 
   if (!user) return <p>Cargando perfil...</p>;
 

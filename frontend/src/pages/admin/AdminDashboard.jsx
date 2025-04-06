@@ -37,7 +37,7 @@ const AdminDashboard = () => {
     },
     {
       title: 'Location',
-      dataIndex: 'location',
+      render: (text, record) => record.location?.name || 'Unknown', // Mostrar el nombre de la ubicación
     },
     {
       title: 'Actions',

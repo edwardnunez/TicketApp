@@ -154,6 +154,33 @@ app.get("/events/:eventId", async (req, res) => {
   }
 });
 
+app.post("/location", async (req, res) => {
+  try {
+    const eventResponse = await axios.post(`${eventServiceUrl}/location`, req.body);
+    res.json(eventResponse.data);
+  } catch (error) {
+    returnError(res, error);
+  }
+});
+
+app.get("/locations", async (req, res) => {
+  try {
+    const eventsResponse = await axios.get(`${eventServiceUrl}/locations`);
+    res.json(eventsResponse.data);
+  } catch (error) {
+    returnError(res, error);
+  }
+});
+
+app.get("/locations/:locationId", async (req, res) => {
+  try {
+    const eventResponse = await axios.get(`${eventServiceUrl}/locations/${req.params.locationId}`);
+    res.json(eventResponse.data);
+  } catch (error) {
+    returnError(res, error);
+  }
+});
+
 // Start the gateway service
 const server = app.listen(port, () => {
   console.log(`Gateway Service listening at http://localhost:${port}`);
