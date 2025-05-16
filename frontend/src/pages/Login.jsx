@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Layout, Typography, Form, Input, Button, message } from "antd";
+import { Layout, Typography, Form, Input, Button, message} from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link  } from "react-router-dom";
 
 const { Content } = Layout;
 const { Title } = Typography;
@@ -73,6 +73,13 @@ const Login = () => {
           >
             Log in
           </Button>
+
+          <div style={{ marginTop: "15px", textAlign: "center" }}>
+            New here?{" "}
+            <Link to="/register" style={{ color: "#1890ff" }}>
+              Create an account
+            </Link>
+          </div>
         </Form>
       </Content>
     </Layout>

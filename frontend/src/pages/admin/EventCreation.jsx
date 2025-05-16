@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Layout, Form, Input, Button, DatePicker, Select, message } from 'antd';
+import { Layout, Form, Input, Button, DatePicker, Select, message, Alert } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
@@ -11,16 +11,18 @@ const EventCreation = () => {
   const [eventType, setEventType] = useState(null);
   const [locations, setLocations] = useState([]);
   const [locationOptions, setLocationOptions] = useState([]);
+  const [errorMessage, setErrorMessage] = useState(null); // <-- nuevo estado error
   const navigate = useNavigate();
   const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
 
   useEffect(() => {
     const fetchLocations = async () => {
       try {
-        const response = await axios.get(gatewayUrl + "/locations"); 
+        const response = await axios.get(gatewayUrl + "/locations");
         setLocations(response.data);
       } catch (error) {
         console.error("Error fetching locations:", error);
+        setErrorMessage("Failed to load locations");
       }
     };
     fetchLocations();
@@ -39,20 +41,31 @@ const EventCreation = () => {
         return false;
       });
       setLocationOptions(filteredLocations);
-    } else{
+    } else {
       setLocationOptions(locations);
     }
   }, [eventType, locations]);
 
   const onFinish = async (values) => {
     setLoading(true);
+    setErrorMessage(null); // limpia error previo
     try {
-      await axios.post(gatewayUrl + "/event", values);
+      const payload = {
+        name: values.name,
+        date: values.date.valueOf(),
+        location: values.location,
+        eventType: values.eventType,
+      };
+      await axios.post(gatewayUrl + "/event", payload);
       message.success('Event created successfully');
       navigate('/admin');
     } catch (error) {
       console.error("Error creating the event:", error);
-      message.error('There was an error creating the event');
+      if (error.response && error.response.data && error.response.data.error) {
+        setErrorMessage(error.response.data.error);
+      } else {
+        setErrorMessage('There was an error creating the event');
+      }
     } finally {
       setLoading(false);
     }
@@ -63,11 +76,22 @@ const EventCreation = () => {
       <Content style={{ padding: '40px' }}>
         <h2>Create event</h2>
 
+        {errorMessage && (
+          <Alert
+            message="Error"
+            description={errorMessage}
+            type="error"
+            showIcon
+            style={{ marginBottom: 24 }}
+          />
+        )}
+
         <Form
           name="create_event"
           onFinish={onFinish}
           labelCol={{ span: 8 }}
           wrapperCol={{ span: 16 }}
+          onValuesChange={() => setErrorMessage(null)} // limpia error al cambiar cualquier campo
         >
           <Form.Item
             label="Event name"
@@ -114,7 +138,7 @@ const EventCreation = () => {
             </Select>
           </Form.Item>
 
-          <Form.Item>
+          <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
             <Button type="primary" htmlType="submit" loading={loading} style={{ width: '100%' }}>
               Create
             </Button>

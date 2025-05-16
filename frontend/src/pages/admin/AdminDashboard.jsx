@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Layout, Typography, Button, Row, Col, Table } from 'antd';
+import { Layout, Typography, Button, Row, Col, Table, Alert } from 'antd';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { PlusOutlined } from '@ant-design/icons';
@@ -10,11 +10,12 @@ const { Title } = Typography;
 const AdminDashboard = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null); // estado para errores
   const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
 
   useEffect(() => {
-    // Load the existing events from the API.
     setLoading(true);
+    setErrorMessage(null); // limpia error previo
     axios.get(gatewayUrl + "/events")
       .then(res => {
         setEvents(res.data);
@@ -22,6 +23,7 @@ const AdminDashboard = () => {
       })
       .catch(err => {
         console.error("Error loading events", err);
+        setErrorMessage("Failed to load events. Please try again.");
         setLoading(false);
       });
   }, [gatewayUrl]);
@@ -34,10 +36,11 @@ const AdminDashboard = () => {
     {
       title: 'Date',
       dataIndex: 'date',
+      render: (text) => new Date(text).toLocaleString(),
     },
     {
       title: 'Location',
-      render: (text, record) => record.location?.name || 'Unknown', // Mostrar el nombre de la ubicación
+      render: (text, record) => record.location?.name || 'Unknown',
     },
     {
       title: 'Actions',
@@ -49,16 +52,28 @@ const AdminDashboard = () => {
     },
   ];
 
+  console.log("Eventos en estado:", events);
+
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Content style={{ padding: '40px' }}>
         <Title level={2}>Admin Dashboard</Title>
-        
+
+        {errorMessage && (
+          <Alert
+            message="Error"
+            description={errorMessage}
+            type="error"
+            showIcon
+            style={{ marginBottom: 24 }}
+          />
+        )}
+
         <Row justify="space-between" style={{ marginBottom: '20px' }}>
           <Col>
-            <Button 
-              type="primary" 
-              icon={<PlusOutlined />} 
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
               onClick={() => window.location.href = '/create-event'}
             >
               Create new event
@@ -78,3 +93,4 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
+
