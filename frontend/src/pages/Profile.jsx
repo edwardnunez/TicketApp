@@ -12,7 +12,6 @@ const Profile = () => {
   const [user, setUser] = useState(null);
   const [userId, setUserId] = useState(null);
   const [tickets, setTickets] = useState([]);
-  const username = localStorage.getItem("username");
   const token = localStorage.getItem("token");
   const gatewayUrl = process.env.REACT_API_ENDPOINT || "http://localhost:8000";
 
