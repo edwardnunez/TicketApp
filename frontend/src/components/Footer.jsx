@@ -1,27 +1,61 @@
-import React from 'react';
-import { Layout, Row, Col, Typography } from 'antd';
-import { Link } from 'react-router-dom';
+import React from "react";
+import { Link } from "react-router-dom";
+import { Typography, Divider } from "antd";
+import { TagOutlined } from "@ant-design/icons";
+import { COLORS } from "./colorscheme";
 
-const { Text } = Typography;
+const { Title, Paragraph, Text } = Typography;
 
 const Footer = () => {
   return (
-    <Layout.Footer style={{ backgroundColor: '#f0f2f5', padding: '20px 0', marginTop: 'auto' }}>
-      <Row justify="center" align="middle">
-        <Col xs={24} sm={12} md={8} style={{ textAlign: 'center' }}>
-          <Link to="/about-us">
-            <Text strong style={{ fontSize: '16px' }}>About us</Text>
-          </Link>
-        </Col>
+    <footer
+      style={{
+        background: COLORS.neutral.white,
+        padding: "40px 24px",
+        borderTop: `1px solid ${COLORS.neutral.grey2}`,
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 1200,
+          margin: "0 auto",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 24,
+        }}
+      >
+        <Link to="/" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <TagOutlined style={{ fontSize: 28, color: COLORS.primary.main }} />
+          <Title level={3} style={{ margin: 0, color: COLORS.primary.main }}>
+            TicketApp
+          </Title>
+        </Link>
 
-        <Col xs={24} sm={12} md={8} style={{ textAlign: 'center' }}>
-          <Text style={{ fontSize: '20px', fontWeight: 'bold' }}>TicketApp</Text>
-          <p style={{ marginTop: '10px', color: '#888' }}>© 2025 TicketApp. All rights reserved.</p>
-        </Col>
-      </Row>
-    </Layout.Footer>
+        <Paragraph style={{ color: COLORS.neutral.grey4, maxWidth: 600, textAlign: "center" }}>
+          La plataforma líder para la venta de entradas a eventos. Fácil, rápido y seguro.
+        </Paragraph>
+
+        <Divider style={{ margin: "24px 0" }} />
+
+        <div style={{ display: "flex", gap: 16 }}>
+          <Link to="/about-us" style={{ color: COLORS.primary.main, fontWeight: "500" }}>
+            Sobre nosotros
+          </Link>
+          <Link to="/contact" style={{ color: COLORS.primary.main, fontWeight: "500" }}>
+            Contacto
+          </Link>
+          <Link to="/terms" style={{ color: COLORS.primary.main, fontWeight: "500" }}>
+            Términos y condiciones
+          </Link>
+        </div>
+
+        <Text style={{ color: COLORS.neutral.grey3, fontSize: 14 }}>
+          © 2025 TicketApp. Todos los derechos reservados.
+        </Text>
+      </div>
+    </footer>
   );
 };
 
 export default Footer;
-

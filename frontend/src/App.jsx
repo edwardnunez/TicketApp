@@ -22,13 +22,14 @@ function App() {
     <div className="min-h-screen bg-gray-100">
       <Navbar />
       <Routes>
-        <Route path="/" element={<Home />} />
+
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/event/:id" element={<EventDetails />} />
-        <Route path="/checkout" element={<Checkout />} />
-        <Route path="/about-us" element={<AboutUs />} />
 
+        <Route path="/" element={<ProtectedRoute element={<Home />} />} />
+        <Route path="/event/:id" element={<ProtectedRoute element={<EventDetails />} />} />
+        <Route path="/checkout" element={<ProtectedRoute element={<Checkout />} />} />
+        <Route path="/about-us" element={<ProtectedRoute element={<AboutUs />} />} />
         <Route path="/profile" element={<ProtectedRoute element={<Profile />} />} />
         <Route path="/edit-profile" element={<ProtectedRoute element={<EditProfile />} />} />
 
