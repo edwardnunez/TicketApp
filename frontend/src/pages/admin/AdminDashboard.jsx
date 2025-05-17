@@ -30,7 +30,7 @@ const AdminDashboard = () => {
 
   const columns = [
     {
-      title: 'Event Name',
+      title: 'Event name',
       dataIndex: 'name',
     },
     {
