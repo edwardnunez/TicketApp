@@ -257,7 +257,7 @@ const Home = () => {
             </div>
             <Text style={{ display: 'flex', alignItems: 'center', color: COLORS.neutral.grey4 }}>
               <EnvironmentOutlined style={{ marginRight: '5px', color: COLORS.neutral.grey4 }} /> 
-              <Tooltip title={event.location}>
+              <Tooltip title={event.location.name}>
                 <span style={{ 
                   whiteSpace: 'nowrap', 
                   overflow: 'hidden', 
@@ -265,7 +265,7 @@ const Home = () => {
                   maxWidth: '180px',
                   display: 'inline-block'
                 }}>
-                  {event.location}
+                  {event.location.name}
                 </span>
               </Tooltip>
             </Text>
