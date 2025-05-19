@@ -1,27 +1,278 @@
-import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
-import axios from "axios";
+import React from "react";
+import { 
+  Table, 
+  Layout, 
+  Typography, 
+  Button, 
+  Card, 
+  Row, 
+  Col, 
+  Space, 
+  Avatar, 
+  Divider
+} from "antd";
+import {
+  useNavigate 
+} from "react-router-dom";
+import { 
+  UserOutlined, 
+  GithubOutlined, 
+  MailOutlined, 
+  HomeOutlined, 
+  TeamOutlined,
+  IdcardOutlined
+} from "@ant-design/icons";
 
-const EventDetails = () => {
-  const { id } = useParams();
-  const [event, setEvent] = useState(null);
-  const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
+// Importamos el esquema de colores
+import { COLORS } from "../components/colorscheme";
 
-  useEffect(() => {
-    axios.get(gatewayUrl+`/events/${id}`)
-      .then((res) => setEvent(res.data))
-      .catch((err) => console.error("Error loading event", err));
-  }, [id, gatewayUrl]);
+const { Title, Paragraph, Text } = Typography;
+const { Content } = Layout;
 
-  if (!event) return <p>Evento no encontrado o cargando...</p>;
+const AboutUs = () => {
+  const navigate = useNavigate();
+
+  const teamMembers = [
+    {
+      key: "1",
+      name: "Iyán Fernández Riol",
+      UO: "UO288231",
+      email: "uo288231@uniovi.es",
+      github: "iyanfdezz",
+      githubUrl: "https://github.com/iyanfdezz",
+      avatar: null
+    },
+    {
+      key: "2",
+      name: "Edward Rolando Núñez Álvarez",
+      UO: "-",
+      email: "nunezedward@uniovi.es",
+      github: "edwardnunez",
+      githubUrl: "https://github.com/edwardnunez",
+      avatar: null
+    },
+    {
+      key: "3",
+      name: "Xiomarah María Guzmán Guzmán",
+      UO: "-",
+      email: "guzmanxiomarah@uniovi.es",
+      github: "tutor2",
+      githubUrl: "https://github.com/tutor2",
+      avatar: null
+    }
+  ];
+
+  // Columnas para la tabla móvil
+  const columns = [
+    {
+      title: "Nombre",
+      dataIndex: "name",
+      key: "name",
+      render: (text, record) => (
+        <Space>
+          <Avatar 
+            icon={<UserOutlined />} 
+            style={{ 
+              backgroundColor: COLORS?.primary?.main || "#1890ff",
+              color: "#fff"
+            }} 
+            src={record.avatar} 
+          />
+          <span>{text}</span>
+        </Space>
+      )
+    },
+    {
+      title: "UO",
+      dataIndex: "UO",
+      key: "UO",
+      responsive: ["md"]
+    },
+    {
+      title: "Email",
+      dataIndex: "email",
+      key: "email",
+      responsive: ["lg"]
+    },
+    {
+      title: "GitHub",
+      dataIndex: "github",
+      key: "github",
+      render: (text, record) => (
+        <a 
+          href={record.githubUrl} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          style={{ 
+            color: COLORS?.primary?.main || "#1890ff",
+            display: "flex",
+            alignItems: "center" 
+          }}
+        >
+          <GithubOutlined style={{ marginRight: 8 }} /> {text}
+        </a>
+      )
+    }
+  ];
 
   return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold">{event.name}</h1>
-      <p className="text-lg">{new Date(event.date).toLocaleDateString()} - {event.location}</p>
-      <p className="text-xl font-semibold mt-4">Precio: ${event.price}</p>
-    </div>
+    <Layout style={{ backgroundColor: COLORS?.neutral?.white || "#fff", minHeight: "100vh" }}>
+      <Content>
+        {/* Hero Section con gradiente como en Home */}
+        <div style={{ 
+          background: COLORS?.gradients?.primary || "linear-gradient(135deg, #1890ff 0%, #722ed1 100%)",
+          padding: "60px 20px",
+          textAlign: "center",
+          color: "#fff"
+        }}>
+          <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+            <Title level={1} style={{ color: "#fff", marginBottom: "16px" }}>
+              Nuestro equipo
+            </Title>
+            <Paragraph style={{ 
+              fontSize: "18px", 
+              maxWidth: "700px", 
+              margin: "0 auto 32px",
+              color: "rgba(255, 255, 255, 0.85)"
+            }}>
+              Conozca a las personas detrás del desarrollo de esta plataforma de eventos.
+            </Paragraph>
+          </div>
+        </div>
+
+        {/* Contenido principal */}
+        <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "40px 20px" }}>
+          {/* Sección de información del equipo */}
+          <Card 
+            className="team-card"
+            style={{ 
+              marginBottom: "40px",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+              borderRadius: "8px",
+              border: "none"
+            }}
+          >
+            <Space direction="vertical" size="large" style={{ width: "100%" }}>
+              <div style={{ textAlign: "center" }}>
+                <TeamOutlined style={{ 
+                  fontSize: "48px", 
+                  color: COLORS?.primary?.main || "#1890ff", 
+                  marginBottom: "16px" 
+                }} />
+                <Title level={3} style={{ 
+                  color: COLORS?.neutral?.dark || "#262626",
+                  marginTop: 0
+                }}>
+                  Acerca de nosotros
+                </Title>
+                <Paragraph style={{ 
+                  color: COLORS?.neutral?.grey4 || "#8c8c8c",
+                  fontSize: "16px"
+                }}>
+                  Somos un equipo dedicado al desarrollo de soluciones web innovadoras.
+                  Nuestra plataforma de eventos está diseñada para proporcionar una experiencia
+                  fluida y agradable para los usuarios que buscan descubrir y asistir a eventos.
+                </Paragraph>
+              </div>
+
+              <Divider style={{ margin: "24px 0" }} />
+
+              {/* Versión móvil: tarjeta para cada miembro */}
+              <div className="mobile-cards" style={{ display: "block", marginBottom: "24px" }}>
+                <Row gutter={[24, 24]}>
+                  {teamMembers.map(member => (
+                    <Col xs={24} sm={12} md={8} key={member.key}>
+                      <Card 
+                        style={{ 
+                          height: "100%", 
+                          borderRadius: "8px",
+                          boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+                          border: "1px solid #f0f0f0"
+                        }}
+                        hoverable
+                      >
+                        <div style={{ textAlign: "center", marginBottom: "16px" }}>
+                          <Avatar 
+                            size={80} 
+                            icon={<UserOutlined />} 
+                            src={member.avatar}
+                            style={{ 
+                              backgroundColor: COLORS?.primary?.light || "#69c0ff",
+                              marginBottom: "16px" 
+                            }}
+                          />
+                          <Title level={4} style={{ margin: "8px 0" }}>
+                            {member.name}
+                          </Title>
+                        </div>
+
+                        <Space direction="vertical" size="small" style={{ width: "100%" }}>
+                          {member.UO !== "-" && (
+                            <div style={{ display: "flex", alignItems: "center" }}>
+                              <IdcardOutlined style={{ marginRight: "8px", color: COLORS?.neutral?.grey4 || "#8c8c8c" }} />
+                              <Text>{member.UO}</Text>
+                            </div>
+                          )}
+                          
+                          <div style={{ display: "flex", alignItems: "center" }}>
+                            <MailOutlined style={{ marginRight: "8px", color: COLORS?.neutral?.grey4 || "#8c8c8c" }} />
+                            <Text>{member.email}</Text>
+                          </div>
+                          
+                          <div style={{ display: "flex", alignItems: "center" }}>
+                            <GithubOutlined style={{ marginRight: "8px", color: COLORS?.neutral?.grey4 || "#8c8c8c" }} />
+                            <a 
+                              href={member.githubUrl} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              style={{ color: COLORS?.primary?.main || "#1890ff" }}
+                            >
+                              {member.github}
+                            </a>
+                          </div>
+                        </Space>
+                      </Card>
+                    </Col>
+                  ))}
+                </Row>
+              </div>
+
+              {/* Versión desktop: tabla */}
+              <div className="desktop-table" style={{ overflowX: "auto" }}>
+                <Table 
+                  dataSource={teamMembers} 
+                  columns={columns} 
+                  pagination={false}
+                  style={{ marginBottom: "24px" }}
+                  className="team-table"
+                  rowClassName={() => "team-table-row"}
+                />
+              </div>
+            </Space>
+          </Card>
+
+          {/* Botón para volver */}
+          <div style={{ textAlign: "center", marginTop: "24px" }}>
+            <Button 
+              type="primary" 
+              icon={<HomeOutlined />}
+              onClick={() => navigate("/")}
+              size="large"
+              style={{
+                backgroundColor: COLORS?.primary?.main || "#1890ff",
+                borderColor: COLORS?.primary?.main || "#1890ff",
+                height: "46px",
+                borderRadius: "8px",
+                boxShadow: "0 2px 0 rgba(0, 0, 0, 0.045)"
+              }}
+            >
+              Volver al inicio
+            </Button>
+          </div>
+        </div>
+      </Content>
+    </Layout>
   );
 };
 
-export default EventDetails;
+export default AboutUs;

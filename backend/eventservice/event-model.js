@@ -7,6 +7,7 @@ const eventSchema = new mongoose.Schema({
     enum: ['football', 'cinema', 'concert'],
     required: true
   },
+  description: { type: String, required: true },
   date: { type: Date, required: true },
   location: { 
     type: mongoose.Schema.Types.ObjectId,

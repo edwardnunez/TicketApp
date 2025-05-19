@@ -25,13 +25,9 @@ import {
   FireOutlined,
   StarOutlined,
   TagOutlined,
-  HeartOutlined,
-  HeartFilled,
-  FilterOutlined,
   TeamOutlined,
   ArrowRightOutlined,
-  PictureOutlined,
-  GiftOutlined
+  PictureOutlined
 } from "@ant-design/icons";
 import axios from "axios";
 import dayjs from "dayjs";
