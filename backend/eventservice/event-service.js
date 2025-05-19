@@ -9,7 +9,7 @@ const app = express();
 const port = 8003;
 
 app.use(express.json());
-app.use(cors({ origin: "http://localhost:8003" }));
+app.use(cors());
 
 const mongoUriEvents = process.env.MONGODB_URI || "mongodb://localhost:27017/eventdb";
 const mongoUriLocations = process.env.MONGODB_URI_LOCATION || "mongodb://localhost:27017/locationdb";
@@ -38,6 +38,47 @@ const LocationModel = locationDbConnection.model('Location', Location.schema);
 
 const seedDatabase = async () => {
   await seedLocations(locationDbConnection);
+  
+  // Verificar si ya existen eventos
+  const eventCount = await EventModel.countDocuments();
+  if (eventCount === 0) {
+    try {
+      // Obtener algunas ubicaciones
+      const locations = await LocationModel.find().limit(3);
+      
+      if (locations.length > 0) {
+        // Crear algunos eventos de muestra
+        const sampleEvents = [
+          {
+            name: "Concierto de Rock",
+            type: "concert",
+            description: "Un increíble concierto de rock con las mejores bandas",
+            date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+            location: locations[0]._id
+          },
+          {
+            name: "Partido de fútbol",
+            type: "football",
+            description: "Final de la temporada de fútbol",
+            date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+            location: locations[1]._id
+          },
+          {
+            name: "Estreno de película",
+            type: "cinema",
+            description: "Estreno del último blockbuster",
+            date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+            location: locations[2]._id
+          }
+        ];
+        
+        await EventModel.insertMany(sampleEvents);
+        console.log('Eventos de muestra creados con éxito');
+      }
+    } catch (error) {
+      console.error('Error al crear eventos de muestra:', error);
+    }
+  }
 };
 
 seedDatabase().catch(error => {
@@ -46,11 +87,13 @@ seedDatabase().catch(error => {
 
 app.post("/event", async (req, res) => {
   try {
-    const { name, date, location, eventType } = req.body;
+    const { name, date, location, eventType, description } = req.body;
 
     if (!name || !date || !location || !eventType) {
       return res.status(400).json({ error: "Missing required fields" });
     }
+
+    const eventDescription = description || `Evento de ${eventType}`;
 
     const locationDoc = await LocationModel.findById(location);
 
@@ -72,6 +115,7 @@ app.post("/event", async (req, res) => {
         date: date,
         location: locationDoc._id,
         type: eventType,
+        description: eventDescription
       });
 
       await newEvent.save();
@@ -80,17 +124,17 @@ app.post("/event", async (req, res) => {
 
   } catch (error) {
     console.error("Error creating event:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
   }
 });
 
 app.get("/events", async (req, res) => {
   try {
     const events = await EventModel.find().populate('location');
-    if (!events || events.length === 0) return res.status(404).json({ error: "No events found" });
-    res.status(200).json(events);
+    res.status(200).json(events || []); // Devuelve array vacío en lugar de error 404
   } catch (error) {
-    res.status(500).json({ error: "Internal Server Error" });
+    console.error("Error fetching events:", error);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
   }
 });
 
@@ -100,7 +144,8 @@ app.get("/events/:eventId", async (req, res) => {
     if (!event) return res.status(404).json({ error: "Event not found" });
     res.status(200).json(event);
   } catch (error) {
-    res.status(500).json({ error: "Internal Server Error" });
+    console.error("Error fetching event details:", error);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
   }
 });
 
@@ -139,17 +184,18 @@ app.post("/location", async (req, res) => {
       res.status(201).json(locationDoc);
     }
   } catch (error) {
-    res.status(500).json({ error: "Internal Server Error" });
+    console.error("Error creating/updating location:", error);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
   }
 });
 
 app.get("/locations", async (req, res) => {
   try {
     const locations = await LocationModel.find();
-    if (!locations || locations.length === 0) return res.status(404).json({ error: "No locations found" });
-    res.status(200).json(locations);
+    res.status(200).json(locations || []); // Devuelve array vacío en lugar de error 404
   } catch (error) {
-    res.status(500).json({ error: "Internal Server Error" });
+    console.error("Error fetching locations:", error);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
   }
 });
 
@@ -159,7 +205,8 @@ app.get("/locations/:locationId", async (req, res) => {
     if (!location) return res.status(404).json({ error: "Location not found" });
     res.status(200).json(location);
   } catch (error) {
-    res.status(500).json({ error: "Internal Server Error" });
+    console.error("Error fetching location details:", error);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
   }
 });
 
