@@ -130,8 +130,24 @@ app.post("/event", async (req, res) => {
 
 app.get("/events", async (req, res) => {
   try {
-    const events = await EventModel.find().populate('location');
-    res.status(200).json(events || []); // Devuelve array vacío en lugar de error 404
+    const events = await EventModel.find();
+
+    const locationIds = events.map(event => event.location);
+
+    const locations = await LocationModel.find({ _id: { $in: locationIds } });
+
+    const locationMap = {};
+    locations.forEach(loc => {
+      locationMap[loc._id.toString()] = loc;
+    });
+
+    const eventsWithLocations = events.map(event => {
+      const e = event.toObject();
+      e.location = locationMap[event.location.toString()] || null;
+      return e;
+    });
+
+    res.status(200).json(eventsWithLocations);
   } catch (error) {
     console.error("Error fetching events:", error);
     res.status(500).json({ error: "Internal Server Error", details: error.message });
@@ -140,14 +156,21 @@ app.get("/events", async (req, res) => {
 
 app.get("/events/:eventId", async (req, res) => {
   try {
-    const event = await EventModel.findById(req.params.eventId).populate('location');
+    const event = await EventModel.findById(req.params.eventId);
     if (!event) return res.status(404).json({ error: "Event not found" });
-    res.status(200).json(event);
+
+    const location = await LocationModel.findById(event.location);
+
+    const eventObj = event.toObject();
+    eventObj.location = location || null;
+
+    res.status(200).json(eventObj);
   } catch (error) {
     console.error("Error fetching event details:", error);
     res.status(500).json({ error: "Internal Server Error", details: error.message });
   }
 });
+
 
 app.post("/location", async (req, res) => {
   try {
