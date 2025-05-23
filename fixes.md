@@ -1,11 +1,11 @@
 no se muestran los errores por pantalla
 
-no se crean los eventos (no se)
+detalles de evento
 
-cambiar la interfaz (contemplar otra libreria)
+editar evento
 
-obligar a los usuarios a loguearse para usar la aplicacion (que si no petan las funciones de logout y tal)
+mapa de asientos
 
-arreglar la interfaz de creacion de eventos
+compra de entradas
 
-no se visualizan los eventos
+estado de eventos

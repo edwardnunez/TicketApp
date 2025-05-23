@@ -153,16 +153,27 @@ app.get("/users", async (req, res) => {
 
 app.get("/users/search", async (req, res) => {
   try {
-    const { username } = req.query.username;
-
-    const currentUser = await User.findOne({ username:username });
+    const { username, userId } = req.query;
+    
+    let currentUser;
+    
+    if (username) {
+      currentUser = await User.findOne({ username: username });
+    } else if (userId) {
+      currentUser = await User.findById(userId);
+    } else {
+      return res.status(400).json({ error: "Username or userId is required" });
+    }
+    
     console.log(currentUser);
-    console.log(username);
+    console.log(username || userId);
+    
     if (!currentUser) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    res.status(200).json(currentUser);
+    const { password, ...userWithoutPassword } = currentUser.toObject();
+    res.status(200).json(userWithoutPassword);
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error" });
   }

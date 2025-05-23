@@ -20,42 +20,56 @@ const { Title, Text } = Typography;
 
 const Profile = () => {
   const [user, setUser] = useState(null);
-  const [userId, setUserId] = useState(null);
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const token = localStorage.getItem("token");
+  const username = localStorage.getItem("username");
   const gatewayUrl = process.env.REACT_API_ENDPOINT || "http://localhost:8000";
 
+  console.log("Token:", token);
+  console.log("Username:", username);
+
   useEffect(() => {
-    if (!token) return;
+    if (!token || !username) {
+      setLoading(false);
+      return;
+    }
     
     setLoading(true);
     
-    // Obtener usuario por ObjectId
     axios
-      .get(gatewayUrl + `/users/search?userId=${userId}`, {
+      .get(gatewayUrl + `/users/search?username=${username}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
         setUser(res.data);
-        setUserId(res.data._id);
+        
+        // Una vez que tenemos el usuario, obtener sus tickets
+        if (res.data._id) {
+          return axios.get(gatewayUrl + `/tickets/user/${res.data._id}/details`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+        }
       })
-      .catch((err) => console.error("Error al cargar el usuario:", err))
+      .then((ticketsRes) => {
+        if (ticketsRes) {
+          setTickets(ticketsRes.data);
+        }
+      })
+      .catch((err) => {
+        console.error("Error al cargar datos:", err);
+        // Si hay error, mostrar mensaje más específico
+        if (err.response?.status === 404) {
+          console.error("Usuario no encontrado");
+        } else if (err.response?.status === 401) {
+          console.error("Token inválido o expirado");
+        }
+      })
       .finally(() => {
         setLoading(false);
       });
-  
-    // Obtener entradas del usuario
-    if (userId) {
-      axios
-        .get(gatewayUrl + `/tickets/user/${userId}/details`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        .then((res) => setTickets(res.data))
-        .catch((err) => console.error("Error al cargar las entradas:", err));
-    }
-  }, [userId, token, gatewayUrl]);
+  }, [token, username, gatewayUrl]);
 
   // Función para renderizar cada ticket con el nuevo estilo
   const renderTicket = (ticket) => (
@@ -201,7 +215,7 @@ const Profile = () => {
               title={
                 <div style={{ display: "flex", alignItems: "center" }}>
                   <TagOutlined style={{ color: COLORS.primary.main, marginRight: "8px" }} />
-                  <span style={{ color: COLORS.neutral.darker }}>My Tickets</span>
+                  <span style={{ color: COLORS.neutral.darker }}>Mis Entradas</span>
                 </div>
               }
               style={{
@@ -239,7 +253,20 @@ const Profile = () => {
           </Space>
         ) : (
           <Card style={{ textAlign: "center", borderRadius: "12px" }}>
-            <Text>Por favor, inicia sesión para ver tu perfil</Text>
+            <Empty
+              description={
+                <div>
+                  <Text style={{ color: COLORS.neutral.grey4, display: "block", marginBottom: "16px" }}>
+                    No se pudo cargar el perfil del usuario
+                  </Text>
+                  <Link to="/login">
+                    <Button type="primary">
+                      Iniciar sesión
+                    </Button>
+                  </Link>
+                </div>
+              }
+            />
           </Card>
         )}
       </Content>
