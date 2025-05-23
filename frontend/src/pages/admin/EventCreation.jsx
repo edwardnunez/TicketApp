@@ -28,7 +28,11 @@ import {
   AppstoreOutlined,
   FormOutlined,
   CheckCircleOutlined,
-  CloseCircleOutlined
+  CloseCircleOutlined,
+  PlayCircleOutlined,
+  ClockCircleOutlined,
+  StopOutlined,
+  ExclamationCircleOutlined
 } from '@ant-design/icons';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
@@ -47,6 +51,7 @@ const EventCreation = () => {
   const [locations, setLocations] = useState([]);
   const [locationOptions, setLocationOptions] = useState([]);
   const [errorMessage, setErrorMessage] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(dayjs().add(2, 'day'));
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
@@ -55,6 +60,27 @@ const EventCreation = () => {
     football: COLORS?.categories?.deportes || "#52c41a",
     cinema: COLORS?.categories?.cine || "#eb2f96",
     concert: COLORS?.categories?.conciertos || "#1890ff"
+  };
+
+  const stateColors = {
+    activo: COLORS?.status?.success || "#52c41a",
+    proximo: COLORS?.status?.info || "#1890ff",
+    finalizado: COLORS?.neutral?.grey4 || "#8c8c8c",
+    cancelado: COLORS?.status?.error || "#ff4d4f"
+  };
+
+  const stateIcons = {
+    activo: <PlayCircleOutlined />,
+    proximo: <ClockCircleOutlined />,
+    finalizado: <StopOutlined />,
+    cancelado: <ExclamationCircleOutlined />
+  };
+
+  const stateLabels = {
+    activo: 'Activo',
+    proximo: 'Próximo',
+    finalizado: 'Finalizado',
+    cancelado: 'Cancelado'
   };
 
   useEffect(() => {
@@ -88,36 +114,53 @@ const EventCreation = () => {
     }
   }, [eventType, locations]);
 
-  const onFinish = async (values) => {
-    setLoading(true);
-    setErrorMessage(null);
-    try {
-      const payload = {
-        name: values.name,
-        date: values.date.valueOf(),
-        location: values.location,
-        eventType: values.eventType,
-        description: values.description,
-        capacity: values.capacity,
-        price: values.price
-      };
-      await axios.post(gatewayUrl + "/event", payload);
-      message.success({
-        content: 'Event created successfully',
-        icon: <CheckCircleOutlined style={{ color: COLORS?.status?.success || 'green' }} />
-      });
-      navigate('/admin');
-    } catch (error) {
-      console.error("Error creating the event:", error);
-      if (error.response && error.response.data && error.response.data.error) {
-        setErrorMessage(error.response.data.error);
-      } else {
-        setErrorMessage('There was an error creating the event');
-      }
-    } finally {
-      setLoading(false);
+  // Función para determinar el estado automáticamente basado en la fecha
+  const getAutoState = (date) => {
+    if (!date) return 'proximo';
+    
+    const now = dayjs();
+    const eventDate = dayjs(date);
+    
+    if (eventDate.isBefore(now, 'day')) {
+      return 'finalizado';
+    } else if (eventDate.isSame(now, 'day')) {
+      return 'activo';
+    } else {
+      return 'proximo';
     }
   };
+
+const onFinish = async (values) => {
+  setLoading(true);
+  setErrorMessage(null);
+  try {
+    const payload = {
+      name: values.name,
+      date: values.date.valueOf(),
+      location: values.location,
+      eventType: values.eventType,
+      description: values.description,
+      capacity: values.capacity,
+      price: values.price,
+      state: 'proximo',  // Forzado a 'proximo'
+    };
+    await axios.post(gatewayUrl + "/event", payload);
+    message.success({
+      content: 'Event created successfully',
+      icon: <CheckCircleOutlined style={{ color: COLORS?.status?.success || 'green' }} />
+    });
+    navigate('/admin');
+  } catch (error) {
+    console.error("Error creating the event:", error);
+    if (error.response && error.response.data && error.response.data.error) {
+      setErrorMessage(error.response.data.error);
+    } else {
+      setErrorMessage('There was an error creating the event');
+    }
+  } finally {
+    setLoading(false);
+  }
+};
 
   const getEventTypeLabel = (type) => {
     switch(type) {
@@ -125,6 +168,14 @@ const EventCreation = () => {
       case 'cinema': return 'Cinema';
       case 'concert': return 'Concert';
       default: return type;
+    }
+  };
+
+  const handleDateChange = (date) => {
+    setSelectedDate(date);
+    if (date) {
+      const autoState = getAutoState(date);
+      form.setFieldsValue({ state: autoState });
     }
   };
 
@@ -191,6 +242,7 @@ const EventCreation = () => {
               onValuesChange={() => setErrorMessage(null)}
               initialValues={{
                 date: dayjs().add(2, 'day'),
+                state: 'proximo'
               }}
             >
               <Row gutter={24}>
@@ -244,11 +296,24 @@ const EventCreation = () => {
               </Row>
 
               <Row gutter={24}>
-                <Col xs={24} md={12}>
+                <Col xs={24} md={8}>
                   <Form.Item
                     label="Date and time"
                     name="date"
-                    rules={[{ required: true, message: 'Please select the event date and time' }]}
+                    rules={[
+                      { required: true, message: 'Please select the event date and time' },
+                      {
+                        validator: (_, value) => {
+                          if (!value) return Promise.reject('Please select the event date and time');
+                          const now = dayjs();
+
+                          if (value.isSameOrBefore(now, 'day')) {
+                            return Promise.reject('The event date must be at least one day after today');
+                          }
+                          return Promise.resolve();
+                        }
+                      }
+                    ]}
                   >
                     <DatePicker 
                       showTime 
@@ -256,11 +321,12 @@ const EventCreation = () => {
                       style={{ width: '100%' }} 
                       size="large"
                       suffixIcon={<CalendarOutlined style={{ color: COLORS?.primary?.main || '#1890ff' }} />}
+                      onChange={handleDateChange}
                     />
                   </Form.Item>
                 </Col>
 
-                <Col xs={24} md={12}>
+                <Col xs={24} md={8}>
                   <Form.Item
                     label="Location"
                     name="location"
@@ -341,7 +407,7 @@ const EventCreation = () => {
                     ]}
                   >
                     <Input 
-                      type="number" Qp
+                      type="number"
                       placeholder="Enter price" 
                       prefix="€" 
                       suffix={
@@ -356,43 +422,82 @@ const EventCreation = () => {
 
               <Divider />
 
-              {/* Preview of selected event type */}
-              {eventType && (
+              {/* Preview of selected event type and state */}
+              {(eventType || form.getFieldValue('state')) && (
                 <Row style={{ marginBottom: '24px' }}>
                   <Col span={24}>
-                    <div style={{ 
-                      padding: '16px', 
-                      backgroundColor: `${categoryColors[eventType]}10`, 
-                      borderRadius: '8px',
-                      border: `1px solid ${categoryColors[eventType]}30`
-                    }}>
-                      <Space align="start">
+                    <Space direction="vertical" size={16} style={{ width: '100%' }}>
+                      {eventType && (
                         <div style={{ 
-                          backgroundColor: categoryColors[eventType], 
-                          width: '40px', 
-                          height: '40px', 
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: COLORS?.neutral?.white || '#ffffff'
+                          padding: '16px', 
+                          backgroundColor: `${categoryColors[eventType]}10`, 
+                          borderRadius: '8px',
+                          border: `1px solid ${categoryColors[eventType]}30`
                         }}>
-                          {eventType === 'football' && <i className="fas fa-futbol"></i>}
-                          {eventType === 'cinema' && <i className="fas fa-film"></i>}
-                          {eventType === 'concert' && <i className="fas fa-music"></i>}
+                          <Space align="start">
+                            <div style={{ 
+                              backgroundColor: categoryColors[eventType], 
+                              width: '40px', 
+                              height: '40px', 
+                              borderRadius: '50%',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: COLORS?.neutral?.white || '#ffffff'
+                            }}>
+                              {eventType === 'football' && <i className="fas fa-futbol"></i>}
+                              {eventType === 'cinema' && <i className="fas fa-film"></i>}
+                              {eventType === 'concert' && <i className="fas fa-music"></i>}
+                            </div>
+                            <div>
+                              <Text strong style={{ fontSize: '16px' }}>
+                                Selected event type: {getEventTypeLabel(eventType)}
+                              </Text>
+                              <Paragraph type="secondary" style={{ marginBottom: 0 }}>
+                                {eventType === 'football' && 'Football matches require stadium locations and have designated seating.'}
+                                {eventType === 'cinema' && 'Cinema events require cinema locations and have limited capacity based on the screening room.'}
+                                {eventType === 'concert' && 'Concerts can be held in various venues with either seated or standing arrangements.'}
+                              </Paragraph>
+                            </div>
+                          </Space>
                         </div>
-                        <div>
-                          <Text strong style={{ fontSize: '16px' }}>
-                            Selected event type: {getEventTypeLabel(eventType)}
-                          </Text>
-                          <Paragraph type="secondary" style={{ marginBottom: 0 }}>
-                            {eventType === 'football' && 'Football matches require stadium locations and have designated seating.'}
-                            {eventType === 'cinema' && 'Cinema events require cinema locations and have limited capacity based on the screening room.'}
-                            {eventType === 'concert' && 'Concerts can be held in various venues with either seated or standing arrangements.'}
-                          </Paragraph>
+                      )}
+
+                      {form.getFieldValue('state') && (
+                        <div style={{ 
+                          padding: '16px', 
+                          backgroundColor: `${stateColors[form.getFieldValue('state')]}10`, 
+                          borderRadius: '8px',
+                          border: `1px solid ${stateColors[form.getFieldValue('state')]}30`
+                        }}>
+                          <Space align="start">
+                            <div style={{ 
+                              backgroundColor: stateColors[form.getFieldValue('state')], 
+                              width: '40px', 
+                              height: '40px', 
+                              borderRadius: '50%',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: COLORS?.neutral?.white || '#ffffff'
+                            }}>
+                              {stateIcons[form.getFieldValue('state')]}
+                            </div>
+                            <div>
+                              <Text strong style={{ fontSize: '16px' }}>
+                                Event State: {stateLabels[form.getFieldValue('state')]}
+                              </Text>
+                              <Paragraph type="secondary" style={{ marginBottom: 0 }}>
+                                {form.getFieldValue('state') === 'activo' && 'The event is currently active and tickets can be purchased.'}
+                                {form.getFieldValue('state') === 'proximo' && 'The event is upcoming and available for ticket sales.'}
+                                {form.getFieldValue('state') === 'finalizado' && 'The event has concluded and tickets are no longer available.'}
+                                {form.getFieldValue('state') === 'cancelado' && 'The event has been cancelled and refunds may be processed.'}
+                              </Paragraph>
+                            </div>
+                          </Space>
                         </div>
-                      </Space>
-                    </div>
+                      )}
+                    </Space>
                   </Col>
                 </Row>
               )}

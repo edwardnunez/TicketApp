@@ -13,7 +13,11 @@ const eventSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Location',
     required: true 
-  }
+  },
+  state: { type: String, 
+    enum: ['activo', 'proximo', 'finalizado','cancelado'],
+    required: true
+  },
 }, { timestamps: true });
 
 const Event = mongoose.model("Event", eventSchema);

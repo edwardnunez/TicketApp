@@ -25,7 +25,9 @@ import {
   SearchOutlined,
   UserOutlined,
   BarChartOutlined,
-  ClockCircleOutlined
+  ClockCircleOutlined,
+  CheckCircleOutlined,
+  StopOutlined
 } from '@ant-design/icons';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
@@ -49,11 +51,11 @@ const AdminDashboard = () => {
     setErrorMessage(null);
     axios.get(gatewayUrl + "/events")
       .then(res => {
-        // Asignar categoría aleatoria para demo
+        // Asignar categoría aleatoria para demo si no existe
         const eventsWithCategories = res.data.map(event => ({
           ...event,
-          category: getRandomCategory(),
-          status: getRandomStatus()
+          category: event.category || getRandomCategory(),
+          // El estado ahora viene del backend
         }));
         setEvents(eventsWithCategories);
         setLoading(false);
@@ -70,11 +72,6 @@ const AdminDashboard = () => {
     return categories[Math.floor(Math.random() * categories.length)];
   };
 
-  const getRandomStatus = () => {
-    const statuses = ["active", "pending", "sold out"];
-    return statuses[Math.floor(Math.random() * statuses.length)];
-  };
-
   const getCategoryColor = (categoryName) => {
     switch(categoryName) {
       case "Conciertos": return COLORS?.categories?.conciertos || "#1890ff";
@@ -86,12 +83,33 @@ const AdminDashboard = () => {
     }
   };
 
-  const getStatusColor = (status) => {
-    switch(status) {
-      case "active": return COLORS?.status?.success || "green";
-      case "pending": return COLORS?.status?.warning || "orange";
-      case "sold out": return COLORS?.status?.error || "red";
-      default: return COLORS?.neutral?.grey3 || "grey";
+  const getStateColor = (state) => {
+    switch(state) {
+      case "activo": return COLORS?.status?.success || "#52c41a";
+      case "proximo": return COLORS?.status?.info || "#1890ff";
+      case "finalizado": return COLORS?.neutral?.grey4 || "#8c8c8c";
+      case "cancelado": return COLORS?.status?.error || "#ff4d4f";
+      default: return COLORS?.neutral?.grey3 || "#d9d9d9";
+    }
+  };
+
+  const getStateIcon = (state) => {
+    switch(state) {
+      case "activo": return <CheckCircleOutlined />;
+      case "proximo": return <ClockCircleOutlined />;
+      case "finalizado": return <StopOutlined />;
+      case "cancelado": return <StopOutlined />;
+      default: return <ClockCircleOutlined />;
+    }
+  };
+
+  const getStateLabel = (state) => {
+    switch(state) {
+      case "activo": return "Activo";
+      case "proximo": return "Próximo";
+      case "finalizado": return "Finalizado";
+      case "cancelado": return "Cancelado";
+      default: return "Desconocido";
     }
   };
 
@@ -101,7 +119,7 @@ const AdminDashboard = () => {
 
   const columns = [
     {
-      title: 'Event name',
+      title: 'Nombre del evento',
       dataIndex: 'name',
       key: 'name',
       render: (text, record) => (
@@ -118,7 +136,7 @@ const AdminDashboard = () => {
       ),
     },
     {
-      title: 'Date',
+      title: 'Fecha',
       dataIndex: 'date',
       key: 'date',
       render: (text) => (
@@ -129,17 +147,17 @@ const AdminDashboard = () => {
       ),
     },
     {
-      title: 'Location',
+      title: 'Ubicación',
       key: 'location',
       render: (text, record) => (
         <Space>
           <EnvironmentOutlined style={{ color: COLORS?.neutral?.grey4 || "#8c8c8c" }} />
-          <span>{record.location?.name || 'Unknown'}</span>
+          <span>{record.location?.name || 'Desconocido'}</span>
         </Space>
       ),
     },
     {
-      title: 'Category',
+      title: 'Categoría',
       dataIndex: 'category',
       key: 'category',
       render: (category) => (
@@ -149,40 +167,53 @@ const AdminDashboard = () => {
       ),
     },
     {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
-      render: (status) => (
-        <Tag color={getStatusColor(status)} style={{ textTransform: 'capitalize', borderRadius: '4px' }}>
-          {status}
+      title: 'Estado',
+      dataIndex: 'state',
+      key: 'state',
+      render: (state) => (
+        <Tag 
+          color={getStateColor(state)} 
+          icon={getStateIcon(state)}
+          style={{ 
+            borderRadius: '4px',
+            fontWeight: '500',
+            padding: '4px 8px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '4px'
+          }}
+        >
+          {getStateLabel(state)}
         </Tag>
       ),
     },
     {
-      title: 'Actions',
+      title: 'Acciones',
       key: 'actions',
       render: (text, record) => (
         <Space>
-          <Tooltip title="View details">
+          <Tooltip title="Ver detalles">
             <Link to={`/event/${record._id}`}>
               <Button 
                 type="primary" 
                 icon={<EyeOutlined />} 
+                size="small"
                 style={{ 
                   backgroundColor: COLORS?.primary?.main || "#1890ff",
                   borderColor: COLORS?.primary?.main || "#1890ff"
                 }}
               >
-                View
+                Ver
               </Button>
             </Link>
           </Tooltip>
-          <Tooltip title="Edit event">
+          <Tooltip title="Editar evento">
             <Button 
               icon={<AppstoreOutlined />}
+              size="small"
               style={{ borderColor: COLORS?.neutral?.grey3 || "#d9d9d9" }}
             >
-              Edit
+              Editar
             </Button>
           </Tooltip>
         </Space>
@@ -190,31 +221,31 @@ const AdminDashboard = () => {
     },
   ];
 
-  // Dashboard stats
+  // Dashboard stats actualizadas con los nuevos estados
   const stats = [
     { 
-      title: 'Total Events', 
+      title: 'Total de Eventos', 
       value: events.length, 
       icon: <AppstoreOutlined />, 
       color: COLORS?.primary?.main || "#1890ff" 
     },
     { 
-      title: 'Active Events', 
-      value: events.filter(e => e.status === 'active').length, 
-      icon: <BarChartOutlined />, 
-      color: COLORS?.status?.success || "green"
+      title: 'Eventos Activos', 
+      value: events.filter(e => e.state === 'activo').length, 
+      icon: <CheckCircleOutlined />, 
+      color: COLORS?.status?.success || "#52c41a"
     },
     { 
-      title: 'Upcoming', 
-      value: events.filter(e => e.status === 'pending').length, 
+      title: 'Próximos Eventos', 
+      value: events.filter(e => e.state === 'proximo').length, 
       icon: <ClockCircleOutlined />, 
-      color: COLORS?.status?.warning || "orange"
+      color: COLORS?.status?.info || "#1890ff"
     },
     { 
-      title: 'Sold Out', 
-      value: events.filter(e => e.status === 'sold out').length, 
-      icon: <UserOutlined />, 
-      color: COLORS?.status?.error || "red"
+      title: 'Finalizados', 
+      value: events.filter(e => e.state === 'finalizado').length, 
+      icon: <BarChartOutlined />, 
+      color: COLORS?.neutral?.grey4 || "#8c8c8c"
     }
   ];
 
@@ -227,8 +258,8 @@ const AdminDashboard = () => {
             <Col>
               <Breadcrumb 
                 items={[
-                  { title: 'Home' },
-                  { title: 'Admin' }
+                  { title: 'Inicio' },
+                  { title: 'Administración' }
                 ]}
                 style={{ marginBottom: '8px' }}
               />
@@ -242,7 +273,7 @@ const AdminDashboard = () => {
                 }}
               >
                 <DashboardOutlined style={{ marginRight: '12px', color: COLORS?.primary?.main || "#1890ff" }} />
-                Admin Dashboard
+                Panel de Administración
               </Title>
             </Col>
             <Col>
@@ -258,7 +289,7 @@ const AdminDashboard = () => {
                   boxShadow: '0 2px 4px rgba(24, 144, 255, 0.2)'
                 }}
               >
-                Create new event
+                Crear nuevo evento
               </Button>
             </Col>
           </Row>
@@ -288,7 +319,7 @@ const AdminDashboard = () => {
                 >
                   <Statistic
                     title={
-                      <Text style={{ fontSize: '16px', color: COLORS?.neutral?.grey4 || "#8c8c8c" }}>
+                      <Text style={{ fontSize: '14px', color: COLORS?.neutral?.grey4 || "#8c8c8c", fontWeight: '500' }}>
                         {stat.title}
                       </Text>
                     }
@@ -296,16 +327,16 @@ const AdminDashboard = () => {
                     valueStyle={{ color: stat.color, fontSize: '28px', fontWeight: 'bold' }}
                     prefix={
                       <span style={{ 
-                        backgroundColor: `${stat.color}10`, // 10% opacity
+                        backgroundColor: `${stat.color}15`, // 15% opacity
                         width: '40px',
                         height: '40px',
                         borderRadius: '8px',
                         display: 'inline-flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        marginRight: '8px'
+                        marginRight: '12px'
                       }}>
-                        {React.cloneElement(stat.icon, { style: { fontSize: '22px', color: stat.color } })}
+                        {React.cloneElement(stat.icon, { style: { fontSize: '20px', color: stat.color } })}
                       </span>
                     }
                   />
@@ -325,7 +356,7 @@ const AdminDashboard = () => {
             <Row gutter={16} justify="space-between" align="middle">
               <Col xs={24} md={8}>
                 <Input
-                  placeholder="Search events..."
+                  placeholder="Buscar eventos..."
                   prefix={<SearchOutlined style={{ color: COLORS?.neutral?.grey3 || "#d9d9d9" }} />}
                   allowClear
                   onChange={(e) => setSearchText(e.target.value)}
@@ -339,13 +370,19 @@ const AdminDashboard = () => {
                     icon={<CalendarOutlined />} 
                     style={{ borderRadius: '6px' }}
                   >
-                    Date
+                    Fecha
                   </Button>
                   <Button 
                     icon={<AppstoreOutlined />} 
                     style={{ borderRadius: '6px' }}
                   >
-                    Category
+                    Categoría
+                  </Button>
+                  <Button 
+                    icon={<CheckCircleOutlined />} 
+                    style={{ borderRadius: '6px' }}
+                  >
+                    Estado
                   </Button>
                   <Button 
                     type="primary" 
@@ -356,7 +393,7 @@ const AdminDashboard = () => {
                       borderRadius: '6px'
                     }}
                   >
-                    Search
+                    Buscar
                   </Button>
                 </Space>
               </Col>
@@ -372,7 +409,7 @@ const AdminDashboard = () => {
                   marginRight: '8px', 
                   fontSize: '20px' 
                 }} />
-                <span style={{ fontSize: '18px' }}>Events List</span>
+                <span style={{ fontSize: '18px', fontWeight: '600' }}>Lista de Eventos</span>
               </div>
             }
             style={{ 
@@ -380,7 +417,7 @@ const AdminDashboard = () => {
               boxShadow: '0 1px 2px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.07)'
             }}
             extra={
-              <Text type="secondary">Total: {filteredEvents.length} events</Text>
+              <Text type="secondary">Total: {filteredEvents.length} eventos</Text>
             }
           >
             <Table
@@ -391,7 +428,7 @@ const AdminDashboard = () => {
               pagination={{ 
                 pageSize: 10,
                 showSizeChanger: true,
-                showTotal: (total) => `Total ${total} items`,
+                showTotal: (total, range) => `${range[0]}-${range[1]} de ${total} elementos`,
                 style: {
                   marginTop: '16px'
                 }
@@ -399,6 +436,10 @@ const AdminDashboard = () => {
               style={{ 
                 borderRadius: '8px',
                 overflow: 'hidden'
+              }}
+              rowClassName={(record) => {
+                // Añadir clase especial para eventos cancelados
+                return record.state === 'cancelado' ? 'cancelled-event-row' : '';
               }}
             />
           </Card>

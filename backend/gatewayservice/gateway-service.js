@@ -60,7 +60,12 @@ app.get("/users", async (req, res) => {
 
 app.get("/users/search", async (req, res) => {
   try {
-    const usersResponse = await axios.get(`${userServiceUrl}/users/search`);
+    const { username, userId } = req.query;
+
+    const queryParams = username ? `?username=${username}` : userId ? `?userId=${userId}` : '';
+
+    const usersResponse = await axios.get(`http://userservice:8001/users/search${queryParams}`);
+
     res.json(usersResponse.data);
   } catch (error) {
     returnError(res, error);

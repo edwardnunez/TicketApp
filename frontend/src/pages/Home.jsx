@@ -49,39 +49,6 @@ const FEATURED_CATEGORIES = [
   { name: "Cine", color: COLORS.categories.cine }
 ];
 
-const FEATURED_EVENTS = [
-  {
-    _id: "feat1",
-    name: "Festival de Música Indie",
-    date: dayjs().add(7, 'day').format("YYYY-MM-DD"),
-    location: "Estadio Principal",
-    image: "/images/featured-1.jpg",
-    category: "Festivales",
-    price: "45€",
-    featured: true
-  },
-  {
-    _id: "feat2",
-    name: "Obra de Teatro 'La Tempestad'",
-    date: dayjs().add(14, 'day').format("YYYY-MM-DD"),
-    location: "Teatro Nacional",
-    image: "/images/featured-2.jpg",
-    category: "Teatro",
-    price: "32€",
-    featured: true
-  },
-  {
-    _id: "feat3",
-    name: "Partido Final de Temporada",
-    date: dayjs().add(5, 'day').format("YYYY-MM-DD"),
-    location: "Arena Deportiva",
-    image: "/images/featured-3.jpg",
-    category: "Deportes",
-    price: "70€",
-    featured: true
-  }
-];
-
 const Home = () => {
   const [allEvents, setAllEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
@@ -92,8 +59,6 @@ const Home = () => {
   const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
 
   useEffect(() => {
-
-    // Cargar todos los eventos
     setLoading(true);
     axios.get(`${gatewayUrl}/events`)
       .then((res) => {
@@ -101,15 +66,12 @@ const Home = () => {
           ...event,
           date: dayjs(event.date).format("YYYY-MM-DD"),
           image: event.image || "/images/default.jpg",
-          // Asignar categoría aleatoria para demo
+          // Asignar categoría aleatoria (si quieres mantener la asignación)
           category: FEATURED_CATEGORIES[Math.floor(Math.random() * FEATURED_CATEGORIES.length)].name
         }));
 
-        // Añadir eventos destacados para demo
-        const allEventsWithFeatured = [...FEATURED_EVENTS, ...events];
-        
-        setAllEvents(allEventsWithFeatured);
-        setFilteredEvents(allEventsWithFeatured);
+        setAllEvents(events);
+        setFilteredEvents(events);
         setLoading(false);
       })
       .catch((err) => {
@@ -368,74 +330,6 @@ const Home = () => {
               </div>
             </div>
 
-            {/* Eventos destacados - Carrusel */}
-            <div>
-              <Title level={4} style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', color: COLORS.neutral.dark }}>
-                <FireOutlined style={{ marginRight: '8px', color: COLORS.status.warning }} />
-                Eventos Destacados
-              </Title>
-              
-              <Carousel 
-                autoplay 
-                effect="fade"
-                autoplaySpeed={5000}
-                style={{ 
-                  marginBottom: '24px',
-                  borderRadius: '8px',
-                  overflow: 'hidden',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                }}
-              >
-                {FEATURED_EVENTS.map(event => (
-                  <div key={event._id}>
-                    <div style={{ 
-                      position: 'relative', 
-                      height: '300px',
-                      backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.6)), url(${event.image})`,
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center',
-                      display: 'flex',
-                      alignItems: 'flex-end',
-                      padding: '30px'
-                    }}>
-                      <div style={{ color: COLORS.neutral.white, maxWidth: '600px' }}>
-                        <Tag color={getCategoryColor(event.category)} style={{ marginBottom: '10px' }}>
-                          {event.category}
-                        </Tag>
-                        <Title level={2} style={{ color: COLORS.neutral.white, margin: '0 0 8px 0' }}>
-                          {event.name}
-                        </Title>
-                        <Space>
-                          <Text style={{ color: COLORS.neutral.white }}>
-                            <CalendarOutlined style={{ marginRight: '5px' }} />
-                            {dayjs(event.date).format("DD MMM YYYY")}
-                          </Text>
-                          <Text style={{ color: COLORS.neutral.white }}>
-                            <EnvironmentOutlined style={{ marginRight: '5px' }} />
-                            {event.location}
-                          </Text>
-                        </Space>
-                        <div style={{ marginTop: '16px' }}>
-                          <Link to={`/event/${event._id}`}>
-                            <Button 
-                              type="primary" 
-                              size="large"
-                              style={{
-                                backgroundColor: COLORS.primary.main,
-                                borderColor: COLORS.primary.main
-                              }}
-                            >
-                              Ver evento
-                            </Button>
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </Carousel>
-            </div>
-
             {/* Contenido principal con tabs */}
             <Tabs 
               defaultActiveKey="1" 
@@ -470,7 +364,7 @@ const Home = () => {
                     <Row gutter={[24, 24]}>
                       {filteredEvents.map((event) => (
                         <Col xs={24} sm={12} md={8} lg={6} key={event._id}>
-                          <EventCard event={event} featured={event.featured} />
+                          <EventCard event={event} />
                         </Col>
                       ))}
                     </Row>
@@ -496,23 +390,6 @@ const Home = () => {
                     </Empty>
                   )
                 )}
-              </TabPane>
-              <TabPane 
-                tab={
-                  <span>
-                    <TeamOutlined style={{ color: COLORS.primary.dark }} />
-                    Populares
-                  </span>
-                } 
-                key="3"
-              >
-                <Row gutter={[24, 24]}>
-                  {FEATURED_EVENTS.map((event) => (
-                    <Col xs={24} sm={12} md={8} lg={8} key={event._id}>
-                      <EventCard event={event} featured={true} />
-                    </Col>
-                  ))}
-                </Row>
               </TabPane>
             </Tabs>
           </Space>

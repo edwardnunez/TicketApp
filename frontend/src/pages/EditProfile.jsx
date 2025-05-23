@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { 
   Layout, 
   Typography, 
@@ -46,6 +46,8 @@ const EditProfile = () => {
   const [userData, setUserData] = useState({ name: "", email: "", username: "" });
   const [userId, setUserId] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const navigate = useNavigate();
   
   const gatewayUrl = process.env.REACT_API_ENDPOINT || "http://localhost:8000";
   
@@ -88,22 +90,27 @@ const EditProfile = () => {
     setSelectedAvatar(e.target.value);
   };
 
-  // Manejar envío del formulario
-  const handleSubmit = (values) => {
-    const updatedUser = { ...values, avatar: selectedAvatar };
+const handleSubmit = (values) => {
+  const updatedUser = { ...values, avatar: selectedAvatar };
 
-    axios
-      .put(gatewayUrl+`/edit-user/${userId}`, updatedUser, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => {
-        message.success("¡Perfil actualizado correctamente!");
-      })
-      .catch((err) => {
-        console.error("Error al actualizar el perfil:", err);
-        message.error("No se pudo actualizar el perfil.");
-      });
-  };
+  axios
+    .put(gatewayUrl + `/edit-user/${userId}`, updatedUser, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    .then((res) => {
+      message.success("¡Perfil actualizado correctamente!");
+
+      if (values.username && values.username !== username) {
+        localStorage.setItem("username", values.username);
+      }
+
+      navigate("/profile");
+    })
+    .catch((err) => {
+      console.error("Error al actualizar el perfil:", err);
+      message.error("No se pudo actualizar el perfil.");
+    });
+};
 
   return (
     <Layout style={{ backgroundColor: COLORS.neutral.grey1, minHeight: "100vh" }}>
