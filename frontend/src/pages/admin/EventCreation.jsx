@@ -89,8 +89,8 @@ const EventCreation = () => {
         const response = await axios.get(gatewayUrl + "/locations");
         setLocations(response.data);
       } catch (error) {
-        console.error("Error fetching locations:", error);
-        setErrorMessage("Failed to load locations");
+        console.error("Error obteniendo ubicaciones:", error);
+        setErrorMessage("Error al cargar las ubicaciones");
       }
     };
     fetchLocations();
@@ -146,16 +146,16 @@ const onFinish = async (values) => {
     };
     await axios.post(gatewayUrl + "/event", payload);
     message.success({
-      content: 'Event created successfully',
+      content: 'Evento creado exitosamente',
       icon: <CheckCircleOutlined style={{ color: COLORS?.status?.success || 'green' }} />
     });
     navigate('/admin');
   } catch (error) {
-    console.error("Error creating the event:", error);
+    console.error("Error creando el evento:", error);
     if (error.response && error.response.data && error.response.data.error) {
       setErrorMessage(error.response.data.error);
     } else {
-      setErrorMessage('There was an error creating the event');
+      setErrorMessage('Hubo un error al crear el evento');
     }
   } finally {
     setLoading(false);
@@ -164,9 +164,9 @@ const onFinish = async (values) => {
 
   const getEventTypeLabel = (type) => {
     switch(type) {
-      case 'football': return 'Football match';
-      case 'cinema': return 'Cinema';
-      case 'concert': return 'Concert';
+      case 'football': return 'Partido de fútbol';
+      case 'cinema': return 'Cine';
+      case 'concert': return 'Concierto';
       default: return type;
     }
   };
@@ -189,10 +189,10 @@ const onFinish = async (values) => {
               <Breadcrumb 
                 items={[
                   { 
-                    title: <Link to="/admin">Admin</Link> 
+                    title: <Link to="/admin">Administración</Link> 
                   },
                   { 
-                    title: 'Create Event' 
+                    title: 'Crear Evento' 
                   }
                 ]}
                 style={{ marginBottom: '8px' }}
@@ -207,10 +207,10 @@ const onFinish = async (values) => {
                 }}
               >
                 <FormOutlined style={{ marginRight: '12px', color: COLORS?.primary?.main || "#1890ff" }} />
-                Create New Event
+                Crear nuevo evento
               </Title>
               <Paragraph type="secondary" style={{ marginTop: '8px' }}>
-                Fill in the details below to create a new event in the system
+                Complete los detalles a continuación para crear un nuevo evento en el sistema
               </Paragraph>
             </Col>
           </Row>
@@ -248,12 +248,12 @@ const onFinish = async (values) => {
               <Row gutter={24}>
                 <Col xs={24} md={16}>
                   <Form.Item
-                    label="Event name"
+                    label="Nombre del evento"
                     name="name"
-                    rules={[{ required: true, message: 'Please enter the event name' }]}
+                    rules={[{ required: true, message: 'Por favor ingrese el nombre del evento' }]}
                   >
                     <Input 
-                      placeholder="Enter event name" 
+                      placeholder="Ingrese el nombre del evento" 
                       size="large" 
                       prefix={<AppstoreOutlined style={{ color: COLORS?.neutral?.grey3 || '#d9d9d9' }} />} 
                     />
@@ -262,33 +262,33 @@ const onFinish = async (values) => {
 
                 <Col xs={24} md={8}>
                   <Form.Item
-                    label="Event type"
+                    label="Tipo de evento"
                     name="eventType"
-                    rules={[{ required: true, message: 'Please select the event type' }]}
+                    rules={[{ required: true, message: 'Por favor seleccione el tipo de evento' }]}
                   >
                     <Select
-                      placeholder="Select event type"
+                      placeholder="Seleccionar tipo de evento"
                       onChange={(value) => setEventType(value)}
                       size="large"
                       suffixIcon={<TagOutlined style={{ color: COLORS?.primary?.main || '#1890ff' }} />}
                     >
                       <Option value="football">
                         <Tag color={categoryColors.football} style={{ marginRight: '8px' }}>
-                          Football
+                          Fútbol
                         </Tag>
-                        Football match
+                        Partido de fútbol
                       </Option>
                       <Option value="cinema">
                         <Tag color={categoryColors.cinema} style={{ marginRight: '8px' }}>
-                          Cinema
+                          Cine
                         </Tag>
-                        Cinema
+                        Cine
                       </Option>
                       <Option value="concert">
                         <Tag color={categoryColors.concert} style={{ marginRight: '8px' }}>
-                          Concert
+                          Concierto
                         </Tag>
-                        Concert
+                        Concierto
                       </Option>
                     </Select>
                   </Form.Item>
@@ -298,17 +298,17 @@ const onFinish = async (values) => {
               <Row gutter={24}>
                 <Col xs={24} md={8}>
                   <Form.Item
-                    label="Date and time"
+                    label="Fecha y hora"
                     name="date"
                     rules={[
-                      { required: true, message: 'Please select the event date and time' },
+                      { required: true, message: 'Por favor seleccione la fecha y hora del evento' },
                       {
                         validator: (_, value) => {
-                          if (!value) return Promise.reject('Please select the event date and time');
+                          if (!value) return Promise.reject('Por favor seleccione la fecha y hora del evento');
                           const now = dayjs();
 
                           if (value.isSameOrBefore(now, 'day')) {
-                            return Promise.reject('The event date must be at least one day after today');
+                            return Promise.reject('La fecha del evento debe ser al menos un día después de hoy');
                           }
                           return Promise.resolve();
                         }
@@ -322,18 +322,19 @@ const onFinish = async (values) => {
                       size="large"
                       suffixIcon={<CalendarOutlined style={{ color: COLORS?.primary?.main || '#1890ff' }} />}
                       onChange={handleDateChange}
+                      placeholder="Seleccionar fecha y hora"
                     />
                   </Form.Item>
                 </Col>
 
                 <Col xs={24} md={8}>
                   <Form.Item
-                    label="Location"
+                    label="Ubicación"
                     name="location"
-                    rules={[{ required: true, message: 'Please select the event location' }]}
+                    rules={[{ required: true, message: 'Por favor seleccione la ubicación del evento' }]}
                   >
                     <Select 
-                      placeholder="Select location"
+                      placeholder="Seleccionar ubicación"
                       size="large"
                       suffixIcon={<EnvironmentOutlined style={{ color: COLORS?.primary?.main || '#1890ff' }} />}
                       disabled={!eventType}
@@ -345,10 +346,10 @@ const onFinish = async (values) => {
                         !eventType ? 
                           <div style={{ textAlign: 'center', padding: '8px' }}>
                             <InfoCircleOutlined style={{ marginRight: '8px' }} />
-                            Please select an event type first
+                            Por favor seleccione primero un tipo de evento
                           </div> : 
                           <div style={{ textAlign: 'center', padding: '8px' }}>
-                            No locations found
+                            No se encontraron ubicaciones
                           </div>
                       }
                     >
@@ -365,12 +366,12 @@ const onFinish = async (values) => {
               <Row gutter={24}>
                 <Col xs={24}>
                   <Form.Item
-                    label="Description"
+                    label="Descripción"
                     name="description"
-                    rules={[{ required: true, message: 'Please enter event description' }]}
+                    rules={[{ required: true, message: 'Por favor ingrese la descripción del evento' }]}
                   >
                     <Input.TextArea 
-                      placeholder="Enter event description" 
+                      placeholder="Ingrese la descripción del evento" 
                       autoSize={{ minRows: 4, maxRows: 6 }} 
                       showCount 
                       maxLength={500} 
@@ -382,36 +383,36 @@ const onFinish = async (values) => {
               <Row gutter={24}>
                 <Col xs={24} md={12}>
                   <Form.Item
-                    label="Capacity"
+                    label="Capacidad"
                     name="capacity"
                     rules={[
-                      { required: true, message: 'Please enter the capacity' },
-                      { type: 'number', min: 1, message: 'Capacity must be at least 1', transform: (value) => Number(value) }
+                      { required: true, message: 'Por favor ingrese la capacidad' },
+                      { type: 'number', min: 1, message: 'La capacidad debe ser al menos 1', transform: (value) => Number(value) }
                     ]}
                   >
                     <Input 
                       type="number" 
-                      placeholder="Enter capacity" 
-                      suffix={<span style={{ color: COLORS?.neutral?.grey3 || '#d9d9d9' }}>seats</span>} 
+                      placeholder="Ingrese la capacidad" 
+                      suffix={<span style={{ color: COLORS?.neutral?.grey3 || '#d9d9d9' }}>asientos</span>} 
                     />
                   </Form.Item>
                 </Col>
                 
                 <Col xs={24} md={12}>
                   <Form.Item
-                    label="Price"
+                    label="Precio"
                     name="price"
                     rules={[
-                      { required: true, message: 'Please enter the price' },
-                      { type: 'number', min: 0, message: 'Price must be at least 0', transform: (value) => Number(value) }
+                      { required: true, message: 'Por favor ingrese el precio' },
+                      { type: 'number', min: 0, message: 'El precio debe ser al menos 0', transform: (value) => Number(value) }
                     ]}
                   >
                     <Input 
                       type="number"
-                      placeholder="Enter price" 
+                      placeholder="Ingrese el precio" 
                       prefix="€" 
                       suffix={
-                        <Tooltip title="Base price per ticket">
+                        <Tooltip title="Precio base por entrada">
                           <InfoCircleOutlined style={{ color: COLORS?.neutral?.grey3 || '#d9d9d9' }} />
                         </Tooltip>
                       } 
@@ -451,12 +452,12 @@ const onFinish = async (values) => {
                             </div>
                             <div>
                               <Text strong style={{ fontSize: '16px' }}>
-                                Selected event type: {getEventTypeLabel(eventType)}
+                                Tipo de evento seleccionado: {getEventTypeLabel(eventType)}
                               </Text>
                               <Paragraph type="secondary" style={{ marginBottom: 0 }}>
-                                {eventType === 'football' && 'Football matches require stadium locations and have designated seating.'}
-                                {eventType === 'cinema' && 'Cinema events require cinema locations and have limited capacity based on the screening room.'}
-                                {eventType === 'concert' && 'Concerts can be held in various venues with either seated or standing arrangements.'}
+                                {eventType === 'football' && 'Los partidos de fútbol requieren ubicaciones de estadio y tienen asientos designados.'}
+                                {eventType === 'cinema' && 'Los eventos de cine requieren ubicaciones de cine y tienen capacidad limitada basada en la sala de proyección.'}
+                                {eventType === 'concert' && 'Los conciertos pueden realizarse en varios lugares con arreglos de asientos o de pie.'}
                               </Paragraph>
                             </div>
                           </Space>
@@ -485,13 +486,13 @@ const onFinish = async (values) => {
                             </div>
                             <div>
                               <Text strong style={{ fontSize: '16px' }}>
-                                Event State: {stateLabels[form.getFieldValue('state')]}
+                                Estado del Evento: {stateLabels[form.getFieldValue('state')]}
                               </Text>
                               <Paragraph type="secondary" style={{ marginBottom: 0 }}>
-                                {form.getFieldValue('state') === 'activo' && 'The event is currently active and tickets can be purchased.'}
-                                {form.getFieldValue('state') === 'proximo' && 'The event is upcoming and available for ticket sales.'}
-                                {form.getFieldValue('state') === 'finalizado' && 'The event has concluded and tickets are no longer available.'}
-                                {form.getFieldValue('state') === 'cancelado' && 'The event has been cancelled and refunds may be processed.'}
+                                {form.getFieldValue('state') === 'activo' && 'El evento está actualmente activo y se pueden comprar entradas.'}
+                                {form.getFieldValue('state') === 'proximo' && 'El evento está próximo y disponible para la venta de entradas.'}
+                                {form.getFieldValue('state') === 'finalizado' && 'El evento ha concluido y las entradas ya no están disponibles.'}
+                                {form.getFieldValue('state') === 'cancelado' && 'El evento ha sido cancelado y se pueden procesar reembolsos.'}
                               </Paragraph>
                             </div>
                           </Space>
@@ -509,7 +510,7 @@ const onFinish = async (values) => {
                     onClick={() => navigate('/admin')}
                     style={{ borderRadius: '6px' }}
                   >
-                    Cancel
+                    Cancelar
                   </Button>
                 </Col>
                 <Col>
@@ -519,7 +520,7 @@ const onFinish = async (values) => {
                       onClick={() => form.resetFields()}
                       style={{ borderRadius: '6px' }}
                     >
-                      Reset
+                      Restablecer
                     </Button>
                     <Button 
                       type="primary" 
@@ -532,7 +533,7 @@ const onFinish = async (values) => {
                         borderRadius: '6px'
                       }}
                     >
-                      Create Event
+                      Crear Evento
                     </Button>
                   </Space>
                 </Col>

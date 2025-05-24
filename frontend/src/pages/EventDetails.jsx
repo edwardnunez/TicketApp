@@ -349,7 +349,6 @@ const EventDetails = () => {
             </Col>
           </Row>
 
-          {/* Descripción del evento */}
           <Row style={{ marginTop: '48px' }}>
             <Col span={24}>
               <Card style={{ 
@@ -378,7 +377,6 @@ const EventDetails = () => {
                   {event.description || 'No hay descripción disponible para este evento.'}
                 </Paragraph>
 
-                {/* Información adicional */}
                 <div style={{ marginTop: '24px', padding: '16px', backgroundColor: COLORS.neutral.grey1, borderRadius: '8px' }}>
                   <Title level={5} style={{ color: COLORS.neutral.darker, marginBottom: '12px' }}>
                     Información adicional
