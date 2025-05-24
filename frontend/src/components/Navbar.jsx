@@ -57,7 +57,7 @@ const Navbar = () => {
       </Link>
 
       <nav style={{ display: "flex", alignItems: "center", gap: 24 }}>
-        <Link to="/events" style={{ color: COLORS.neutral.white, fontWeight: "500" }}>
+        <Link to="/" style={{ color: COLORS.neutral.white, fontWeight: "500" }}>
           Eventos
         </Link>
         <Link to="/admin" style={{ color: COLORS.neutral.white, fontWeight: "500" }}>
