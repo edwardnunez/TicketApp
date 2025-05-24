@@ -16,7 +16,8 @@ import {
   Divider,
   Breadcrumb,
   Tooltip,
-  Tag
+  Tag,
+  Upload
 } from 'antd';
 import { 
   CalendarOutlined, 
@@ -32,13 +33,13 @@ import {
   PlayCircleOutlined,
   ClockCircleOutlined,
   StopOutlined,
-  ExclamationCircleOutlined
+  ExclamationCircleOutlined,
+  UploadOutlined
 } from '@ant-design/icons';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import dayjs from 'dayjs';
 
-// Importamos el esquema de colores (asumiendo que está disponible)
 import { COLORS } from "../../components/colorscheme";
 
 const { Content } = Layout;
@@ -114,13 +115,10 @@ const EventCreation = () => {
     }
   }, [eventType, locations]);
 
-  // Función para determinar el estado automáticamente basado en la fecha
   const getAutoState = (date) => {
     if (!date) return 'proximo';
-    
     const now = dayjs();
     const eventDate = dayjs(date);
-    
     if (eventDate.isBefore(now, 'day')) {
       return 'finalizado';
     } else if (eventDate.isSame(now, 'day')) {
@@ -130,37 +128,41 @@ const EventCreation = () => {
     }
   };
 
-const onFinish = async (values) => {
-  setLoading(true);
-  setErrorMessage(null);
-  try {
-    const payload = {
-      name: values.name,
-      date: values.date.valueOf(),
-      location: values.location,
-      eventType: values.eventType,
-      description: values.description,
-      capacity: values.capacity,
-      price: values.price,
-      state: 'proximo',  // Forzado a 'proximo'
-    };
-    await axios.post(gatewayUrl + "/event", payload);
-    message.success({
-      content: 'Evento creado exitosamente',
-      icon: <CheckCircleOutlined style={{ color: COLORS?.status?.success || 'green' }} />
-    });
-    navigate('/admin');
-  } catch (error) {
-    console.error("Error creando el evento:", error);
-    if (error.response && error.response.data && error.response.data.error) {
-      setErrorMessage(error.response.data.error);
-    } else {
-      setErrorMessage('Hubo un error al crear el evento');
+  const onFinish = async (values) => {
+    setLoading(true);
+    setErrorMessage(null);
+    try {
+      const formData = new FormData();
+      formData.append('name', values.name);
+      formData.append('date', values.date.valueOf());
+      formData.append('location', values.location);
+      formData.append('eventType', values.eventType);
+      formData.append('description', values.description);
+      formData.append('capacity', values.capacity);
+      formData.append('price', values.price);
+      formData.append('state', 'proximo');
+
+      // Extraemos el archivo de la subida si existe
+      if (values.image && values.image.file.originFileObj) {
+        formData.append('image', values.image.file.originFileObj);
+      }
+
+      await axios.post(gatewayUrl + "/event", formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      message.success({
+        content: 'Evento creado exitosamente',
+        icon: <CheckCircleOutlined style={{ color: COLORS?.status?.success || 'green' }} />
+      });
+      navigate('/admin');
+    } catch (error) {
+      console.error("Error creando el evento:", error);
+      setErrorMessage(error.response?.data?.error || 'Hubo un error al crear el evento');
+    } finally {
+      setLoading(false);
     }
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const getEventTypeLabel = (type) => {
     switch(type) {
@@ -177,6 +179,15 @@ const onFinish = async (values) => {
       const autoState = getAutoState(date);
       form.setFieldsValue({ state: autoState });
     }
+  };
+
+  // Props para el Upload: evitar upload automático, solo seleccionar archivo y mantenerlo en el formulario
+  const uploadProps = {
+    beforeUpload: file => {
+      return false;
+    },
+    maxCount: 1,
+    accept: 'image/*'
   };
 
   return (
@@ -417,6 +428,20 @@ const onFinish = async (values) => {
                         </Tooltip>
                       } 
                     />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row gutter={24}>
+                <Col xs={24}>
+                  <Form.Item
+                    label="Imagen del evento"
+                    name="image"
+                    valuePropName="file"
+                    getValueFromEvent={e => e && e.fileList && e.fileList.length > 0 ? e : null}
+                  >
+                    <Upload {...uploadProps} listType="picture" maxCount={1}>
+                      <Button icon={<UploadOutlined />}>Seleccionar imagen</Button>
+                    </Upload>
                   </Form.Item>
                 </Col>
               </Row>

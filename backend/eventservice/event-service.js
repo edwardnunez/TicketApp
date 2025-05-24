@@ -4,6 +4,8 @@ import cors from 'cors';
 import Event from './event-model.js';
 import Location from './location-model.js';
 import seedLocations from './seed.js';
+import multer from 'multer';
+import path from 'path';
 
 const app = express();
 const port = 8003;
@@ -85,43 +87,43 @@ seedDatabase().catch(error => {
   console.error('Error seeding database:', error);
 });
 
-app.post("/event", async (req, res) => {
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'images/events');
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname)); // Nombre único
+  }
+});
+const upload = multer({ storage });
+
+app.use('/images/events', express.static('images/events'));
+
+app.post("/event", upload.single('image'), async (req, res) => {
   try {
     const { name, date, location, eventType, description } = req.body;
-
     if (!name || !date || !location || !eventType) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
     const eventDescription = description || `Evento de ${eventType}`;
-
     const locationDoc = await LocationModel.findById(location);
+    if (!locationDoc) return res.status(400).json({ error: "Location not found" });
 
-    if (!locationDoc) {
-      return res.status(400).json({ error: "Location not found" });
-    }
+    const imagePath = req.file ? `/images/events/${req.file.filename}` : '/images/default.jpg';
 
-    let repeatedEvent = await EventModel.findOne({ name, date, eventType, location });
+    const newEvent = new EventModel({
+      name,
+      date,
+      location: locationDoc._id,
+      type: eventType,
+      description: eventDescription,
+      image: imagePath,
+      state: 'proximo'
+    });
 
-    let locationNotAvailable = await EventModel.findOne({ date, location });
-    if (locationNotAvailable) {
-      return res.status(400).json({ error: "Location is not available for the selected date" });
-    }
-    if (repeatedEvent) {
-      return res.status(400).json({ error: "Event already exists" });
-    } else {
-      const newEvent = new EventModel({
-        name: name,
-        date: date,
-        location: locationDoc._id,
-        type: eventType,
-        description: eventDescription
-      });
-
-      await newEvent.save();
-      res.status(201).json(newEvent);
-    }
-
+    await newEvent.save();
+    res.status(201).json(newEvent);
   } catch (error) {
     console.error("Error creating event:", error);
     res.status(500).json({ error: "Internal Server Error", details: error.message });
