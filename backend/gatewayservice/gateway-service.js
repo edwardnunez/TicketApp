@@ -60,7 +60,12 @@ app.get("/users", async (req, res) => {
 
 app.get("/users/search", async (req, res) => {
   try {
-    const usersResponse = await axios.get(`${userServiceUrl}/users/search`);
+    const { username, userId } = req.query;
+
+    const queryParams = username ? `?username=${username}` : userId ? `?userId=${userId}` : '';
+
+    const usersResponse = await axios.get(`http://userservice:8001/users/search${queryParams}`);
+
     res.json(usersResponse.data);
   } catch (error) {
     returnError(res, error);
@@ -81,6 +86,15 @@ app.put("/edit-user/:userId", async (req, res) => {
     } else {
       res.status(500).json({ error: "Internal Server Error" });
     }
+  }
+});
+
+app.post("/verifyToken", async (req, res) => {
+  try {
+    const userResponse = await axios.post(`${userServiceUrl}/verifyToken`, req.body);
+    res.json(userResponse.data);
+  } catch (error) {
+    returnError(res, error);
   }
 });
 
@@ -139,6 +153,33 @@ app.get("/events", async (req, res) => {
 app.get("/events/:eventId", async (req, res) => {
   try {
     const eventResponse = await axios.get(`${eventServiceUrl}/events/${req.params.eventId}`);
+    res.json(eventResponse.data);
+  } catch (error) {
+    returnError(res, error);
+  }
+});
+
+app.post("/location", async (req, res) => {
+  try {
+    const eventResponse = await axios.post(`${eventServiceUrl}/location`, req.body);
+    res.json(eventResponse.data);
+  } catch (error) {
+    returnError(res, error);
+  }
+});
+
+app.get("/locations", async (req, res) => {
+  try {
+    const eventsResponse = await axios.get(`${eventServiceUrl}/locations`);
+    res.json(eventsResponse.data);
+  } catch (error) {
+    returnError(res, error);
+  }
+});
+
+app.get("/locations/:locationId", async (req, res) => {
+  try {
+    const eventResponse = await axios.get(`${eventServiceUrl}/locations/${req.params.locationId}`);
     res.json(eventResponse.data);
   } catch (error) {
     returnError(res, error);
