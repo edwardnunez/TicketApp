@@ -66,7 +66,6 @@ const Home = () => {
           ...event,
           date: dayjs(event.date).format("YYYY-MM-DD"),
           image: event.image || "/images/default.jpg",
-          // Asignar categoría aleatoria (si quieres mantener la asignación)
           category: FEATURED_CATEGORIES[Math.floor(Math.random() * FEATURED_CATEGORIES.length)].name
         }));
 

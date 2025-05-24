@@ -18,6 +18,7 @@ const eventSchema = new mongoose.Schema({
     enum: ['activo', 'proximo', 'finalizado','cancelado'],
     required: true
   },
+  image: { type: String, default: "/images/default.jpg" }
 }, { timestamps: true });
 
 const Event = mongoose.model("Event", eventSchema);
