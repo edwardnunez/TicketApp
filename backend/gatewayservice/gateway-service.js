@@ -99,37 +99,50 @@ app.post("/verifyToken", async (req, res) => {
 });
 
 // **Ticket Routes**
-app.post("/tickets", async (req, res) => {
+app.post('/tickets/purchase', async (req, res) => {
   try {
-    const ticketResponse = await axios.post(`${ticketServiceUrl}/tickets`, req.body, {
-      headers: { Authorization: req.header("Authorization") },
-    });
+    const ticketResponse = await axios.post(`${ticketServiceUrl}/tickets/purchase`, req.body);
     res.json(ticketResponse.data);
   } catch (error) {
     returnError(res, error);
   }
 });
 
-app.get("/tickets/user/:userId", async (req, res) => {
+app.get('/tickets/user/:userId', async (req, res) => {
+    try {
+      const ticketResponse = await axios.post(`${ticketServiceUrl}/tickets/user/:userId`, req.body);
+      res.json(ticketResponse.data);
+    } catch (error) {
+      returnError(res, error);
+    }
+});
+
+app.get('/tickets/event/:eventId', async (req, res) => {
   try {
-    const ticketResponse = await axios.get(`${ticketServiceUrl}/tickets/user/${req.params.userId}`);
-    res.json(ticketResponse.data);
+      const ticketResponse = await axios.post(`${ticketServiceUrl}/tickets/event/:eventId`, req.body);
+      res.json(ticketResponse.data);
   } catch (error) {
-    returnError(res, error);
+      returnError(res, error);
   }
 });
 
-app.get("/tickets/user/:userId/details", async (req, res) => {
+app.get('/tickets/:id', async (req, res) => {
   try {
-    const response = await axios.get(`${ticketServiceUrl}/tickets/user/${req.params.userId}/details`, {
-      headers: { Authorization: req.header("Authorization") },
-    });
-    res.json(response.data);
-  } catch (error) {
-    returnError(res, error);
-  }
+      const ticketResponse = await axios.post(`${ticketServiceUrl}/tickets/:id`, req.body);
+      res.json(ticketResponse.data);
+    } catch (error) {
+      returnError(res, error);
+    }
 });
 
+app.get('/tickets/user/:userId/events', async (req, res) => {
+  try {
+      const ticketResponse = await axios.post(`${ticketServiceUrl}/tickets/user/:userId/events`, req.body);
+      res.json(ticketResponse.data);
+    } catch (error) {
+      returnError(res, error);
+    }
+});
 
 // **Event Routes**
 app.post("/event", async (req, res) => {
