@@ -1,0 +1,870 @@
+import { useEffect, useState } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import { 
+  Layout, 
+  Typography, 
+  Card, 
+  Row, 
+  Col, 
+  Button, 
+  Tag, 
+  Space, 
+  notification,
+  Skeleton,
+  Alert,
+  Divider,
+  Image,
+  InputNumber,
+  Radio,
+  Steps,
+  Form,
+  Input,
+  Modal,
+  Statistic
+} from "antd";
+import { 
+  CalendarOutlined, 
+  EnvironmentOutlined, 
+  ArrowLeftOutlined,
+  ShoppingCartOutlined,
+  CreditCardOutlined,
+  CheckCircleOutlined,
+  UserOutlined,
+  MailOutlined,
+  PhoneOutlined,
+  SafetyOutlined,
+  TagOutlined,
+} from "@ant-design/icons";
+import axios from "axios";
+import dayjs from "dayjs";
+
+// Importamos el esquema de colores
+import { COLORS } from "../components/colorscheme";
+
+const { Content } = Layout;
+const { Title, Text, Paragraph } = Typography;
+const { Step } = Steps;
+
+const TicketPurchase = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [event, setEvent] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [selectedTicketType, setSelectedTicketType] = useState('general');
+  const [quantity, setQuantity] = useState(1);
+  const [processing, setProcessing] = useState(false);
+  const [purchaseComplete, setPurchaseComplete] = useState(false);
+  const [ticketInfo, setTicketInfo] = useState(null);
+  const [api, contextHolder] = notification.useNotification();
+  const [form] = Form.useForm();
+
+  const [userData, setUserData] = useState(null); // datos reales del usuario
+  const [useAccountData, setUseAccountData] = useState(false);
+  
+  const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
+
+  // Precios por tipo de ticket
+  const ticketPrices = {
+    general: 50000,
+    vip: 120000
+  };
+
+  const ticketTypes = [
+    {
+      key: 'general',
+      name: 'General',
+      price: ticketPrices.general,
+      description: 'Acceso general al evento',
+      features: ['Acceso al evento', 'Ubicación general']
+    },
+    {
+      key: 'vip',
+      name: 'VIP',
+      price: ticketPrices.vip,
+      description: 'Experiencia premium',
+      features: ['Acceso preferencial', 'Mejores ubicaciones', 'Servicio especial', 'Área VIP']
+    }
+  ];
+
+  useEffect(() => {
+    if (!id) {
+      setError("No se especificó un ID de evento válido");
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    axios.get(`${gatewayUrl}/events/${id}`)
+      .then((res) => {
+        const eventData = {
+          ...res.data,
+          date: dayjs(res.data.date).format("YYYY-MM-DD"),
+          image: res.data.image || "/images/default.jpg"
+        };
+        
+        setEvent(eventData);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error loading event details:", err);
+        setError("No se pudo cargar la información del evento");
+        setLoading(false);
+        api.error({
+          message: 'Error',
+          description: 'No se pudieron cargar los detalles del evento.',
+          placement: 'top',
+        });
+      });
+  }, [id, gatewayUrl, api]);
+
+  useEffect(() => {
+    const username = localStorage.getItem("username");
+    if (username) {
+      axios.get(`${gatewayUrl}/users/search`, {
+        params: { username }
+      }).then(res => {
+        setUserData(res.data);
+      }).catch(err => {
+        console.error("Error fetching user data:", err);
+      });
+    }
+  }, [gatewayUrl]);
+
+  useEffect(() => {
+    if (useAccountData && userData) {
+      form.setFieldsValue({
+        firstName: userData.name || '',
+        lastName: '',
+        email: userData.email || '',
+        phone: userData.phone || ''
+      });
+    } else {
+      form.resetFields(["firstName", "lastName", "email", "phone"]);
+    }
+  }, [useAccountData, userData, form]);
+
+  // Validación teléfono solo números, teléfono opcional
+  const validatePhoneNumber = (_, value) => {
+    if (!value) return Promise.resolve();
+    const regex = /^[0-9]+$/;
+    if (regex.test(value)) {
+      return Promise.resolve();
+    }
+    return Promise.reject(new Error('El teléfono solo puede contener números.'));
+  };
+
+  const getTotalPrice = () => {
+    return ticketPrices[selectedTicketType] * quantity;
+  };
+
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('es-CL', {
+      style: 'currency',
+      currency: 'CLP'
+    }).format(price);
+  };
+
+  const handleNext = () => {
+    if (currentStep === 0) {
+      if (quantity < 1 || quantity > 6) {
+        api.warning({
+          message: 'Cantidad inválida',
+          description: 'Debes seleccionar entre 1 y 6 tickets.',
+          placement: 'top',
+        });
+        return;
+      }
+      setCurrentStep(1);
+    } else if (currentStep === 1) {
+      form.validateFields().then(() => {
+        setCurrentStep(2);
+      }).catch(() => {
+        api.warning({
+          message: 'Formulario incompleto',
+          description: 'Por favor completa todos los campos requeridos.',
+          placement: 'top',
+        });
+      });
+    }
+  };
+
+  const handlePrevious = () => {
+    setCurrentStep(currentStep - 1);
+  };
+
+  const handlePurchase = async () => {
+    try {
+      setProcessing(true);
+      
+      const formData = form.getFieldsValue();
+      const ticketData = {
+        id: id,
+        ticketType: selectedTicketType,
+        quantity: quantity,
+        price: ticketPrices[selectedTicketType],
+        customerInfo: formData
+      };
+
+      // Simular llamada a la API
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // En una implementación real, aquí harías la llamada real a tu API
+      // const response = await axios.post(`${gatewayUrl}/tickets/purchase`, ticketData);
+      
+      setTicketInfo({
+        id: `TKT-${Date.now()}`,
+        eventName: event.name,
+        type: selectedTicketType,
+        quantity: quantity,
+        totalPrice: getTotalPrice(),
+        purchaseDate: new Date()
+      });
+      
+      setPurchaseComplete(true);
+      setCurrentStep(3);
+      
+      api.success({
+        message: 'Compra exitosa',
+        description: '¡Tus tickets han sido comprados exitosamente!',
+        placement: 'top',
+      });
+      
+    } catch (error) {
+      console.error('Error purchasing tickets:', error);
+      api.error({
+        message: 'Error en la compra',
+        description: 'Hubo un problema al procesar tu compra. Por favor intenta nuevamente.',
+        placement: 'top',
+      });
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const isEventActive = () => {
+    if (!event) return false;
+    const eventDate = dayjs(event.date);
+    const now = dayjs();
+    return eventDate.isAfter(now);
+  };
+
+  if (loading) {
+    return (
+      <Layout style={{ backgroundColor: COLORS.neutral.white, minHeight: "100vh" }}>
+        <Content style={{ maxWidth: '1200px', margin: '40px auto', padding: '0 20px' }}>
+          <Skeleton active paragraph={{ rows: 8 }} />
+        </Content>
+      </Layout>
+    );
+  }
+
+  if (error || !event) {
+    return (
+      <Layout style={{ backgroundColor: COLORS.neutral.white, minHeight: "100vh" }}>
+        <Content style={{ maxWidth: '1200px', margin: '40px auto', padding: '0 20px' }}>
+          <Alert
+            message="Error"
+            description={error || "Evento no encontrado"}
+            type="error"
+            showIcon
+            action={
+              <Link to="/">
+                <Button size="small" type="primary">
+                  Volver al inicio
+                </Button>
+              </Link>
+            }
+          />
+        </Content>
+      </Layout>
+    );
+  }
+
+  if (!isEventActive()) {
+    return (
+      <Layout style={{ backgroundColor: COLORS.neutral.white, minHeight: "100vh" }}>
+        <Content style={{ maxWidth: '1200px', margin: '40px auto', padding: '0 20px' }}>
+          <Alert
+            message="Evento no disponible"
+            description="Este evento ya ha finalizado o no está disponible para la compra de tickets."
+            type="warning"
+            showIcon
+            action={
+              <Link to={`/events/${id}`}>
+                <Button size="small" type="primary">
+                  Ver detalles del evento
+                </Button>
+              </Link>
+            }
+          />
+        </Content>
+      </Layout>
+    );
+  }
+
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 0:
+        return (
+          <Row gutter={[24, 24]}>
+            <Col xs={24} lg={16}>
+              <Card style={{ marginBottom: '24px' }}>
+                <Title level={4} style={{ color: COLORS.neutral.darker, marginBottom: '16px' }}>
+                  Selecciona tu tipo de ticket
+                </Title>
+                
+                <Radio.Group 
+                  value={selectedTicketType} 
+                  onChange={(e) => setSelectedTicketType(e.target.value)}
+                  style={{ width: '100%' }}
+                >
+                  <Space direction="vertical" size={16} style={{ width: '100%' }}>
+                    {ticketTypes.map(ticket => (
+                      <Radio key={ticket.key} value={ticket.key} style={{ width: '100%' }}>
+                        <Card 
+                          size="small"
+                          style={{ 
+                            marginLeft: '8px',
+                            border: selectedTicketType === ticket.key ? 
+                              `2px solid ${COLORS.primary.main}` : 
+                              `1px solid ${COLORS.neutral.grey2}`,
+                            backgroundColor: selectedTicketType === ticket.key ? 
+                              `${COLORS.primary.light}10` : 
+                              COLORS.neutral.white
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <div style={{ flex: 1 }}>
+                              <Title level={5} style={{ marginBottom: '4px', color: COLORS.neutral.darker }}>
+                                {ticket.name}
+                              </Title>
+                              <Text style={{ color: COLORS.neutral.grey4, marginBottom: '8px', display: 'block' }}>
+                                {ticket.description}
+                              </Text>
+                              <Space wrap>
+                                {ticket.features.map((feature, index) => (
+                                  <Tag key={index} color={COLORS.primary.light}>
+                                    {feature}
+                                  </Tag>
+                                ))}
+                              </Space>
+                            </div>
+                            <div style={{ textAlign: 'right', marginLeft: '16px' }}>
+                              <Title level={4} style={{ 
+                                color: COLORS.primary.main, 
+                                marginBottom: '4px' 
+                              }}>
+                                {formatPrice(ticket.price)}
+                              </Title>
+                              <Text style={{ color: COLORS.neutral.grey4 }}>por ticket</Text>
+                            </div>
+                          </div>
+                        </Card>
+                      </Radio>
+                    ))}
+                  </Space>
+                </Radio.Group>
+              </Card>
+
+              <Card>
+                <Title level={4} style={{ color: COLORS.neutral.darker, marginBottom: '16px' }}>
+                  Cantidad de tickets
+                </Title>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <Text>Cantidad:</Text>
+                  <InputNumber
+                    min={1}
+                    max={6}
+                    value={quantity}
+                    onChange={setQuantity}
+                    size="large"
+                    style={{ width: '120px' }}
+                  />
+                  <Text style={{ color: COLORS.neutral.grey4 }}>
+                    (Máximo 6 tickets por compra)
+                  </Text>
+                </div>
+              </Card>
+            </Col>
+
+            <Col xs={24} lg={8}>
+              <Card style={{ position: 'sticky', top: '20px' }}>
+                <Title level={4} style={{ color: COLORS.neutral.darker, marginBottom: '16px' }}>
+                  Resumen de compra
+                </Title>
+                
+                <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Text>Tipo de ticket:</Text>
+                    <Text strong>{ticketTypes.find(t => t.key === selectedTicketType)?.name}</Text>
+                  </div>
+                  
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Text>Cantidad:</Text>
+                    <Text strong>{quantity}</Text>
+                  </div>
+                  
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Text>Precio unitario:</Text>
+                    <Text>{formatPrice(ticketPrices[selectedTicketType])}</Text>
+                  </div>
+                  
+                  <Divider style={{ margin: '12px 0' }} />
+                  
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Title level={4} style={{ color: COLORS.neutral.darker }}>
+                      Total:
+                    </Title>
+                    <Title level={4} style={{ color: COLORS.primary.main }}>
+                      {formatPrice(getTotalPrice())}
+                    </Title>
+                  </div>
+                </Space>
+              </Card>
+            </Col>
+          </Row>
+        );
+
+      case 1:
+        return (
+          <Row gutter={[24, 24]}>
+            <Col xs={24} lg={16}>
+              <Card>
+                <Title level={4} style={{ color: COLORS.neutral.darker, marginBottom: '16px' }}>
+                  Información del comprador
+                </Title>
+
+                <Radio.Group
+                  onChange={e => setUseAccountData(e.target.value === "account")}
+                  value={useAccountData ? "account" : "manual"}
+                  style={{ marginBottom: 24 }}
+                  disabled={!userData} // si no hay datos, no puede elegir cuenta
+                >
+                  <Radio value="manual">Introducir datos manualmente</Radio>
+                  <Radio value="account" disabled={!userData}>Usar datos de mi cuenta</Radio>
+                </Radio.Group>
+
+                <Form
+                  form={form}
+                  layout="vertical"
+                  requiredMark={false}
+                >
+                  <Row gutter={16}>
+                    <Col xs={24} sm={12}>
+                      <Form.Item
+                        name="firstName"
+                        label="Nombre"
+                        rules={[{ required: true, message: 'Por favor ingresa tu nombre' }]}
+                      >
+                        <Input
+                          size="large"
+                          prefix={<UserOutlined style={{ color: COLORS.neutral.grey4 }} />}
+                          placeholder="Tu nombre"
+                          disabled={useAccountData}
+                        />
+                      </Form.Item>
+                    </Col>
+                    <Col xs={24} sm={12}>
+                      <Form.Item
+                        name="lastName"
+                        label="Apellido"
+                        rules={[{ required: true, message: 'Por favor ingresa tu apellido' }]}
+                      >
+                        <Input
+                          size="large"
+                          prefix={<UserOutlined style={{ color: COLORS.neutral.grey4 }} />}
+                          placeholder="Tu apellido"
+                          disabled={useAccountData}
+                        />
+                      </Form.Item>
+                    </Col>
+                  </Row>
+
+                  <Form.Item
+                    name="email"
+                    label="Correo electrónico"
+                    rules={[
+                      { required: true, message: 'Por favor ingresa tu correo' },
+                      { type: 'email', message: 'Por favor ingresa un correo válido' }
+                    ]}
+                  >
+                    <Input
+                      size="large"
+                      prefix={<MailOutlined style={{ color: COLORS.neutral.grey4 }} />}
+                      placeholder="tu@email.com"
+                      disabled={useAccountData}
+                    />
+                  </Form.Item>
+
+                  <Form.Item
+                    name="phone"
+                    label="Teléfono (opcional)"
+                    rules={[{ validator: validatePhoneNumber }]}
+                  >
+                    <Input
+                      size="large"
+                      prefix={<PhoneOutlined style={{ color: COLORS.neutral.grey4 }} />}
+                      placeholder="Solo números"
+                      maxLength={15}
+                    />
+                  </Form.Item>
+                </Form>
+              </Card>
+            </Col>
+
+            <Col xs={24} lg={8}>
+              <Card style={{ position: 'sticky', top: '20px' }}>
+                <Title level={4} style={{ color: COLORS.neutral.darker, marginBottom: '16px' }}>
+                  Resumen de compra
+                </Title>
+
+                <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Text>Tickets {ticketTypes.find(t => t.key === selectedTicketType)?.name}:</Text>
+                    <Text strong>{quantity}</Text>
+                  </div>
+
+                  <Divider style={{ margin: '12px 0' }} />
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Title level={4} style={{ color: COLORS.neutral.darker }}>
+                      Total:
+                    </Title>
+                    <Title level={4} style={{ color: COLORS.primary.main }}>
+                      {formatPrice(getTotalPrice())}
+                    </Title>
+                  </div>
+                </Space>
+              </Card>
+            </Col>
+          </Row>
+        );
+
+      case 2:
+        return (
+          <Row gutter={[24, 24]}>
+            <Col xs={24} lg={16}>
+              <Card>
+                <Title level={4} style={{ color: COLORS.neutral.darker, marginBottom: '16px' }}>
+                  <CreditCardOutlined style={{ marginRight: '8px' }} />
+                  Método de pago
+                </Title>
+                
+                <Alert
+                  message="Demo de compra"
+                  description="Esta es una demostración. En un entorno real, aquí integrarías con un procesador de pagos como Stripe, PayPal, o Transbank."
+                  type="info"
+                  showIcon
+                  style={{ marginBottom: '24px' }}
+                />
+                
+                <div style={{ 
+                  padding: '24px', 
+                  backgroundColor: COLORS.neutral.grey1, 
+                  borderRadius: '8px',
+                  textAlign: 'center'
+                }}>
+                  <SafetyOutlined style={{ 
+                    fontSize: '48px', 
+                    color: COLORS.primary.main,
+                    marginBottom: '16px'
+                  }} />
+                  <Title level={5} style={{ color: COLORS.neutral.darker }}>
+                    Pago seguro simulado
+                  </Title>
+                  <Text style={{ color: COLORS.neutral.grey4 }}>
+                    Haz clic en "Procesar pago" para simular la compra
+                  </Text>
+                </div>
+              </Card>
+            </Col>
+
+            <Col xs={24} lg={8}>
+              <Card style={{ position: 'sticky', top: '20px' }}>
+                <Title level={4} style={{ color: COLORS.neutral.darker, marginBottom: '16px' }}>
+                  Confirmación final
+                </Title>
+                
+                <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                  <div>
+                    <Text strong style={{ color: COLORS.neutral.darker }}>Evento:</Text>
+                    <br />
+                    <Text>{event.name}</Text>
+                  </div>
+                  
+                  <div>
+                    <Text strong style={{ color: COLORS.neutral.darker }}>Fecha:</Text>
+                    <br />
+                    <Text>{dayjs(event.date).format("DD/MM/YYYY HH:mm")}</Text>
+                  </div>
+                  
+                  <div>
+                    <Text strong style={{ color: COLORS.neutral.darker }}>Comprador:</Text>
+                    <br />
+                    <Text>{form.getFieldValue('firstName')} {form.getFieldValue('lastName')}</Text>
+                  </div>
+                  
+                  <div>
+                    <Text strong style={{ color: COLORS.neutral.darker }}>Tickets:</Text>
+                    <br />
+                    <Text>{quantity} x {ticketTypes.find(t => t.key === selectedTicketType)?.name}</Text>
+                  </div>
+                  
+                  <Divider style={{ margin: '12px 0' }} />
+                  
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Title level={4} style={{ color: COLORS.neutral.darker }}>
+                      Total:
+                    </Title>
+                    <Title level={4} style={{ color: COLORS.primary.main }}>
+                      {formatPrice(getTotalPrice())}
+                    </Title>
+                  </div>
+                </Space>
+              </Card>
+            </Col>
+          </Row>
+        );
+
+      case 3:
+        return (
+          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+            <CheckCircleOutlined style={{ 
+              fontSize: '72px', 
+              color: COLORS.status.success,
+              marginBottom: '24px'
+            }} />
+            
+            <Title level={2} style={{ color: COLORS.neutral.darker, marginBottom: '16px' }}>
+              ¡Compra exitosa!
+            </Title>
+            
+            <Paragraph style={{ 
+              fontSize: '16px', 
+              color: COLORS.neutral.grey4,
+              marginBottom: '32px',
+              maxWidth: '500px',
+              margin: '0 auto 32px'
+            }}>
+              Tus tickets han sido comprados exitosamente. Recibirás un correo de confirmación 
+              con los detalles de tu compra y los códigos QR de tus entradas.
+            </Paragraph>
+            
+            {ticketInfo && (
+              <Card style={{ 
+                maxWidth: '600px', 
+                margin: '0 auto 32px',
+                textAlign: 'left'
+              }}>
+                <Title level={4} style={{ color: COLORS.neutral.darker, marginBottom: '16px' }}>
+                  Detalles de la compra
+                </Title>
+                
+                <Row gutter={[16, 16]}>
+                  <Col xs={24} sm={12}>
+                    <Statistic
+                      title="ID de compra"
+                      value={ticketInfo.id}
+                      valueStyle={{ color: COLORS.primary.main }}
+                    />
+                  </Col>
+                  <Col xs={24} sm={12}>
+                    <Statistic
+                      title="Cantidad"
+                      value={ticketInfo.quantity}
+                      suffix="tickets"
+                      valueStyle={{ color: COLORS.neutral.darker }}
+                    />
+                  </Col>
+                  <Col xs={24} sm={12}>
+                    <Statistic
+                      title="Tipo"
+                      value={ticketInfo.type.toUpperCase()}
+                      valueStyle={{ color: COLORS.neutral.darker }}
+                    />
+                  </Col>
+                  <Col xs={24} sm={12}>
+                    <Statistic
+                      title="Total pagado"
+                      value={formatPrice(ticketInfo.totalPrice)}
+                      valueStyle={{ color: COLORS.status.success }}
+                    />
+                  </Col>
+                </Row>
+              </Card>
+            )}
+            
+            <Space size={16}>
+              <Button 
+                type="primary" 
+                size="large"
+                onClick={() => navigate(`/events/${id}`)}
+                style={{
+                  backgroundColor: COLORS.primary.main,
+                  borderColor: COLORS.primary.main
+                }}
+              >
+                Ver evento
+              </Button>
+              <Button 
+                size="large"
+                onClick={() => navigate('/')}
+              >
+                Volver al inicio
+              </Button>
+            </Space>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <Layout style={{ backgroundColor: COLORS.neutral.white, minHeight: "100vh" }}>
+      {contextHolder}
+      
+      <Content>
+        <div style={{ 
+          backgroundColor: COLORS.neutral.grey1, 
+          padding: '24px 0',
+          borderBottom: `1px solid ${COLORS.neutral.grey2}`
+        }}>
+          <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
+            <Link to={`/event/${id}`}>
+              <Button 
+                type="text" 
+                icon={<ArrowLeftOutlined />}
+                style={{ color: COLORS.primary.main, marginBottom: '16px' }}
+              >
+                Volver al evento
+              </Button>
+            </Link>
+            
+            <Row gutter={[16, 16]} align="middle">
+              <Col xs={24} sm={4}>
+                <Image 
+                  src={event.image}
+                  alt={event.name}
+                  style={{ 
+                    width: '80px', 
+                    height: '80px', 
+                    objectFit: 'cover',
+                    borderRadius: '8px'
+                  }}
+                  preview={false}
+                />
+              </Col>
+              <Col xs={24} sm={20}>
+                <Title level={3} style={{ 
+                  color: COLORS.neutral.darker, 
+                  marginBottom: '4px' 
+                }}>
+                  {event.name}
+                </Title>
+                <Space split={<Divider type="vertical" />}>
+                  <Text style={{ color: COLORS.neutral.grey4 }}>
+                    <CalendarOutlined style={{ marginRight: '4px' }} />
+                    {dayjs(event.date).format("DD/MM/YYYY HH:mm")}
+                  </Text>
+                  <Text style={{ color: COLORS.neutral.grey4 }}>
+                    <EnvironmentOutlined style={{ marginRight: '4px' }} />
+                    {event.location?.name}
+                  </Text>
+                </Space>
+              </Col>
+            </Row>
+          </div>
+        </div>
+
+        {/* Steps */}
+        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px 20px 0' }}>
+          <Steps
+            current={currentStep}
+            style={{ marginBottom: '40px' }}
+            items={[
+              {
+                title: 'Seleccionar tickets',
+                icon: <TagOutlined />
+              },
+              {
+                title: 'Información',
+                icon: <UserOutlined />
+              },
+              {
+                title: 'Pago',
+                icon: <CreditCardOutlined />
+              },
+              {
+                title: 'Confirmación',
+                icon: <CheckCircleOutlined />
+              }
+            ]}
+          />
+        </div>
+
+        {/* Contenido principal */}
+        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px 40px' }}>
+          {renderStepContent()}
+          
+          {/* Botones de navegación */}
+          {!purchaseComplete && (
+            <div style={{ 
+              marginTop: '32px', 
+              textAlign: 'center',
+              borderTop: `1px solid ${COLORS.neutral.grey2}`,
+              paddingTop: '24px'
+            }}>
+              <Space size={16}>
+                {currentStep > 0 && (
+                  <Button 
+                    size="large"
+                    onClick={handlePrevious}
+                    disabled={processing}
+                  >
+                    Anterior
+                  </Button>
+                )}
+                
+                {currentStep < 2 && (
+                  <Button 
+                    type="primary" 
+                    size="large"
+                    onClick={handleNext}
+                    style={{
+                      backgroundColor: COLORS.primary.main,
+                      borderColor: COLORS.primary.main
+                    }}
+                  >
+                    Siguiente
+                  </Button>
+                )}
+                
+                {currentStep === 2 && (
+                  <Button 
+                    type="primary" 
+                    size="large"
+                    loading={processing}
+                    onClick={handlePurchase}
+                    icon={<ShoppingCartOutlined />}
+                    style={{
+                      backgroundColor: COLORS.primary.main,
+                      borderColor: COLORS.primary.main
+                    }}
+                  >
+                    {processing ? 'Procesando...' : 'Procesar pago'}
+                  </Button>
+                )}
+              </Space>
+            </div>
+          )}
+        </div>
+      </Content>
+    </Layout>
+  );
+};
+
+export default TicketPurchase;
