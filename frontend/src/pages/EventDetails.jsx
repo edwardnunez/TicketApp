@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom"; 
 import { 
   Layout, 
   Typography, 
@@ -8,8 +8,7 @@ import {
   Col, 
   Button, 
   Tag, 
-  Space, 
-  Tooltip,
+  Space,
   notification,
   Skeleton,
   Alert,
@@ -39,6 +38,7 @@ const { Title, Text, Paragraph } = Typography;
 
 const EventDetails = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -100,11 +100,7 @@ const EventDetails = () => {
   };
 
   const handleBuyTickets = () => {
-    api.info({
-      message: 'Función en desarrollo',
-      description: 'La compra de entradas estará disponible próximamente.',
-      placement: 'top',
-    });
+    navigate(`/event/purchase/${id}`);
   };
 
   const isEventActive = () => {
