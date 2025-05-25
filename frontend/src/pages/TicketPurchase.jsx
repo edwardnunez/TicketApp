@@ -196,52 +196,87 @@ const TicketPurchase = () => {
 
   const handlePurchase = async () => {
     try {
-      setProcessing(true);
-      
-      const formData = form.getFieldsValue();
-      const ticketData = {
-        id: id,
+        setProcessing(true);
+        
+        const formData = form.getFieldsValue();
+        const username = localStorage.getItem("username");
+        
+        let userId = null;
+        if (username) {
+        try {
+            const userResponse = await axios.get(`${gatewayUrl}/users/search`, {
+            params: { username }
+            });
+            userId = userResponse.data._id;
+        } catch (error) {
+            console.error("Error obteniendo datos del usuario:", error);
+        }
+        }
+
+        const ticketData = {
+        userId: userId,
+        eventId: id,
         ticketType: selectedTicketType,
         quantity: quantity,
         price: ticketPrices[selectedTicketType],
-        customerInfo: formData
-      };
+        customerInfo: {
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            email: formData.email,
+            phone: formData.phone
+        },
+        paymentInfo: {
+            method: 'demo', // En producción: 'stripe', 'paypal', etc.
+            transactionId: `TXN-${Date.now()}`
+        },
+        metadata: {
+            ipAddress: '127.0.0.1', // En producción obtendrías la IP real
+            userAgent: navigator.userAgent,
+            referrer: document.referrer
+        }
+        };
 
-      // Simular llamada a la API
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // En una implementación real, aquí harías la llamada real a tu API
-      // const response = await axios.post(`${gatewayUrl}/tickets/purchase`, ticketData);
-      
-      setTicketInfo({
-        id: `TKT-${Date.now()}`,
-        eventName: event.name,
-        type: selectedTicketType,
-        quantity: quantity,
-        totalPrice: getTotalPrice(),
-        purchaseDate: new Date()
-      });
-      
-      setPurchaseComplete(true);
-      setCurrentStep(3);
-      
-      api.success({
-        message: 'Compra exitosa',
-        description: '¡Tus tickets han sido comprados exitosamente!',
-        placement: 'top',
-      });
-      
+        const response = await axios.post(`${gatewayUrl}/tickets/purchase`, ticketData);
+        
+        if (response.data.success) {
+        setTicketInfo({
+            id: response.data.ticketId,
+            eventName: event.name,
+            type: selectedTicketType,
+            quantity: quantity,
+            totalPrice: getTotalPrice(),
+            purchaseDate: new Date(),
+            qrCode: response.data.ticket.qrCode
+        });
+        
+        setPurchaseComplete(true);
+        setCurrentStep(3);
+        
+        api.success({
+            message: 'Compra exitosa',
+            description: '¡Tus tickets han sido comprados exitosamente!',
+            placement: 'top',
+        });
+        }
+        
     } catch (error) {
-      console.error('Error purchasing tickets:', error);
-      api.error({
+        console.error('Error purchasing tickets:', error);
+        
+        let errorMessage = 'Hubo un problema al procesar tu compra. Por favor intenta nuevamente.';
+        
+        if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+        }
+        
+        api.error({
         message: 'Error en la compra',
-        description: 'Hubo un problema al procesar tu compra. Por favor intenta nuevamente.',
+        description: errorMessage,
         placement: 'top',
-      });
+        });
     } finally {
-      setProcessing(false);
+        setProcessing(false);
     }
-  };
+    };
 
   const isEventActive = () => {
     if (!event) return false;
