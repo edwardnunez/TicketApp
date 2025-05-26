@@ -4,8 +4,6 @@ editar evento
 
 mapa de asientos
 
-arreglar register - pedir apellidos
-
 compra de entradas:
     - arreglar tema de elegir entrada (seria cambiar por mapa de asientos pero tengo que barajar dividir por tipo de evento)
     - controlar status o pensar como enfocarlo
@@ -18,4 +16,3 @@ estado de eventos
 añadir imagenes a eventos
 
 cambiar icono de pestaña
-

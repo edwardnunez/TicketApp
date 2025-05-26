@@ -76,7 +76,7 @@ function checkInput(input) {
 
 app.post("/adduser", async (req, res) => {
   try {
-    validateRequiredFields(req, ["username", "name", "email", "password", "confirmPassword"]);
+    validateRequiredFields(req, ["username", "name", "surname", "email", "password", "confirmPassword"]);
 
     const { username, password, confirmPassword, role } = req.body;
 
@@ -116,6 +116,7 @@ app.post("/adduser", async (req, res) => {
     const newUser = new User({
       username,
       name: req.body.name,
+      surname: req.body.surname,
       email: req.body.email,
       role: req.body.role || "user",
       password: hashedPassword,

@@ -38,6 +38,11 @@ import {
 import axios from "axios";
 import dayjs from "dayjs";
 
+import SelectTickets from "./steps/TicketSelection";
+import BuyerInfo from "./steps/BuyerInfo";
+import PaymentMethod from "./steps/PaymentMethod";
+import Confirmation from "./steps/PurchaseConfirmation";
+
 // Importamos el esquema de colores
 import { COLORS } from "../components/colorscheme";
 
@@ -340,421 +345,58 @@ const TicketPurchase = () => {
   }
 
   const renderStepContent = () => {
-    switch (currentStep) {
-      case 0:
-        return (
-          <Row gutter={[24, 24]}>
-            <Col xs={24} lg={16}>
-              <Card style={{ marginBottom: '24px' }}>
-                <Title level={4} style={{ color: COLORS.neutral.darker, marginBottom: '16px' }}>
-                  Selecciona tu tipo de ticket
-                </Title>
-                
-                <Radio.Group 
-                  value={selectedTicketType} 
-                  onChange={(e) => setSelectedTicketType(e.target.value)}
-                  style={{ width: '100%' }}
-                >
-                  <Space direction="vertical" size={16} style={{ width: '100%' }}>
-                    {ticketTypes.map(ticket => (
-                      <Radio key={ticket.key} value={ticket.key} style={{ width: '100%' }}>
-                        <Card 
-                          size="small"
-                          style={{ 
-                            marginLeft: '8px',
-                            border: selectedTicketType === ticket.key ? 
-                              `2px solid ${COLORS.primary.main}` : 
-                              `1px solid ${COLORS.neutral.grey2}`,
-                            backgroundColor: selectedTicketType === ticket.key ? 
-                              `${COLORS.primary.light}10` : 
-                              COLORS.neutral.white
-                          }}
-                        >
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                            <div style={{ flex: 1 }}>
-                              <Title level={5} style={{ marginBottom: '4px', color: COLORS.neutral.darker }}>
-                                {ticket.name}
-                              </Title>
-                              <Text style={{ color: COLORS.neutral.grey4, marginBottom: '8px', display: 'block' }}>
-                                {ticket.description}
-                              </Text>
-                              <Space wrap>
-                                {ticket.features.map((feature, index) => (
-                                  <Tag key={index} color={COLORS.primary.light}>
-                                    {feature}
-                                  </Tag>
-                                ))}
-                              </Space>
-                            </div>
-                            <div style={{ textAlign: 'right', marginLeft: '16px' }}>
-                              <Title level={4} style={{ 
-                                color: COLORS.primary.main, 
-                                marginBottom: '4px' 
-                              }}>
-                                {formatPrice(ticket.price)}
-                              </Title>
-                              <Text style={{ color: COLORS.neutral.grey4 }}>por ticket</Text>
-                            </div>
-                          </div>
-                        </Card>
-                      </Radio>
-                    ))}
-                  </Space>
-                </Radio.Group>
-              </Card>
-
-              <Card>
-                <Title level={4} style={{ color: COLORS.neutral.darker, marginBottom: '16px' }}>
-                  Cantidad de tickets
-                </Title>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                  <Text>Cantidad:</Text>
-                  <InputNumber
-                    min={1}
-                    max={6}
-                    value={quantity}
-                    onChange={setQuantity}
-                    size="large"
-                    style={{ width: '120px' }}
-                  />
-                  <Text style={{ color: COLORS.neutral.grey4 }}>
-                    (Máximo 6 tickets por compra)
-                  </Text>
-                </div>
-              </Card>
-            </Col>
-
-            <Col xs={24} lg={8}>
-              <Card style={{ position: 'sticky', top: '20px' }}>
-                <Title level={4} style={{ color: COLORS.neutral.darker, marginBottom: '16px' }}>
-                  Resumen de compra
-                </Title>
-                
-                <Space direction="vertical" size={12} style={{ width: '100%' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Text>Tipo de ticket:</Text>
-                    <Text strong>{ticketTypes.find(t => t.key === selectedTicketType)?.name}</Text>
-                  </div>
-                  
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Text>Cantidad:</Text>
-                    <Text strong>{quantity}</Text>
-                  </div>
-                  
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Text>Precio unitario:</Text>
-                    <Text>{formatPrice(ticketPrices[selectedTicketType])}</Text>
-                  </div>
-                  
-                  <Divider style={{ margin: '12px 0' }} />
-                  
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Title level={4} style={{ color: COLORS.neutral.darker }}>
-                      Total:
-                    </Title>
-                    <Title level={4} style={{ color: COLORS.primary.main }}>
-                      {formatPrice(getTotalPrice())}
-                    </Title>
-                  </div>
-                </Space>
-              </Card>
-            </Col>
-          </Row>
-        );
-
-      case 1:
-        return (
-          <Row gutter={[24, 24]}>
-            <Col xs={24} lg={16}>
-              <Card>
-                <Title level={4} style={{ color: COLORS.neutral.darker, marginBottom: '16px' }}>
-                  Información del comprador
-                </Title>
-
-                <Radio.Group
-                  onChange={e => setUseAccountData(e.target.value === "account")}
-                  value={useAccountData ? "account" : "manual"}
-                  style={{ marginBottom: 24 }}
-                  disabled={!userData} // si no hay datos, no puede elegir cuenta
-                >
-                  <Radio value="manual">Introducir datos manualmente</Radio>
-                  <Radio value="account" disabled={!userData}>Usar datos de mi cuenta</Radio>
-                </Radio.Group>
-
-                <Form
-                  form={form}
-                  layout="vertical"
-                  requiredMark={false}
-                >
-                  <Row gutter={16}>
-                    <Col xs={24} sm={12}>
-                      <Form.Item
-                        name="firstName"
-                        label="Nombre"
-                        rules={[{ required: true, message: 'Por favor ingresa tu nombre' }]}
-                      >
-                        <Input
-                          size="large"
-                          prefix={<UserOutlined style={{ color: COLORS.neutral.grey4 }} />}
-                          placeholder="Tu nombre"
-                          disabled={useAccountData}
-                        />
-                      </Form.Item>
-                    </Col>
-                    <Col xs={24} sm={12}>
-                      <Form.Item
-                        name="lastName"
-                        label="Apellido"
-                        rules={[{ required: true, message: 'Por favor ingresa tu apellido' }]}
-                      >
-                        <Input
-                          size="large"
-                          prefix={<UserOutlined style={{ color: COLORS.neutral.grey4 }} />}
-                          placeholder="Tu apellido"
-                          disabled={useAccountData}
-                        />
-                      </Form.Item>
-                    </Col>
-                  </Row>
-
-                  <Form.Item
-                    name="email"
-                    label="Correo electrónico"
-                    rules={[
-                      { required: true, message: 'Por favor ingresa tu correo' },
-                      { type: 'email', message: 'Por favor ingresa un correo válido' }
-                    ]}
-                  >
-                    <Input
-                      size="large"
-                      prefix={<MailOutlined style={{ color: COLORS.neutral.grey4 }} />}
-                      placeholder="tu@email.com"
-                      disabled={useAccountData}
-                    />
-                  </Form.Item>
-
-                  <Form.Item
-                    name="phone"
-                    label="Teléfono (opcional)"
-                    rules={[{ validator: validatePhoneNumber }]}
-                  >
-                    <Input
-                      size="large"
-                      prefix={<PhoneOutlined style={{ color: COLORS.neutral.grey4 }} />}
-                      placeholder="Solo números"
-                      maxLength={15}
-                    />
-                  </Form.Item>
-                </Form>
-              </Card>
-            </Col>
-
-            <Col xs={24} lg={8}>
-              <Card style={{ position: 'sticky', top: '20px' }}>
-                <Title level={4} style={{ color: COLORS.neutral.darker, marginBottom: '16px' }}>
-                  Resumen de compra
-                </Title>
-
-                <Space direction="vertical" size={12} style={{ width: '100%' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Text>Tickets {ticketTypes.find(t => t.key === selectedTicketType)?.name}:</Text>
-                    <Text strong>{quantity}</Text>
-                  </div>
-
-                  <Divider style={{ margin: '12px 0' }} />
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Title level={4} style={{ color: COLORS.neutral.darker }}>
-                      Total:
-                    </Title>
-                    <Title level={4} style={{ color: COLORS.primary.main }}>
-                      {formatPrice(getTotalPrice())}
-                    </Title>
-                  </div>
-                </Space>
-              </Card>
-            </Col>
-          </Row>
-        );
-
-      case 2:
-        return (
-          <Row gutter={[24, 24]}>
-            <Col xs={24} lg={16}>
-              <Card>
-                <Title level={4} style={{ color: COLORS.neutral.darker, marginBottom: '16px' }}>
-                  <CreditCardOutlined style={{ marginRight: '8px' }} />
-                  Método de pago
-                </Title>
-                
-                <Alert
-                  message="Demo de compra"
-                  description="Esta es una demostración. En un entorno real, aquí integrarías con un procesador de pagos como Stripe, PayPal, o Transbank."
-                  type="info"
-                  showIcon
-                  style={{ marginBottom: '24px' }}
-                />
-                
-                <div style={{ 
-                  padding: '24px', 
-                  backgroundColor: COLORS.neutral.grey1, 
-                  borderRadius: '8px',
-                  textAlign: 'center'
-                }}>
-                  <SafetyOutlined style={{ 
-                    fontSize: '48px', 
-                    color: COLORS.primary.main,
-                    marginBottom: '16px'
-                  }} />
-                  <Title level={5} style={{ color: COLORS.neutral.darker }}>
-                    Pago seguro simulado
-                  </Title>
-                  <Text style={{ color: COLORS.neutral.grey4 }}>
-                    Haz clic en "Procesar pago" para simular la compra
-                  </Text>
-                </div>
-              </Card>
-            </Col>
-
-            <Col xs={24} lg={8}>
-              <Card style={{ position: 'sticky', top: '20px' }}>
-                <Title level={4} style={{ color: COLORS.neutral.darker, marginBottom: '16px' }}>
-                  Confirmación final
-                </Title>
-                
-                <Space direction="vertical" size={12} style={{ width: '100%' }}>
-                  <div>
-                    <Text strong style={{ color: COLORS.neutral.darker }}>Evento:</Text>
-                    <br />
-                    <Text>{event.name}</Text>
-                  </div>
-                  
-                  <div>
-                    <Text strong style={{ color: COLORS.neutral.darker }}>Fecha:</Text>
-                    <br />
-                    <Text>{dayjs(event.date).format("DD/MM/YYYY HH:mm")}</Text>
-                  </div>
-                  
-                  <div>
-                    <Text strong style={{ color: COLORS.neutral.darker }}>Comprador:</Text>
-                    <br />
-                    <Text>{form.getFieldValue('firstName')} {form.getFieldValue('lastName')}</Text>
-                  </div>
-                  
-                  <div>
-                    <Text strong style={{ color: COLORS.neutral.darker }}>Tickets:</Text>
-                    <br />
-                    <Text>{quantity} x {ticketTypes.find(t => t.key === selectedTicketType)?.name}</Text>
-                  </div>
-                  
-                  <Divider style={{ margin: '12px 0' }} />
-                  
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Title level={4} style={{ color: COLORS.neutral.darker }}>
-                      Total:
-                    </Title>
-                    <Title level={4} style={{ color: COLORS.primary.main }}>
-                      {formatPrice(getTotalPrice())}
-                    </Title>
-                  </div>
-                </Space>
-              </Card>
-            </Col>
-          </Row>
-        );
-
-      case 3:
-        return (
-          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-            <CheckCircleOutlined style={{ 
-              fontSize: '72px', 
-              color: COLORS.status.success,
-              marginBottom: '24px'
-            }} />
-            
-            <Title level={2} style={{ color: COLORS.neutral.darker, marginBottom: '16px' }}>
-              ¡Compra exitosa!
-            </Title>
-            
-            <Paragraph style={{ 
-              fontSize: '16px', 
-              color: COLORS.neutral.grey4,
-              marginBottom: '32px',
-              maxWidth: '500px',
-              margin: '0 auto 32px'
-            }}>
-              Tus tickets han sido comprados exitosamente. Recibirás un correo de confirmación 
-              con los detalles de tu compra y los códigos QR de tus entradas.
-            </Paragraph>
-            
-            {ticketInfo && (
-              <Card style={{ 
-                maxWidth: '600px', 
-                margin: '0 auto 32px',
-                textAlign: 'left'
-              }}>
-                <Title level={4} style={{ color: COLORS.neutral.darker, marginBottom: '16px' }}>
-                  Detalles de la compra
-                </Title>
-                
-                <Row gutter={[16, 16]}>
-                  <Col xs={24} sm={12}>
-                    <Statistic
-                      title="ID de compra"
-                      value={ticketInfo.id}
-                      valueStyle={{ color: COLORS.primary.main }}
-                    />
-                  </Col>
-                  <Col xs={24} sm={12}>
-                    <Statistic
-                      title="Cantidad"
-                      value={ticketInfo.quantity}
-                      suffix="tickets"
-                      valueStyle={{ color: COLORS.neutral.darker }}
-                    />
-                  </Col>
-                  <Col xs={24} sm={12}>
-                    <Statistic
-                      title="Tipo"
-                      value={ticketInfo.type.toUpperCase()}
-                      valueStyle={{ color: COLORS.neutral.darker }}
-                    />
-                  </Col>
-                  <Col xs={24} sm={12}>
-                    <Statistic
-                      title="Total pagado"
-                      value={formatPrice(ticketInfo.totalPrice)}
-                      valueStyle={{ color: COLORS.status.success }}
-                    />
-                  </Col>
-                </Row>
-              </Card>
-            )}
-            
-            <Space size={16}>
-              <Button 
-                type="primary" 
-                size="large"
-                onClick={() => navigate(`/events/${id}`)}
-                style={{
-                  backgroundColor: COLORS.primary.main,
-                  borderColor: COLORS.primary.main
-                }}
-              >
-                Ver evento
-              </Button>
-              <Button 
-                size="large"
-                onClick={() => navigate('/')}
-              >
-                Volver al inicio
-              </Button>
-            </Space>
-          </div>
-        );
-
-      default:
-        return null;
+  switch (currentStep) {
+    case 0:
+      return (
+        <SelectTickets
+          selectedTicketType={selectedTicketType}
+          setSelectedTicketType={setSelectedTicketType}
+          quantity={quantity}
+          setQuantity={setQuantity}
+          ticketTypes={ticketTypes}
+          formatPrice={formatPrice}
+        />
+      );
+    case 1:
+      return (
+        <BuyerInfo
+          form={form}
+          useAccountData={useAccountData}
+          setUseAccountData={setUseAccountData}
+          userData={userData}
+          ticketTypes={ticketTypes}
+          selectedTicketType={selectedTicketType}
+          quantity={quantity}
+          formatPrice={formatPrice}
+        />
+      );
+    case 2:
+      return (
+        <PaymentMethod
+          event={event}
+          form={form}
+          quantity={quantity}
+          selectedTicketType={selectedTicketType}
+          ticketTypes={ticketTypes}
+          formatPrice={formatPrice}
+        />
+      );
+    case 3:
+      return (
+        <Confirmation
+          ticketInfo={ticketInfo}
+          event={event}
+          form={form}
+          quantity={quantity}
+          selectedTicketType={selectedTicketType}
+          ticketTypes={ticketTypes}
+          formatPrice={formatPrice}
+          navigate={navigate}
+          COLORS={COLORS}
+        />
+      );
+    default:
+      return null;
     }
   };
 
