@@ -106,7 +106,16 @@ const Register = () => {
                   style={{ borderRadius: "6px" }}
                 />
               </Form.Item>
-
+              <Form.Item
+                name="surname"
+                rules={[{ required: true, message: "Por favor ingresa tus apellidos" }]}
+              >
+                <Input 
+                  prefix={<UserOutlined style={{ color: COLORS.neutral.grey4 }} />} 
+                  placeholder="Apellidos" 
+                  style={{ borderRadius: "6px" }}
+                />
+              </Form.Item>
               <Form.Item
                 name="username"
                 rules={[{ required: true, message: "Por favor ingresa un nombre de usuario" }]}
