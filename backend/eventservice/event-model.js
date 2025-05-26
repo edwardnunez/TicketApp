@@ -14,10 +14,14 @@ const eventSchema = new mongoose.Schema({
     ref: 'Location',
     required: true 
   },
-  state: { type: String, 
-    enum: ['activo', 'proximo', 'finalizado','cancelado'],
-    required: true
+  state: { 
+    type: String, 
+    enum: ['activo', 'proximo', 'finalizado', 'cancelado'],
+    required: true,
+    default: 'proximo'
   },
+  capacity: { type: Number, required: true },
+  price: { type: Number, required: true, min: 0 },
   image: { type: String, default: "/images/default.jpg" }
 }, { timestamps: true });
 
