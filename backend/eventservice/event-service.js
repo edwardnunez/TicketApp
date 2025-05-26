@@ -99,29 +99,43 @@ const upload = multer({ storage });
 
 app.use('/images/events', express.static('images/events'));
 
-app.post("/event", upload.single('image'), async (req, res) => {
+app.post("/event", async (req, res) => {
   try {
-    const { name, date, location, eventType, description } = req.body;
-    if (!name || !date || !location || !eventType) {
-      return res.status(400).json({ error: "Missing required fields" });
+    console.log('Received req.body:', req.body);
+    console.log('Content-Type:', req.headers['content-type']);
+    
+    const { name, date, location, type, description, capacity, price, state } = req.body;
+    
+    if (!name || !date || !location || !type) {
+      console.log('Missing fields check:', { 
+        name: name ? 'present' : 'missing', 
+        date: date ? 'present' : 'missing', 
+        location: location ? 'present' : 'missing', 
+        type: type ? 'present' : 'missing' 
+      });
+      return res.status(400).json({ 
+        error: "Missing required fields: name, date, location, type",
+        received: req.body
+      });
     }
 
-    const eventDescription = description || `Evento de ${eventType}`;
+    const eventDescription = description || `Evento de ${type}`;
     const locationDoc = await LocationModel.findById(location);
     if (!locationDoc) return res.status(400).json({ error: "Location not found" });
 
-    const imagePath = req.file ? `/images/events/${req.file.filename}` : '/images/default.jpg';
-
     const newEvent = new EventModel({
       name,
-      date,
+      date: new Date(date),
       location: locationDoc._id,
-      type: eventType,
+      type: type,
       description: eventDescription,
-      image: imagePath,
-      state: 'proximo'
+      capacity: capacity || locationDoc.capacity || 100,
+      price: price || 0,
+      image: '/images/default.jpg', // Por ahora usar imagen por defecto
+      state: state || 'proximo'
     });
 
+    console.log('Creating event with data:', newEvent.toObject());
     await newEvent.save();
     res.status(201).json(newEvent);
   } catch (error) {

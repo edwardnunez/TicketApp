@@ -39,6 +39,8 @@ import {
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import dayjs from 'dayjs';
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
+
 
 import { COLORS } from "../../components/colorscheme";
 
@@ -48,7 +50,7 @@ const { Title, Text, Paragraph } = Typography;
 
 const EventCreation = () => {
   const [loading, setLoading] = useState(false);
-  const [eventType, setEventType] = useState(null);
+  const [type, setType] = useState(null);
   const [locations, setLocations] = useState([]);
   const [locationOptions, setLocationOptions] = useState([]);
   const [errorMessage, setErrorMessage] = useState(null);
@@ -56,6 +58,8 @@ const EventCreation = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
+
+  dayjs.extend(isSameOrBefore);
 
   const categoryColors = {
     football: COLORS?.categories?.deportes || "#52c41a",
@@ -98,13 +102,13 @@ const EventCreation = () => {
   }, [gatewayUrl]);
 
   useEffect(() => {
-    if (eventType) {
+    if (type) {
       const filteredLocations = locations.filter(location => {
-        if (eventType === 'football') {
+        if (type === 'football') {
           return location.category === 'stadium';
-        } else if (eventType === 'cinema') {
+        } else if (type === 'cinema') {
           return location.category === 'cinema';
-        } else if (eventType === 'concert') {
+        } else if (type === 'concert') {
           return location.category === 'concert';
         }
         return false;
@@ -113,7 +117,7 @@ const EventCreation = () => {
     } else {
       setLocationOptions(locations);
     }
-  }, [eventType, locations]);
+  }, [type, locations]);
 
   const getAutoState = (date) => {
     if (!date) return 'proximo';
@@ -131,24 +135,28 @@ const EventCreation = () => {
   const onFinish = async (values) => {
     setLoading(true);
     setErrorMessage(null);
+    
+    console.log('Form values:', values); // Debug log
+    
     try {
-      const formData = new FormData();
-      formData.append('name', values.name);
-      formData.append('date', values.date.valueOf());
-      formData.append('location', values.location);
-      formData.append('eventType', values.eventType);
-      formData.append('description', values.description);
-      formData.append('capacity', values.capacity);
-      formData.append('price', values.price);
-      formData.append('state', 'proximo');
+      // Primero enviar los datos sin imagen para probar
+      const eventData = {
+        name: values.name,
+        date: values.date.toISOString(),
+        location: values.location,
+        type: values.type,
+        description: values.description,
+        capacity: parseInt(values.capacity),
+        price: parseFloat(values.price),
+        state: values.state || 'proximo'
+      };
 
-      // Extraemos el archivo de la subida si existe
-      if (values.image && values.image.file.originFileObj) {
-        formData.append('image', values.image.file.originFileObj);
-      }
+      console.log('Sending event data:', eventData);
 
-      await axios.post(gatewayUrl + "/event", formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+      const response = await axios.post(gatewayUrl + "/event", eventData, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
 
       message.success({
@@ -158,13 +166,14 @@ const EventCreation = () => {
       navigate('/admin');
     } catch (error) {
       console.error("Error creando el evento:", error);
+      console.error("Error response:", error.response?.data);
       setErrorMessage(error.response?.data?.error || 'Hubo un error al crear el evento');
     } finally {
       setLoading(false);
     }
   };
 
-  const getEventTypeLabel = (type) => {
+  const gettypeLabel = (type) => {
     switch(type) {
       case 'football': return 'Partido de fútbol';
       case 'cinema': return 'Cine';
@@ -274,12 +283,12 @@ const EventCreation = () => {
                 <Col xs={24} md={8}>
                   <Form.Item
                     label="Tipo de evento"
-                    name="eventType"
+                    name="type"
                     rules={[{ required: true, message: 'Por favor seleccione el tipo de evento' }]}
                   >
                     <Select
                       placeholder="Seleccionar tipo de evento"
-                      onChange={(value) => setEventType(value)}
+                      onChange={(value) => setType(value)}
                       size="large"
                       suffixIcon={<TagOutlined style={{ color: COLORS?.primary?.main || '#1890ff' }} />}
                     >
@@ -318,9 +327,14 @@ const EventCreation = () => {
                           if (!value) return Promise.reject('Por favor seleccione la fecha y hora del evento');
                           const now = dayjs();
 
-                          if (value.isSameOrBefore(now, 'day')) {
-                            return Promise.reject('La fecha del evento debe ser al menos un día después de hoy');
-                          }
+                          console.log(value, dayjs.isDayjs(value));
+                          const dateValue = dayjs(value);
+
+                          console.log(value, dayjs.isDayjs(value));
+
+                            if (dateValue.isSameOrBefore(now, 'day')) {
+                              return Promise.reject('La fecha del evento debe ser al menos un día después de hoy');
+                            }
                           return Promise.resolve();
                         }
                       }
@@ -348,13 +362,13 @@ const EventCreation = () => {
                       placeholder="Seleccionar ubicación"
                       size="large"
                       suffixIcon={<EnvironmentOutlined style={{ color: COLORS?.primary?.main || '#1890ff' }} />}
-                      disabled={!eventType}
+                      disabled={!type}
                       showSearch
                       filterOption={(input, option) =>
                         option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                       }
                       notFoundContent={
-                        !eventType ? 
+                        !type ? 
                           <div style={{ textAlign: 'center', padding: '8px' }}>
                             <InfoCircleOutlined style={{ marginRight: '8px' }} />
                             Por favor seleccione primero un tipo de evento
@@ -449,20 +463,20 @@ const EventCreation = () => {
               <Divider />
 
               {/* Preview of selected event type and state */}
-              {(eventType || form.getFieldValue('state')) && (
+              {(type || form.getFieldValue('state')) && (
                 <Row style={{ marginBottom: '24px' }}>
                   <Col span={24}>
                     <Space direction="vertical" size={16} style={{ width: '100%' }}>
-                      {eventType && (
+                      {type && (
                         <div style={{ 
                           padding: '16px', 
-                          backgroundColor: `${categoryColors[eventType]}10`, 
+                          backgroundColor: `${categoryColors[type]}10`, 
                           borderRadius: '8px',
-                          border: `1px solid ${categoryColors[eventType]}30`
+                          border: `1px solid ${categoryColors[type]}30`
                         }}>
                           <Space align="start">
                             <div style={{ 
-                              backgroundColor: categoryColors[eventType], 
+                              backgroundColor: categoryColors[type], 
                               width: '40px', 
                               height: '40px', 
                               borderRadius: '50%',
@@ -471,18 +485,18 @@ const EventCreation = () => {
                               justifyContent: 'center',
                               color: COLORS?.neutral?.white || '#ffffff'
                             }}>
-                              {eventType === 'football' && <i className="fas fa-futbol"></i>}
-                              {eventType === 'cinema' && <i className="fas fa-film"></i>}
-                              {eventType === 'concert' && <i className="fas fa-music"></i>}
+                              {type === 'football' && <i className="fas fa-futbol"></i>}
+                              {type === 'cinema' && <i className="fas fa-film"></i>}
+                              {type === 'concert' && <i className="fas fa-music"></i>}
                             </div>
                             <div>
                               <Text strong style={{ fontSize: '16px' }}>
-                                Tipo de evento seleccionado: {getEventTypeLabel(eventType)}
+                                Tipo de evento seleccionado: {gettypeLabel(type)}
                               </Text>
                               <Paragraph type="secondary" style={{ marginBottom: 0 }}>
-                                {eventType === 'football' && 'Los partidos de fútbol requieren ubicaciones de estadio y tienen asientos designados.'}
-                                {eventType === 'cinema' && 'Los eventos de cine requieren ubicaciones de cine y tienen capacidad limitada basada en la sala de proyección.'}
-                                {eventType === 'concert' && 'Los conciertos pueden realizarse en varios lugares con arreglos de asientos o de pie.'}
+                                {type === 'football' && 'Los partidos de fútbol requieren ubicaciones de estadio y tienen asientos designados.'}
+                                {type === 'cinema' && 'Los eventos de cine requieren ubicaciones de cine y tienen capacidad limitada basada en la sala de proyección.'}
+                                {type === 'concert' && 'Los conciertos pueden realizarse en varios lugares con arreglos de asientos o de pie.'}
                               </Paragraph>
                             </div>
                           </Space>
