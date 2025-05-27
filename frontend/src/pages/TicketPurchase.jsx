@@ -384,7 +384,7 @@ const TicketPurchase = () => {
             type="warning"
             showIcon
             action={
-              <Link to={`/events/${id}`}>
+              <Link to={`/event/${id}`}>
                 <Button size="small" type="primary">
                   Ver detalles del evento
                 </Button>
