@@ -65,6 +65,15 @@ const TicketPurchase = () => {
   const [api, contextHolder] = notification.useNotification();
   const [form] = Form.useForm();
 
+  // Estados para manejo de asientos
+  const [selectedSeats, setSelectedSeats] = useState([]);
+  const [occupiedSeats, setOccupiedSeats] = useState([
+    // Ejemplo de asientos ocupados - estos deberían venir de la API
+    'front-0-5', 'front-1-6', 'middle-2-8', 'back-1-10',
+    'orchestra-5-12', 'mezzanine-2-8', 'balcony-1-5',
+    'tribuna-oeste-3-7', 'tribuna-este-4-9', 'vip-2-5'
+  ]);
+
   const [userData, setUserData] = useState(null); // datos reales del usuario
   const [useAccountData, setUseAccountData] = useState(false);
   
@@ -150,6 +159,19 @@ const TicketPurchase = () => {
     }
   }, [useAccountData, userData, form]);
 
+  // Función para manejar la selección de asientos
+  const handleSeatSelect = (seats) => {
+    setSelectedSeats(seats);
+    setQuantity(seats.length);
+  };
+
+  // Función para verificar si el evento requiere selección de asientos
+  const requiresSeatMap = () => {
+    if (!event?.type) return false;
+    const categoriesWithSeats = ['cinema', 'theater', 'football', 'sports'];
+    return categoriesWithSeats.includes(event.type.toLowerCase());
+  };
+
   // Validación teléfono solo números, teléfono opcional
   const validatePhoneNumber = (_, value) => {
     if (!value) return Promise.resolve();
@@ -161,6 +183,11 @@ const TicketPurchase = () => {
   };
 
   const getTotalPrice = () => {
+    // Si requiere mapa de asientos, usar el precio de los asientos seleccionados
+    if (requiresSeatMap() && selectedSeats.length > 0) {
+      return selectedSeats.reduce((total, seat) => total + seat.price, 0);
+    }
+    // Si no, usar el precio del tipo de ticket por la cantidad
     return ticketPrices[selectedTicketType] * quantity;
   };
 
@@ -173,13 +200,25 @@ const TicketPurchase = () => {
 
   const handleNext = () => {
     if (currentStep === 0) {
-      if (quantity < 1 || quantity > 6) {
-        api.warning({
-          message: 'Cantidad inválida',
-          description: 'Debes seleccionar entre 1 y 6 tickets.',
-          placement: 'top',
-        });
-        return;
+      // Validar según si requiere mapa de asientos o no
+      if (requiresSeatMap()) {
+        if (selectedSeats.length === 0) {
+          api.warning({
+            message: 'Selección requerida',
+            description: 'Debes seleccionar al menos un asiento.',
+            placement: 'top',
+          });
+          return;
+        }
+      } else {
+        if (quantity < 1 || quantity > 6) {
+          api.warning({
+            message: 'Cantidad inválida',
+            description: 'Debes seleccionar entre 1 y 6 tickets.',
+            placement: 'top',
+          });
+          return;
+        }
       }
       setCurrentStep(1);
     } else if (currentStep === 1) {
@@ -222,8 +261,11 @@ const TicketPurchase = () => {
         userId: userId,
         eventId: id,
         ticketType: selectedTicketType,
-        quantity: quantity,
-        price: ticketPrices[selectedTicketType],
+        quantity: requiresSeatMap() ? selectedSeats.length : quantity,
+        price: requiresSeatMap() ? 
+          selectedSeats.reduce((total, seat) => total + seat.price, 0) / selectedSeats.length :
+          ticketPrices[selectedTicketType],
+        selectedSeats: requiresSeatMap() ? selectedSeats : undefined,
         customerInfo: {
             firstName: formData.firstName,
             lastName: formData.lastName,
@@ -248,10 +290,11 @@ const TicketPurchase = () => {
             id: response.data.ticketId,
             eventName: event.name,
             type: selectedTicketType,
-            quantity: quantity,
+            quantity: requiresSeatMap() ? selectedSeats.length : quantity,
             totalPrice: getTotalPrice(),
             purchaseDate: new Date(),
-            qrCode: response.data.ticket.qrCode
+            qrCode: response.data.ticket.qrCode,
+            selectedSeats: requiresSeatMap() ? selectedSeats : undefined
         });
         
         setPurchaseComplete(true);
@@ -355,6 +398,10 @@ const TicketPurchase = () => {
           setQuantity={setQuantity}
           ticketTypes={ticketTypes}
           formatPrice={formatPrice}
+          event={event}
+          selectedSeats={selectedSeats}
+          onSeatSelect={handleSeatSelect}
+          occupiedSeats={occupiedSeats}
         />
       );
     case 1:

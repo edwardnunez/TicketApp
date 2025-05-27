@@ -1,29 +1,30 @@
 import { Card, Radio, Space, Tag, InputNumber, Typography, Alert } from "antd";
 import { COLORS } from "../../components/colorscheme";
-import SeatMap from "./seatmaps/Seatmap";
+
+import FootballSeatMap from "./seatmaps/FootballSeatmap";
+import CinemaSeatMap from "./seatmaps/CinemaSeatmap";
+import TheaterSeatMap from "./seatmaps/TheaterSeatmap";
+
 const { Title, Text } = Typography;
 
 export default function SelectTickets({ 
   selectedTicketType, setSelectedTicketType, 
   quantity, setQuantity, 
   ticketTypes, formatPrice,
-  //para el mapa de asientos
   event,
   selectedSeats = [],
   onSeatSelect,
   occupiedSeats = []
 }) {
-  // Determinar si el evento requiere mapa de asientos
   const requiresSeatMap = () => {
-    if (!event?.category) return false;
-    
+    if (!event?.type) return false;
+
     const categoriesWithSeats = ['cinema', 'theater', 'football', 'sports'];
-    return categoriesWithSeats.includes(event.category.toLowerCase());
+    return categoriesWithSeats.includes(event.type.toLowerCase());
   };
 
-  // Determinar el tipo de venue para el mapa
   const getVenueType = () => {
-    const category = event?.category?.toLowerCase();
+    const category = event?.type?.toLowerCase();
     switch (category) {
       case 'cinema':
       case 'movie':
@@ -38,27 +39,47 @@ export default function SelectTickets({
         return 'football';
       case 'sports':
       case 'deportes':
-        return 'football'; // Por defecto usamos el layout de estadio
+        return 'football';
       default:
-        return 'cinema'; // Por defecto
+        return 'cinema';
     }
   };
 
-  // Calcular precio total cuando hay asientos seleccionados
   const getTotalFromSeats = () => {
     return selectedSeats.reduce((total, seat) => total + seat.price, 0);
   };
 
-  // Manejar cambio en la selección de asientos
   const handleSeatSelection = (seats) => {
     onSeatSelect(seats);
-    // Actualizar cantidad basada en asientos seleccionados
     setQuantity(seats.length);
+  };
+
+  // Renderizar el mapa correspondiente según venueType
+  const renderSeatMap = () => {
+    const venueType = getVenueType();
+
+    const seatMapProps = {
+      selectedSeats,
+      onSeatSelect: handleSeatSelection,
+      maxSeats: 6,
+      occupiedSeats,
+      formatPrice,
+    };
+
+    switch (venueType) {
+      case 'football':
+        return <FootballSeatMap {...seatMapProps} />;
+      case 'cinema':
+        return <CinemaSeatMap {...seatMapProps} />;
+      case 'theater':
+        return <TheaterSeatMap {...seatMapProps} />;
+      default:
+        return <div>Mapa no disponible para este tipo de evento</div>;
+    }
   };
 
   return (
     <>
-      {/* Selección de tipo de ticket (solo si no hay mapa de asientos o hay opciones múltiples) */}
       {(!requiresSeatMap() || ticketTypes.length > 1) && (
         <Card style={{ marginBottom: '24px' }}>
           <Title level={4} style={{ color: COLORS.neutral.darker, marginBottom: '16px' }}>
@@ -111,7 +132,6 @@ export default function SelectTickets({
         </Card>
       )}
 
-      {/* Mapa de asientos o selector de cantidad */}
       {requiresSeatMap() ? (
         <>
           <Alert
@@ -121,16 +141,9 @@ export default function SelectTickets({
             showIcon
             style={{ marginBottom: '24px' }}
           />
-          
-          <SeatMap
-            venueType={getVenueType()}
-            selectedSeats={selectedSeats}
-            onSeatSelect={handleSeatSelection}
-            maxSeats={6}
-            occupiedSeats={occupiedSeats}
-            formatPrice={formatPrice}
-          />
-          
+
+          {renderSeatMap()}
+
           {selectedSeats.length > 0 && (
             <Card style={{ marginTop: '24px', backgroundColor: COLORS.neutral.grey1 }}>
               <Title level={4} style={{ color: COLORS.neutral.darker, marginBottom: '16px' }}>
@@ -159,7 +172,6 @@ export default function SelectTickets({
                   </div>
                 ))}
               </div>
-              
               <div style={{ 
                 marginTop: '16px', 
                 padding: '16px', 
@@ -180,7 +192,6 @@ export default function SelectTickets({
           )}
         </>
       ) : (
-        // Selector tradicional de cantidad para eventos sin asientos numerados
         <Card>
           <Title level={4} style={{ color: COLORS.neutral.darker, marginBottom: '16px' }}>
             Cantidad de tickets
@@ -199,7 +210,7 @@ export default function SelectTickets({
               (Máximo 6 tickets por compra)
             </Text>
           </div>
-          
+
           <div style={{ 
             marginTop: '24px',
             padding: '16px',
