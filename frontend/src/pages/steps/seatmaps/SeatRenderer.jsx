@@ -9,7 +9,7 @@ const SeatRenderer = ({
   seatsPerRow,
   price,
   color,
-  name: sectionName, // Usando 'name' del config pero renombrándolo a sectionName
+  name: sectionName,
   selectedSeats,
   occupiedSeats,
   maxSeats,

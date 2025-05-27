@@ -26,9 +26,45 @@ const validateObjectId = (req, res, next) => {
   next();
 };
 
+//obtener asientos ocupados por evento
+app.get('/tickets/occupied/:eventId', validateObjectId, async (req, res) => {
+  try {
+    const { eventId } = req.params;
+
+    const occupiedTickets = await Ticket.find({
+      eventId: new mongoose.Types.ObjectId(eventId),
+      status: { $in: ['paid', 'pending'] } // Incluir tickets pagados y pendientes
+    }).select('selectedSeats').lean();
+
+    // Extraer todos los IDs de asientos ocupados
+    const occupiedSeats = [];
+    occupiedTickets.forEach(ticket => {
+      if (ticket.selectedSeats && ticket.selectedSeats.length > 0) {
+        ticket.selectedSeats.forEach(seat => {
+          occupiedSeats.push(seat.id);
+        });
+      }
+    });
+
+    res.json({
+      success: true,
+      occupiedSeats: [...new Set(occupiedSeats)],
+      count: occupiedSeats.length
+    });
+
+  } catch (error) {
+    console.error('Error obteniendo asientos ocupados:', error);
+    res.status(500).json({
+      error: "Error interno del servidor",
+      message: "No se pudieron obtener los asientos ocupados"
+    });
+  }
+});
+
 app.post('/tickets/purchase', async (req, res) => {
   try {
-    const { userId, eventId, ticketType, quantity, price, customerInfo } = req.body;
+    const { userId, eventId, ticketType, quantity, price, customerInfo, selectedSeats } = req.body;
+
 
     // Validaciones básicas
     if (!userId || !eventId || !quantity || !price) {
@@ -52,15 +88,15 @@ app.post('/tickets/purchase', async (req, res) => {
       });
     }
 
-    // Crear el ticket
     const newTicket = new Ticket({
       userId,
       eventId,
       ticketType: ticketType || 'general',
       price,
       quantity,
-      status: 'paid', // En producción, iniciaría como 'pending'
-      customerInfo // Información adicional del cliente
+      selectedSeats,
+      status: 'paid',
+      customerInfo
     });
 
     const savedTicket = await newTicket.save();
@@ -71,6 +107,7 @@ app.post('/tickets/purchase', async (req, res) => {
       ticket: savedTicket,
       ticketId: `TKT-${savedTicket._id.toString().slice(-8).toUpperCase()}`
     });
+
 
   } catch (error) {
     console.error('Error comprando tickets:', error);

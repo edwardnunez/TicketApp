@@ -67,12 +67,7 @@ const TicketPurchase = () => {
 
   // Estados para manejo de asientos
   const [selectedSeats, setSelectedSeats] = useState([]);
-  const [occupiedSeats, setOccupiedSeats] = useState([
-    // Ejemplo de asientos ocupados - estos deberían venir de la API
-    'front-0-5', 'front-1-6', 'middle-2-8', 'back-1-10',
-    'orchestra-5-12', 'mezzanine-2-8', 'balcony-1-5',
-    'tribuna-oeste-3-7', 'tribuna-este-4-9', 'vip-2-5'
-  ]);
+  const [occupiedSeats, setOccupiedSeats] = useState([]);
 
   const [userData, setUserData] = useState(null); // datos reales del usuario
   const [useAccountData, setUseAccountData] = useState(false);
@@ -158,6 +153,20 @@ const TicketPurchase = () => {
       form.resetFields(["firstName", "lastName", "email", "phone"]);
     }
   }, [useAccountData, userData, form]);
+
+  useEffect(() => {
+    if (!event) return;
+
+    axios.get(`${gatewayUrl}/tickets/occupied/${event._id}`)
+      .then(res => {
+        if (res.data.success) {
+          setOccupiedSeats(res.data.occupiedSeats);
+        }
+      })
+      .catch(err => {
+        console.error("Error obteniendo asientos ocupados:", err);
+      });
+  }, [event]);
 
   // Función para manejar la selección de asientos
   const handleSeatSelect = (seats) => {

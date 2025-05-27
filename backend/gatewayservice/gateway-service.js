@@ -99,6 +99,16 @@ app.post("/verifyToken", async (req, res) => {
 });
 
 // **Ticket Routes**
+app.get('/tickets/occupied/:eventId', async (req, res) => {
+    try {
+      const { eventId } = req.params;
+      const ticketResponse = await axios.get(`${ticketServiceUrl}/tickets/occupied/${eventId}`, req.body);
+      res.json(ticketResponse.data);
+    } catch (error) {
+      returnError(res, error);
+    }
+});
+
 app.post('/tickets/purchase', async (req, res) => {
   try {
     const ticketResponse = await axios.post(`${ticketServiceUrl}/tickets/purchase`, req.body);
@@ -110,7 +120,8 @@ app.post('/tickets/purchase', async (req, res) => {
 
 app.get('/tickets/user/:userId', async (req, res) => {
     try {
-      const ticketResponse = await axios.post(`${ticketServiceUrl}/tickets/user/:userId`, req.body);
+      const { userId } = req.params;
+      const ticketResponse = await axios.post(`${ticketServiceUrl}/tickets/user/${userId}`, req.body);
       res.json(ticketResponse.data);
     } catch (error) {
       returnError(res, error);
@@ -119,7 +130,8 @@ app.get('/tickets/user/:userId', async (req, res) => {
 
 app.get('/tickets/event/:eventId', async (req, res) => {
   try {
-      const ticketResponse = await axios.post(`${ticketServiceUrl}/tickets/event/:eventId`, req.body);
+      const { eventId } = req.params;
+      const ticketResponse = await axios.post(`${ticketServiceUrl}/tickets/event//${eventId}`, req.body);
       res.json(ticketResponse.data);
   } catch (error) {
       returnError(res, error);
@@ -128,7 +140,8 @@ app.get('/tickets/event/:eventId', async (req, res) => {
 
 app.get('/tickets/:id', async (req, res) => {
   try {
-      const ticketResponse = await axios.post(`${ticketServiceUrl}/tickets/:id`, req.body);
+      const { id } = req.params;
+      const ticketResponse = await axios.post(`${ticketServiceUrl}/tickets/${id}`, req.body);
       res.json(ticketResponse.data);
     } catch (error) {
       returnError(res, error);
@@ -137,7 +150,8 @@ app.get('/tickets/:id', async (req, res) => {
 
 app.get('/tickets/user/:userId/events', async (req, res) => {
   try {
-      const ticketResponse = await axios.post(`${ticketServiceUrl}/tickets/user/:userId/events`, req.body);
+      const { userId } = req.params;
+      const ticketResponse = await axios.post(`${ticketServiceUrl}/tickets/user/${userId}/events`, req.body);
       res.json(ticketResponse.data);
     } catch (error) {
       returnError(res, error);
