@@ -14,7 +14,7 @@ export default function SelectTickets({
   event,
   selectedSeats = [],
   onSeatSelect,
-  occupiedSeats = []
+  occupiedSeats
 }) {
   const requiresSeatMap = () => {
     if (!event?.type) return false;
