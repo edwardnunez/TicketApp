@@ -15,7 +15,7 @@ const footballConfig = {
   ]
 };
 
-const FootballSeatMap = ({ selectedSeats, onSeatSelect, maxSeats, occupiedSeats, formatPrice }) => {
+const FootballSeatMap1 = ({ selectedSeats, onSeatSelect, maxSeats, occupiedSeats, formatPrice }) => {
   const { sections } = footballConfig;
 
   const filterOccupiedBySection = (sectionId) => {
@@ -156,4 +156,4 @@ const FootballSeatMap = ({ selectedSeats, onSeatSelect, maxSeats, occupiedSeats,
   );
 };
 
-export default FootballSeatMap;
+export default FootballSeatMap1;
