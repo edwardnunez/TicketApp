@@ -1,9 +1,9 @@
 import { Card, Radio, Space, Tag, InputNumber, Typography, Alert } from "antd";
 import { COLORS } from "../../components/colorscheme";
 
-import FootballSeatMap from "./seatmaps/FootballSeatmap";
-import CinemaSeatMap from "./seatmaps/CinemaSeatmap";
-import TheaterSeatMap from "./seatmaps/TheaterSeatmap";
+import FootballSeatMap1 from "./seatmaps/FootballSeatmap1";
+import FootballSeatMap2 from "./seatmaps/FootballSeatmap2";
+import CinemaSeatMap1 from "./seatmaps/CinemaSeatmap1";
 
 const { Title, Text } = Typography;
 
@@ -23,27 +23,6 @@ export default function SelectTickets({
     return categoriesWithSeats.includes(event.type.toLowerCase());
   };
 
-  const getVenueType = () => {
-    const category = event?.type?.toLowerCase();
-    switch (category) {
-      case 'cinema':
-      case 'movie':
-        return 'cinema';
-      case 'theater':
-      case 'teatro':
-      case 'musical':
-        return 'theater';
-      case 'football':
-      case 'soccer':
-      case 'futbol':
-        return 'football';
-      case 'sports':
-      case 'deportes':
-        return 'football';
-      default:
-        return 'cinema';
-    }
-  };
 
   const getTotalFromSeats = () => {
     return selectedSeats.reduce((total, seat) => total + seat.price, 0);
@@ -54,9 +33,8 @@ export default function SelectTickets({
     setQuantity(seats.length);
   };
 
-  // Renderizar el mapa correspondiente según venueType
   const renderSeatMap = () => {
-    const venueType = getVenueType();
+    const seatMapId = event?.location?.seatMapId;
 
     const seatMapProps = {
       selectedSeats,
@@ -66,15 +44,15 @@ export default function SelectTickets({
       formatPrice,
     };
 
-    switch (venueType) {
-      case 'football':
-        return <FootballSeatMap {...seatMapProps} />;
-      case 'cinema':
-        return <CinemaSeatMap {...seatMapProps} />;
-      case 'theater':
-        return <TheaterSeatMap {...seatMapProps} />;
+    switch (seatMapId) {
+      case 'football1':
+        return <FootballSeatMap1 {...seatMapProps} />;
+      case 'football2':
+        return <FootballSeatMap2 {...seatMapProps} />;
+      case 'cinema1':
+        return <CinemaSeatmap1 {...seatMapProps} />;
       default:
-        return <div>Mapa no disponible para este tipo de evento</div>;
+        return <div>No hay un mapa de asientos para esta ubicación.</div>;
     }
   };
 

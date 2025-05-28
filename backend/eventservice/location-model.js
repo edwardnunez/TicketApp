@@ -16,6 +16,7 @@ const locationSchema = new mongoose.Schema({
   },
   address: { type: String, required: true },
   capacity: { type: Number, required: false },
+  seatMapId: { type: String, required: true },
   seatingMap: [[seatSchema]]
 }, { timestamps: true });
 

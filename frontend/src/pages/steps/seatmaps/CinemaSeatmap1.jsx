@@ -1,7 +1,6 @@
 import React from 'react';
 import { Typography, Card } from 'antd';
 import SeatRenderer from './SeatRenderer';
-import { COLORS } from '../../../components/colorscheme';
 
 const { Text } = Typography;
 
@@ -14,7 +13,7 @@ const cinemaConfig = {
   ]
 };
 
-const CinemaSeatMap = ({ selectedSeats, onSeatSelect, maxSeats, occupiedSeats, formatPrice }) => {
+const CinemaSeatMap1 = ({ selectedSeats, onSeatSelect, maxSeats, occupiedSeats, formatPrice }) => {
   const { sections } = cinemaConfig;
 
   return (
@@ -55,4 +54,4 @@ const CinemaSeatMap = ({ selectedSeats, onSeatSelect, maxSeats, occupiedSeats, f
   );
 };
 
-export default CinemaSeatMap;
+export default CinemaSeatMap1;
