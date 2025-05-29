@@ -56,8 +56,8 @@ const EventCreation = () => {
   const [locationOptions, setLocationOptions] = useState([]);
   const [errorMessage, setErrorMessage] = useState(null);
   const [selectedDate, setSelectedDate] = useState(dayjs().add(2, 'day'));
-  const [selectedLocation, setSelectedLocation] = useState(null); // Nueva state para la ubicación seleccionada
-  const [isCapacityLocked, setIsCapacityLocked] = useState(false); // Estado para controlar si la capacidad está bloqueada
+  const [selectedLocation, setSelectedLocation] = useState(null);
+  const [isCapacityLocked, setIsCapacityLocked] = useState(false);
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
@@ -142,20 +142,30 @@ const EventCreation = () => {
     }
   };
 
-  // Nueva función para manejar el cambio de ubicación
   const handleLocationChange = (locationId) => {
     const location = locations.find(loc => loc._id === locationId);
     setSelectedLocation(location);
     
-    if (location && location.seatmapid) {
-      // Si la ubicación tiene seatmapid, bloquear capacidad y establecer el valor de la ubicación
+    if (location && location.capacity && location.capacity > 0) {
+      // Si la ubicación tiene capacidad definida, bloquear el campo y establecer el valor
       setIsCapacityLocked(true);
       form.setFieldsValue({ capacity: location.capacity });
     } else {
-      // Si no tiene seatmapid, desbloquear la capacidad
+      // Si no tiene capacidad definida, desbloquear el campo
       setIsCapacityLocked(false);
       form.setFieldsValue({ capacity: undefined });
     }
+  };
+
+  const handleTypeChange = (value) => {
+    setType(value);
+    // Resetear la ubicación seleccionada cuando cambia el tipo
+    setSelectedLocation(null);
+    setIsCapacityLocked(false);
+    form.setFieldsValue({ 
+      location: undefined,
+      capacity: undefined 
+    });
   };
 
   const onFinish = async (values) => {
@@ -316,7 +326,7 @@ const EventCreation = () => {
                   >
                     <Select
                       placeholder="Seleccionar tipo de evento"
-                      onChange={(value) => setType(value)}
+                      onChange={handleTypeChange}
                       size="large"
                       suffixIcon={<TagOutlined style={{ color: COLORS?.primary?.main || '#1890ff' }} />}
                     >
@@ -356,7 +366,7 @@ const EventCreation = () => {
               </Row>
 
               <Row gutter={24}>
-                <Col xs={24} md={8}>
+                <Col xs={24} md={12}>
                   <Form.Item
                     label="Fecha y hora"
                     name="date"
@@ -366,15 +376,11 @@ const EventCreation = () => {
                         validator: (_, value) => {
                           if (!value) return Promise.reject('Por favor seleccione la fecha y hora del evento');
                           const now = dayjs();
-
-                          console.log(value, dayjs.isDayjs(value));
                           const dateValue = dayjs(value);
 
-                          console.log(value, dayjs.isDayjs(value));
-
-                            if (dateValue.isSameOrBefore(now, 'day')) {
-                              return Promise.reject('La fecha del evento debe ser al menos un día después de hoy');
-                            }
+                          if (dateValue.isSameOrBefore(now, 'day')) {
+                            return Promise.reject('La fecha del evento debe ser al menos un día después de hoy');
+                          }
                           return Promise.resolve();
                         }
                       }
@@ -392,7 +398,7 @@ const EventCreation = () => {
                   </Form.Item>
                 </Col>
 
-                <Col xs={24} md={8}>
+                <Col xs={24} md={12}>
                   <Form.Item
                     label="Ubicación"
                     name="location"
@@ -405,6 +411,7 @@ const EventCreation = () => {
                       disabled={!type}
                       showSearch
                       onChange={handleLocationChange}
+                      value={selectedLocation?._id} // Controlar el valor seleccionado
                       filterOption={(input, option) =>
                         option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                       }
@@ -421,16 +428,29 @@ const EventCreation = () => {
                     >
                       {locationOptions.map((location) => (
                         <Option key={location._id} value={location._id}>
-                          {location.name}
-                          {location.seatmapid && (
-                            <Tag 
-                              color="blue" 
-                              size="small" 
-                              style={{ marginLeft: '8px', fontSize: '10px' }}
-                            >
-                              Con mapa de asientos
-                            </Tag>
-                          )}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ flex: 1 }}>{location.name}</span>
+                            <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
+                              {location.capacity && location.capacity > 0 && (
+                                <Tag 
+                                  color="green" 
+                                  size="small" 
+                                  style={{ fontSize: '10px', margin: 0 }}
+                                >
+                                  Cap: {location.capacity}
+                                </Tag>
+                              )}
+                              {location.seatMapId && (
+                                <Tag 
+                                  color="blue" 
+                                  size="small" 
+                                  style={{ fontSize: '10px', margin: 0 }}
+                                >
+                                  Mapa
+                                </Tag>
+                              )}
+                            </div>
+                          </div>
                         </Option>
                       ))}
                     </Select>
@@ -521,18 +541,16 @@ const EventCreation = () => {
                 </Col>
               </Row>
 
-              {/* Información adicional sobre la ubicación seleccionada */}
-              {selectedLocation && selectedLocation.seatmapid && (
+              {selectedLocation && selectedLocation.capacity && selectedLocation.capacity > 0 && (
                 <Alert
-                  message="Ubicación con mapa de asientos"
-                  description={`Esta ubicación (${selectedLocation.name}) tiene un mapa de asientos configurado. La capacidad se establece automáticamente en ${selectedLocation.capacity} asientos según el mapa.`}
+                  message="Ubicación con capacidad predefinida"
+                  description={`Esta ubicación (${selectedLocation.name}) tiene una capacidad predefinida de ${selectedLocation.capacity} asientos. La capacidad se establece automáticamente según la configuración de la ubicación.`}
                   type="info"
                   showIcon
                   icon={<InfoCircleOutlined />}
                   style={{ marginBottom: 24, borderRadius: '6px' }}
                 />
               )}
-
               <Divider />
 
               {/* Preview of selected event type and state */}
