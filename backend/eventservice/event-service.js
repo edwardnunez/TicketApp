@@ -149,7 +149,7 @@ app.get("/events/:eventId", async (req, res) => {
 
 app.post("/location", async (req, res) => {
   try {
-    const { name, category, address, seatMapId, seatingMap } = req.body;
+    const { name, category, address, seatMapId, capacity, seatingMap } = req.body;
 
     if (!name || !category || !address || !seatMapId) {
       return res.status(400).json({ error: "Missing required fields" });
@@ -164,6 +164,7 @@ app.post("/location", async (req, res) => {
       locationDoc.category = category;
       locationDoc.address = address;
       locationDoc.seatMapId = seatMapId;
+      locationDoc.capacity = capacity;
       if (seatingMap) locationDoc.seatingMap = seatingMap;
 
       await locationDoc.save();
@@ -176,6 +177,7 @@ app.post("/location", async (req, res) => {
         category,
         address,
         seatMapId,
+        capacity,
         seatingMap: seatingMap || []
       });
 
