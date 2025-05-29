@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Tooltip, Tag } from 'antd';
+import { Tooltip } from 'antd';
 import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
 import { COLORS } from '../../../components/colorscheme';
 

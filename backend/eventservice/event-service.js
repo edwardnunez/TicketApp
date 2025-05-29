@@ -40,47 +40,6 @@ const LocationModel = locationDbConnection.model('Location', Location.schema);
 
 const seedDatabase = async () => {
   await seedLocations(locationDbConnection);
-  
-  // Verificar si ya existen eventos
-  const eventCount = await EventModel.countDocuments();
-  if (eventCount === 0) {
-    try {
-      // Obtener algunas ubicaciones
-      const locations = await LocationModel.find().limit(3);
-      
-      if (locations.length > 0) {
-        // Crear algunos eventos de muestra
-        const sampleEvents = [
-          {
-            name: "Concierto de Rock",
-            type: "concert",
-            description: "Un increíble concierto de rock con las mejores bandas",
-            date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-            location: locations[0]._id
-          },
-          {
-            name: "Partido de fútbol",
-            type: "football",
-            description: "Final de la temporada de fútbol",
-            date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
-            location: locations[1]._id
-          },
-          {
-            name: "Estreno de película",
-            type: "cinema",
-            description: "Estreno del último blockbuster",
-            date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-            location: locations[2]._id
-          }
-        ];
-        
-        await EventModel.insertMany(sampleEvents);
-        console.log('Eventos de muestra creados con éxito');
-      }
-    } catch (error) {
-      console.error('Error al crear eventos de muestra:', error);
-    }
-  }
 };
 
 seedDatabase().catch(error => {
@@ -190,9 +149,9 @@ app.get("/events/:eventId", async (req, res) => {
 
 app.post("/location", async (req, res) => {
   try {
-    const { name, category, address, capacity, hasSeatingMap } = req.body;
+    const { name, category, address, seatMapId, seatingMap } = req.body;
 
-    if (!name || !category || !address) {
+    if (!name || !category || !address || !seatMapId) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
@@ -201,10 +160,11 @@ app.post("/location", async (req, res) => {
     let repeatedLocation = await LocationModel.findOne({ name, address, category });
 
     if (locationDoc) {
+      // Actualiza los campos permitidos
       locationDoc.category = category;
       locationDoc.address = address;
-      locationDoc.capacity = capacity;
-      locationDoc.hasSeatingMap = hasSeatingMap;
+      locationDoc.seatMapId = seatMapId;
+      if (seatingMap) locationDoc.seatingMap = seatingMap;
 
       await locationDoc.save();
       return res.status(200).json(locationDoc);
@@ -215,8 +175,8 @@ app.post("/location", async (req, res) => {
         name,
         category,
         address,
-        capacity,
-        hasSeatingMap,
+        seatMapId,
+        seatingMap: seatingMap || []
       });
 
       await locationDoc.save();
@@ -227,6 +187,7 @@ app.post("/location", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error", details: error.message });
   }
 });
+
 
 app.get("/locations", async (req, res) => {
   try {

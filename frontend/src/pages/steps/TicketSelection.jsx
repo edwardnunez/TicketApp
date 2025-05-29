@@ -1,8 +1,12 @@
 import { Card, Radio, Space, Tag, InputNumber, Typography, Alert } from "antd";
 import { COLORS } from "../../components/colorscheme";
 
-import FootballSeatMap1 from "./seatmaps/FootballSeatmap1";
-import FootballSeatMap2 from "./seatmaps/FootballSeatmap2";
+// Importa el componente genérico y los específicos
+import  { 
+  FootballSeatMap1, 
+  FootballSeatMap2,
+  FootballSeatMap3
+} from "./seatmaps/FootballSeatmaps";
 import CinemaSeatMap1 from "./seatmaps/CinemaSeatmap1";
 
 const { Title, Text } = Typography;
@@ -22,7 +26,6 @@ export default function SelectTickets({
     const categoriesWithSeats = ['cinema', 'theater', 'football', 'sports'];
     return categoriesWithSeats.includes(event.type.toLowerCase());
   };
-
 
   const getTotalFromSeats = () => {
     return selectedSeats.reduce((total, seat) => total + seat.price, 0);
@@ -49,8 +52,12 @@ export default function SelectTickets({
         return <FootballSeatMap1 {...seatMapProps} />;
       case 'football2':
         return <FootballSeatMap2 {...seatMapProps} />;
+      case 'football3':
+        return <FootballSeatMap3 {...seatMapProps} />;
+      
       case 'cinema1':
-        return <CinemaSeatmap1 {...seatMapProps} />;
+        return <CinemaSeatMap1 {...seatMapProps} />;
+      
       default:
         return <div>No hay un mapa de asientos para esta ubicación.</div>;
     }
