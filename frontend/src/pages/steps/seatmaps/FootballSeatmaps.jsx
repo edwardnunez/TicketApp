@@ -51,3 +51,5 @@ export const FootballSeatMap3 = ({ selectedSeats, onSeatSelect, maxSeats, occupi
     stadiumName="Estadio Juvenil"
   />
 );
+
+export default FootballSeatMap1;

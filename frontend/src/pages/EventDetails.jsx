@@ -83,7 +83,9 @@ const EventDetails = () => {
     const typeMap = {
       'concert': 'Conciertos',
       'football': 'Deportes', 
-      'cinema': 'Cine'
+      'cinema': 'Cine',
+      'festival': 'Festivales',
+      'theater': 'Teatro'
     };
     return typeMap[type] || 'Evento';
   };

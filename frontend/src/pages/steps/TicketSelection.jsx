@@ -1,13 +1,23 @@
 import { Card, Radio, Space, Tag, InputNumber, Typography, Alert } from "antd";
 import { COLORS } from "../../components/colorscheme";
 
-// Importa el componente genérico y los específicos
 import  { 
   FootballSeatMap1, 
   FootballSeatMap2,
   FootballSeatMap3
 } from "./seatmaps/FootballSeatmaps";
-import CinemaSeatMap1 from "./seatmaps/CinemaSeatmap1";
+
+import { 
+  CinemaSeatMap1,
+  CinemaSeatMap2,
+  CinemaSeatMap3
+} from "./seatmaps/CinemaSeatmaps";
+
+import { 
+  TheaterSeatMap1,
+  TheaterSeatMap2,
+  TheaterSeatMap3
+} from "./seatmaps/TheaterSeatmaps";
 
 const { Title, Text } = Typography;
 
@@ -57,6 +67,17 @@ export default function SelectTickets({
       
       case 'cinema1':
         return <CinemaSeatMap1 {...seatMapProps} />;
+      case 'cinema2':
+        return <CinemaSeatMap2 {...seatMapProps} />;
+      case 'cinema3':
+        return <CinemaSeatMap3 {...seatMapProps} />;
+
+      case 'theater1':
+        return <TheaterSeatMap1 {...seatMapProps} />;
+      case 'theater2':
+        return <TheaterSeatMap2 {...seatMapProps} />;
+      case 'theater3':
+        return <TheaterSeatMap3 {...seatMapProps} />;
       
       default:
         return <div>No hay un mapa de asientos para esta ubicación.</div>;
@@ -65,7 +86,8 @@ export default function SelectTickets({
 
   return (
     <>
-      {(!requiresSeatMap() || ticketTypes.length > 1) && (
+      {/* Solo mostrar selección de tipos de tickets cuando NO hay mapa de asientos */}
+      {!requiresSeatMap() && (
         <Card style={{ marginBottom: '24px' }}>
           <Title level={4} style={{ color: COLORS.neutral.darker, marginBottom: '16px' }}>
             Selecciona tu tipo de ticket
