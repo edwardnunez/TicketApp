@@ -22,3 +22,6 @@ para asociar locations a seatmaps
 1- cambiar el model y añadirle un seatmapId
 2- añadir seatmap id a las locations de seed.js
 3- cambiar el metodo de seleccion de seatmap para elegir por id en vez de por tipo de evento
+
+FALTA: crear footballseatmap2
+       investigar si podria generalizar el seatmap de futbol para luego simplemente crear otros a partir de cambiar filas y columnas de las secciones
