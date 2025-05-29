@@ -4,7 +4,7 @@ const eventSchema = new mongoose.Schema({
   name: { type: String, required: true },
   type: { 
     type: String, 
-    enum: ['football', 'cinema', 'concert'],
+    enum: ['football', 'cinema', 'concert', 'theater', 'festival'],
     required: true
   },
   description: { type: String, required: true },

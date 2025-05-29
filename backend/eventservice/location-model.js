@@ -11,12 +11,12 @@ const locationSchema = new mongoose.Schema({
   name: { type: String, required: true },
   category: { 
     type: String, 
-    enum: ['stadium', 'cinema', 'concert'],
+    enum: ['stadium', 'cinema', 'concert', 'theater', 'festival'],
     required: true
   },
   address: { type: String, required: true },
   capacity: { type: Number, required: false },
-  seatMapId: { type: String, required: true },
+  seatMapId: { type: String, required: false },
   seatingMap: [[seatSchema]]
 }, { timestamps: true });
 

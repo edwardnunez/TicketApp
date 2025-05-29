@@ -34,7 +34,8 @@ import {
   ClockCircleOutlined,
   StopOutlined,
   ExclamationCircleOutlined,
-  UploadOutlined
+  UploadOutlined,
+  LockOutlined
 } from '@ant-design/icons';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
@@ -55,6 +56,8 @@ const EventCreation = () => {
   const [locationOptions, setLocationOptions] = useState([]);
   const [errorMessage, setErrorMessage] = useState(null);
   const [selectedDate, setSelectedDate] = useState(dayjs().add(2, 'day'));
+  const [selectedLocation, setSelectedLocation] = useState(null); // Nueva state para la ubicación seleccionada
+  const [isCapacityLocked, setIsCapacityLocked] = useState(false); // Estado para controlar si la capacidad está bloqueada
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
@@ -64,8 +67,11 @@ const EventCreation = () => {
   const categoryColors = {
     football: COLORS?.categories?.deportes || "#52c41a",
     cinema: COLORS?.categories?.cine || "#eb2f96",
-    concert: COLORS?.categories?.conciertos || "#1890ff"
+    concert: COLORS?.categories?.conciertos || "#1890ff",
+    theater: COLORS?.categories?.teatro || "#fa8c16",
+    festival: COLORS?.categories?.festivales || "#722ed1"
   };
+
 
   const stateColors = {
     activo: COLORS?.status?.success || "#52c41a",
@@ -110,6 +116,10 @@ const EventCreation = () => {
           return location.category === 'cinema';
         } else if (type === 'concert') {
           return location.category === 'concert';
+        } else if (type === 'theater') {
+          return location.category === 'theater';
+        } else if (type === 'festival') {
+          return location.category === 'festival';
         }
         return false;
       });
@@ -129,6 +139,22 @@ const EventCreation = () => {
       return 'activo';
     } else {
       return 'proximo';
+    }
+  };
+
+  // Nueva función para manejar el cambio de ubicación
+  const handleLocationChange = (locationId) => {
+    const location = locations.find(loc => loc._id === locationId);
+    setSelectedLocation(location);
+    
+    if (location && location.seatmapid) {
+      // Si la ubicación tiene seatmapid, bloquear capacidad y establecer el valor de la ubicación
+      setIsCapacityLocked(true);
+      form.setFieldsValue({ capacity: location.capacity });
+    } else {
+      // Si no tiene seatmapid, desbloquear la capacidad
+      setIsCapacityLocked(false);
+      form.setFieldsValue({ capacity: undefined });
     }
   };
 
@@ -178,6 +204,8 @@ const EventCreation = () => {
       case 'football': return 'Partido de fútbol';
       case 'cinema': return 'Cine';
       case 'concert': return 'Concierto';
+      case 'theater': return 'Teatro';
+      case 'festival': return 'Festival';
       default: return type;
     }
   };
@@ -212,7 +240,7 @@ const EventCreation = () => {
                     title: <Link to="/admin">Administración</Link> 
                   },
                   { 
-                    title: 'Crear Evento' 
+                    title: 'Crear evento' 
                   }
                 ]}
                 style={{ marginBottom: '8px' }}
@@ -310,6 +338,18 @@ const EventCreation = () => {
                         </Tag>
                         Concierto
                       </Option>
+                      <Option value="theater">
+                        <Tag color={categoryColors.theater} style={{ marginRight: '8px' }}>
+                          Teatro
+                        </Tag>
+                        Teatro
+                      </Option>
+                      <Option value="festival">
+                        <Tag color={categoryColors.festival} style={{ marginRight: '8px' }}>
+                          Festival
+                        </Tag>
+                        Festival
+                      </Option>
                     </Select>
                   </Form.Item>
                 </Col>
@@ -364,6 +404,7 @@ const EventCreation = () => {
                       suffixIcon={<EnvironmentOutlined style={{ color: COLORS?.primary?.main || '#1890ff' }} />}
                       disabled={!type}
                       showSearch
+                      onChange={handleLocationChange}
                       filterOption={(input, option) =>
                         option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                       }
@@ -381,6 +422,15 @@ const EventCreation = () => {
                       {locationOptions.map((location) => (
                         <Option key={location._id} value={location._id}>
                           {location.name}
+                          {location.seatmapid && (
+                            <Tag 
+                              color="blue" 
+                              size="small" 
+                              style={{ marginLeft: '8px', fontSize: '10px' }}
+                            >
+                              Con mapa de asientos
+                            </Tag>
+                          )}
                         </Option>
                       ))}
                     </Select>
@@ -417,8 +467,19 @@ const EventCreation = () => {
                   >
                     <Input 
                       type="number" 
-                      placeholder="Ingrese la capacidad" 
-                      suffix={<span style={{ color: COLORS?.neutral?.grey3 || '#d9d9d9' }}>asientos</span>} 
+                      placeholder={isCapacityLocked ? "Capacidad establecida por el mapa de asientos" : "Ingrese la capacidad"}
+                      disabled={isCapacityLocked}
+                      prefix={isCapacityLocked ? <LockOutlined style={{ color: COLORS?.neutral?.grey3 || '#d9d9d9' }} /> : null}
+                      suffix={
+                        <span style={{ color: COLORS?.neutral?.grey3 || '#d9d9d9' }}>
+                          asientos
+                          {isCapacityLocked && selectedLocation && (
+                            <Tooltip title={`Capacidad fija basada en el mapa de asientos de ${selectedLocation.name}`}>
+                              <InfoCircleOutlined style={{ marginLeft: '4px' }} />
+                            </Tooltip>
+                          )}
+                        </span>
+                      }
                     />
                   </Form.Item>
                 </Col>
@@ -460,6 +521,18 @@ const EventCreation = () => {
                 </Col>
               </Row>
 
+              {/* Información adicional sobre la ubicación seleccionada */}
+              {selectedLocation && selectedLocation.seatmapid && (
+                <Alert
+                  message="Ubicación con mapa de asientos"
+                  description={`Esta ubicación (${selectedLocation.name}) tiene un mapa de asientos configurado. La capacidad se establece automáticamente en ${selectedLocation.capacity} asientos según el mapa.`}
+                  type="info"
+                  showIcon
+                  icon={<InfoCircleOutlined />}
+                  style={{ marginBottom: 24, borderRadius: '6px' }}
+                />
+              )}
+
               <Divider />
 
               {/* Preview of selected event type and state */}
@@ -488,6 +561,8 @@ const EventCreation = () => {
                               {type === 'football' && <i className="fas fa-futbol"></i>}
                               {type === 'cinema' && <i className="fas fa-film"></i>}
                               {type === 'concert' && <i className="fas fa-music"></i>}
+                              {type === 'theater' && <i className="fas fa-theater"></i>}
+                              {type === 'festival' && <i className="fas fa-festival"></i>}
                             </div>
                             <div>
                               <Text strong style={{ fontSize: '16px' }}>
@@ -497,6 +572,8 @@ const EventCreation = () => {
                                 {type === 'football' && 'Los partidos de fútbol requieren ubicaciones de estadio y tienen asientos designados.'}
                                 {type === 'cinema' && 'Los eventos de cine requieren ubicaciones de cine y tienen capacidad limitada basada en la sala de proyección.'}
                                 {type === 'concert' && 'Los conciertos pueden realizarse en varios lugares con arreglos de asientos o de pie.'}
+                                {type === 'theater' && 'Las obras de teatro suelen realizarse en teatros con asientos asignados que ofrecen una experiencia cercana e íntima.'}
+                                {type === 'festival' && 'Los festivales son eventos al aire libre o en grandes recintos que combinan música, arte y cultura, con entradas no numeradas y sin asientos'}
                               </Paragraph>
                             </div>
                           </Space>
