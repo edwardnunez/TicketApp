@@ -14,7 +14,7 @@ export default function PaymentMethod({ event, form, quantity, selectedTicketTyp
 
         <Alert
           message="Demo de compra"
-          description="Esta es una demostración. En un entorno real, aquí integrarías con un procesador de pagos como Stripe, PayPal, o Transbank."
+          description="Esta es una simulación. Próximamente se incluirá un procesador de pagos."
           type="info"
           showIcon
           style={{ marginBottom: '24px' }}

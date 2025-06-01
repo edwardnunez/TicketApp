@@ -72,7 +72,7 @@ export default function Confirmation({
         <Button 
           type="primary" 
           size="large"
-          onClick={() => navigate(`/events/${event._id}`)}
+          onClick={() => navigate(`/event/${event._id}`)}
           style={{
             backgroundColor: COLORS.primary.main,
             borderColor: COLORS.primary.main
