@@ -12,7 +12,6 @@ export default function BuyerInfo({
   quantity, 
   formatPrice 
 }) {
-  // Validación teléfono (igual que en original)
   const validatePhoneNumber = (_, value) => {
     if (!value) return Promise.resolve();
     const regex = /^[0-9]+$/;

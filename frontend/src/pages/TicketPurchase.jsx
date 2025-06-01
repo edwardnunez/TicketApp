@@ -145,7 +145,7 @@ const TicketPurchase = () => {
     if (useAccountData && userData) {
       form.setFieldsValue({
         firstName: userData.name || '',
-        lastName: '',
+        lastName: userData.surname || '',
         email: userData.email || '',
         phone: userData.phone || ''
       });

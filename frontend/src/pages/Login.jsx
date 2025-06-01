@@ -1,25 +1,42 @@
 import { useState } from "react";
-import { Layout, Typography, Form, Input, Button, message, Space } from "antd";
+import { Layout, Typography, Form, Input, Button, message, Space, Alert } from "antd";
 import { UserOutlined, LockOutlined, LoginOutlined } from "@ant-design/icons";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 
-// Importamos el esquema de colores
 import { COLORS } from "../components/colorscheme";
 
 const { Content } = Layout;
-const { Title, Text, Paragraph } = Typography;
+const { Title, Text } = Typography;
 
 const Login = () => {
   const [loading, setLoading] = useState(false);
+  const [loginError, setLoginError] = useState({});
+  const [form] = Form.useForm();
   const navigate = useNavigate();
   const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
 
+  // Validador personalizado para username
+  const validateUsername = (_, value) => {
+    if (!value) {
+      return Promise.reject(new Error("Por favor ingresa tu nombre de usuario"));
+    }
+    return Promise.resolve();
+  };
+
+  // Validador personalizado para password
+  const validatePassword = (_, value) => {
+    if (!value) {
+      return Promise.reject(new Error("Por favor ingresa tu contraseña"));
+    }
+    return Promise.resolve();
+  };
+
   const onFinish = async (values) => {
     setLoading(true);
+    setLoginError({});
     try {
       const response = await axios.post(gatewayUrl + "/login", values);
-      console.log(response);
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("roleToken", response.data.roleToken);
       localStorage.setItem("username", response.data.username);
@@ -27,35 +44,46 @@ const Login = () => {
       navigate("/");
     } catch (error) {
       setLoading(false);
-      if (error.response && error.response.status === 401) {
-        message.error("Invalid credentials! Please check your username and password.");
+      if (error.response?.data) {
+        const { error: errorMessage, field } = error.response.data;
+        if (error.response.status === 401) {
+          setLoginError({
+            general: "Credenciales inválidas. Verifica tu nombre de usuario y contraseña."
+          });
+        } else {
+          if (field) {
+            setLoginError({ [field]: errorMessage });
+          } else {
+            setLoginError({ general: errorMessage || "¡Algo salió mal! Inténtalo de nuevo más tarde." });
+          }
+        }
       } else {
-        message.error("Something went wrong! Please try again later.");
+        setLoginError({ general: "Error de conexión. Por favor, inténtalo de nuevo." });
       }
     }
   };
 
+  const onFinishFailed = (errorInfo) => {
+    setLoading(false);
+  };
+
   return (
     <Layout style={{ backgroundColor: COLORS.neutral.grey1, minHeight: "100vh" }}>
-      {/* Hero Section - usando el gradiente principal */}
-      <div style={{ 
-        background: COLORS.gradients.primary,
-        padding: '40px 20px',
-        textAlign: 'center',
-        color: COLORS.neutral.white
-      }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <Title level={1} style={{ color: COLORS.neutral.white, marginBottom: '16px' }}>
+      <div
+        style={{
+          background: COLORS.gradients.primary,
+          padding: "40px 20px",
+          textAlign: "center",
+          color: COLORS.neutral.white,
+        }}
+      >
+        <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+          <Title level={1} style={{ color: COLORS.neutral.white, marginBottom: "16px" }}>
             Accede a tu cuenta
           </Title>
-          <Paragraph style={{ 
-            fontSize: '18px', 
-            maxWidth: '700px', 
-            margin: '0 auto 16px',
-            color: 'rgba(255, 255, 255, 0.85)'
-          }}>
+          <Text style={{ fontSize: "18px", maxWidth: "700px", margin: "0 auto 16px", color: "rgba(255, 255, 255, 0.85)" }}>
             Inicia sesión para descubrir y reservar eventos increíbles
-          </Paragraph>
+          </Text>
         </div>
       </div>
 
@@ -76,38 +104,44 @@ const Login = () => {
               <Title level={3} style={{ margin: "0 0 8px 0", color: COLORS.neutral.dark }}>
                 Iniciar sesión
               </Title>
-              <Text style={{ color: COLORS.neutral.grey4 }}>
-                Accede a tu cuenta para gestionar tus eventos
-              </Text>
+              <Text style={{ color: COLORS.neutral.grey4 }}>Accede a tu cuenta para gestionar tus eventos</Text>
             </div>
 
-            <Form 
-              name="login" 
-              onFinish={onFinish} 
+            <Form
+              form={form}
+              name="login"
+              onFinish={onFinish}
+              onFinishFailed={onFinishFailed}
               layout="vertical"
               size="large"
             >
               <Form.Item
                 name="username"
-                rules={[{ required: true, message: "Por favor ingresa tu nombre de usuario" }]}
+                rules={[{ validator: validateUsername }]}
+                validateStatus={loginError["username"] ? "error" : ""}
+                help={loginError["username"]}
               >
-                <Input 
-                  prefix={<UserOutlined style={{ color: COLORS.neutral.grey4 }} />} 
-                  placeholder="Nombre de usuario" 
-                  style={{ borderRadius: "6px" }}
-                />
+                <Input prefix={<UserOutlined style={{ color: COLORS.neutral.grey4 }} />} placeholder="Nombre de usuario" style={{ borderRadius: "6px" }} />
               </Form.Item>
 
               <Form.Item
                 name="password"
-                rules={[{ required: true, message: "Por favor ingresa tu contraseña" }]}
+                rules={[{ validator: validatePassword }]}
+                validateStatus={loginError["password"] ? "error" : ""}
+                help={loginError["password"]}
               >
-                <Input.Password 
-                  prefix={<LockOutlined style={{ color: COLORS.neutral.grey4 }} />} 
-                  placeholder="Contraseña" 
-                  style={{ borderRadius: "6px" }}
-                />
+                <Input.Password prefix={<LockOutlined style={{ color: COLORS.neutral.grey4 }} />} placeholder="Contraseña" style={{ borderRadius: "6px" }} />
               </Form.Item>
+
+              {loginError["general"] && (
+                <Alert
+                  message="Error de inicio de sesión"
+                  description={loginError["general"]}
+                  type="error"
+                  showIcon
+                  style={{ marginBottom: "16px" }}
+                />
+              )}
 
               <Form.Item>
                 <Button
@@ -115,12 +149,12 @@ const Login = () => {
                   htmlType="submit"
                   block
                   loading={loading}
-                  style={{ 
-                    height: "44px", 
+                  style={{
+                    height: "44px",
                     borderRadius: "6px",
                     backgroundColor: COLORS.primary.main,
                     borderColor: COLORS.primary.main,
-                    boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
+                    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
                   }}
                 >
                   Iniciar sesión

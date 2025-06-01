@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Badge, Avatar, Typography, Menu, Dropdown } from "antd";
-import { UserOutlined, ShoppingCartOutlined, TagOutlined } from "@ant-design/icons";
+import { UserOutlined, TagOutlined } from "@ant-design/icons";
 import { COLORS } from "./colorscheme";
 
 const { Title } = Typography;
 
 const Navbar = () => {
-  const [cartItems, setCartItems] = useState(3); // Ejemplo, deberías obtenerlo de estado real
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -63,9 +62,6 @@ const Navbar = () => {
         <Link to="/admin" style={{ color: COLORS.neutral.white, fontWeight: "500" }}>
           Panel de administrador
         </Link>
-        <Badge count={cartItems} size="small" style={{ backgroundColor: COLORS.primary.main }}>
-          <ShoppingCartOutlined style={{ fontSize: 24, color: COLORS.neutral.white }} />
-        </Badge>
 
         {isLoggedIn && (
           <Dropdown overlay={menu} placement="bottomRight" trigger={["click"]}>
