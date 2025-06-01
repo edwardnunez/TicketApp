@@ -34,11 +34,14 @@ import {
   ClockCircleOutlined,
   StopOutlined,
   ExclamationCircleOutlined,
-  UploadOutlined
+  UploadOutlined,
+  LockOutlined
 } from '@ant-design/icons';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import dayjs from 'dayjs';
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
+
 
 import { COLORS } from "../../components/colorscheme";
 
@@ -48,20 +51,27 @@ const { Title, Text, Paragraph } = Typography;
 
 const EventCreation = () => {
   const [loading, setLoading] = useState(false);
-  const [eventType, setEventType] = useState(null);
+  const [type, setType] = useState(null);
   const [locations, setLocations] = useState([]);
   const [locationOptions, setLocationOptions] = useState([]);
   const [errorMessage, setErrorMessage] = useState(null);
   const [selectedDate, setSelectedDate] = useState(dayjs().add(2, 'day'));
+  const [selectedLocation, setSelectedLocation] = useState(null);
+  const [isCapacityLocked, setIsCapacityLocked] = useState(false);
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
 
+  dayjs.extend(isSameOrBefore);
+
   const categoryColors = {
     football: COLORS?.categories?.deportes || "#52c41a",
     cinema: COLORS?.categories?.cine || "#eb2f96",
-    concert: COLORS?.categories?.conciertos || "#1890ff"
+    concert: COLORS?.categories?.conciertos || "#1890ff",
+    theater: COLORS?.categories?.teatro || "#fa8c16",
+    festival: COLORS?.categories?.festivales || "#722ed1"
   };
+
 
   const stateColors = {
     activo: COLORS?.status?.success || "#52c41a",
@@ -98,14 +108,18 @@ const EventCreation = () => {
   }, [gatewayUrl]);
 
   useEffect(() => {
-    if (eventType) {
+    if (type) {
       const filteredLocations = locations.filter(location => {
-        if (eventType === 'football') {
+        if (type === 'football') {
           return location.category === 'stadium';
-        } else if (eventType === 'cinema') {
+        } else if (type === 'cinema') {
           return location.category === 'cinema';
-        } else if (eventType === 'concert') {
+        } else if (type === 'concert') {
           return location.category === 'concert';
+        } else if (type === 'theater') {
+          return location.category === 'theater';
+        } else if (type === 'festival') {
+          return location.category === 'festival';
         }
         return false;
       });
@@ -113,7 +127,7 @@ const EventCreation = () => {
     } else {
       setLocationOptions(locations);
     }
-  }, [eventType, locations]);
+  }, [type, locations]);
 
   const getAutoState = (date) => {
     if (!date) return 'proximo';
@@ -128,27 +142,57 @@ const EventCreation = () => {
     }
   };
 
+  const handleLocationChange = (locationId) => {
+    const location = locations.find(loc => loc._id === locationId);
+    setSelectedLocation(location);
+    
+    if (location && location.capacity && location.capacity > 0) {
+      // Si la ubicación tiene capacidad definida, bloquear el campo y establecer el valor
+      setIsCapacityLocked(true);
+      form.setFieldsValue({ capacity: location.capacity });
+    } else {
+      // Si no tiene capacidad definida, desbloquear el campo
+      setIsCapacityLocked(false);
+      form.setFieldsValue({ capacity: undefined });
+    }
+  };
+
+  const handleTypeChange = (value) => {
+    setType(value);
+    // Resetear la ubicación seleccionada cuando cambia el tipo
+    setSelectedLocation(null);
+    setIsCapacityLocked(false);
+    form.setFieldsValue({ 
+      location: undefined,
+      capacity: undefined 
+    });
+  };
+
   const onFinish = async (values) => {
     setLoading(true);
     setErrorMessage(null);
+    
+    console.log('Form values:', values); // Debug log
+    
     try {
-      const formData = new FormData();
-      formData.append('name', values.name);
-      formData.append('date', values.date.valueOf());
-      formData.append('location', values.location);
-      formData.append('eventType', values.eventType);
-      formData.append('description', values.description);
-      formData.append('capacity', values.capacity);
-      formData.append('price', values.price);
-      formData.append('state', 'proximo');
+      // Primero enviar los datos sin imagen para probar
+      const eventData = {
+        name: values.name,
+        date: values.date.toISOString(),
+        location: values.location,
+        type: values.type,
+        description: values.description,
+        capacity: parseInt(values.capacity),
+        price: parseFloat(values.price),
+        state: values.state || 'proximo'
+      };
 
-      // Extraemos el archivo de la subida si existe
-      if (values.image && values.image.file.originFileObj) {
-        formData.append('image', values.image.file.originFileObj);
-      }
+      console.log('Sending event data:', eventData);
 
-      await axios.post(gatewayUrl + "/event", formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+      const response = await axios.post(gatewayUrl + "/event", eventData, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
 
       message.success({
@@ -158,17 +202,20 @@ const EventCreation = () => {
       navigate('/admin');
     } catch (error) {
       console.error("Error creando el evento:", error);
+      console.error("Error response:", error.response?.data);
       setErrorMessage(error.response?.data?.error || 'Hubo un error al crear el evento');
     } finally {
       setLoading(false);
     }
   };
 
-  const getEventTypeLabel = (type) => {
+  const gettypeLabel = (type) => {
     switch(type) {
       case 'football': return 'Partido de fútbol';
       case 'cinema': return 'Cine';
       case 'concert': return 'Concierto';
+      case 'theater': return 'Teatro';
+      case 'festival': return 'Festival';
       default: return type;
     }
   };
@@ -203,7 +250,7 @@ const EventCreation = () => {
                     title: <Link to="/admin">Administración</Link> 
                   },
                   { 
-                    title: 'Crear Evento' 
+                    title: 'Crear evento' 
                   }
                 ]}
                 style={{ marginBottom: '8px' }}
@@ -274,12 +321,12 @@ const EventCreation = () => {
                 <Col xs={24} md={8}>
                   <Form.Item
                     label="Tipo de evento"
-                    name="eventType"
+                    name="type"
                     rules={[{ required: true, message: 'Por favor seleccione el tipo de evento' }]}
                   >
                     <Select
                       placeholder="Seleccionar tipo de evento"
-                      onChange={(value) => setEventType(value)}
+                      onChange={handleTypeChange}
                       size="large"
                       suffixIcon={<TagOutlined style={{ color: COLORS?.primary?.main || '#1890ff' }} />}
                     >
@@ -301,13 +348,25 @@ const EventCreation = () => {
                         </Tag>
                         Concierto
                       </Option>
+                      <Option value="theater">
+                        <Tag color={categoryColors.theater} style={{ marginRight: '8px' }}>
+                          Teatro
+                        </Tag>
+                        Teatro
+                      </Option>
+                      <Option value="festival">
+                        <Tag color={categoryColors.festival} style={{ marginRight: '8px' }}>
+                          Festival
+                        </Tag>
+                        Festival
+                      </Option>
                     </Select>
                   </Form.Item>
                 </Col>
               </Row>
 
               <Row gutter={24}>
-                <Col xs={24} md={8}>
+                <Col xs={24} md={12}>
                   <Form.Item
                     label="Fecha y hora"
                     name="date"
@@ -317,8 +376,9 @@ const EventCreation = () => {
                         validator: (_, value) => {
                           if (!value) return Promise.reject('Por favor seleccione la fecha y hora del evento');
                           const now = dayjs();
+                          const dateValue = dayjs(value);
 
-                          if (value.isSameOrBefore(now, 'day')) {
+                          if (dateValue.isSameOrBefore(now, 'day')) {
                             return Promise.reject('La fecha del evento debe ser al menos un día después de hoy');
                           }
                           return Promise.resolve();
@@ -338,7 +398,7 @@ const EventCreation = () => {
                   </Form.Item>
                 </Col>
 
-                <Col xs={24} md={8}>
+                <Col xs={24} md={12}>
                   <Form.Item
                     label="Ubicación"
                     name="location"
@@ -348,13 +408,15 @@ const EventCreation = () => {
                       placeholder="Seleccionar ubicación"
                       size="large"
                       suffixIcon={<EnvironmentOutlined style={{ color: COLORS?.primary?.main || '#1890ff' }} />}
-                      disabled={!eventType}
+                      disabled={!type}
                       showSearch
+                      onChange={handleLocationChange}
+                      value={selectedLocation?._id} // Controlar el valor seleccionado
                       filterOption={(input, option) =>
                         option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                       }
                       notFoundContent={
-                        !eventType ? 
+                        !type ? 
                           <div style={{ textAlign: 'center', padding: '8px' }}>
                             <InfoCircleOutlined style={{ marginRight: '8px' }} />
                             Por favor seleccione primero un tipo de evento
@@ -366,7 +428,29 @@ const EventCreation = () => {
                     >
                       {locationOptions.map((location) => (
                         <Option key={location._id} value={location._id}>
-                          {location.name}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ flex: 1 }}>{location.name}</span>
+                            <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
+                              {location.capacity && location.capacity > 0 && (
+                                <Tag 
+                                  color="green" 
+                                  size="small" 
+                                  style={{ fontSize: '10px', margin: 0 }}
+                                >
+                                  Cap: {location.capacity}
+                                </Tag>
+                              )}
+                              {location.seatMapId && (
+                                <Tag 
+                                  color="blue" 
+                                  size="small" 
+                                  style={{ fontSize: '10px', margin: 0 }}
+                                >
+                                  Mapa
+                                </Tag>
+                              )}
+                            </div>
+                          </div>
                         </Option>
                       ))}
                     </Select>
@@ -403,8 +487,19 @@ const EventCreation = () => {
                   >
                     <Input 
                       type="number" 
-                      placeholder="Ingrese la capacidad" 
-                      suffix={<span style={{ color: COLORS?.neutral?.grey3 || '#d9d9d9' }}>asientos</span>} 
+                      placeholder={isCapacityLocked ? "Capacidad establecida por el mapa de asientos" : "Ingrese la capacidad"}
+                      disabled={isCapacityLocked}
+                      prefix={isCapacityLocked ? <LockOutlined style={{ color: COLORS?.neutral?.grey3 || '#d9d9d9' }} /> : null}
+                      suffix={
+                        <span style={{ color: COLORS?.neutral?.grey3 || '#d9d9d9' }}>
+                          asientos
+                          {isCapacityLocked && selectedLocation && (
+                            <Tooltip title={`Capacidad fija basada en el mapa de asientos de ${selectedLocation.name}`}>
+                              <InfoCircleOutlined style={{ marginLeft: '4px' }} />
+                            </Tooltip>
+                          )}
+                        </span>
+                      }
                     />
                   </Form.Item>
                 </Col>
@@ -446,23 +541,33 @@ const EventCreation = () => {
                 </Col>
               </Row>
 
+              {selectedLocation && selectedLocation.capacity && selectedLocation.capacity > 0 && (
+                <Alert
+                  message="Ubicación con capacidad predefinida"
+                  description={`Esta ubicación (${selectedLocation.name}) tiene una capacidad predefinida de ${selectedLocation.capacity} asientos. La capacidad se establece automáticamente según la configuración de la ubicación.`}
+                  type="info"
+                  showIcon
+                  icon={<InfoCircleOutlined />}
+                  style={{ marginBottom: 24, borderRadius: '6px' }}
+                />
+              )}
               <Divider />
 
               {/* Preview of selected event type and state */}
-              {(eventType || form.getFieldValue('state')) && (
+              {(type || form.getFieldValue('state')) && (
                 <Row style={{ marginBottom: '24px' }}>
                   <Col span={24}>
                     <Space direction="vertical" size={16} style={{ width: '100%' }}>
-                      {eventType && (
+                      {type && (
                         <div style={{ 
                           padding: '16px', 
-                          backgroundColor: `${categoryColors[eventType]}10`, 
+                          backgroundColor: `${categoryColors[type]}10`, 
                           borderRadius: '8px',
-                          border: `1px solid ${categoryColors[eventType]}30`
+                          border: `1px solid ${categoryColors[type]}30`
                         }}>
                           <Space align="start">
                             <div style={{ 
-                              backgroundColor: categoryColors[eventType], 
+                              backgroundColor: categoryColors[type], 
                               width: '40px', 
                               height: '40px', 
                               borderRadius: '50%',
@@ -471,18 +576,22 @@ const EventCreation = () => {
                               justifyContent: 'center',
                               color: COLORS?.neutral?.white || '#ffffff'
                             }}>
-                              {eventType === 'football' && <i className="fas fa-futbol"></i>}
-                              {eventType === 'cinema' && <i className="fas fa-film"></i>}
-                              {eventType === 'concert' && <i className="fas fa-music"></i>}
+                              {type === 'football' && <i className="fas fa-futbol"></i>}
+                              {type === 'cinema' && <i className="fas fa-film"></i>}
+                              {type === 'concert' && <i className="fas fa-music"></i>}
+                              {type === 'theater' && <i className="fas fa-theater"></i>}
+                              {type === 'festival' && <i className="fas fa-festival"></i>}
                             </div>
                             <div>
                               <Text strong style={{ fontSize: '16px' }}>
-                                Tipo de evento seleccionado: {getEventTypeLabel(eventType)}
+                                Tipo de evento seleccionado: {gettypeLabel(type)}
                               </Text>
                               <Paragraph type="secondary" style={{ marginBottom: 0 }}>
-                                {eventType === 'football' && 'Los partidos de fútbol requieren ubicaciones de estadio y tienen asientos designados.'}
-                                {eventType === 'cinema' && 'Los eventos de cine requieren ubicaciones de cine y tienen capacidad limitada basada en la sala de proyección.'}
-                                {eventType === 'concert' && 'Los conciertos pueden realizarse en varios lugares con arreglos de asientos o de pie.'}
+                                {type === 'football' && 'Los partidos de fútbol requieren ubicaciones de estadio y tienen asientos designados.'}
+                                {type === 'cinema' && 'Los eventos de cine requieren ubicaciones de cine y tienen capacidad limitada basada en la sala de proyección.'}
+                                {type === 'concert' && 'Los conciertos pueden realizarse en varios lugares con arreglos de asientos o de pie.'}
+                                {type === 'theater' && 'Las obras de teatro suelen realizarse en teatros con asientos asignados que ofrecen una experiencia cercana e íntima.'}
+                                {type === 'festival' && 'Los festivales son eventos al aire libre o en grandes recintos que combinan música, arte y cultura, con entradas no numeradas y sin asientos'}
                               </Paragraph>
                             </div>
                           </Space>
