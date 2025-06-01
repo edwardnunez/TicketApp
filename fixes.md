@@ -21,3 +21,5 @@ eliminar precio de creacion de evento (o añadir diseccion por secciones en func
 mejorar el cambio de contraseña en editar perfil (falta probarlo)
 
 corregir como se guardan los tickets en bd (distinguir por precion en vez de meter todos juntos si se compran varios)
+
+retocar formato de lista de tickets comprados enProfile
