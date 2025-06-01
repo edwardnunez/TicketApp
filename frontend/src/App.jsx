@@ -8,6 +8,7 @@ import Profile from "./pages/Profile";
 import EditProfile from "./pages/EditProfile";
 import ErrorPage from "./pages/ErrorPage";
 import AboutUs from "./pages/AboutUs";
+import TicketPurchase from "./pages/TicketPurchase";
 
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import EventCreation from "./pages/admin/EventCreation";
@@ -32,6 +33,7 @@ function App() {
         <Route path="/about-us" element={<ProtectedRoute element={<AboutUs />} />} />
         <Route path="/profile" element={<ProtectedRoute element={<Profile />} />} />
         <Route path="/edit-profile" element={<ProtectedRoute element={<EditProfile />} />} />
+        <Route path="/event/purchase/:id" element={<ProtectedRoute element={<TicketPurchase />} />} />
 
         <Route path="/admin" element={<AdminRoute element={<AdminDashboard />} />} />
         <Route path="/create-event" element={<AdminRoute element={<EventCreation />} />} />

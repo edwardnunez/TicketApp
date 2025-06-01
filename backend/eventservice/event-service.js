@@ -40,47 +40,6 @@ const LocationModel = locationDbConnection.model('Location', Location.schema);
 
 const seedDatabase = async () => {
   await seedLocations(locationDbConnection);
-  
-  // Verificar si ya existen eventos
-  const eventCount = await EventModel.countDocuments();
-  if (eventCount === 0) {
-    try {
-      // Obtener algunas ubicaciones
-      const locations = await LocationModel.find().limit(3);
-      
-      if (locations.length > 0) {
-        // Crear algunos eventos de muestra
-        const sampleEvents = [
-          {
-            name: "Concierto de Rock",
-            type: "concert",
-            description: "Un increíble concierto de rock con las mejores bandas",
-            date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-            location: locations[0]._id
-          },
-          {
-            name: "Partido de fútbol",
-            type: "football",
-            description: "Final de la temporada de fútbol",
-            date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
-            location: locations[1]._id
-          },
-          {
-            name: "Estreno de película",
-            type: "cinema",
-            description: "Estreno del último blockbuster",
-            date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-            location: locations[2]._id
-          }
-        ];
-        
-        await EventModel.insertMany(sampleEvents);
-        console.log('Eventos de muestra creados con éxito');
-      }
-    } catch (error) {
-      console.error('Error al crear eventos de muestra:', error);
-    }
-  }
 };
 
 seedDatabase().catch(error => {
@@ -99,29 +58,43 @@ const upload = multer({ storage });
 
 app.use('/images/events', express.static('images/events'));
 
-app.post("/event", upload.single('image'), async (req, res) => {
+app.post("/event", async (req, res) => {
   try {
-    const { name, date, location, eventType, description } = req.body;
-    if (!name || !date || !location || !eventType) {
-      return res.status(400).json({ error: "Missing required fields" });
+    console.log('Received req.body:', req.body);
+    console.log('Content-Type:', req.headers['content-type']);
+    
+    const { name, date, location, type, description, capacity, price, state } = req.body;
+    
+    if (!name || !date || !location || !type) {
+      console.log('Missing fields check:', { 
+        name: name ? 'present' : 'missing', 
+        date: date ? 'present' : 'missing', 
+        location: location ? 'present' : 'missing', 
+        type: type ? 'present' : 'missing' 
+      });
+      return res.status(400).json({ 
+        error: "Missing required fields: name, date, location, type",
+        received: req.body
+      });
     }
 
-    const eventDescription = description || `Evento de ${eventType}`;
+    const eventDescription = description || `Evento de ${type}`;
     const locationDoc = await LocationModel.findById(location);
     if (!locationDoc) return res.status(400).json({ error: "Location not found" });
 
-    const imagePath = req.file ? `/images/events/${req.file.filename}` : '/images/default.jpg';
-
     const newEvent = new EventModel({
       name,
-      date,
+      date: new Date(date),
       location: locationDoc._id,
-      type: eventType,
+      type: type,
       description: eventDescription,
-      image: imagePath,
-      state: 'proximo'
+      capacity: capacity || locationDoc.capacity || 100,
+      price: price || 0,
+      image: '/images/default.jpg', // Por ahora usar imagen por defecto
+      state: state || 'proximo'
     });
 
+    console.log('Creating event with data:', newEvent.toObject());
     await newEvent.save();
     res.status(201).json(newEvent);
   } catch (error) {
@@ -176,9 +149,9 @@ app.get("/events/:eventId", async (req, res) => {
 
 app.post("/location", async (req, res) => {
   try {
-    const { name, category, address, capacity, hasSeatingMap } = req.body;
+    const { name, category, address, seatMapId, capacity, seatingMap } = req.body;
 
-    if (!name || !category || !address) {
+    if (!name || !category || !address || !seatMapId) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
@@ -187,10 +160,12 @@ app.post("/location", async (req, res) => {
     let repeatedLocation = await LocationModel.findOne({ name, address, category });
 
     if (locationDoc) {
+      // Actualiza los campos permitidos
       locationDoc.category = category;
       locationDoc.address = address;
+      locationDoc.seatMapId = seatMapId;
       locationDoc.capacity = capacity;
-      locationDoc.hasSeatingMap = hasSeatingMap;
+      if (seatingMap) locationDoc.seatingMap = seatingMap;
 
       await locationDoc.save();
       return res.status(200).json(locationDoc);
@@ -201,8 +176,9 @@ app.post("/location", async (req, res) => {
         name,
         category,
         address,
+        seatMapId,
         capacity,
-        hasSeatingMap,
+        seatingMap: seatingMap || []
       });
 
       await locationDoc.save();
@@ -213,6 +189,7 @@ app.post("/location", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error", details: error.message });
   }
 });
+
 
 app.get("/locations", async (req, res) => {
   try {

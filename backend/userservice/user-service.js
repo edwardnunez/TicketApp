@@ -30,14 +30,108 @@ app.use(bodyParser.json());
 const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/userdb';
 mongoose.connect(mongoUri);
 
-// Function to validate required fields in the request body
+function validateEmailFormat(email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
 function validateRequiredFields(req, requiredFields) {
     for (const field of requiredFields) {
       if (!(field in req.body)) {
         throw new Error(`Missing required field: ${field}`);
       }
     }
+    
+    // Validación específica para email
+    if (requiredFields.includes('email') && req.body.email) {
+      if (!validateEmailFormat(req.body.email)) {
+        throw new Error('Invalid email format');
+      }
+    }
 }
+
+app.post("/adduser", async (req, res) => {
+  try {
+    validateRequiredFields(req, ["username", "name", "surname", "email", "password", "confirmPassword"]);
+
+    const { username, password, confirmPassword, email } = req.body;
+
+    // Validación de contraseñas coincidentes
+    if (password !== confirmPassword) {
+      return res.status(400).json({
+        error: "Passwords do not match.",
+        field: "confirmPassword"
+      });
+    }
+
+    // Validación de formato de contraseña
+    const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({
+        error: "Password must be at least 8 characters long, contain at least one uppercase letter, and at least one number.",
+        field: "password"
+      });
+    }
+
+    // Verificar si el usuario ya existe
+    const existingUser = await User.findOne({ username });
+    if (existingUser) {
+      return res.status(400).json({
+        error: "Username already exists. Please choose a different username.",
+        field: "username"
+      });
+    }
+
+    // Verificar si el email ya existe
+    const existingEmail = await User.findOne({ email: email });
+    if (existingEmail) {
+      return res.status(400).json({
+        error: "Email already exists. Please choose a different email.",
+        field: "email"
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = new User({
+      username,
+      name: req.body.name,
+      surname: req.body.surname,
+      email: email,
+      role: req.body.role || "user",
+      password: hashedPassword,
+    });
+
+    await newUser.save();
+
+    const token = jwt.sign({ userId: newUser._id }, secretKey, { expiresIn: "1h" });
+
+    const roleToken = jwt.sign(
+      { userId: newUser._id, role: newUser.role },
+      secretKey, 
+      { expiresIn: '1h' }
+    );
+
+    res.status(200).json({
+      username: newUser.username,
+      createdAt: newUser.createdAt,
+      token: token,
+      roleToken: roleToken,
+    });
+  } catch (error) {
+    if (error.message.includes('Invalid email format')) {
+      return res.status(400).json({ 
+        error: 'Invalid email format',
+        field: 'email'
+      });
+    }
+    
+    res.status(400).json({ 
+      error: error.message,
+      field: 'general'
+    });
+  }
+});
 
 // Route for user login
 app.post('/login', async (req, res) => {
@@ -73,74 +167,6 @@ function checkInput(input) {
   }
   return input.trim();
 }
-
-app.post("/adduser", async (req, res) => {
-  try {
-    validateRequiredFields(req, ["username", "name", "email", "password", "confirmPassword"]);
-
-    const { username, password, confirmPassword, role } = req.body;
-
-    if (password !== confirmPassword) {
-      return res.status(400).json({
-        error: "Passwords do not match.",
-      });
-    }
-
-    const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
-    if (!passwordRegex.test(password)) {
-      return res.status(401).json({
-        error: "Password must be at least 8 characters long, contain at least one uppercase letter, and at least one number.",
-      });
-    }
-
-    const existingUser = await User.findOne({ username });
-    if (existingUser) {
-      return res
-        .status(400)
-        .json({
-          error: "Username already exists. Please choose a different username.",
-        });
-    }
-
-    const existingEmail = await User.findOne({ email: req.body.email });
-    if (existingEmail) {
-      return res
-        .status(400)
-        .json({
-          error: "Email already exists. Please choose a different email.",
-        });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const newUser = new User({
-      username,
-      name: req.body.name,
-      email: req.body.email,
-      role: req.body.role || "user",
-      password: hashedPassword,
-    });
-
-    await newUser.save();
-
-    const token = jwt.sign({ userId: newUser._id }, secretKey, { expiresIn: "1h" });
-
-    const roleToken = jwt.sign(
-      { userId: newUser._id, role: newUser.role },
-      secretKey, 
-      { expiresIn: '1h' }
-    );
-
-    res.status(200).json({
-      username: newUser.username,
-      createdAt: newUser.createdAt,
-      token: token,
-      roleToken: roleToken,
-    });
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
 
 app.get("/users", async (req, res) => {
   try {
@@ -181,11 +207,118 @@ app.get("/users/search", async (req, res) => {
 
 app.put("/edit-user/:userId", async (req, res) => {
   try {
-    const updatedUser = await User.findByIdAndUpdate(req.params.userId, req.body, { new: true });
-    if (!updatedUser) return res.status(404).json({ error: "User not found" });
-    res.status(200).json(updatedUser);
+    const { password, currentPassword, ...otherFields } = req.body;
+    const userId = req.params.userId;
+
+    // Buscar el usuario actual
+    const currentUser = await User.findById(userId);
+    if (!currentUser) {
+      return res.status(404).json({ 
+        error: "User not found",
+        field: "general"
+      });
+    }
+
+    let updateData = { ...otherFields };
+
+    // Si se está intentando cambiar la contraseña
+    if (password) {
+      // Verificar que se proporcionó la contraseña actual
+      if (!currentPassword) {
+        return res.status(400).json({
+          error: "Current password is required to change password",
+          field: "currentPassword"
+        });
+      }
+
+      // Verificar que la contraseña actual es correcta
+      const isCurrentPasswordValid = await bcrypt.compare(currentPassword, currentUser.password);
+      if (!isCurrentPasswordValid) {
+        return res.status(400).json({
+          error: "Current password is incorrect",
+          field: "currentPassword"
+        });
+      }
+
+      // Validar el formato de la nueva contraseña
+      const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+      if (!passwordRegex.test(password)) {
+        return res.status(400).json({
+          error: "Password must be at least 8 characters long, contain at least one uppercase letter, and at least one number.",
+          field: "password"
+        });
+      }
+
+      // Verificar que la nueva contraseña no sea igual a la actual
+      const isSamePassword = await bcrypt.compare(password, currentUser.password);
+      if (isSamePassword) {
+        return res.status(400).json({
+          error: "New password must be different from current password",
+          field: "password"
+        });
+      }
+
+      // Hashear la nueva contraseña
+      const hashedPassword = await bcrypt.hash(password, 10);
+      updateData.password = hashedPassword;
+    }
+
+    // Validar email si se está actualizando
+    if (otherFields.email) {
+      if (!validateEmailFormat(otherFields.email)) {
+        return res.status(400).json({
+          error: "Invalid email format",
+          field: "email"
+        });
+      }
+
+      // Verificar que el email no esté en uso por otro usuario
+      const existingEmailUser = await User.findOne({ 
+        email: otherFields.email,
+        _id: { $ne: userId }
+      });
+      
+      if (existingEmailUser) {
+        return res.status(400).json({
+          error: "Email already exists. Please choose a different email.",
+          field: "email"
+        });
+      }
+    }
+
+    // Verificar username si se está actualizando
+    if (otherFields.username) {
+      const existingUsernameUser = await User.findOne({ 
+        username: otherFields.username,
+        _id: { $ne: userId }
+      });
+      
+      if (existingUsernameUser) {
+        return res.status(400).json({
+          error: "Username already exists. Please choose a different username.",
+          field: "username"
+        });
+      }
+    }
+
+    // Actualizar el usuario
+    const updatedUser = await User.findByIdAndUpdate(
+      userId, 
+      updateData, 
+      { new: true, select: '-password' }
+    );
+
+    res.status(200).json({
+      message: password ? "Profile and password updated successfully" : "Profile updated successfully",
+      user: updatedUser
+    });
+
   } catch (err) {
-    res.status(500).json({ error: "Failed to update user" });
+    console.error("Error updating user:", err);
+    res.status(500).json({ 
+      error: "Failed to update user",
+      field: "general"
+    });
   }
 });
 
