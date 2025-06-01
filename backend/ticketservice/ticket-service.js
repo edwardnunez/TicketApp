@@ -26,6 +26,24 @@ const validateObjectId = (req, res, next) => {
   next();
 };
 
+// Función auxiliar para obtener información de eventos
+const getEventDetails = async (eventId) => {
+  try {
+    const response = await axios.get(`${EVENT_SERVICE_URL}/events/${eventId}`);
+    return response.data;
+  } catch (error) {
+    console.warn(`No se pudo obtener información del evento ${eventId}:`, error.message);
+    return {
+      _id: eventId,
+      name: "Evento no disponible",
+      date: null,
+      location: "Ubicación no disponible",
+      image: null,
+      description: null
+    };
+  }
+};
+
 //obtener asientos ocupados por evento
 app.get('/tickets/occupied/:eventId', validateObjectId, async (req, res) => {
   try {
@@ -118,6 +136,7 @@ app.post('/tickets/purchase', async (req, res) => {
   }
 });
 
+// GET /tickets/user/:userId - Obtener tickets del usuario (SIN información de eventos)
 app.get('/tickets/user/:userId', validateObjectId, async (req, res) => {
   try {
     const { userId } = req.params;
@@ -148,6 +167,76 @@ app.get('/tickets/user/:userId', validateObjectId, async (req, res) => {
     res.status(500).json({
       error: "Error interno del servidor",
       message: "No se pudieron obtener los tickets"
+    });
+  }
+});
+
+// GET /tickets/user/:userId/details - Obtener tickets del usuario CON información de eventos
+app.get('/tickets/user/:userId/details', validateObjectId, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { status, eventId, limit = 50 } = req.query;
+
+    let query = { userId };
+    
+    if (status && ['pending', 'paid', 'cancelled'].includes(status)) {
+      query.status = status;
+    }
+    
+    if (eventId && mongoose.Types.ObjectId.isValid(eventId)) {
+      query.eventId = eventId;
+    }
+
+    const tickets = await Ticket.find(query)
+      .sort({ purchasedAt: -1 })
+      .limit(parseInt(limit))
+      .lean();
+
+    // Obtener información de eventos únicos
+    const uniqueEventIds = [...new Set(tickets.map(ticket => ticket.eventId.toString()))];
+    const eventsInfo = {};
+
+    // Obtener información de todos los eventos en paralelo
+    const eventPromises = uniqueEventIds.map(async (eventId) => {
+      const eventInfo = await getEventDetails(eventId);
+      eventsInfo[eventId] = eventInfo;
+    });
+
+    await Promise.all(eventPromises);
+
+    // Agregar información del evento a cada ticket
+    const ticketsWithEventInfo = tickets.map(ticket => ({
+      ...ticket,
+      event: eventsInfo[ticket.eventId.toString()]
+    }));
+
+    // Calcular estadísticas
+    const stats = {
+      totalTickets: tickets.length,
+      totalSpent: tickets
+        .filter(t => t.status === 'paid')
+        .reduce((sum, t) => sum + (t.price * t.quantity), 0),
+      activeTickets: tickets.filter(t => t.status === 'paid').length,
+      pendingTickets: tickets.filter(t => t.status === 'pending').length,
+      cancelledTickets: tickets.filter(t => t.status === 'cancelled').length,
+      byType: {
+        general: tickets.filter(t => t.ticketType === 'general').length,
+        vip: tickets.filter(t => t.ticketType === 'vip').length
+      }
+    };
+
+    res.json({
+      success: true,
+      tickets: ticketsWithEventInfo,
+      count: tickets.length,
+      statistics: stats
+    });
+
+  } catch (error) {
+    console.error('Error obteniendo tickets con detalles:', error);
+    res.status(500).json({
+      error: "Error interno del servidor",
+      message: "No se pudieron obtener los tickets con detalles"
     });
   }
 });

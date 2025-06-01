@@ -166,7 +166,7 @@ const TicketPurchase = () => {
       .catch(err => {
         console.error("Error obteniendo asientos ocupados:", err);
       });
-  }, [event]);
+  }, [event, gatewayUrl]);
 
   // Función para manejar la selección de asientos
   const handleSeatSelect = (seats) => {
