@@ -9,11 +9,9 @@ import {
   Col, 
   Space, 
   Avatar, 
-  Divider,
-  Tag
+  Divider
 } from "antd";
-import { 
-  Link, 
+import {
   useNavigate 
 } from "react-router-dom";
 import { 
@@ -42,8 +40,7 @@ const AboutUs = () => {
       email: "uo288231@uniovi.es",
       github: "iyanfdezz",
       githubUrl: "https://github.com/iyanfdezz",
-      avatar: null, // Puede ser reemplazado con una URL real si hay avatares disponibles
-      role: "Desarrollador Frontend"
+      avatar: null
     },
     {
       key: "2",
@@ -52,8 +49,7 @@ const AboutUs = () => {
       email: "nunezedward@uniovi.es",
       github: "edwardnunez",
       githubUrl: "https://github.com/edwardnunez",
-      avatar: null,
-      role: "Desarrollador Backend"
+      avatar: null
     },
     {
       key: "3",
@@ -62,8 +58,7 @@ const AboutUs = () => {
       email: "guzmanxiomarah@uniovi.es",
       github: "tutor2",
       githubUrl: "https://github.com/tutor2",
-      avatar: null,
-      role: "Gestión de Proyecto"
+      avatar: null
     }
   ];
 
@@ -116,15 +111,6 @@ const AboutUs = () => {
         >
           <GithubOutlined style={{ marginRight: 8 }} /> {text}
         </a>
-      )
-    },
-    {
-      title: "Rol",
-      dataIndex: "role",
-      key: "role",
-      responsive: ["md"],
-      render: (text) => (
-        <Tag color={COLORS?.primary?.main || "#1890ff"}>{text}</Tag>
       )
     }
   ];
@@ -218,9 +204,6 @@ const AboutUs = () => {
                           <Title level={4} style={{ margin: "8px 0" }}>
                             {member.name}
                           </Title>
-                          <Tag color={COLORS?.primary?.main || "#1890ff"} style={{ marginBottom: "16px" }}>
-                            {member.role}
-                          </Tag>
                         </div>
 
                         <Space direction="vertical" size="small" style={{ width: "100%" }}>

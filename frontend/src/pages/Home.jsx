@@ -11,8 +11,7 @@ import {
   Input,
   Skeleton, 
   Empty, 
-  Tag, 
-  Carousel, 
+  Tag,
   Tabs, 
   Space, 
   Tooltip,
@@ -25,7 +24,6 @@ import {
   FireOutlined,
   StarOutlined,
   TagOutlined,
-  TeamOutlined,
   ArrowRightOutlined,
   PictureOutlined
 } from "@ant-design/icons";

@@ -2,25 +2,18 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { 
   Layout, 
-  Typography, 
-  Card, 
+  Typography,
   Row, 
   Col, 
-  Button, 
-  Tag, 
+  Button,
   Space, 
   notification,
   Skeleton,
   Alert,
   Divider,
   Image,
-  InputNumber,
-  Radio,
   Steps,
-  Form,
-  Input,
-  Modal,
-  Statistic
+  Form
 } from "antd";
 import { 
   CalendarOutlined, 
@@ -30,9 +23,6 @@ import {
   CreditCardOutlined,
   CheckCircleOutlined,
   UserOutlined,
-  MailOutlined,
-  PhoneOutlined,
-  SafetyOutlined,
   TagOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
@@ -47,8 +37,7 @@ import Confirmation from "./steps/PurchaseConfirmation";
 import { COLORS } from "../components/colorscheme";
 
 const { Content } = Layout;
-const { Title, Text, Paragraph } = Typography;
-const { Step } = Steps;
+const { Title, Text} = Typography;
 
 const TicketPurchase = () => {
   const { id } = useParams();
@@ -179,16 +168,6 @@ const TicketPurchase = () => {
     if (!event?.type) return false;
     const categoriesWithSeats = ['cinema', 'theater', 'football', 'sports'];
     return categoriesWithSeats.includes(event.type.toLowerCase());
-  };
-
-  // Validación teléfono solo números, teléfono opcional
-  const validatePhoneNumber = (_, value) => {
-    if (!value) return Promise.resolve();
-    const regex = /^[0-9]+$/;
-    if (regex.test(value)) {
-      return Promise.resolve();
-    }
-    return Promise.reject(new Error('El teléfono solo puede contener números.'));
   };
 
   const getTotalPrice = () => {

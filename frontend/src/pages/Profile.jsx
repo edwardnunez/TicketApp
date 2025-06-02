@@ -23,7 +23,6 @@ dayjs.locale('es');
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
-const { TabPane } = Tabs;
 const { confirm } = Modal;
 
 const Profile = () => {
@@ -39,46 +38,43 @@ const Profile = () => {
   const username = localStorage.getItem("username");
   const gatewayUrl = process.env.REACT_API_ENDPOINT || "http://localhost:8000";
 
-  // Cargar datos del usuario
   useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const userRes = await axios.get(`${gatewayUrl}/users/search?username=${username}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        setUser(userRes.data);
+
+        if (userRes.data._id) {
+          await loadUserTickets(userRes.data._id);
+        }
+      } catch (err) {
+        console.error("Error al cargar datos del usuario:", err);
+        if (err.response?.status === 404) {
+          setError("Usuario no encontrado");
+        } else if (err.response?.status === 401) {
+          setError("Sesión expirada. Por favor, inicia sesión nuevamente");
+        } else {
+          setError("Error al cargar los datos del perfil");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (!token || !username) {
       setLoading(false);
       setError("No se encontraron credenciales de usuario");
       return;
     }
-    
+
     loadUserData();
   }, [token, username, gatewayUrl]);
-
-  const loadUserData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // Cargar datos del usuario
-      const userRes = await axios.get(`${gatewayUrl}/users/search?username=${username}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      
-      setUser(userRes.data);
-      
-      // Cargar tickets del usuario
-      if (userRes.data._id) {
-        await loadUserTickets(userRes.data._id);
-      }
-    } catch (err) {
-      console.error("Error al cargar datos del usuario:", err);
-      if (err.response?.status === 404) {
-        setError("Usuario no encontrado");
-      } else if (err.response?.status === 401) {
-        setError("Sesión expirada. Por favor, inicia sesión nuevamente");
-      } else {
-        setError("Error al cargar los datos del perfil");
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const loadUserTickets = async (userId) => {
     try {

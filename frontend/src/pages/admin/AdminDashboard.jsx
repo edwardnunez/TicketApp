@@ -23,7 +23,6 @@ import {
   EyeOutlined,
   DashboardOutlined,
   SearchOutlined,
-  UserOutlined,
   BarChartOutlined,
   ClockCircleOutlined,
   CheckCircleOutlined,

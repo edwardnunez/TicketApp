@@ -1,6 +1,6 @@
 import { Typography, Card, Row, Col, Statistic, Space, Button } from "antd";
 import { CheckCircleOutlined } from "@ant-design/icons";
-const { Title, Paragraph, Text } = Typography;
+const { Title, Paragraph} = Typography;
 
 export default function Confirmation({ 
   ticketInfo, event, form, quantity, selectedTicketType, ticketTypes, formatPrice, navigate, COLORS 
