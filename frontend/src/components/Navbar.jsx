@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Badge, Avatar, Typography, Menu, Dropdown } from "antd";
+import { Avatar, Typography, Menu, Dropdown } from "antd";
 import { UserOutlined, TagOutlined } from "@ant-design/icons";
 import { COLORS } from "./colorscheme";
 

@@ -189,7 +189,7 @@ const EventCreation = () => {
 
       console.log('Sending event data:', eventData);
 
-      const response = await axios.post(gatewayUrl + "/event", eventData, {
+      await axios.post(gatewayUrl + "/event", eventData, {
         headers: {
           'Content-Type': 'application/json'
         }

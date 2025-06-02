@@ -14,8 +14,7 @@ import {
   Divider,
   Tooltip,
   Skeleton,
-  Alert,
-  Collapse
+  Alert
 } from "antd";
 import { 
   UserOutlined, 
@@ -33,8 +32,7 @@ import axios from "axios";
 import { COLORS } from "../components/colorscheme";
 
 const { Content } = Layout;
-const { Title, Text } = Typography;
-const { Panel } = Collapse;
+const { Text } = Typography;
 
 // Avatares predefinidos
 const avatars = [
