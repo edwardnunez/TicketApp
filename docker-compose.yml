@@ -34,6 +34,7 @@ services:
       - "8004:8004"
     environment:
       - MONGODB_URI_LOCATION=mongodb://mongo:27017/locationdb
+      - MONGODB_URI_SEATMAP=mongodb://mongo:27017/seatmapdb
     depends_on:
       - mongo
 

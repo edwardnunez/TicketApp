@@ -9,7 +9,7 @@ const port = 8000;
 const userServiceUrl = process.env.USER_SERVICE_URL || "http://localhost:8001";
 const ticketServiceUrl = process.env.TICKET_SERVICE_URL || "http://localhost:8002";
 const eventServiceUrl = process.env.EVENT_SERVICE_URL || "http://localhost:8003";
-const locationServiceUrl = process.env.EVENT_SERVICE_URL || "http://localhost:8004";
+const locationServiceUrl = process.env.LOCATION_SERVICE_URL || "http://localhost:8004";
 
 app.use(cors());
 app.use(express.json());
@@ -65,7 +65,8 @@ app.get("/users/search", async (req, res) => {
 
     const queryParams = username ? `?username=${username}` : userId ? `?userId=${userId}` : '';
 
-    const usersResponse = await axios.get(`http://userservice:8001/users/search${queryParams}`);
+    // Fixed: Use userServiceUrl instead of hardcoded URL
+    const usersResponse = await axios.get(`${userServiceUrl}/users/search${queryParams}`);
 
     res.json(usersResponse.data);
   } catch (error) {
@@ -103,7 +104,7 @@ app.post("/verifyToken", async (req, res) => {
 app.get('/tickets/occupied/:eventId', async (req, res) => {
     try {
       const { eventId } = req.params;
-      const ticketResponse = await axios.get(`${ticketServiceUrl}/tickets/occupied/${eventId}`, req.body);
+      const ticketResponse = await axios.get(`${ticketServiceUrl}/tickets/occupied/${eventId}`);
       res.json(ticketResponse.data);
     } catch (error) {
       returnError(res, error);
@@ -122,7 +123,7 @@ app.post('/tickets/purchase', async (req, res) => {
 app.get('/tickets/user/:userId/details', async (req, res) => {
     try {
       const { userId } = req.params;
-      const ticketResponse = await axios.get(`${ticketServiceUrl}/tickets/user/${userId}/details`, req.body);
+      const ticketResponse = await axios.get(`${ticketServiceUrl}/tickets/user/${userId}/details`);
       res.json(ticketResponse.data);
     } catch (error) {
       returnError(res, error);
@@ -132,7 +133,7 @@ app.get('/tickets/user/:userId/details', async (req, res) => {
 app.get('/tickets/user/:userId', async (req, res) => {
     try {
       const { userId } = req.params;
-      const ticketResponse = await axios.get(`${ticketServiceUrl}/tickets/user/${userId}`, req.body);
+      const ticketResponse = await axios.get(`${ticketServiceUrl}/tickets/user/${userId}`);
       res.json(ticketResponse.data);
     } catch (error) {
       returnError(res, error);
@@ -142,7 +143,8 @@ app.get('/tickets/user/:userId', async (req, res) => {
 app.get('/tickets/event/:eventId', async (req, res) => {
   try {
       const { eventId } = req.params;
-      const ticketResponse = await axios.get(`${ticketServiceUrl}/tickets/event//${eventId}`, req.body);
+      // Fixed: Removed extra slash in URL
+      const ticketResponse = await axios.get(`${ticketServiceUrl}/tickets/event/${eventId}`);
       res.json(ticketResponse.data);
   } catch (error) {
       returnError(res, error);
@@ -152,7 +154,7 @@ app.get('/tickets/event/:eventId', async (req, res) => {
 app.get('/tickets/:id', async (req, res) => {
   try {
       const { id } = req.params;
-      const ticketResponse = await axios.get(`${ticketServiceUrl}/tickets/${id}`, req.body);
+      const ticketResponse = await axios.get(`${ticketServiceUrl}/tickets/${id}`);
       res.json(ticketResponse.data);
     } catch (error) {
       returnError(res, error);
@@ -162,7 +164,7 @@ app.get('/tickets/:id', async (req, res) => {
 app.get('/tickets/user/:userId/events', async (req, res) => {
   try {
       const { userId } = req.params;
-      const ticketResponse = await axios.get(`${ticketServiceUrl}/tickets/user/${userId}/events`, req.body);
+      const ticketResponse = await axios.get(`${ticketServiceUrl}/tickets/user/${userId}/events`);
       res.json(ticketResponse.data);
     } catch (error) {
       returnError(res, error);
@@ -197,10 +199,11 @@ app.get("/events/:eventId", async (req, res) => {
   }
 });
 
+// **Location Routes**
 app.post("/location", async (req, res) => {
   try {
-    const eventResponse = await axios.post(`${locationServiceUrl}/location`, req.body);
-    res.json(eventResponse.data);
+    const locationResponse = await axios.post(`${locationServiceUrl}/location`, req.body);
+    res.json(locationResponse.data);
   } catch (error) {
     returnError(res, error);
   }
@@ -208,8 +211,8 @@ app.post("/location", async (req, res) => {
 
 app.get("/locations", async (req, res) => {
   try {
-    const eventsResponse = await axios.get(`${locationServiceUrl}/locations`);
-    res.json(eventsResponse.data);
+    const locationsResponse = await axios.get(`${locationServiceUrl}/locations`);
+    res.json(locationsResponse.data);
   } catch (error) {
     returnError(res, error);
   }
@@ -217,8 +220,28 @@ app.get("/locations", async (req, res) => {
 
 app.get("/locations/:locationId", async (req, res) => {
   try {
-    const eventResponse = await axios.get(`${locationServiceUrl}/locations/${req.params.locationId}`);
-    res.json(eventResponse.data);
+    const locationResponse = await axios.get(`${locationServiceUrl}/locations/${req.params.locationId}`);
+    res.json(locationResponse.data);
+  } catch (error) {
+    returnError(res, error);
+  }
+});
+
+app.get("/seatmaps", async (req, res) => {
+  try {
+    const seatMapsResponse = await axios.get(`${locationServiceUrl}/seatmaps`, {
+      params: req.query
+    });
+    res.json(seatMapsResponse.data);
+  } catch (error) {
+    returnError(res, error);
+  }
+});
+
+app.get("/seatmaps/:id", async (req, res) => {
+  try {
+    const seatMapResponse = await axios.get(`${locationServiceUrl}/seatmaps/${req.params.id}`);
+    res.json(seatMapResponse.data);
   } catch (error) {
     returnError(res, error);
   }
