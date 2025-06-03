@@ -1,13 +1,12 @@
 {
-    "name": "eventservice",
+    "name": "locationservice",
     "version": "1.0.0",
-    "main": "event-service.js",
+    "main": "location-service.js",
     "type": "module",
     "scripts": {
-        "start": "node event-service.js"
+        "start": "node location-service.js"
     },
-    "dependencies": { 
-        "axios": "^1.6.7",
+    "dependencies": {
         "cors": "^2.8.5",
         "express": "^4.18.2",
         "mongoose": "^7.2.2",

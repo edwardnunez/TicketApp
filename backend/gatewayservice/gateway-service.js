@@ -9,6 +9,7 @@ const port = 8000;
 const userServiceUrl = process.env.USER_SERVICE_URL || "http://localhost:8001";
 const ticketServiceUrl = process.env.TICKET_SERVICE_URL || "http://localhost:8002";
 const eventServiceUrl = process.env.EVENT_SERVICE_URL || "http://localhost:8003";
+const locationServiceUrl = process.env.EVENT_SERVICE_URL || "http://localhost:8004";
 
 app.use(cors());
 app.use(express.json());
@@ -198,7 +199,7 @@ app.get("/events/:eventId", async (req, res) => {
 
 app.post("/location", async (req, res) => {
   try {
-    const eventResponse = await axios.post(`${eventServiceUrl}/location`, req.body);
+    const eventResponse = await axios.post(`${locationServiceUrl}/location`, req.body);
     res.json(eventResponse.data);
   } catch (error) {
     returnError(res, error);
@@ -207,7 +208,7 @@ app.post("/location", async (req, res) => {
 
 app.get("/locations", async (req, res) => {
   try {
-    const eventsResponse = await axios.get(`${eventServiceUrl}/locations`);
+    const eventsResponse = await axios.get(`${locationServiceUrl}/locations`);
     res.json(eventsResponse.data);
   } catch (error) {
     returnError(res, error);
@@ -216,7 +217,7 @@ app.get("/locations", async (req, res) => {
 
 app.get("/locations/:locationId", async (req, res) => {
   try {
-    const eventResponse = await axios.get(`${eventServiceUrl}/locations/${req.params.locationId}`);
+    const eventResponse = await axios.get(`${locationServiceUrl}/locations/${req.params.locationId}`);
     res.json(eventResponse.data);
   } catch (error) {
     returnError(res, error);
