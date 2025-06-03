@@ -1,7 +1,3 @@
-editar evento
-
-mapa de asientos
-
 compra de entradas:
     - controlar status o pensar como enfocarlo
     - mirar a ver si necesito algun campo mas

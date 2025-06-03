@@ -26,6 +26,16 @@ services:
       - MONGODB_URI=mongodb://mongo:27017/ticketdb
     depends_on:
       - mongo
+  
+  locationservice:
+    build: ./backend/locationservice
+    container_name: locationservice
+    ports:
+      - "8004:8004"
+    environment:
+      - MONGODB_URI_LOCATION=mongodb://mongo:27017/locationdb
+    depends_on:
+      - mongo
 
   eventservice:
     build: ./backend/eventservice
@@ -34,9 +44,10 @@ services:
       - "8003:8003"
     environment:
       - MONGODB_URI=mongodb://mongo:27017/eventdb
-      - MONGODB_URI_LOCATION=mongodb://mongo:27017/locationdb
+      - LOCATION_SERVICE_URL=http://locationservice:8004
     depends_on:
       - mongo
+      - locationservice
 
   gateway:
     build: ./backend/gatewayservice
@@ -47,10 +58,12 @@ services:
       - USER_SERVICE_URL=http://userservice:8001
       - TICKET_SERVICE_URL=http://ticketservice:8002
       - EVENT_SERVICE_URL=http://eventservice:8003
+      - LOCATION_SERVICE_URL=http://locationservice:8004
     depends_on:
       - userservice
       - ticketservice
       - eventservice
+      - locationservice
 
   frontend:
     build: ./frontend
