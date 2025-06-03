@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import Location from './location-model.js';
 import seedLocations from './seed.js';
+import seedSeatMaps from './seed-seatmaps.js';
 import SeatMap from './seatmap-model.js';
 
 const app = express();
@@ -12,7 +13,6 @@ app.use(express.json());
 app.use(cors());
 
 const mongoUriLocations = process.env.MONGODB_URI_LOCATION || "mongodb://localhost:27017/locationdb";
-
 const locationDbConnection = mongoose.createConnection(mongoUriLocations, { useNewUrlParser: true, useUnifiedTopology: true });
 
 locationDbConnection.on('connected', () => {
@@ -23,18 +23,35 @@ locationDbConnection.on('error', (error) => {
   console.error('Error en la conexión de localizaciones:', error);
 });
 
-const LocationModel = locationDbConnection.model('Location', Location.schema);
+const mongoUriSeatMaps = process.env.MONGODB_URI_SEATMAP || "mongodb://localhost:27017/seatmapdb";
+const seatMapDbConnection = mongoose.createConnection(mongoUriSeatMaps, { useNewUrlParser: true, useUnifiedTopology: true });
 
-// Seed database with initial locations if needed
-const seedDatabase = async () => {
-  await seedLocations(locationDbConnection);
-};
-
-seedDatabase().catch(error => {
-  console.error('Error seeding database:', error);
+seatMapDbConnection.on('connected', () => {
+  console.log('Conectado a la base de datos de SeatMaps');
 });
 
-// Endpoints Locations
+seatMapDbConnection.on('error', (error) => {
+  console.error('Error en la conexión de SeatMaps:', error);
+});
+
+const LocationModel = locationDbConnection.model('Location', Location.schema);
+const SeatMapModel = seatMapDbConnection.model('SeatMap', SeatMap.schema);
+
+const seedDatabases = async () => {
+  try {
+    // Seed locations
+    await seedLocations(locationDbConnection);
+    console.log('Locations seeded successfully');
+    
+    // Seed seatmaps
+    await seedSeatMaps(seatMapDbConnection);
+    console.log('SeatMaps seeded successfully');
+  } catch (error) {
+    console.error('Error seeding databases:', error);
+  }
+};
+
+seedDatabases();
 
 app.post("/location", async (req, res) => {
   try {
@@ -45,7 +62,6 @@ app.post("/location", async (req, res) => {
     }
 
     let locationDoc = await LocationModel.findOne({ name });
-
     let repeatedLocation = await LocationModel.findOne({ name, address, category });
 
     if (locationDoc) {
@@ -100,7 +116,9 @@ app.get("/locations/:locationId", async (req, res) => {
   }
 });
 
-// Ruta para obtener todos los SeatMaps (o filtrar)
+// ============= ENDPOINTS SEATMAPS =============
+
+// Obtener todos los SeatMaps (con filtros opcionales)
 app.get('/seatmaps', async (req, res) => {
   try {
     const { type, isActive } = req.query;
@@ -109,7 +127,7 @@ app.get('/seatmaps', async (req, res) => {
     if (type) filter.type = type;
     if (isActive !== undefined) filter.isActive = isActive === 'true';
 
-    const seatMaps = await SeatMap.find(filter)
+    const seatMaps = await SeatMapModel.find(filter)
       .sort({ type: 1, name: 1 })
       .select('-__v');
 
@@ -123,12 +141,12 @@ app.get('/seatmaps', async (req, res) => {
   }
 });
 
-// Ruta para obtener un SeatMap específico por ID
+// Obtener un SeatMap específico por ID
 app.get('/seatmaps/:id', async (req, res) => {
   try {
     const { id } = req.params;
     
-    const seatMap = await SeatMap.findOne({ id }).select('-__v');
+    const seatMap = await SeatMapModel.findOne({ id }).select('-__v');
     
     if (!seatMap) {
       return res.status(404).json({ 
@@ -147,13 +165,133 @@ app.get('/seatmaps/:id', async (req, res) => {
   }
 });
 
-// Iniciar el servidor de Location Service
+// Crear un nuevo SeatMap
+app.post('/seatmaps', async (req, res) => {
+  try {
+    const seatMapData = req.body;
+    
+    // Verificar que no exista un seatmap con el mismo id
+    const existingSeatMap = await SeatMapModel.findOne({ id: seatMapData.id });
+    if (existingSeatMap) {
+      return res.status(400).json({ 
+        error: 'SeatMap already exists',
+        message: `A seatmap with ID ${seatMapData.id} already exists` 
+      });
+    }
+
+    const newSeatMap = new SeatMapModel(seatMapData);
+    await newSeatMap.save();
+    
+    res.status(201).json(newSeatMap);
+  } catch (error) {
+    console.error('Error creating seatmap:', error);
+    res.status(500).json({ 
+      error: 'Internal Server Error',
+      message: error.message 
+    });
+  }
+});
+
+// Actualizar un SeatMap existente
+app.put('/seatmaps/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
+    
+    const seatMap = await SeatMapModel.findOneAndUpdate(
+      { id }, 
+      updateData, 
+      { new: true, runValidators: true }
+    );
+    
+    if (!seatMap) {
+      return res.status(404).json({ 
+        error: 'SeatMap not found',
+        message: `No seatmap found with ID: ${id}` 
+      });
+    }
+
+    res.status(200).json(seatMap);
+  } catch (error) {
+    console.error('Error updating seatmap:', error);
+    res.status(500).json({ 
+      error: 'Internal Server Error',
+      message: error.message 
+    });
+  }
+});
+
+// Eliminar un SeatMap
+app.delete('/seatmaps/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const seatMap = await SeatMapModel.findOneAndDelete({ id });
+    
+    if (!seatMap) {
+      return res.status(404).json({ 
+        error: 'SeatMap not found',
+        message: `No seatmap found with ID: ${id}` 
+      });
+    }
+
+    res.status(200).json({ 
+      message: 'SeatMap deleted successfully',
+      deletedSeatMap: seatMap 
+    });
+  } catch (error) {
+    console.error('Error deleting seatmap:', error);
+    res.status(500).json({ 
+      error: 'Internal Server Error',
+      message: error.message 
+    });
+  }
+});
+
+// Obtener SeatMaps por tipo
+app.get('/seatmaps/type/:type', async (req, res) => {
+  try {
+    const { type } = req.params;
+    
+    if (!['football', 'cinema', 'theater'].includes(type)) {
+      return res.status(400).json({ 
+        error: 'Invalid type',
+        message: 'Type must be one of: football, cinema, theater' 
+      });
+    }
+    
+    const seatMaps = await SeatMapModel.find({ type, isActive: true })
+      .sort({ name: 1 })
+      .select('-__v');
+
+    res.status(200).json(seatMaps);
+  } catch (error) {
+    console.error('Error fetching seatmaps by type:', error);
+    res.status(500).json({ 
+      error: 'Internal Server Error',
+      message: error.message 
+    });
+  }
+});
+
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    databases: {
+      locations: locationDbConnection.readyState === 1 ? 'connected' : 'disconnected',
+      seatmaps: seatMapDbConnection.readyState === 1 ? 'connected' : 'disconnected'
+    }
+  });
+});
+
 const server = app.listen(port, () => {
   console.log(`Location Service listening at http://localhost:${port}`);
 });
 
 server.on("close", () => {
   locationDbConnection.close();
+  seatMapDbConnection.close();
 });
 
 export default server;

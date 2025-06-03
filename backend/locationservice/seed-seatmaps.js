@@ -1,4 +1,4 @@
-import { SeatMap } from './seatmap-model.js';
+import SeatMap from './seatmap-model.js';
 
 const seedSeatMaps = async (dbConnection) => {
   const SeatMapModel = dbConnection.model('SeatMap', SeatMap.schema);

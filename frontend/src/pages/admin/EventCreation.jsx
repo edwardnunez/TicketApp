@@ -42,7 +42,6 @@ import axios from 'axios';
 import dayjs from 'dayjs';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 
-
 import { COLORS } from "../../components/colorscheme";
 
 const { Content } = Layout;
@@ -54,12 +53,15 @@ const EventCreation = () => {
   const [type, setType] = useState(null);
   const [locations, setLocations] = useState([]);
   const [locationOptions, setLocationOptions] = useState([]);
+  const [seatMaps, setSeatMaps] = useState([]);
   const [errorMessage, setErrorMessage] = useState(null);
   const [selectedDate, setSelectedDate] = useState(dayjs().add(2, 'day'));
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [isCapacityLocked, setIsCapacityLocked] = useState(false);
   const [form] = Form.useForm();
   const navigate = useNavigate();
+  
+  // URLs de los microservicios
   const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
 
   dayjs.extend(isSameOrBefore);
@@ -71,7 +73,6 @@ const EventCreation = () => {
     theater: COLORS?.categories?.teatro || "#fa8c16",
     festival: COLORS?.categories?.festivales || "#722ed1"
   };
-
 
   const stateColors = {
     activo: COLORS?.status?.success || "#52c41a",
@@ -94,17 +95,26 @@ const EventCreation = () => {
     cancelado: 'Cancelado'
   };
 
+  // Función para obtener locations y seatmaps
   useEffect(() => {
-    const fetchLocations = async () => {
+    const fetchData = async () => {
       try {
-        const response = await axios.get(gatewayUrl + "/locations");
-        setLocations(response.data);
+        const locationsUrl = `${gatewayUrl}/locations`;
+        const seatMapsUrl = `${gatewayUrl}/seatmaps`;
+        
+        const [locationsResponse, seatMapsResponse] = await Promise.all([
+          axios.get(locationsUrl),
+          axios.get(seatMapsUrl)
+        ]);
+        
+        setLocations(locationsResponse.data);
+        setSeatMaps(seatMapsResponse.data);
       } catch (error) {
-        console.error("Error obteniendo ubicaciones:", error);
-        setErrorMessage("Error al cargar las ubicaciones");
+        console.error("Error obteniendo datos:", error);
+        setErrorMessage("Error al cargar las ubicaciones y mapas de asientos");
       }
     };
-    fetchLocations();
+    fetchData();
   }, [gatewayUrl]);
 
   useEffect(() => {
@@ -142,16 +152,68 @@ const EventCreation = () => {
     }
   };
 
-  const handleLocationChange = (locationId) => {
+  // Función actualizada para obtener la capacidad del seatmap
+  const getCapacityFromSeatMap = async (seatMapId) => {
+    try {
+      const seatMapUrl = `${gatewayUrl}/seatmaps/${seatMapId}`;
+      
+      const response = await axios.get(seatMapUrl);
+      const seatMap = response.data;
+      
+      // Calcular la capacidad total sumando todas las secciones
+      if (seatMap.sections && seatMap.sections.length > 0) {
+        const totalCapacity = seatMap.sections.reduce((total, section) => {
+          return total + (section.rows * section.seatsPerRow);
+        }, 0);
+        return totalCapacity;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error("Error obteniendo capacidad del seatmap:", error);
+      return null;
+    }
+  };
+
+  const handleLocationChange = async (locationId) => {
     const location = locations.find(loc => loc._id === locationId);
     setSelectedLocation(location);
     
-    if (location && location.capacity && location.capacity > 0) {
-      // Si la ubicación tiene capacidad definida, bloquear el campo y establecer el valor
+    if (location && location.seatMapId) {
+      // Si la ubicación tiene un seatMapId, obtener la capacidad del seatmap
+      setLoading(true);
+      try {
+        const capacity = await getCapacityFromSeatMap(location.seatMapId);
+        if (capacity) {
+          setIsCapacityLocked(true);
+          form.setFieldsValue({ capacity: capacity });
+        } else if (location.capacity && location.capacity > 0) {
+          // Fallback a la capacidad de la ubicación
+          setIsCapacityLocked(true);
+          form.setFieldsValue({ capacity: location.capacity });
+        } else {
+          setIsCapacityLocked(false);
+          form.setFieldsValue({ capacity: undefined });
+        }
+      } catch (error) {
+        console.error("Error obteniendo capacidad:", error);
+        // Fallback a la capacidad de la ubicación
+        if (location.capacity && location.capacity > 0) {
+          setIsCapacityLocked(true);
+          form.setFieldsValue({ capacity: location.capacity });
+        } else {
+          setIsCapacityLocked(false);
+          form.setFieldsValue({ capacity: undefined });
+        }
+      } finally {
+        setLoading(false);
+      }
+    } else if (location && location.capacity && location.capacity > 0) {
+      // Si no tiene seatMapId pero tiene capacidad definida
       setIsCapacityLocked(true);
       form.setFieldsValue({ capacity: location.capacity });
     } else {
-      // Si no tiene capacidad definida, desbloquear el campo
+      // Si no tiene capacidad definida ni seatMapId
       setIsCapacityLocked(false);
       form.setFieldsValue({ capacity: undefined });
     }
@@ -172,10 +234,9 @@ const EventCreation = () => {
     setLoading(true);
     setErrorMessage(null);
     
-    console.log('Form values:', values); // Debug log
+    console.log('Form values:', values);
     
     try {
-      // Primero enviar los datos sin imagen para probar
       const eventData = {
         name: values.name,
         date: values.date.toISOString(),
@@ -189,6 +250,7 @@ const EventCreation = () => {
 
       console.log('Sending event data:', eventData);
 
+      // Usar el gateway para crear el evento
       await axios.post(gatewayUrl + "/event", eventData, {
         headers: {
           'Content-Type': 'application/json'
@@ -209,7 +271,7 @@ const EventCreation = () => {
     }
   };
 
-  const gettypeLabel = (type) => {
+  const getTypeLabel = (type) => {
     switch(type) {
       case 'football': return 'Partido de fútbol';
       case 'cinema': return 'Cine';
@@ -228,13 +290,18 @@ const EventCreation = () => {
     }
   };
 
-  // Props para el Upload: evitar upload automático, solo seleccionar archivo y mantenerlo en el formulario
   const uploadProps = {
     beforeUpload: file => {
       return false;
     },
     maxCount: 1,
     accept: 'image/*'
+  };
+
+  // Función para obtener información del seatmap
+  const getSeatMapInfo = (seatMapId) => {
+    const seatMap = seatMaps.find(sm => sm.id === seatMapId);
+    return seatMap;
   };
 
   return (
@@ -411,9 +478,9 @@ const EventCreation = () => {
                       disabled={!type}
                       showSearch
                       onChange={handleLocationChange}
-                      value={selectedLocation?._id} // Controlar el valor seleccionado
+                      value={selectedLocation?._id}
                       filterOption={(input, option) =>
-                        option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                        option.children.props.children[0].props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                       }
                       notFoundContent={
                         !type ? 
@@ -426,33 +493,39 @@ const EventCreation = () => {
                           </div>
                       }
                     >
-                      {locationOptions.map((location) => (
-                        <Option key={location._id} value={location._id}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ flex: 1 }}>{location.name}</span>
-                            <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
-                              {location.capacity && location.capacity > 0 && (
-                                <Tag 
-                                  color="green" 
-                                  size="small" 
-                                  style={{ fontSize: '10px', margin: 0 }}
-                                >
-                                  Cap: {location.capacity}
-                                </Tag>
-                              )}
-                              {location.seatMapId && (
-                                <Tag 
-                                  color="blue" 
-                                  size="small" 
-                                  style={{ fontSize: '10px', margin: 0 }}
-                                >
-                                  Mapa
-                                </Tag>
-                              )}
+                      {locationOptions.map((location) => {
+                        const seatMapInfo = location.seatMapId ? getSeatMapInfo(location.seatMapId) : null;
+                        
+                        return (
+                          <Option key={location._id} value={location._id}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span style={{ flex: 1 }}>{location.name}</span>
+                              <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
+                                {location.capacity && location.capacity > 0 && (
+                                  <Tag 
+                                    color="green" 
+                                    size="small" 
+                                    style={{ fontSize: '10px', margin: 0 }}
+                                  >
+                                    Cap: {location.capacity}
+                                  </Tag>
+                                )}
+                                {seatMapInfo && (
+                                  <Tooltip title={`Mapa: ${seatMapInfo.name} (${seatMapInfo.type})`}>
+                                    <Tag 
+                                      color="blue" 
+                                      size="small" 
+                                      style={{ fontSize: '10px', margin: 0 }}
+                                    >
+                                      {seatMapInfo.type}
+                                    </Tag>
+                                  </Tooltip>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        </Option>
-                      ))}
+                          </Option>
+                        );
+                      })}
                     </Select>
                   </Form.Item>
                 </Col>
@@ -494,7 +567,7 @@ const EventCreation = () => {
                         <span style={{ color: COLORS?.neutral?.grey3 || '#d9d9d9' }}>
                           asientos
                           {isCapacityLocked && selectedLocation && (
-                            <Tooltip title={`Capacidad fija basada en el mapa de asientos de ${selectedLocation.name}`}>
+                            <Tooltip title={`Capacidad ${selectedLocation.seatMapId ? 'calculada desde el mapa de asientos' : 'fija'} de ${selectedLocation.name}`}>
                               <InfoCircleOutlined style={{ marginLeft: '4px' }} />
                             </Tooltip>
                           )}
@@ -526,6 +599,7 @@ const EventCreation = () => {
                   </Form.Item>
                 </Col>
               </Row>
+
               <Row gutter={24}>
                 <Col xs={24}>
                   <Form.Item
@@ -541,19 +615,32 @@ const EventCreation = () => {
                 </Col>
               </Row>
 
-              {selectedLocation && selectedLocation.capacity && selectedLocation.capacity > 0 && (
+              {/* Información mejorada de la ubicación seleccionada */}
+              {selectedLocation && (
                 <Alert
-                  message="Ubicación con capacidad predefinida"
-                  description={`Esta ubicación (${selectedLocation.name}) tiene una capacidad predefinida de ${selectedLocation.capacity} asientos. La capacidad se establece automáticamente según la configuración de la ubicación.`}
+                  message={`Ubicación seleccionada: ${selectedLocation.name}`}
+                  description={
+                    <div>
+                      <p><strong>Dirección:</strong> {selectedLocation.address}</p>
+                      <p><strong>Categoría:</strong> {selectedLocation.category}</p>
+                      {selectedLocation.seatMapId && (
+                        <p><strong>Mapa de asientos:</strong> {getSeatMapInfo(selectedLocation.seatMapId)?.name || selectedLocation.seatMapId}</p>
+                      )}
+                      {isCapacityLocked && (
+                        <p><strong>Capacidad:</strong> {form.getFieldValue('capacity')} asientos (automática)</p>
+                      )}
+                    </div>
+                  }
                   type="info"
                   showIcon
                   icon={<InfoCircleOutlined />}
                   style={{ marginBottom: 24, borderRadius: '6px' }}
                 />
               )}
+
               <Divider />
 
-              {/* Preview of selected event type and state */}
+              {/* Preview sections remain the same */}
               {(type || form.getFieldValue('state')) && (
                 <Row style={{ marginBottom: '24px' }}>
                   <Col span={24}>
@@ -584,7 +671,7 @@ const EventCreation = () => {
                             </div>
                             <div>
                               <Text strong style={{ fontSize: '16px' }}>
-                                Tipo de evento seleccionado: {gettypeLabel(type)}
+                                Tipo de evento seleccionado: {getTypeLabel(type)}
                               </Text>
                               <Paragraph type="secondary" style={{ marginBottom: 0 }}>
                                 {type === 'football' && 'Los partidos de fútbol requieren ubicaciones de estadio y tienen asientos designados.'}
