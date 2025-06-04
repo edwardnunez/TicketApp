@@ -1,25 +1,13 @@
-import { Card, Radio, Space, Tag, InputNumber, Typography, Alert } from "antd";
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { Card, Radio, Space, Tag, InputNumber, Typography, Alert, Spin, Button } from "antd";
 import { COLORS } from "../../components/colorscheme";
-
-import  { 
-  FootballSeatMap1, 
-  FootballSeatMap2,
-  FootballSeatMap3
-} from "./seatmaps/FootballSeatmaps";
-
-import { 
-  CinemaSeatMap1,
-  CinemaSeatMap2,
-  CinemaSeatMap3
-} from "./seatmaps/CinemaSeatmaps";
-
-import { 
-  TheaterSeatMap1,
-  TheaterSeatMap2,
-  TheaterSeatMap3
-} from "./seatmaps/TheaterSeatmaps";
+import SeatRenderer from "./seatmaps/SeatRenderer";
+import GenericSeatMapRenderer from "./seatmaps/GenericSeatRenderer";
+import axios from 'axios';
 
 const { Title, Text } = Typography;
+
+const LOCATION_SERVICE_URL = process.env.REACT_APP_LOCATION_SERVICE_URL || "http://localhost:8004";
 
 export default function SelectTickets({ 
   selectedTicketType, setSelectedTicketType, 
@@ -30,64 +18,241 @@ export default function SelectTickets({
   onSeatSelect,
   occupiedSeats
 }) {
-  const requiresSeatMap = () => {
+  const [seatMapData, setSeatMapData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const requiresSeatMap = useCallback(() => {
     if (!event?.type) return false;
+    // Mapear tipos de eventos a categorías de seatmap
+    const eventToSeatMapType = {
+      'cinema': 'cinema',
+      'theater': 'theater', 
+      'theatre': 'theater', // variante en inglés
+      'football': 'football',
+      'soccer': 'football',
+      'sports': 'football', // asumir football por defecto para sports
+      'stadium': 'football'
+    };
+    return Object.keys(eventToSeatMapType).includes(event.type.toLowerCase());
+  }, [event?.type]);
 
-    const categoriesWithSeats = ['cinema', 'theater', 'football', 'sports'];
-    return categoriesWithSeats.includes(event.type.toLowerCase());
-  };
+  const validateSeatMapCompatibility = useCallback((seatMapData, eventType) => {
+    if (!seatMapData || !eventType) return false;
+    
+    const compatibilityMap = {
+      'cinema': ['cinema'],
+      'theater': ['theater'],
+      'theatre': ['theater'],
+      'football': ['football'],
+      'soccer': ['football'],
+      'sports': ['football'],
+      'stadium': ['football']
+    };
+    
+    const allowedTypes = compatibilityMap[eventType.toLowerCase()] || [];
+    return allowedTypes.includes(seatMapData.type);
+  }, []);
 
-  const getTotalFromSeats = () => {
+  // Memoize the total calculation
+  const totalFromSeats = useMemo(() => {
     return selectedSeats.reduce((total, seat) => total + seat.price, 0);
-  };
+  }, [selectedSeats]);
 
-  const handleSeatSelection = (seats) => {
+  // Stable reference for handleSeatSelection
+  const handleSeatSelection = useCallback((seats) => {
     onSeatSelect(seats);
     setQuantity(seats.length);
-  };
+  }, [onSeatSelect, setQuantity]);
 
-  const renderSeatMap = () => {
-    const seatMapId = event?.location?.seatMapId;
+  // Load seatmap data with proper dependencies
+  useEffect(() => {
+    const loadSeatMapData = async () => {
+      const needsSeatMap = requiresSeatMap();
+      const seatMapId = event?.location?.seatMapId;
+      
+      if (!needsSeatMap || !seatMapId) {
+        setSeatMapData(null);
+        return;
+      }
 
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await axios.get(`${LOCATION_SERVICE_URL}/seatmaps/${seatMapId}`);
+        const seatMapData = response.data;
+        
+        // Validar compatibilidad
+        if (!validateSeatMapCompatibility(seatMapData, event.type)) {
+          setError(`El mapa de asientos tipo "${seatMapData.type}" no es compatible con eventos de tipo "${event.type}"`);
+          setSeatMapData(null);
+          return;
+        }
+        
+        setSeatMapData(seatMapData);
+      } catch (err) {
+        console.error('Error loading seatmap:', err);
+        if (err.response?.status === 404) {
+          setError('El mapa de asientos no existe o no está disponible');
+        } else if (err.response?.status >= 500) {
+          setError('Error del servidor. Por favor, inténtalo más tarde');
+        } else {
+          setError('No se pudo cargar el mapa de asientos');
+        }
+        setSeatMapData(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadSeatMapData();
+  }, [event?.location?.seatMapId, event?.type, requiresSeatMap, validateSeatMapCompatibility]);
+
+  useEffect(() => {
+    // Limpiar asientos seleccionados cuando cambia el evento
+    if (selectedSeats.length > 0) {
+      onSeatSelect([]);
+      setQuantity(0);
+    }
+  }, [event?.id]); // Solo cuando cambia el ID del evento
+
+
+  const renderSeatMapSection = useCallback((section) => {
     const seatMapProps = {
+      sectionId: section.id,
+      rows: section.rows,
+      seatsPerRow: section.seatsPerRow,
+      price: section.price,
+      color: section.color,
+      name: section.name,
       selectedSeats,
-      onSeatSelect: handleSeatSelection,
-      maxSeats: 6,
       occupiedSeats,
+      maxSeats: 6,
+      onSeatSelect: handleSeatSelection,
       formatPrice,
     };
 
-    switch (seatMapId) {
-      case 'football1':
-        return <FootballSeatMap1 {...seatMapProps} />;
-      case 'football2':
-        return <FootballSeatMap2 {...seatMapProps} />;
-      case 'football3':
-        return <FootballSeatMap3 {...seatMapProps} />;
-      
-      case 'cinema1':
-        return <CinemaSeatMap1 {...seatMapProps} />;
-      case 'cinema2':
-        return <CinemaSeatMap2 {...seatMapProps} />;
-      case 'cinema3':
-        return <CinemaSeatMap3 {...seatMapProps} />;
+    return (
+      <div key={section.id} style={{ marginBottom: '24px' }}>
+        <div style={{
+          padding: '12px 16px',
+          backgroundColor: section.color + '20',
+          borderLeft: `4px solid ${section.color}`,
+          marginBottom: '12px',
+          borderRadius: '4px'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Title level={5} style={{ margin: 0, color: COLORS.neutral.darker }}>
+              {section.name}
+            </Title>
+            <Text strong style={{ color: section.color }}>
+              {formatPrice(section.price)}
+            </Text>
+          </div>
+          <Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
+            {section.rows} filas × {section.seatsPerRow} asientos por fila
+          </Text>
+        </div>
+        <SeatRenderer {...seatMapProps} />
+      </div>
+    );
+  }, [selectedSeats, occupiedSeats, handleSeatSelection, formatPrice]);
 
-      case 'theater1':
-        return <TheaterSeatMap1 {...seatMapProps} />;
-      case 'theater2':
-        return <TheaterSeatMap2 {...seatMapProps} />;
-      case 'theater3':
-        return <TheaterSeatMap3 {...seatMapProps} />;
-      
-      default:
-        return <div>No hay un mapa de asientos para esta ubicación.</div>;
+  const renderSeatMap = useCallback(() => {
+    if (loading) {
+      return (
+        <div style={{ textAlign: 'center', padding: '40px' }}>
+          <Spin size="large" />
+          <div style={{ marginTop: '16px' }}>
+            <Text>Cargando mapa de asientos...</Text>
+          </div>
+        </div>
+      );
     }
+
+    if (error) {
+      return (
+        <Alert
+          message="Error al cargar el mapa de asientos"
+          description={error}
+          type="error"
+          showIcon
+          style={{ marginBottom: '24px' }}
+          action={
+            <Button size="small" onClick={() => window.location.reload()}>
+              Reintentar
+            </Button>
+          }
+        />
+      );
+    }
+
+    if (!seatMapData) {
+      return (
+        <Alert
+          message="Mapa de asientos no disponible"
+          description="Este evento requiere selección de asientos, pero no hay un mapa configurado."
+          type="warning"
+          showIcon
+          style={{ marginBottom: '24px' }}
+        />
+      );
+    }
+
+    // Usar el GenericSeatMapRenderer que ya tienes
+    return (
+      <GenericSeatMapRenderer
+        seatMapData={seatMapData}
+        selectedSeats={selectedSeats}
+        onSeatSelect={handleSeatSelection}
+        maxSeats={6}
+        occupiedSeats={occupiedSeats}
+        formatPrice={formatPrice}
+      />
+    );
+  }, [loading, error, seatMapData, selectedSeats, handleSeatSelection, occupiedSeats, formatPrice]);
+
+  const renderSeatSelectionInfo = () => {
+    const maxSeats = 6;
+    const remainingSeats = maxSeats - selectedSeats.length;
+    
+    return (
+      <Alert
+        message="Selección de asientos"
+        description={
+          <div>
+            <p>Haz clic en los asientos que deseas comprar.</p>
+            <ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
+              <li>Máximo {maxSeats} asientos por compra</li>
+              <li>Asientos seleccionados: {selectedSeats.length}</li>
+              <li>Puedes seleccionar {remainingSeats} asientos más</li>
+              {selectedSeats.length > 0 && (
+                <li><strong>Total: {formatPrice(totalFromSeats)}</strong></li>
+              )}
+            </ul>
+          </div>
+        }
+        type="info"
+        showIcon
+        style={{ marginBottom: '24px' }}
+      />
+    );
   };
+
+
+  // Memoize the selected ticket type data
+  const selectedTicketData = useMemo(() => {
+    return ticketTypes.find(t => t.key === selectedTicketType);
+  }, [ticketTypes, selectedTicketType]);
+
+  // Check if seat map is required
+  const needsSeatMap = requiresSeatMap();
 
   return (
     <>
-      {/* Solo mostrar selección de tipos de tickets cuando NO hay mapa de asientos */}
-      {!requiresSeatMap() && (
+      {/* Only show ticket type selection when there's NO seat map */}
+      {!needsSeatMap && (
         <Card style={{ marginBottom: '24px' }}>
           <Title level={4} style={{ color: COLORS.neutral.darker, marginBottom: '16px' }}>
             Selecciona tu tipo de ticket
@@ -139,11 +304,11 @@ export default function SelectTickets({
         </Card>
       )}
 
-      {requiresSeatMap() ? (
+      {needsSeatMap ? (
         <>
           <Alert
             message="Selección de asientos"
-            description={`Haz clic en los asientos que deseas comprar. Puedes seleccionar hasta 6 asientos. ${selectedSeats.length > 0 ? `Total: ${formatPrice(getTotalFromSeats())}` : ''}`}
+            description={`Haz clic en los asientos que deseas comprar. Puedes seleccionar hasta 6 asientos. ${selectedSeats.length > 0 ? `Total: ${formatPrice(totalFromSeats)}` : ''}`}
             type="info"
             showIcon
             style={{ marginBottom: '24px' }}
@@ -192,7 +357,7 @@ export default function SelectTickets({
                   Total:
                 </Title>
                 <Title level={3} style={{ color: COLORS.primary.main, margin: 0 }}>
-                  {formatPrice(getTotalFromSeats())}
+                  {formatPrice(totalFromSeats)}
                 </Title>
               </div>
             </Card>
@@ -231,7 +396,7 @@ export default function SelectTickets({
               <Text>Subtotal ({quantity} ticket{quantity !== 1 ? 's' : ''}):</Text>
             </div>
             <Title level={4} style={{ color: COLORS.primary.main, margin: 0 }}>
-              {formatPrice(ticketTypes.find(t => t.key === selectedTicketType)?.price * quantity)}
+              {formatPrice(selectedTicketData?.price * quantity || 0)}
             </Title>
           </div>
         </Card>

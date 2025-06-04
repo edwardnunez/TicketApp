@@ -274,6 +274,68 @@ app.get('/seatmaps/type/:type', async (req, res) => {
   }
 });
 
+app.get('/location/:locationId/sections', async (req, res) => {
+  try {
+    const { locationId } = req.params;
+    
+    // Buscar la ubicación
+    const location = await LocationModel.findById(locationId);
+    if (!location) {
+      return res.status(404).json({ 
+        error: 'Location not found',
+        message: `No location found with ID: ${locationId}` 
+      });
+    }
+
+    // Si la ubicación no tiene seatMapId, retornar array vacío
+    if (!location.seatMapId) {
+      return res.status(200).json({ 
+        sections: [],
+        message: 'Location has no seat map configured'
+      });
+    }
+
+    // Buscar el seatmap correspondiente
+    const seatMap = await SeatMapModel.findOne({ id: location.seatMapId });
+    if (!seatMap) {
+      return res.status(404).json({ 
+        error: 'SeatMap not found',
+        message: `No seatmap found with ID: ${location.seatMapId}` 
+      });
+    }
+
+    // Transformar las secciones del seatmap al formato esperado por el frontend
+    const sections = seatMap.sections.map(section => ({
+      sectionId: section.id,
+      sectionName: section.name,
+      capacity: section.rows * section.seatsPerRow,
+      basePrice: section.price,
+      color: section.color,
+      position: section.position,
+      order: section.order || 0
+    }));
+
+    // Ordenar las secciones
+    sections.sort((a, b) => a.order - b.order);
+
+    res.status(200).json({
+      locationId: location._id,
+      locationName: location.name,
+      seatMapId: location.seatMapId,
+      seatMapName: seatMap.name,
+      seatMapType: seatMap.type,
+      sections: sections
+    });
+
+  } catch (error) {
+    console.error('Error fetching location sections:', error);
+    res.status(500).json({ 
+      error: 'Internal Server Error',
+      message: error.message 
+    });
+  }
+});
+
 app.get('/health', (req, res) => {
   res.status(200).json({
     status: 'OK',
