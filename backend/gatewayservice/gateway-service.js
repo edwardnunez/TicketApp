@@ -247,6 +247,15 @@ app.get("/seatmaps/:id", async (req, res) => {
   }
 });
 
+app.get('/location/:locationId/sections', async (req, res) => {
+  try {
+    const seatMapResponse = await axios.get(`${locationServiceUrl}/location/${req.params.locationId}/sections`);
+    res.json(seatMapResponse.data);
+  } catch (error) {
+    returnError(res, error);
+  }
+});
+
 // Start the gateway service
 const server = app.listen(port, () => {
   console.log(`Gateway Service listening at http://localhost:${port}`);
