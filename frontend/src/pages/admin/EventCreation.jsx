@@ -233,7 +233,7 @@ const EventCreation = () => {
     setSectionPricing(prevPricing => 
       prevPricing.map(section => 
         section.sectionId === sectionId 
-          ? { ...section, price: parseFloat(newPrice) || 0 }
+          ? { ...section, price: newPrice === '' ? '' : parseFloat(newPrice) || 0 }
           : section
       )
     );
@@ -313,7 +313,7 @@ const EventCreation = () => {
       if (usesSectionPricing && sectionPricing.length > 0) {
         // Validar que todos los precios sean válidos
         const hasInvalidPrices = sectionPricing.some(section => 
-          isNaN(section.price) || section.price < 0
+          section.price === '' || isNaN(parseFloat(section.price)) || parseFloat(section.price) < 0
         );
         
         if (hasInvalidPrices) {
@@ -322,7 +322,10 @@ const EventCreation = () => {
         }
         
         eventData.usesSectionPricing = true;
-        eventData.sectionPricing = sectionPricing;
+        eventData.sectionPricing = sectionPricing.map(section => ({
+        ...section,
+        price: parseFloat(section.price) || 0
+      }));
         
         // Capacidad se calcula automáticamente en el backend
         eventData.capacity = sectionPricing.reduce((total, section) => total + section.capacity, 0);
@@ -455,7 +458,7 @@ const EventCreation = () => {
                     >
                       <Input
                         type="number"
-                        value={section.price}
+                        value={section.price === 0 ? '' : section.price}
                         onChange={(e) => handleSectionPriceChange(section.sectionId, e.target.value)}
                         prefix={<EuroOutlined />}
                         placeholder="0.00"

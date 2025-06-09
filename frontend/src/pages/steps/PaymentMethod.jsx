@@ -3,7 +3,18 @@ import { CreditCardOutlined, SafetyOutlined } from "@ant-design/icons";
 import { COLORS } from "../../components/colorscheme";
 const { Title, Text } = Typography;
 
-export default function PaymentMethod({ event, form, quantity, selectedTicketType, ticketTypes, formatPrice }) {
+export default function PaymentMethod({ 
+  event, 
+  form, 
+  quantity, 
+  selectedTicketType, 
+  ticketTypes, 
+  formatPrice,
+  selectedSeats,
+  requiresSeatMap,
+  getTotalPrice
+}) {
+
   return (
     <div style={{ display: "flex", gap: "24px", flexWrap: "wrap" }}>
       <Card style={{ flex: 1, minWidth: "300px" }}>
@@ -67,7 +78,17 @@ export default function PaymentMethod({ event, form, quantity, selectedTicketTyp
           <div>
             <Text strong style={{ color: COLORS.neutral.darker }}>Tickets:</Text>
             <br />
-            <Text>{quantity} x {ticketTypes.find(t => t.key === selectedTicketType)?.name}</Text>
+            {requiresSeatMap() && selectedSeats && selectedSeats.length > 0 ? (
+              <>
+                {selectedSeats.map((seat, index) => (
+                  <div key={index}>
+                    <Text>{seat.section} - Fila {seat.row}, Asiento {seat.seat}</Text>
+                  </div>
+                ))}
+              </>
+            ) : (
+              <Text>{quantity} x {ticketTypes.find(t => t.key === selectedTicketType)?.label}</Text>
+            )}
           </div>
 
           <Divider style={{ margin: '12px 0' }} />
@@ -77,7 +98,7 @@ export default function PaymentMethod({ event, form, quantity, selectedTicketTyp
               Total:
             </Title>
             <Title level={4} style={{ color: COLORS.primary.main }}>
-              {formatPrice(ticketTypes.find(t => t.key === selectedTicketType)?.price * quantity)}
+              {formatPrice(getTotalPrice())}
             </Title>
           </div>
         </Space>
