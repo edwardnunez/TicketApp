@@ -1,10 +1,30 @@
 import { Typography, Card, Row, Col, Statistic, Space, Button } from "antd";
 import { CheckCircleOutlined } from "@ant-design/icons";
-const { Title, Paragraph} = Typography;
+const { Title, Paragraph, Text} = Typography;
 
 export default function Confirmation({ 
-  ticketInfo, event, form, quantity, selectedTicketType, ticketTypes, formatPrice, navigate, COLORS 
+  ticketInfo, 
+  event, 
+  formatPrice, 
+  navigate, 
+  COLORS,
+  selectedSeats,
+  quantity,
+  selectedTicketType,
+  ticketTypes,
+  requiresSeatMap,
+  getTotalPrice,
+  getCorrectPrice
 }) {
+
+  // Calcular la cantidad de tickets correctamente
+  const getTicketQuantity = () => {
+    if (requiresSeatMap() && selectedSeats && selectedSeats.length > 0) {
+      return selectedSeats.length;
+    }
+    return quantity;
+  };
+
   return (
     <div style={{ textAlign: 'center', padding: '40px 20px' }}>
       <CheckCircleOutlined style={{ 
@@ -45,24 +65,61 @@ export default function Confirmation({
             <Col xs={24} sm={12}>
               <Statistic
                 title="Cantidad"
-                value={ticketInfo.quantity}
+                value={getTicketQuantity()}
                 suffix="tickets"
                 valueStyle={{ color: COLORS.neutral.darker }}
               />
             </Col>
-            <Col xs={24} sm={12}>
-              <Statistic
-                title="Tipo"
-                value={ticketInfo.type.toUpperCase()}
-                valueStyle={{ color: COLORS.neutral.darker }}
-              />
+            <Col xs={24}>
+              <div style={{ marginBottom: '16px' }}>
+                <Title level={5} style={{ color: COLORS.neutral.darker, marginBottom: '8px' }}>
+                  Tickets comprados:
+                </Title>
+                {requiresSeatMap() && selectedSeats && selectedSeats.length > 0 ? (
+                  <Space direction="vertical" size={4} style={{ width: '100%' }}>
+                    {selectedSeats.map((seat, index) => {
+                      // Obtener el precio directamente del asiento
+                      const seatPrice = seat.price || 0;
+                      
+                      return (
+                        <div key={index} style={{ 
+                          display: 'flex', 
+                          justifyContent: 'space-between',
+                          padding: '8px 12px',
+                          backgroundColor: COLORS.neutral.grey1,
+                          borderRadius: '4px'
+                        }}>
+                          <Text>{seat.section} - Fila {seat.row}, Asiento {seat.seat}</Text>
+                          <Text strong>{formatPrice(seatPrice)}</Text>
+                        </div>
+                      );
+                    })}
+                  </Space>
+                ) : (
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between',
+                    padding: '8px 12px',
+                    backgroundColor: COLORS.neutral.grey1,
+                    borderRadius: '4px'
+                  }}>
+                    <Text>{quantity} x {ticketTypes.find(t => t.key === selectedTicketType)?.label || selectedTicketType}</Text>
+                    <Text strong>{formatPrice(getCorrectPrice(selectedTicketType) * quantity)}</Text>
+                  </div>
+                )}
+              </div>
             </Col>
-            <Col xs={24} sm={12}>
-              <Statistic
-                title="Total pagado"
-                value={formatPrice(ticketInfo.totalPrice)}
-                valueStyle={{ color: COLORS.status.success }}
-              />
+            <Col xs={24}>
+              <div style={{ 
+                borderTop: `1px solid ${COLORS.neutral.grey2}`,
+                paddingTop: '16px'
+              }}>
+                <Statistic
+                  title="Total pagado"
+                  value={formatPrice(getTotalPrice())}
+                  valueStyle={{ color: COLORS.status.success, fontSize: '24px', fontWeight: 'bold' }}
+                />
+              </div>
             </Col>
           </Row>
         </Card>

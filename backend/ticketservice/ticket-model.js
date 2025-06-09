@@ -12,7 +12,7 @@ const ticketSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   eventId: { type: mongoose.Schema.Types.ObjectId, required: true },
   selectedSeats: [seatSchema],
-  ticketType: { type: String, enum: ['general', 'vip'], default: 'general' },
+  ticketType: { type: String, required: true },
   price: { type: Number, required: true },
   quantity: { type: Number, required: true },
   status: { type: String, enum: ['pending', 'paid', 'cancelled'], default: 'pending' },

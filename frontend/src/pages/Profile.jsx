@@ -216,7 +216,7 @@ const Profile = () => {
                     <p><strong>Evento:</strong> {event.name || "Evento no disponible"}</p>
                     <p><strong>Fecha:</strong> {event.date ? dayjs(event.date).format('DD [de] MMMM [de] YYYY, HH:mm') : 'No disponible'}</p>
                     <p><strong>Ubicación:</strong> {getLocationDisplay(event.location)}</p>
-                    <p><strong>Tipo:</strong> {ticket.ticketType === 'vip' ? 'VIP' : 'General'}</p>
+                    <p><strong>Tipo:</strong> {ticket.ticketType}</p>
                     <p><strong>Cantidad:</strong> {ticket.quantity}</p>
                     <p><strong>Precio total:</strong> {(ticket.price * ticket.quantity).toFixed(2)}€</p>
                     <p><strong>Estado:</strong> {getTicketStatusTag(ticket.status)}</p>
@@ -297,8 +297,8 @@ const Profile = () => {
           <Space direction="vertical" align="end" style={{ textAlign: 'right' }}>
             {getTicketStatusTag(ticket.status)}
             
-            <Tag color={ticket.ticketType === 'vip' ? 'purple' : 'blue'}>
-              {ticket.ticketType === 'vip' ? 'VIP' : 'General'}
+            <Tag color={'blue'}>
+              {ticket.ticketType}
             </Tag>
             
             <Tag color={COLORS.primary.main}>

@@ -46,7 +46,7 @@ const TicketPurchase = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentStep, setCurrentStep] = useState(0);
-  const [selectedTicketType, setSelectedTicketType] = useState('general');
+  const [selectedTicketType, setSelectedTicketType] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [processing, setProcessing] = useState(false);
   const [purchaseComplete, setPurchaseComplete] = useState(false);
@@ -60,31 +60,11 @@ const TicketPurchase = () => {
 
   const [userData, setUserData] = useState(null); // datos reales del usuario
   const [useAccountData, setUseAccountData] = useState(false);
+
+  // Cambio: ticketTypes ahora se genera desde sectionPricing
+  const [ticketTypes, setTicketTypes] = useState([]);
   
   const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
-
-  // Precios por tipo de ticket
-  const ticketPrices = {
-    general: 50000,
-    vip: 120000
-  };
-
-  const ticketTypes = [
-    {
-      key: 'general',
-      name: 'General',
-      price: ticketPrices.general,
-      description: 'Acceso general al evento',
-      features: ['Acceso al evento', 'Ubicación general']
-    },
-    {
-      key: 'vip',
-      name: 'VIP',
-      price: ticketPrices.vip,
-      description: 'Experiencia premium',
-      features: ['Acceso preferencial', 'Mejores ubicaciones', 'Servicio especial', 'Área VIP']
-    }
-  ];
 
   useEffect(() => {
     if (!id) {
@@ -103,6 +83,32 @@ const TicketPurchase = () => {
         };
         
         setEvent(eventData);
+        
+        // Generar ticketTypes desde sectionPricing o usar precio base
+        if (eventData.usesSectionPricing && eventData.sectionPricing?.length > 0) {
+          const types = eventData.sectionPricing.map(section => ({
+            key: section.sectionId,
+            label: section.sectionName,
+            price: section.price,
+            capacity: section.capacity
+          }));
+          setTicketTypes(types);
+          // Seleccionar el primer tipo por defecto
+          if (types.length > 0) {
+            setSelectedTicketType(types[0].key);
+          }
+        } else {
+          // Fallback para eventos sin sectionPricing
+          const defaultType = {
+            key: 'general',
+            label: 'General',
+            price: eventData.price,
+            capacity: eventData.capacity
+          };
+          setTicketTypes([defaultType]);
+          setSelectedTicketType('general');
+        }
+        
         setLoading(false);
       })
       .catch((err) => {
@@ -176,13 +182,24 @@ const TicketPurchase = () => {
       return selectedSeats.reduce((total, seat) => total + seat.price, 0);
     }
     // Si no, usar el precio del tipo de ticket por la cantidad
-    return ticketPrices[selectedTicketType] * quantity;
+    return getCorrectPrice(selectedTicketType) * quantity;
+  };
+
+  const getCorrectPrice = (ticketType) => {
+    // Buscar en ticketTypes generados desde sectionPricing
+    const ticketTypeObj = ticketTypes.find(t => t.key === ticketType);
+    return ticketTypeObj ? ticketTypeObj.price : 0;
+  };
+
+  // Función para obtener información completa del tipo de ticket
+  const getTicketTypeInfo = (ticketType) => {
+    return ticketTypes.find(t => t.key === ticketType);
   };
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('es-CL', {
       style: 'currency',
-      currency: 'CLP'
+      currency: 'EUR'
     }).format(price);
   };
 
@@ -203,6 +220,14 @@ const TicketPurchase = () => {
           api.warning({
             message: 'Cantidad inválida',
             description: 'Debes seleccionar entre 1 y 6 tickets.',
+            placement: 'top',
+          });
+          return;
+        }
+        if (!selectedTicketType) {
+          api.warning({
+            message: 'Tipo requerido',
+            description: 'Debes seleccionar un tipo de ticket.',
             placement: 'top',
           });
           return;
@@ -235,64 +260,71 @@ const TicketPurchase = () => {
         
         let userId = null;
         if (username) {
-        try {
-            const userResponse = await axios.get(`${gatewayUrl}/users/search`, {
-            params: { username }
-            });
-            userId = userResponse.data._id;
-        } catch (error) {
-            console.error("Error obteniendo datos del usuario:", error);
-        }
+          try {
+              const userResponse = await axios.get(`${gatewayUrl}/users/search`, {
+              params: { username }
+              });
+              userId = userResponse.data._id;
+          } catch (error) {
+              console.error("Error obteniendo datos del usuario:", error);
+          }
         }
 
-        const ticketData = {
-        userId: userId,
-        eventId: id,
-        ticketType: selectedTicketType,
-        quantity: requiresSeatMap() ? selectedSeats.length : quantity,
-        price: requiresSeatMap() ? 
+        const finalQuantity = requiresSeatMap() ? selectedSeats.length : quantity;
+        const unitPrice = requiresSeatMap() ? 
           selectedSeats.reduce((total, seat) => total + seat.price, 0) / selectedSeats.length :
-          ticketPrices[selectedTicketType],
-        selectedSeats: requiresSeatMap() ? selectedSeats : undefined,
-        customerInfo: {
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            email: formData.email,
-            phone: formData.phone
-        },
-        paymentInfo: {
-            method: 'demo', // En producción: 'stripe', 'paypal', etc.
-            transactionId: `TXN-${Date.now()}`
-        },
-        metadata: {
-            ipAddress: '127.0.0.1', // En producción obtendrías la IP real
-            userAgent: navigator.userAgent,
-            referrer: document.referrer
-        }
+          getCorrectPrice(selectedTicketType);
+
+        const ticketData = {
+          userId: userId,
+          eventId: id,
+          ticketType: selectedTicketType,
+          quantity: finalQuantity,
+          price: unitPrice,
+          selectedSeats: requiresSeatMap() ? selectedSeats : undefined,
+          customerInfo: {
+              firstName: formData.firstName,
+              lastName: formData.lastName,
+              email: formData.email,
+              phone: formData.phone
+          },
+          paymentInfo: {
+              method: 'demo', // En producción: 'stripe', 'paypal', etc.
+              transactionId: `TXN-${Date.now()}`
+          },
+          metadata: {
+              ipAddress: '127.0.0.1', // En producción obtendrías la IP real
+              userAgent: navigator.userAgent,
+              referrer: document.referrer
+          }
         };
 
         const response = await axios.post(`${gatewayUrl}/tickets/purchase`, ticketData);
         
         if (response.data.success) {
-        setTicketInfo({
-            id: response.data.ticketId,
-            eventName: event.name,
-            type: selectedTicketType,
-            quantity: requiresSeatMap() ? selectedSeats.length : quantity,
-            totalPrice: getTotalPrice(),
-            purchaseDate: new Date(),
-            qrCode: response.data.ticket.qrCode,
-            selectedSeats: requiresSeatMap() ? selectedSeats : undefined
-        });
-        
-        setPurchaseComplete(true);
-        setCurrentStep(3);
-        
-        api.success({
-            message: 'Compra exitosa',
-            description: '¡Tus tickets han sido comprados exitosamente!',
-            placement: 'top',
-        });
+          const ticketTypeInfo = getTicketTypeInfo(selectedTicketType);
+          
+          setTicketInfo({
+              id: response.data.ticketId,
+              eventName: event.name,
+              type: selectedTicketType,
+              typeName: ticketTypeInfo?.label || selectedTicketType,
+              quantity: finalQuantity,
+              unitPrice: unitPrice,
+              totalPrice: getTotalPrice(),
+              purchaseDate: new Date(),
+              qrCode: response.data.ticket.qrCode,
+              selectedSeats: requiresSeatMap() ? selectedSeats : undefined
+          });
+          
+          setPurchaseComplete(true);
+          setCurrentStep(3);
+          
+          api.success({
+              message: 'Compra exitosa',
+              description: '¡Tus tickets han sido comprados exitosamente!',
+              placement: 'top',
+          });
         }
         
     } catch (error) {
@@ -301,18 +333,18 @@ const TicketPurchase = () => {
         let errorMessage = 'Hubo un problema al procesar tu compra. Por favor intenta nuevamente.';
         
         if (error.response?.data?.message) {
-        errorMessage = error.response.data.message;
+          errorMessage = error.response.data.message;
         }
         
         api.error({
-        message: 'Error en la compra',
-        description: errorMessage,
-        placement: 'top',
+          message: 'Error en la compra',
+          description: errorMessage,
+          placement: 'top',
         });
     } finally {
         setProcessing(false);
     }
-    };
+  };
 
   const isEventActive = () => {
     if (!event) return false;
@@ -376,62 +408,75 @@ const TicketPurchase = () => {
   }
 
   const renderStepContent = () => {
-  switch (currentStep) {
-    case 0:
-      return (
-        <SelectTickets
-          selectedTicketType={selectedTicketType}
-          setSelectedTicketType={setSelectedTicketType}
-          quantity={quantity}
-          setQuantity={setQuantity}
-          ticketTypes={ticketTypes}
-          formatPrice={formatPrice}
-          event={event}
-          selectedSeats={selectedSeats}
-          onSeatSelect={handleSeatSelect}
-          occupiedSeats={occupiedSeats}
-        />
-      );
-    case 1:
-      return (
-        <BuyerInfo
-          form={form}
-          useAccountData={useAccountData}
-          setUseAccountData={setUseAccountData}
-          userData={userData}
-          ticketTypes={ticketTypes}
-          selectedTicketType={selectedTicketType}
-          quantity={quantity}
-          formatPrice={formatPrice}
-        />
-      );
-    case 2:
-      return (
-        <PaymentMethod
-          event={event}
-          form={form}
-          quantity={quantity}
-          selectedTicketType={selectedTicketType}
-          ticketTypes={ticketTypes}
-          formatPrice={formatPrice}
-        />
-      );
-    case 3:
-      return (
-        <Confirmation
-          ticketInfo={ticketInfo}
-          event={event}
-          form={form}
-          quantity={quantity}
-          selectedTicketType={selectedTicketType}
-          ticketTypes={ticketTypes}
-          formatPrice={formatPrice}
-          navigate={navigate}
-          COLORS={COLORS}
-        />
-      );
-    default:
-      return null;
+    switch (currentStep) {
+      case 0:
+        return (
+          <SelectTickets
+            selectedTicketType={selectedTicketType}
+            setSelectedTicketType={setSelectedTicketType}
+            quantity={quantity}
+            setQuantity={setQuantity}
+            ticketTypes={ticketTypes}
+            formatPrice={formatPrice}
+            event={event}
+            selectedSeats={selectedSeats}
+            onSeatSelect={handleSeatSelect}
+            occupiedSeats={occupiedSeats}
+          />
+        );
+      case 1:
+        return (
+          <BuyerInfo
+            form={form}
+            useAccountData={useAccountData}
+            setUseAccountData={setUseAccountData}
+            userData={userData}
+            ticketTypes={ticketTypes}
+            selectedTicketType={selectedTicketType}
+            quantity={quantity}
+            formatPrice={formatPrice}
+            event={event}
+            getTotalPrice={getTotalPrice}
+            getCorrectPrice={getCorrectPrice}
+            selectedSeats={selectedSeats}
+            requiresSeatMap={requiresSeatMap}
+          />
+        );
+      case 2:
+        return (
+          <PaymentMethod
+            event={event}
+            form={form}
+            quantity={quantity}
+            selectedTicketType={selectedTicketType}
+            ticketTypes={ticketTypes}
+            formatPrice={formatPrice}
+            getTotalPrice={getTotalPrice}
+            getCorrectPrice={getCorrectPrice}
+            selectedSeats={selectedSeats}
+            requiresSeatMap={requiresSeatMap}
+          />
+        );
+      case 3:
+        return (
+          <Confirmation
+            ticketInfo={ticketInfo}
+            event={event}
+            form={form}
+            quantity={quantity}
+            selectedTicketType={selectedTicketType}
+            ticketTypes={ticketTypes}
+            formatPrice={formatPrice}
+            navigate={navigate}
+            COLORS={COLORS}
+            selectedSeats={selectedSeats}
+            requiresSeatMap={requiresSeatMap}
+            getTotalPrice={getTotalPrice}
+            getCorrectPrice={getCorrectPrice}
+          />
+        );
+      default:
+        return null;
     }
   };
 
