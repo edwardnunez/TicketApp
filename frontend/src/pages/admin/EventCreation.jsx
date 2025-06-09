@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { 
   Layout, 
@@ -35,13 +36,13 @@ import {
   StopOutlined,
   ExclamationCircleOutlined,
   UploadOutlined,
-  LockOutlined
+  LockOutlined,
+  EuroOutlined
 } from '@ant-design/icons';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
-
 
 import { COLORS } from "../../components/colorscheme";
 
@@ -54,12 +55,19 @@ const EventCreation = () => {
   const [type, setType] = useState(null);
   const [locations, setLocations] = useState([]);
   const [locationOptions, setLocationOptions] = useState([]);
+  const [seatMaps, setSeatMaps] = useState([]);
   const [errorMessage, setErrorMessage] = useState(null);
   const [selectedDate, setSelectedDate] = useState(dayjs().add(2, 'day'));
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [isCapacityLocked, setIsCapacityLocked] = useState(false);
   const [form] = Form.useForm();
+  const [sectionPricing, setSectionPricing] = useState([]);
+  const [locationSections, setLocationSections] = useState([]);
+  const [usesSectionPricing, setUsesSectionPricing] = useState(false);
+  const [loadingSections, setLoadingSections] = useState(false);
   const navigate = useNavigate();
+  
+  // URLs de los microservicios
   const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
 
   dayjs.extend(isSameOrBefore);
@@ -71,7 +79,6 @@ const EventCreation = () => {
     theater: COLORS?.categories?.teatro || "#fa8c16",
     festival: COLORS?.categories?.festivales || "#722ed1"
   };
-
 
   const stateColors = {
     activo: COLORS?.status?.success || "#52c41a",
@@ -94,17 +101,26 @@ const EventCreation = () => {
     cancelado: 'Cancelado'
   };
 
+  // Función para obtener locations y seatmaps
   useEffect(() => {
-    const fetchLocations = async () => {
+    const fetchData = async () => {
       try {
-        const response = await axios.get(gatewayUrl + "/locations");
-        setLocations(response.data);
+        const locationsUrl = `${gatewayUrl}/locations`;
+        const seatMapsUrl = `${gatewayUrl}/seatmaps`;
+        
+        const [locationsResponse, seatMapsResponse] = await Promise.all([
+          axios.get(locationsUrl),
+          axios.get(seatMapsUrl)
+        ]);
+        
+        setLocations(locationsResponse.data);
+        setSeatMaps(seatMapsResponse.data);
       } catch (error) {
-        console.error("Error obteniendo ubicaciones:", error);
-        setErrorMessage("Error al cargar las ubicaciones");
+        console.error("Error obteniendo datos:", error);
+        setErrorMessage("Error al cargar las ubicaciones y mapas de asientos");
       }
     };
-    fetchLocations();
+    fetchData();
   }, [gatewayUrl]);
 
   useEffect(() => {
@@ -142,19 +158,85 @@ const EventCreation = () => {
     }
   };
 
-  const handleLocationChange = (locationId) => {
+  // Función actualizada para obtener la capacidad del seatmap
+  const getCapacityFromSeatMap = async (seatMapId) => {
+    try {
+      const seatMapUrl = `${gatewayUrl}/seatmaps/${seatMapId}`;
+      
+      const response = await axios.get(seatMapUrl);
+      const seatMap = response.data;
+      
+      // Calcular la capacidad total sumando todas las secciones
+      if (seatMap.sections && seatMap.sections.length > 0) {
+        const totalCapacity = seatMap.sections.reduce((total, section) => {
+          return total + (section.rows * section.seatsPerRow);
+        }, 0);
+        return totalCapacity;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error("Error obteniendo capacidad del seatmap:", error);
+      return null;
+    }
+  };
+
+  const handleLocationChange = async (locationId) => {
     const location = locations.find(loc => loc._id === locationId);
     setSelectedLocation(location);
     
-    if (location && location.capacity && location.capacity > 0) {
-      // Si la ubicación tiene capacidad definida, bloquear el campo y establecer el valor
+    // Resetear estados de secciones
+    setLocationSections([]);
+    setSectionPricing([]);
+    setUsesSectionPricing(false);
+    
+    if (location && location.seatMapId) {
+      // Obtener secciones para pricing por secciones
+      await fetchLocationSections(locationId);
+      
+      // Si la ubicación tiene un seatMapId, obtener la capacidad del seatmap
+      setLoading(true);
+      try {
+        const capacity = await getCapacityFromSeatMap(location.seatMapId);
+        if (capacity) {
+          setIsCapacityLocked(true);
+          form.setFieldsValue({ capacity: capacity });
+        } else if (location.capacity && location.capacity > 0) {
+          setIsCapacityLocked(true);
+          form.setFieldsValue({ capacity: location.capacity });
+        } else {
+          setIsCapacityLocked(false);
+          form.setFieldsValue({ capacity: undefined });
+        }
+      } catch (error) {
+        console.error("Error obteniendo capacidad:", error);
+        if (location.capacity && location.capacity > 0) {
+          setIsCapacityLocked(true);
+          form.setFieldsValue({ capacity: location.capacity });
+        } else {
+          setIsCapacityLocked(false);
+          form.setFieldsValue({ capacity: undefined });
+        }
+      } finally {
+        setLoading(false);
+      }
+    } else if (location && location.capacity && location.capacity > 0) {
       setIsCapacityLocked(true);
       form.setFieldsValue({ capacity: location.capacity });
     } else {
-      // Si no tiene capacidad definida, desbloquear el campo
       setIsCapacityLocked(false);
       form.setFieldsValue({ capacity: undefined });
     }
+  };
+
+  const handleSectionPriceChange = (sectionId, newPrice) => {
+    setSectionPricing(prevPricing => 
+      prevPricing.map(section => 
+        section.sectionId === sectionId 
+          ? { ...section, price: newPrice === '' ? '' : parseFloat(newPrice) || 0 }
+          : section
+      )
+    );
   };
 
   const handleTypeChange = (value) => {
@@ -162,30 +244,105 @@ const EventCreation = () => {
     // Resetear la ubicación seleccionada cuando cambia el tipo
     setSelectedLocation(null);
     setIsCapacityLocked(false);
+    setLocationSections([]);
+    setSectionPricing([]);
+    setUsesSectionPricing(false);
     form.setFieldsValue({ 
       location: undefined,
-      capacity: undefined 
+      capacity: undefined,
+      price: undefined
     });
+  };
+
+  const fetchLocationSections = async (locationId) => {
+    if (!locationId) return;
+    
+    setLoadingSections(true);
+    try {
+      const response = await axios.get(`${gatewayUrl}/location/${locationId}/sections`);
+      const data = response.data;
+      
+      if (data.sections && data.sections.length > 0) {
+        setLocationSections(data.sections);
+        setUsesSectionPricing(true);
+        
+        // Inicializar pricing por secciones con precios base o 0
+        const initialPricing = data.sections.map(section => ({
+          sectionId: section.sectionId,
+          sectionName: section.sectionName,
+          capacity: section.capacity,
+          price: section.basePrice || 0
+        }));
+        
+        setSectionPricing(initialPricing);
+        
+        // Ocultar el campo de precio tradicional ya que usaremos pricing por secciones
+        form.setFieldsValue({ price: undefined });
+      } else {
+        setLocationSections([]);
+        setSectionPricing([]);
+        setUsesSectionPricing(false);
+      }
+    } catch (error) {
+      console.error("Error obteniendo secciones:", error);
+      setLocationSections([]);
+      setSectionPricing([]);
+      setUsesSectionPricing(false);
+    } finally {
+      setLoadingSections(false);
+    }
   };
 
   const onFinish = async (values) => {
     setLoading(true);
     setErrorMessage(null);
     
-    console.log('Form values:', values); // Debug log
+    console.log('Form values:', values);
     
     try {
-      // Primero enviar los datos sin imagen para probar
       const eventData = {
         name: values.name,
         date: values.date.toISOString(),
         location: values.location,
         type: values.type,
         description: values.description,
-        capacity: parseInt(values.capacity),
-        price: parseFloat(values.price),
         state: values.state || 'proximo'
       };
+
+      // Añadir pricing según el tipo
+      if (usesSectionPricing && sectionPricing.length > 0) {
+        // Validar que todos los precios sean válidos
+        const hasInvalidPrices = sectionPricing.some(section => 
+          section.price === '' || isNaN(parseFloat(section.price)) || parseFloat(section.price) < 0
+        );
+        
+        if (hasInvalidPrices) {
+          setErrorMessage('Todos los precios de las secciones deben ser números válidos y no negativos');
+          return;
+        }
+        
+        eventData.usesSectionPricing = true;
+        eventData.sectionPricing = sectionPricing.map(section => ({
+        ...section,
+        price: parseFloat(section.price) || 0
+      }));
+        
+        // Capacidad se calcula automáticamente en el backend
+        eventData.capacity = sectionPricing.reduce((total, section) => total + section.capacity, 0);
+        
+        // El precio base será el mínimo de las secciones
+        eventData.price = Math.min(...sectionPricing.map(s => s.price));
+      } else {
+        // Pricing tradicional
+        if (!values.price || !values.capacity) {
+          setErrorMessage('El precio y la capacidad son obligatorios cuando no hay pricing por secciones');
+          return;
+        }
+        
+        eventData.usesSectionPricing = false;
+        eventData.capacity = parseInt(values.capacity);
+        eventData.price = parseFloat(values.price);
+      }
 
       console.log('Sending event data:', eventData);
 
@@ -209,7 +366,7 @@ const EventCreation = () => {
     }
   };
 
-  const gettypeLabel = (type) => {
+  const getTypeLabel = (type) => {
     switch(type) {
       case 'football': return 'Partido de fútbol';
       case 'cinema': return 'Cine';
@@ -228,13 +385,113 @@ const EventCreation = () => {
     }
   };
 
-  // Props para el Upload: evitar upload automático, solo seleccionar archivo y mantenerlo en el formulario
   const uploadProps = {
     beforeUpload: file => {
       return false;
     },
     maxCount: 1,
     accept: 'image/*'
+  };
+
+  // Función para obtener información del seatmap
+  const getSeatMapInfo = (seatMapId) => {
+    const seatMap = seatMaps.find(sm => sm.id === seatMapId);
+    return seatMap;
+  };
+
+  const SectionPricingComponent = () => {
+    if (!usesSectionPricing || locationSections.length === 0) return null;
+
+    return (
+      <Card 
+        title={
+          <Space>
+            <TagOutlined style={{ color: COLORS?.primary?.main || '#1890ff' }} />
+            Configuración de precios por sección
+          </Space>
+        }
+        style={{ 
+          marginBottom: '24px',
+          borderRadius: '8px',
+          boxShadow: '0 1px 2px rgba(0,0,0,0.07)'
+        }}
+        loading={loadingSections}
+      >
+        <Alert
+          message="Pricing por secciones activado"
+          description="Esta ubicación tiene un mapa de asientos con secciones definidas. Configure el precio para cada sección individualmente."
+          type="info"
+          showIcon
+          style={{ marginBottom: '16px' }}
+        />
+        
+        <Row gutter={[16, 16]}>
+          {sectionPricing.map((section, index) => {
+            const locationSection = locationSections.find(ls => ls.sectionId === section.sectionId);
+            
+            return (
+              <Col xs={24} sm={12} md={8} key={section.sectionId}>
+                <Card 
+                  size="small"
+                  style={{
+                    borderLeft: `4px solid ${locationSection?.color || '#1890ff'}`,
+                    height: '100%'
+                  }}
+                >
+                  <Space direction="vertical" style={{ width: '100%' }} size="small">
+                    <Text strong style={{ fontSize: '14px' }}>
+                      {section.sectionName}
+                    </Text>
+                    
+                    <Text type="secondary" style={{ fontSize: '12px' }}>
+                      Capacidad: {section.capacity} asientos
+                    </Text>
+                    
+                    <Form.Item
+                      label="Precio por entrada"
+                      style={{ margin: 0 }}
+                      required
+                      rules={[
+                        { required: true, message: 'Precio requerido' },
+                        { type: 'number', min: 0, message: 'El precio debe ser mayor o igual a 0' }
+                      ]}
+                    >
+                      <Input
+                        type="number"
+                        value={section.price === 0 ? '' : section.price}
+                        onChange={(e) => handleSectionPriceChange(section.sectionId, e.target.value)}
+                        prefix={<EuroOutlined />}
+                        placeholder="0.00"
+                        min={0}
+                        step={0.01}
+                        style={{ width: '100%' }}
+                      />
+                    </Form.Item>
+                  </Space>
+                </Card>
+              </Col>
+            );
+          })}
+        </Row>
+        
+        {sectionPricing.length > 0 && (
+          <Alert
+            style={{ marginTop: '16px' }}
+            message="Resumen de precios"
+            description={
+              <div>
+                <p><strong>Precio mínimo:</strong> €{Math.min(...sectionPricing.map(s => s.price))}</p>
+                <p><strong>Precio máximo:</strong> €{Math.max(...sectionPricing.map(s => s.price))}</p>
+                <p><strong>Precio promedio:</strong> €{(sectionPricing.reduce((sum, s) => sum + s.price, 0) / sectionPricing.length).toFixed(2)}</p>
+                <p><strong>Capacidad total:</strong> {sectionPricing.reduce((total, s) => total + s.capacity, 0)} asientos</p>
+              </div>
+            }
+            type="success"
+            showIcon
+          />
+        )}
+      </Card>
+    );
   };
 
   return (
@@ -282,6 +539,7 @@ const EventCreation = () => {
               icon={<CloseCircleOutlined />}
               style={{ marginBottom: 24, borderRadius: '6px' }}
               closable
+              onClose={() => setErrorMessage(null)}
             />
           )}
 
@@ -411,9 +669,9 @@ const EventCreation = () => {
                       disabled={!type}
                       showSearch
                       onChange={handleLocationChange}
-                      value={selectedLocation?._id} // Controlar el valor seleccionado
+                      value={selectedLocation?._id}
                       filterOption={(input, option) =>
-                        option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                        option.children.props.children[0].props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                       }
                       notFoundContent={
                         !type ? 
@@ -426,33 +684,39 @@ const EventCreation = () => {
                           </div>
                       }
                     >
-                      {locationOptions.map((location) => (
-                        <Option key={location._id} value={location._id}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ flex: 1 }}>{location.name}</span>
-                            <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
-                              {location.capacity && location.capacity > 0 && (
-                                <Tag 
-                                  color="green" 
-                                  size="small" 
-                                  style={{ fontSize: '10px', margin: 0 }}
-                                >
-                                  Cap: {location.capacity}
-                                </Tag>
-                              )}
-                              {location.seatMapId && (
-                                <Tag 
-                                  color="blue" 
-                                  size="small" 
-                                  style={{ fontSize: '10px', margin: 0 }}
-                                >
-                                  Mapa
-                                </Tag>
-                              )}
+                      {locationOptions.map((location) => {
+                        const seatMapInfo = location.seatMapId ? getSeatMapInfo(location.seatMapId) : null;
+                        
+                        return (
+                          <Option key={location._id} value={location._id}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span style={{ flex: 1 }}>{location.name}</span>
+                              <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
+                                {location.capacity && location.capacity > 0 && (
+                                  <Tag 
+                                    color="green" 
+                                    size="small" 
+                                    style={{ fontSize: '10px', margin: 0 }}
+                                  >
+                                    Cap: {location.capacity}
+                                  </Tag>
+                                )}
+                                {seatMapInfo && (
+                                  <Tooltip title={`Mapa: ${seatMapInfo.name} (${seatMapInfo.type})`}>
+                                    <Tag 
+                                      color="blue" 
+                                      size="small" 
+                                      style={{ fontSize: '10px', margin: 0 }}
+                                    >
+                                      {seatMapInfo.type}
+                                    </Tag>
+                                  </Tooltip>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        </Option>
-                      ))}
+                          </Option>
+                        );
+                      })}
                     </Select>
                   </Form.Item>
                 </Col>
@@ -475,57 +739,65 @@ const EventCreation = () => {
                 </Col>
               </Row>
 
-              <Row gutter={24}>
-                <Col xs={24} md={12}>
-                  <Form.Item
-                    label="Capacidad"
-                    name="capacity"
-                    rules={[
-                      { required: true, message: 'Por favor ingrese la capacidad' },
-                      { type: 'number', min: 1, message: 'La capacidad debe ser al menos 1', transform: (value) => Number(value) }
-                    ]}
-                  >
-                    <Input 
-                      type="number" 
-                      placeholder={isCapacityLocked ? "Capacidad establecida por el mapa de asientos" : "Ingrese la capacidad"}
-                      disabled={isCapacityLocked}
-                      prefix={isCapacityLocked ? <LockOutlined style={{ color: COLORS?.neutral?.grey3 || '#d9d9d9' }} /> : null}
-                      suffix={
-                        <span style={{ color: COLORS?.neutral?.grey3 || '#d9d9d9' }}>
-                          asientos
-                          {isCapacityLocked && selectedLocation && (
-                            <Tooltip title={`Capacidad fija basada en el mapa de asientos de ${selectedLocation.name}`}>
-                              <InfoCircleOutlined style={{ marginLeft: '4px' }} />
-                            </Tooltip>
-                          )}
-                        </span>
-                      }
-                    />
-                  </Form.Item>
-                </Col>
-                
-                <Col xs={24} md={12}>
-                  <Form.Item
-                    label="Precio"
-                    name="price"
-                    rules={[
-                      { required: true, message: 'Por favor ingrese el precio' },
-                      { type: 'number', min: 0, message: 'El precio debe ser al menos 0', transform: (value) => Number(value) }
-                    ]}
-                  >
-                    <Input 
-                      type="number"
-                      placeholder="Ingrese el precio" 
-                      prefix="€" 
-                      suffix={
-                        <Tooltip title="Precio base por entrada">
-                          <InfoCircleOutlined style={{ color: COLORS?.neutral?.grey3 || '#d9d9d9' }} />
-                        </Tooltip>
-                      } 
-                    />
-                  </Form.Item>
-                </Col>
-              </Row>
+              {/* Componente de pricing por secciones */}
+              <SectionPricingComponent />
+
+              {/* Pricing tradicional - solo se muestra si no hay secciones */}
+              {!usesSectionPricing && (
+                <Row gutter={24}>
+                  <Col xs={24} md={12}>
+                    <Form.Item
+                      label="Capacidad"
+                      name="capacity"
+                      rules={[
+                        { required: true, message: 'Por favor ingrese la capacidad' },
+                        { type: 'number', min: 1, message: 'La capacidad debe ser al menos 1', transform: (value) => Number(value) }
+                      ]}
+                    >
+                      <Input 
+                        type="number" 
+                        placeholder={isCapacityLocked ? "Capacidad establecida por el mapa de asientos" : "Ingrese la capacidad"}
+                        disabled={isCapacityLocked}
+                        prefix={isCapacityLocked ? <LockOutlined style={{ color: COLORS?.neutral?.grey3 || '#d9d9d9' }} /> : null}
+                        suffix={
+                          <span style={{ color: COLORS?.neutral?.grey3 || '#d9d9d9' }}>
+                            asientos
+                            {isCapacityLocked && selectedLocation && (
+                              <Tooltip title={`Capacidad ${selectedLocation.seatMapId ? 'calculada desde el mapa de asientos' : 'fija'} de ${selectedLocation.name}`}>
+                                <InfoCircleOutlined style={{ marginLeft: '4px' }} />
+                              </Tooltip>
+                            )}
+                          </span>
+                        }
+                      />
+                    </Form.Item>
+                  </Col>
+                  
+                  <Col xs={24} md={12}>
+                    <Form.Item
+                      label="Precio por entrada"
+                      name="price"
+                      rules={[
+                        { required: true, message: 'Por favor ingrese el precio' },
+                        { type: 'number', min: 0, message: 'El precio debe ser al menos 0', transform: (value) => Number(value) }
+                      ]}
+                    >
+                      <Input 
+                        type="number"
+                        placeholder="Ingrese el precio" 
+                        prefix={<EuroOutlined />}
+                        suffix={
+                          <Tooltip title="Precio base por entrada">
+                            <InfoCircleOutlined style={{ color: COLORS?.neutral?.grey3 || '#d9d9d9' }} />
+                          </Tooltip>
+                        } 
+                        step={0.01}
+                      />
+                    </Form.Item>
+                  </Col>
+                </Row>
+              )}
+
               <Row gutter={24}>
                 <Col xs={24}>
                   <Form.Item
@@ -541,19 +813,32 @@ const EventCreation = () => {
                 </Col>
               </Row>
 
-              {selectedLocation && selectedLocation.capacity && selectedLocation.capacity > 0 && (
+              {/* Información mejorada de la ubicación seleccionada */}
+              {selectedLocation && (
                 <Alert
-                  message="Ubicación con capacidad predefinida"
-                  description={`Esta ubicación (${selectedLocation.name}) tiene una capacidad predefinida de ${selectedLocation.capacity} asientos. La capacidad se establece automáticamente según la configuración de la ubicación.`}
+                  message={`Ubicación seleccionada: ${selectedLocation.name}`}
+                  description={
+                    <div>
+                      <p><strong>Dirección:</strong> {selectedLocation.address}</p>
+                      <p><strong>Categoría:</strong> {selectedLocation.category}</p>
+                      {selectedLocation.seatMapId && (
+                        <p><strong>Mapa de asientos:</strong> {getSeatMapInfo(selectedLocation.seatMapId)?.name || selectedLocation.seatMapId}</p>
+                      )}
+                      {isCapacityLocked && (
+                        <p><strong>Capacidad:</strong> {form.getFieldValue('capacity')} asientos (automática)</p>
+                      )}
+                    </div>
+                  }
                   type="info"
                   showIcon
                   icon={<InfoCircleOutlined />}
                   style={{ marginBottom: 24, borderRadius: '6px' }}
                 />
               )}
+
               <Divider />
 
-              {/* Preview of selected event type and state */}
+              {/* Preview sections remain the same */}
               {(type || form.getFieldValue('state')) && (
                 <Row style={{ marginBottom: '24px' }}>
                   <Col span={24}>
@@ -584,7 +869,7 @@ const EventCreation = () => {
                             </div>
                             <div>
                               <Text strong style={{ fontSize: '16px' }}>
-                                Tipo de evento seleccionado: {gettypeLabel(type)}
+                                Tipo de evento seleccionado: {getTypeLabel(type)}
                               </Text>
                               <Paragraph type="secondary" style={{ marginBottom: 0 }}>
                                 {type === 'football' && 'Los partidos de fútbol requieren ubicaciones de estadio y tienen asientos designados.'}

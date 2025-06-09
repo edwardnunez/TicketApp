@@ -99,17 +99,10 @@ app.post('/tickets/purchase', async (req, res) => {
       });
     }
 
-    if (!['general', 'vip'].includes(ticketType)) {
-      return res.status(400).json({
-        error: "Tipo de ticket inválido",
-        message: "El tipo de ticket debe ser 'general' o 'vip'"
-      });
-    }
-
     const newTicket = new Ticket({
       userId,
       eventId,
-      ticketType: ticketType || 'general',
+      ticketType: ticketType,
       price,
       quantity,
       selectedSeats,
@@ -219,10 +212,7 @@ app.get('/tickets/user/:userId/details', validateObjectId, async (req, res) => {
       activeTickets: tickets.filter(t => t.status === 'paid').length,
       pendingTickets: tickets.filter(t => t.status === 'pending').length,
       cancelledTickets: tickets.filter(t => t.status === 'cancelled').length,
-      byType: {
-        general: tickets.filter(t => t.ticketType === 'general').length,
-        vip: tickets.filter(t => t.ticketType === 'vip').length
-      }
+      ticketTypes: [...new Set(tickets.map(t => t.ticketType))],
     };
 
     res.json({
