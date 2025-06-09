@@ -19,3 +19,9 @@ mejorar el cambio de contraseña en editar perfil (falta probarlo)
 corregir como se guardan los tickets en bd (distinguir por precion en vez de meter todos juntos si se compran varios)
 
 retocar formato de lista de tickets comprados enProfile
+
+los precios de las sections no se guardan bien, revisar eventservice y eventcreation
+
+el campo price del ticket hace una media de todos los tickets para calcular el precio por ticket. revisar por si no es correcto
+
+no consgo que el resumen de buyerinfo muestre el precio bien

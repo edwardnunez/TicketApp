@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Card, Radio, Space, Tag, InputNumber, Typography, Alert, Spin, Button } from "antd";
 import { COLORS } from "../../components/colorscheme";
-import SeatRenderer from "./seatmaps/SeatRenderer";
 import GenericSeatMapRenderer from "./seatmaps/GenericSeatRenderer";
 import axios from 'axios';
 
@@ -90,7 +89,21 @@ export default function SelectTickets({
           return;
         }
         
-        setSeatMapData(seatMapData);
+        // Aplicar precios del evento si están disponibles
+        if (event.usesSectionPricing && event.sectionPricing?.length > 0) {
+          const updatedSeatMapData = {
+            ...seatMapData,
+            sections: seatMapData.sections.map(section => {
+              const eventSectionPricing = event.sectionPricing.find(sp => sp.sectionId === section.id);
+              return eventSectionPricing 
+                ? { ...section, price: eventSectionPricing.price }
+                : section;
+            })
+          };
+          setSeatMapData(updatedSeatMapData);
+        } else {
+          setSeatMapData(seatMapData);
+        }
       } catch (err) {
         console.error('Error loading seatmap:', err);
         if (err.response?.status === 404) {
@@ -116,48 +129,6 @@ export default function SelectTickets({
       setQuantity(0);
     }
   }, [event?.id]); // Solo cuando cambia el ID del evento
-
-
-  const renderSeatMapSection = useCallback((section) => {
-    const seatMapProps = {
-      sectionId: section.id,
-      rows: section.rows,
-      seatsPerRow: section.seatsPerRow,
-      price: section.price,
-      color: section.color,
-      name: section.name,
-      selectedSeats,
-      occupiedSeats,
-      maxSeats: 6,
-      onSeatSelect: handleSeatSelection,
-      formatPrice,
-    };
-
-    return (
-      <div key={section.id} style={{ marginBottom: '24px' }}>
-        <div style={{
-          padding: '12px 16px',
-          backgroundColor: section.color + '20',
-          borderLeft: `4px solid ${section.color}`,
-          marginBottom: '12px',
-          borderRadius: '4px'
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Title level={5} style={{ margin: 0, color: COLORS.neutral.darker }}>
-              {section.name}
-            </Title>
-            <Text strong style={{ color: section.color }}>
-              {formatPrice(section.price)}
-            </Text>
-          </div>
-          <Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
-            {section.rows} filas × {section.seatsPerRow} asientos por fila
-          </Text>
-        </div>
-        <SeatRenderer {...seatMapProps} />
-      </div>
-    );
-  }, [selectedSeats, occupiedSeats, handleSeatSelection, formatPrice]);
 
   const renderSeatMap = useCallback(() => {
     if (loading) {
@@ -212,33 +183,6 @@ export default function SelectTickets({
       />
     );
   }, [loading, error, seatMapData, selectedSeats, handleSeatSelection, occupiedSeats, formatPrice]);
-
-  const renderSeatSelectionInfo = () => {
-    const maxSeats = 6;
-    const remainingSeats = maxSeats - selectedSeats.length;
-    
-    return (
-      <Alert
-        message="Selección de asientos"
-        description={
-          <div>
-            <p>Haz clic en los asientos que deseas comprar.</p>
-            <ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
-              <li>Máximo {maxSeats} asientos por compra</li>
-              <li>Asientos seleccionados: {selectedSeats.length}</li>
-              <li>Puedes seleccionar {remainingSeats} asientos más</li>
-              {selectedSeats.length > 0 && (
-                <li><strong>Total: {formatPrice(totalFromSeats)}</strong></li>
-              )}
-            </ul>
-          </div>
-        }
-        type="info"
-        showIcon
-        style={{ marginBottom: '24px' }}
-      />
-    );
-  };
 
 
   // Memoize the selected ticket type data

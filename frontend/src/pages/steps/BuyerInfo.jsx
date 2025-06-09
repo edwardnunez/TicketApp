@@ -10,8 +10,14 @@ export default function BuyerInfo({
   ticketTypes, 
   selectedTicketType, 
   quantity, 
-  formatPrice 
+  formatPrice,
+  selectedSeats,
+  event,
+  getTotalPrice,
+  getCorrectPrice,
+  requiresSeatMap
 }) {
+
   const validatePhoneNumber = (_, value) => {
     if (!value) return Promise.resolve();
     const regex = /^[0-9]+$/;
@@ -114,21 +120,41 @@ export default function BuyerInfo({
           </Title>
 
           <Space direction="vertical" size={12} style={{ width: '100%' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Text>Tickets {ticketTypes.find(t => t.key === selectedTicketType)?.name}:</Text>
-              <Text strong>{quantity}</Text>
-            </div>
-
-            <Divider style={{ margin: '12px 0' }} />
-
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Title level={4} style={{ color: COLORS.neutral.darker }}>
-                Total:
-              </Title>
-              <Title level={4} style={{ color: COLORS.primary.main }}>
-                {formatPrice(ticketTypes.find(t => t.key === selectedTicketType)?.price * quantity)}
-              </Title>
-            </div>
+            {requiresSeatMap() && selectedSeats && selectedSeats.length > 0 ? (
+              <>
+                {selectedSeats.map((seat, index) => (
+                  <div key={index} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Text>{seat.section} - Fila {seat.row}, Asiento {seat.seat}</Text>
+                    <Text strong>{formatPrice(seat.price || 0)}</Text>
+                  </div>
+                ))}
+                <Divider style={{ margin: '12px 0' }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Title level={4} style={{ color: COLORS.neutral.darker }}>
+                    Total:
+                  </Title>
+                  <Title level={4} style={{ color: COLORS.primary.main }}>
+                    {formatPrice(getTotalPrice())}
+                  </Title>
+                </div>
+              </>
+            ) : (
+              <>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Text>Tickets {ticketTypes.find(t => t.key === selectedTicketType)?.label}:</Text>
+                  <Text strong>{quantity}</Text>
+                </div>
+                <Divider style={{ margin: '12px 0' }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Title level={4} style={{ color: COLORS.neutral.darker }}>
+                    Total:
+                  </Title>
+                  <Title level={4} style={{ color: COLORS.primary.main }}>
+                    {formatPrice(getTotalPrice())}
+                  </Title>
+                </div>
+              </>
+            )}
           </Space>
         </Card>
       </Col>
