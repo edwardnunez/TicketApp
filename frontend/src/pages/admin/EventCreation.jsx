@@ -67,7 +67,6 @@ const EventCreation = () => {
   const [loadingSections, setLoadingSections] = useState(false);
   const navigate = useNavigate();
   
-  // URLs de los microservicios
   const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
 
   dayjs.extend(isSameOrBefore);
@@ -309,6 +308,8 @@ const EventCreation = () => {
         state: values.state || 'proximo'
       };
 
+      console.log('Event data before pricing:', eventData);
+
       // Añadir pricing según el tipo
       if (usesSectionPricing && sectionPricing.length > 0) {
         // Validar que todos los precios sean válidos
@@ -344,23 +345,19 @@ const EventCreation = () => {
         eventData.price = parseFloat(values.price);
       }
 
-      console.log('Sending event data:', eventData);
+      console.log('Event data prepared:', eventData);
 
-      await axios.post(gatewayUrl + "/event", eventData, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
+      // Navegar a la vista de configuración del seatmap con los datos del evento
+      navigate('/admin/event-seatmap-config', { 
+        state: { 
+          eventData,
+          selectedLocation 
+        } 
       });
-
-      message.success({
-        content: 'Evento creado exitosamente',
-        icon: <CheckCircleOutlined style={{ color: COLORS?.status?.success || 'green' }} />
-      });
-      navigate('/admin');
+      
     } catch (error) {
-      console.error("Error creando el evento:", error);
-      console.error("Error response:", error.response?.data);
-      setErrorMessage(error.response?.data?.error || 'Hubo un error al crear el evento');
+      console.error("Error preparando el evento:", error);
+      setErrorMessage('Hubo un error al procesar los datos del evento');
     } finally {
       setLoading(false);
     }
@@ -943,16 +940,12 @@ const EventCreation = () => {
                     </Button>
                     <Button 
                       type="primary" 
-                      htmlType="submit" 
+                      htmlType="submit"
                       loading={loading} 
                       icon={<SaveOutlined />}
-                      style={{ 
-                        backgroundColor: COLORS?.primary?.main || "#1890ff",
-                        borderColor: COLORS?.primary?.main || "#1890ff",
-                        borderRadius: '6px'
-                      }}
+                      style={{ backgroundColor: COLORS?.primary?.main || "#1890ff", borderColor: COLORS?.primary?.main || "#1890ff", borderRadius: '6px' }}
                     >
-                      Crear Evento
+                      Siguiente
                     </Button>
                   </Space>
                 </Col>
