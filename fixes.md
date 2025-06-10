@@ -25,3 +25,7 @@ los precios de las sections no se guardan bien, revisar eventservice y eventcrea
 el campo price del ticket hace una media de todos los tickets para calcular el precio por ticket. revisar por si no es correcto
 
 no consgo que el resumen de buyerinfo muestre el precio bien
+
+comprobar que el event data llegue bien
+
+en el evento hacer un array de asientos bloqueados (o secciones) que luego se rendericen sobre el mapa al cpmprar entradas
