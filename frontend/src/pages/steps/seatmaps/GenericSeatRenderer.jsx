@@ -11,6 +11,8 @@ const GenericSeatMapRenderer = ({
   onSeatSelect,
   maxSeats,
   occupiedSeats,
+  blockedSeats,
+  blockedSections,
   formatPrice
 }) => {
   if (!seatMapData) return null;
@@ -20,6 +22,80 @@ const GenericSeatMapRenderer = ({
   const filterOccupiedBySection = (sectionId) => {
     if (!occupiedSeats || !occupiedSeats.length) return [];
     return occupiedSeats.filter(seatId => seatId.startsWith(sectionId));
+  };
+
+  const filterBlockedBySection = (sectionId) => {
+    if (!blockedSeats || !blockedSeats.length) return [];
+    return blockedSeats.filter(seatId => seatId.startsWith(sectionId));
+  };
+
+  const isSectionBlocked = (sectionId) => {
+    return blockedSections && blockedSections.includes(sectionId);
+  };
+
+  const renderSectionCard = (section, additionalStyles = {}) => {
+    const sectionBlocked = isSectionBlocked(section.id);
+    
+    return (
+      <Card 
+        style={{ 
+          padding: 10, 
+          margin: 5,
+          opacity: sectionBlocked ? 0.5 : 1,
+          backgroundColor: sectionBlocked ? '#f5f5f5' : 'white',
+          border: sectionBlocked ? '2px dashed #ccc' : '1px solid #d9d9d9',
+          ...additionalStyles
+        }}
+      >
+        {sectionBlocked && (
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1,
+            borderRadius: 6
+          }}>
+            <Text strong style={{ color: '#999', fontSize: 12 }}>SECCIÓN BLOQUEADA</Text>
+          </div>
+        )}
+        <SeatRenderer
+          sectionId={section.id}
+          rows={section.rows}
+          seatsPerRow={section.seatsPerRow}
+          price={section.price}
+          color={section.color}
+          name={section.name}
+          selectedSeats={selectedSeats}
+          occupiedSeats={filterOccupiedBySection(section.id)}
+          blockedSeats={filterBlockedBySection(section.id)}
+          sectionBlocked={sectionBlocked}
+          maxSeats={maxSeats}
+          onSeatSelect={onSeatSelect}
+          formatPrice={formatPrice}
+        />
+      </Card>
+    );
+  };
+
+  const renderSectionHeader = (section) => {
+    const sectionBlocked = isSectionBlocked(section.id);
+    return (
+      <Text 
+        strong 
+        style={{ 
+          color: sectionBlocked ? '#999' : section.color,
+          textDecoration: sectionBlocked ? 'line-through' : 'none'
+        }}
+      >
+        {section.name} {sectionBlocked && '(BLOQUEADA)'}
+      </Text>
+    );
   };
 
   const renderFootballLayout = () => {
@@ -36,9 +112,9 @@ const GenericSeatMapRenderer = ({
         flexDirection: 'column', 
         alignItems: 'center', 
         gap: 30, 
-        minWidth: 800, 
-        minHeight: 600,
-        padding: '20px'
+        minWidth: 1000, // Aumentado para dar más espacio
+        minHeight: 700, // Aumentado para dar más espacio vertical
+        padding: '30px'
       }}>
         <Title level={4} style={{ margin: 0, color: COLORS.neutral.darker }}>
           {config?.stadiumName || name}
@@ -47,22 +123,8 @@ const GenericSeatMapRenderer = ({
         {/* Tribuna Norte */}
         {tribunaNorte && (
           <div style={{ textAlign: 'center' }}>
-            <Text strong style={{ color: tribunaNorte.color }}>{tribunaNorte.name}</Text>
-            <Card style={{ padding: 10, margin: 5 }}>
-              <SeatRenderer
-                sectionId={tribunaNorte.id}
-                rows={tribunaNorte.rows}
-                seatsPerRow={tribunaNorte.seatsPerRow}
-                price={tribunaNorte.price}
-                color={tribunaNorte.color}
-                name={tribunaNorte.name}
-                selectedSeats={selectedSeats}
-                occupiedSeats={filterOccupiedBySection(tribunaNorte.id)}
-                maxSeats={maxSeats}
-                onSeatSelect={onSeatSelect}
-                formatPrice={formatPrice}
-              />
-            </Card>
+            {renderSectionHeader(tribunaNorte)}
+            {renderSectionCard(tribunaNorte)}
           </div>
         )}
 
@@ -72,45 +134,42 @@ const GenericSeatMapRenderer = ({
           alignItems: 'center', 
           justifyContent: 'center', 
           width: '100%', 
-          gap: 40 
+          gap: 80 // Aumentado el gap para más separación
         }}>
-          {/* Tribuna Oeste - Rotada 90 grados */}
+          {/* Tribuna Oeste */}
           {tribunaOeste && (
             <div style={{ 
               display: 'flex', 
               flexDirection: 'column', 
               alignItems: 'center', 
-              minWidth: 120, 
-              justifyContent: 'center' 
+              minWidth: 200, // Aumentado el ancho mínimo
+              justifyContent: 'center',
+              position: 'relative',
+              marginRight: 40 // Margen adicional aumentado
             }}>
-              <Text
-                strong
-                style={{
-                  marginBottom: 15,
-                  transform: 'rotate(-90deg)',
-                  transformOrigin: 'left bottom',
-                  whiteSpace: 'nowrap',
-                  display: 'inline-block',
-                  color: tribunaOeste.color
-                }}
-              >
-                {tribunaOeste.name}
-              </Text>
-              <Card style={{ padding: 8, borderRadius: 8, transform: 'rotate(-90deg)' }}>
-                <SeatRenderer
-                  sectionId={tribunaOeste.id}
-                  rows={tribunaOeste.rows}
-                  seatsPerRow={tribunaOeste.seatsPerRow}
-                  price={tribunaOeste.price}
-                  color={tribunaOeste.color}
-                  name={tribunaOeste.name}
-                  selectedSeats={selectedSeats}
-                  occupiedSeats={filterOccupiedBySection(tribunaOeste.id)}
-                  maxSeats={maxSeats}
-                  onSeatSelect={onSeatSelect}
-                  formatPrice={formatPrice}
-                />
-              </Card>
+              <div style={{
+                position: 'absolute',
+                top: -60, // Más espacio arriba
+                left: '50%',
+                transform: 'translateX(-50%)',
+                whiteSpace: 'nowrap',
+                zIndex: 2
+              }}>
+                <Text
+                  strong
+                  style={{
+                    color: isSectionBlocked(tribunaOeste.id) ? '#999' : tribunaOeste.color,
+                    textDecoration: isSectionBlocked(tribunaOeste.id) ? 'line-through' : 'none',
+                    fontSize: '14px'
+                  }}
+                >
+                  {tribunaOeste.name} {isSectionBlocked(tribunaOeste.id) && '(BLOQUEADA)'}
+                </Text>
+              </div>
+              {renderSectionCard(tribunaOeste, { 
+                transform: 'rotate(-90deg)',
+                marginTop: 50 // Más espacio para el texto
+              })}
             </div>
           )}
 
@@ -147,94 +206,60 @@ const GenericSeatMapRenderer = ({
             CAMPO
           </div>
 
-          {/* Tribuna Este - Rotada 90 grados */}
+          {/* Tribuna Este */}
           {tribunaEste && (
             <div style={{ 
               display: 'flex', 
               flexDirection: 'column', 
               alignItems: 'center', 
-              minWidth: 120, 
-              justifyContent: 'center' 
+              minWidth: 200, // Aumentado el ancho mínimo
+              justifyContent: 'center',
+              position: 'relative',
+              marginLeft: 40 // Margen adicional aumentado
             }}>
-              <Text
-                strong
-                style={{
-                  marginBottom: 15,
-                  transform: 'rotate(90deg)',
-                  transformOrigin: 'right bottom',
-                  whiteSpace: 'nowrap',
-                  display: 'inline-block',
-                  color: tribunaEste.color
-                }}
-              >
-                {tribunaEste.name}
-              </Text>
-              <Card style={{ padding: 8, borderRadius: 8, transform: 'rotate(90deg)' }}>
-                <SeatRenderer
-                  sectionId={tribunaEste.id}
-                  rows={tribunaEste.rows}
-                  seatsPerRow={tribunaEste.seatsPerRow}
-                  price={tribunaEste.price}
-                  color={tribunaEste.color}
-                  name={tribunaEste.name}
-                  selectedSeats={selectedSeats}
-                  occupiedSeats={filterOccupiedBySection(tribunaEste.id)}
-                  maxSeats={maxSeats}
-                  onSeatSelect={onSeatSelect}
-                  formatPrice={formatPrice}
-                />
-              </Card>
+              <div style={{
+                position: 'absolute',
+                top: -60, // Más espacio arriba
+                left: '50%',
+                transform: 'translateX(-50%)',
+                whiteSpace: 'nowrap',
+                zIndex: 2
+              }}>
+                <Text
+                  strong
+                  style={{
+                    color: isSectionBlocked(tribunaEste.id) ? '#999' : tribunaEste.color,
+                    textDecoration: isSectionBlocked(tribunaEste.id) ? 'line-through' : 'none',
+                    fontSize: '14px'
+                  }}
+                >
+                  {tribunaEste.name} {isSectionBlocked(tribunaEste.id) && '(BLOQUEADA)'}
+                </Text>
+              </div>
+              {renderSectionCard(tribunaEste, { 
+                transform: 'rotate(90deg)',
+                marginTop: 50 // Más espacio para el texto
+              })}
             </div>
           )}
         </div>
 
         {/* Tribuna Sur */}
         {tribunaSur && (
-          <div style={{ textAlign: 'center' }}>
-            <Card style={{ padding: 10, margin: 5 }}>
-              <SeatRenderer
-                sectionId={tribunaSur.id}
-                rows={tribunaSur.rows}
-                seatsPerRow={tribunaSur.seatsPerRow}
-                price={tribunaSur.price}
-                color={tribunaSur.color}
-                name={tribunaSur.name}
-                selectedSeats={selectedSeats}
-                occupiedSeats={filterOccupiedBySection(tribunaSur.id)}
-                maxSeats={maxSeats}
-                onSeatSelect={onSeatSelect}
-                formatPrice={formatPrice}
-              />
-            </Card>
-            <Text strong style={{ color: tribunaSur.color }}>{tribunaSur.name}</Text>
+          <div style={{ textAlign: 'center', marginTop: 20 }}>
+            {renderSectionCard(tribunaSur)}
+            {renderSectionHeader(tribunaSur)}
           </div>
         )}
 
         {/* VIP */}
         {vipSection && (
-          <div style={{ textAlign: 'center', marginTop: 20 }}>
-            <Text strong style={{ color: vipSection.color }}>{vipSection.name}</Text>
-            <Card style={{ 
-              border: `2px solid ${vipSection.color}`, 
-              padding: 10, 
-              borderRadius: 8, 
-              margin: 5, 
-              backgroundColor: vipSection.color + '20'
-            }}>
-              <SeatRenderer
-                sectionId={vipSection.id}
-                rows={vipSection.rows}
-                seatsPerRow={vipSection.seatsPerRow}
-                price={vipSection.price}
-                color={vipSection.color}
-                name={vipSection.name}
-                selectedSeats={selectedSeats}
-                occupiedSeats={filterOccupiedBySection(vipSection.id)}
-                maxSeats={maxSeats}
-                onSeatSelect={onSeatSelect}
-                formatPrice={formatPrice}
-              />
-            </Card>
+          <div style={{ textAlign: 'center', marginTop: 30 }}>
+            {renderSectionHeader(vipSection)}
+            {renderSectionCard(vipSection, {
+              border: `2px solid ${isSectionBlocked(vipSection.id) ? '#ccc' : vipSection.color}`,
+              backgroundColor: isSectionBlocked(vipSection.id) ? '#f5f5f5' : vipSection.color + '20'
+            })}
           </div>
         )}
       </div>
@@ -285,32 +310,13 @@ const GenericSeatMapRenderer = ({
         {/* Renderizar secciones en orden */}
         {sortedSections.map(section => (
           <div key={section.id} style={{ textAlign: 'center', marginBottom: 15 }}>
-            <Text strong style={{ color: section.color, marginBottom: 8, display: 'block' }}>
-              {section.name}
-            </Text>
-            <Card style={{ 
-              padding: 10, 
-              borderRadius: 8, 
-              margin: 5,
-              ...(section.id === 'premium' && {
+            {renderSectionHeader(section)}
+            {renderSectionCard(section, {
+              ...(section.id === 'premium' && !isSectionBlocked(section.id) && {
                 border: '2px solid #9C27B0',
                 backgroundColor: '#F3E5F5'
               })
-            }}>
-              <SeatRenderer
-                sectionId={section.id}
-                rows={section.rows}
-                seatsPerRow={section.seatsPerRow}
-                price={section.price}
-                color={section.color}
-                name={section.name}
-                selectedSeats={selectedSeats}
-                occupiedSeats={filterOccupiedBySection(section.id)}
-                maxSeats={maxSeats}
-                onSeatSelect={onSeatSelect}
-                formatPrice={formatPrice}
-              />
-            </Card>
+            })}
           </div>
         ))}
       </div>
@@ -362,32 +368,13 @@ const GenericSeatMapRenderer = ({
         {/* Renderizar secciones en orden */}
         {sortedSections.map(section => (
           <div key={section.id} style={{ textAlign: 'center', marginBottom: 15 }}>
-            <Text strong style={{ color: section.color, marginBottom: 8, display: 'block' }}>
-              {section.name}
-            </Text>
-            <Card style={{ 
-              padding: 10, 
-              borderRadius: 8, 
-              margin: 5,
-              ...(section.id === 'boxes' && {
+            {renderSectionHeader(section)}
+            {renderSectionCard(section, {
+              ...(section.id === 'boxes' && !isSectionBlocked(section.id) && {
                 border: '2px solid #9C27B0',
                 backgroundColor: '#F3E5F5'
               })
-            }}>
-              <SeatRenderer
-                sectionId={section.id}
-                rows={section.rows}
-                seatsPerRow={section.seatsPerRow}
-                price={section.price}
-                color={section.color}
-                name={section.name}
-                selectedSeats={selectedSeats}
-                occupiedSeats={filterOccupiedBySection(section.id)}
-                maxSeats={maxSeats}
-                onSeatSelect={onSeatSelect}
-                formatPrice={formatPrice}
-              />
-            </Card>
+            })}
           </div>
         ))}
       </div>
@@ -413,42 +400,73 @@ const GenericSeatMapRenderer = ({
         </Title>
 
         <div style={{ width: '100%', maxWidth: '800px' }}>
-          {sortedSections.map(section => (
-            <div key={section.id} style={{ marginBottom: '24px' }}>
-              <div style={{
-                padding: '12px 16px',
-                backgroundColor: section.color + '20',
-                borderLeft: `4px solid ${section.color}`,
-                marginBottom: '12px',
-                borderRadius: '4px'
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Title level={5} style={{ margin: 0, color: COLORS.neutral.darker }}>
-                    {section.name}
-                  </Title>
-                  <Typography.Text strong style={{ color: section.color }}>
-                    {formatPrice(section.price)}
+          {sortedSections.map(section => {
+            const sectionBlocked = isSectionBlocked(section.id);
+            return (
+              <div key={section.id} style={{ marginBottom: '24px', position: 'relative' }}>
+                <div style={{
+                  padding: '12px 16px',
+                  backgroundColor: sectionBlocked ? '#f5f5f5' : section.color + '20',
+                  borderLeft: `4px solid ${sectionBlocked ? '#ccc' : section.color}`,
+                  marginBottom: '12px',
+                  borderRadius: '4px',
+                  opacity: sectionBlocked ? 0.6 : 1
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Title level={5} style={{ 
+                      margin: 0, 
+                      color: sectionBlocked ? '#999' : COLORS.neutral.darker,
+                      textDecoration: sectionBlocked ? 'line-through' : 'none'
+                    }}>
+                      {section.name} {sectionBlocked && '(BLOQUEADA)'}
+                    </Title>
+                    <Typography.Text strong style={{ 
+                      color: sectionBlocked ? '#999' : section.color 
+                    }}>
+                      {formatPrice(section.price)}
+                    </Typography.Text>
+                  </div>
+                  <Typography.Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
+                    {section.rows} filas × {section.seatsPerRow} asientos por fila
                   </Typography.Text>
                 </div>
-                <Typography.Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
-                  {section.rows} filas × {section.seatsPerRow} asientos por fila
-                </Typography.Text>
+                <div style={{ position: 'relative' }}>
+                  {sectionBlocked && (
+                    <div style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      zIndex: 1,
+                      borderRadius: 6
+                    }}>
+                      <Text strong style={{ color: '#999', fontSize: 14 }}>SECCIÓN BLOQUEADA</Text>
+                    </div>
+                  )}
+                  <SeatRenderer
+                    sectionId={section.id}
+                    rows={section.rows}
+                    seatsPerRow={section.seatsPerRow}
+                    price={section.price}
+                    color={section.color}
+                    name={section.name}
+                    selectedSeats={selectedSeats}
+                    occupiedSeats={filterOccupiedBySection(section.id)}
+                    blockedSeats={filterBlockedBySection(section.id)}
+                    sectionBlocked={sectionBlocked}
+                    maxSeats={maxSeats}
+                    onSeatSelect={onSeatSelect}
+                    formatPrice={formatPrice}
+                  />
+                </div>
               </div>
-              <SeatRenderer
-                sectionId={section.id}
-                rows={section.rows}
-                seatsPerRow={section.seatsPerRow}
-                price={section.price}
-                color={section.color}
-                name={section.name}
-                selectedSeats={selectedSeats}
-                occupiedSeats={filterOccupiedBySection(section.id)}
-                maxSeats={maxSeats}
-                onSeatSelect={onSeatSelect}
-                formatPrice={formatPrice}
-              />
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     );
