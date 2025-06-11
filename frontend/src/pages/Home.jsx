@@ -39,14 +39,6 @@ const { RangePicker } = DatePicker;
 const { Meta } = Card;
 const { TabPane } = Tabs;
 
-const FEATURED_CATEGORIES = [
-  { name: "Conciertos", color: COLORS.categories.conciertos },
-  { name: "Teatro", color: COLORS.categories.teatro },
-  { name: "Deportes", color: COLORS.categories.deportes },
-  { name: "Festivales", color: COLORS.categories.festivales },
-  { name: "Cine", color: COLORS.categories.cine }
-];
-
 const Home = () => {
   const [allEvents, setAllEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
@@ -56,6 +48,14 @@ const Home = () => {
   
   const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
 
+  const FEATURED_CATEGORIES = [
+    { name: "Conciertos", color: COLORS.categories.conciertos },
+    { name: "Teatro", color: COLORS.categories.teatro },
+    { name: "Deportes", color: COLORS.categories.deportes },
+    { name: "Festivales", color: COLORS.categories.festivales },
+    { name: "Cine", color: COLORS.categories.cine }
+  ];
+
   useEffect(() => {
     setLoading(true);
     axios.get(`${gatewayUrl}/events`)
@@ -64,7 +64,7 @@ const Home = () => {
           ...event,
           date: dayjs(event.date).format("YYYY-MM-DD"),
           image: event.image || "/images/default.jpg",
-          category: FEATURED_CATEGORIES[Math.floor(Math.random() * FEATURED_CATEGORIES.length)].name
+          category: mapEventTypeToCategory(event.type)
         }));
 
         setAllEvents(events);
@@ -81,6 +81,17 @@ const Home = () => {
         });
       });
   }, [gatewayUrl, api]);
+
+  const mapEventTypeToCategory = (type) => {
+    const typeMap = {
+      'concert': 'Conciertos',
+      'football': 'Deportes', 
+      'cinema': 'Cine',
+      'festival': 'Festivales',
+      'theater': 'Teatro'
+    };
+    return typeMap[type] || 'Evento';
+  };
 
   const handleSearch = (e) => {
     const searchTerm = e.target.value.toLowerCase();

@@ -50,11 +50,9 @@ const AdminDashboard = () => {
     setErrorMessage(null);
     axios.get(gatewayUrl + "/events")
       .then(res => {
-        // Asignar categoría aleatoria para demo si no existe
         const eventsWithCategories = res.data.map(event => ({
           ...event,
-          category: event.category || getRandomCategory(),
-          // El estado ahora viene del backend
+          category: event.category || mapEventTypeToCategory(event.type),
         }));
         setEvents(eventsWithCategories);
         setLoading(false);
@@ -66,9 +64,15 @@ const AdminDashboard = () => {
       });
   }, [gatewayUrl]);
 
-  const getRandomCategory = () => {
-    const categories = ["Conciertos", "Teatro", "Deportes", "Festivales", "Cine"];
-    return categories[Math.floor(Math.random() * categories.length)];
+  const mapEventTypeToCategory = (type) => {
+    const typeMap = {
+      'concert': 'Conciertos',
+      'football': 'Deportes', 
+      'cinema': 'Cine',
+      'festival': 'Festivales',
+      'theater': 'Teatro'
+    };
+    return typeMap[type] || 'Evento';
   };
 
   const getCategoryColor = (categoryName) => {

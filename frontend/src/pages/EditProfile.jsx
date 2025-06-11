@@ -48,7 +48,7 @@ const EditProfile = () => {
   const [passwordForm] = Form.useForm();
   const [selectedAvatar, setSelectedAvatar] = useState(avatars[0]);
   const [showAvatarSelection, setShowAvatarSelection] = useState(false);
-  const [userData, setUserData] = useState({ name: "", email: "", username: "" });
+  const [userData, setUserData] = useState({ name: "", surname: "", email: "", username: "" });
   const [userId, setUserId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [passwordLoading, setPasswordLoading] = useState(false);
@@ -80,6 +80,7 @@ const EditProfile = () => {
           if (u) {
             setUserData({
               name: u.name,
+              surname: u.surname || "", // Incluir surname
               email: u.email,
               username: u.username,
             });
@@ -280,13 +281,27 @@ const EditProfile = () => {
 
                   <Form.Item
                     name="name"
-                    label={<Text style={{ color: COLORS.neutral.dark }}>Nombre completo</Text>}
+                    label={<Text style={{ color: COLORS.neutral.dark }}>Nombre</Text>}
                     initialValue={userData.name}
                     rules={[{ required: true, message: "¡Por favor, introduce tu nombre!" }]}
                   >
                     <Input 
                       prefix={<UserOutlined style={{ color: COLORS.neutral.grey4 }} />} 
                       placeholder={userData.name} 
+                      style={{ borderRadius: "6px" }}
+                    />
+                  </Form.Item>
+
+                  {/* NUEVO CAMPO: Apellido */}
+                  <Form.Item
+                    name="surname"
+                    label={<Text style={{ color: COLORS.neutral.dark }}>Apellido</Text>}
+                    initialValue={userData.surname}
+                    rules={[{ required: false }]} // Opcional, puedes cambiarlo a required: true si quieres que sea obligatorio
+                  >
+                    <Input 
+                      prefix={<UserOutlined style={{ color: COLORS.neutral.grey4 }} />} 
+                      placeholder={userData.surname || "Introduce tu apellido"} 
                       style={{ borderRadius: "6px" }}
                     />
                   </Form.Item>
