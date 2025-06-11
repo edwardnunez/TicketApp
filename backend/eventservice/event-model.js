@@ -21,6 +21,23 @@ const sectionPricingSchema = new mongoose.Schema({
   } // Capacidad de esta sección (rows * seatsPerRow)
 });
 
+const seatMapConfigurationSchema = new mongoose.Schema({
+  seatMapId: {
+    type: String,
+    required: true
+  },
+  blockedSeats: [{
+    type: String // IDs de asientos bloqueados (formato: "sectionId-row-seat")
+  }],
+  blockedSections: [{
+    type: String // IDs de secciones completamente bloqueadas
+  }],
+  configuredAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
 const eventSchema = new mongoose.Schema({
   name: { type: String, required: true },
   type: { 
@@ -54,6 +71,8 @@ const eventSchema = new mongoose.Schema({
     type: Boolean, 
     default: false 
   },
+
+  seatMapConfiguration: seatMapConfigurationSchema,
   
   image: { type: String, default: "/images/default.jpg" }
 }, { timestamps: true });
@@ -101,6 +120,21 @@ eventSchema.methods.getPriceRange = function() {
   }
   
   return `€${minPrice} - €${maxPrice}`;
+};
+
+eventSchema.methods.isSeatBlocked = function(seatId) {
+  // Verificar si el asiento está bloqueado individualmente
+  if (this.blockedSeats && this.blockedSeats.includes(seatId)) {
+    return true;
+  }
+  
+  // Verificar si la sección del asiento está bloqueada
+  if (this.blockedSections && this.blockedSections.length > 0) {
+    const sectionId = seatId.split('-')[0]; // Extraer sectionId del formato "sectionId-row-seat"
+    return this.blockedSections.includes(sectionId);
+  }
+  
+  return false;
 };
 
 const Event = mongoose.model("Event", eventSchema);
