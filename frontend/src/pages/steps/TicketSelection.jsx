@@ -53,6 +53,15 @@ export default function SelectTickets({
     return allowedTypes.includes(seatMapData.type);
   }, []);
 
+  // Extraer asientos y secciones bloqueados del evento
+  const blockedSeats = useMemo(() => {
+    return event?.seatMapConfiguration?.blockedSeats || [];
+  }, [event?.seatMapConfiguration?.blockedSeats]);
+
+  const blockedSections = useMemo(() => {
+    return event?.seatMapConfiguration?.blockedSections || [];
+  }, [event?.seatMapConfiguration?.blockedSections]);
+
   // Memoize the total calculation
   const totalFromSeats = useMemo(() => {
     return selectedSeats.reduce((total, seat) => total + seat.price, 0);
@@ -171,7 +180,7 @@ export default function SelectTickets({
       );
     }
 
-    // Usar el GenericSeatMapRenderer que ya tienes
+    // Usar el GenericSeatMapRenderer pasando los asientos y secciones bloqueados
     return (
       <GenericSeatMapRenderer
         seatMapData={seatMapData}
@@ -179,10 +188,12 @@ export default function SelectTickets({
         onSeatSelect={handleSeatSelection}
         maxSeats={6}
         occupiedSeats={occupiedSeats}
+        blockedSeats={blockedSeats}
+        blockedSections={blockedSections}
         formatPrice={formatPrice}
       />
     );
-  }, [loading, error, seatMapData, selectedSeats, handleSeatSelection, occupiedSeats, formatPrice]);
+  }, [loading, error, seatMapData, selectedSeats, handleSeatSelection, occupiedSeats, blockedSeats, blockedSections, formatPrice]);
 
 
   // Memoize the selected ticket type data

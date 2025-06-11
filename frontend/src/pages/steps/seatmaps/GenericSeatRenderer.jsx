@@ -11,8 +11,8 @@ const GenericSeatMapRenderer = ({
   onSeatSelect,
   maxSeats,
   occupiedSeats,
-  blockedSeats = [], // Asientos bloqueados individualmente
-  blockedSections = [], // Secciones completamente bloqueadas
+  blockedSeats,
+  blockedSections,
   formatPrice
 }) => {
   if (!seatMapData) return null;
@@ -112,9 +112,9 @@ const GenericSeatMapRenderer = ({
         flexDirection: 'column', 
         alignItems: 'center', 
         gap: 30, 
-        minWidth: 800, 
-        minHeight: 600,
-        padding: '20px'
+        minWidth: 1000, // Aumentado para dar más espacio
+        minHeight: 700, // Aumentado para dar más espacio vertical
+        padding: '30px'
       }}>
         <Title level={4} style={{ margin: 0, color: COLORS.neutral.darker }}>
           {config?.stadiumName || name}
@@ -134,33 +134,42 @@ const GenericSeatMapRenderer = ({
           alignItems: 'center', 
           justifyContent: 'center', 
           width: '100%', 
-          gap: 40 
+          gap: 80 // Aumentado el gap para más separación
         }}>
-          {/* Tribuna Oeste - Rotada 90 grados */}
+          {/* Tribuna Oeste */}
           {tribunaOeste && (
             <div style={{ 
               display: 'flex', 
               flexDirection: 'column', 
               alignItems: 'center', 
-              minWidth: 120, 
+              minWidth: 200, // Aumentado el ancho mínimo
               justifyContent: 'center',
-              position: 'relative'
+              position: 'relative',
+              marginRight: 40 // Margen adicional aumentado
             }}>
-              <Text
-                strong
-                style={{
-                  marginBottom: 15,
-                  transform: 'rotate(-90deg)',
-                  transformOrigin: 'left bottom',
-                  whiteSpace: 'nowrap',
-                  display: 'inline-block',
-                  color: isSectionBlocked(tribunaOeste.id) ? '#999' : tribunaOeste.color,
-                  textDecoration: isSectionBlocked(tribunaOeste.id) ? 'line-through' : 'none'
-                }}
-              >
-                {tribunaOeste.name} {isSectionBlocked(tribunaOeste.id) && '(BLOQUEADA)'}
-              </Text>
-              {renderSectionCard(tribunaOeste, { transform: 'rotate(-90deg)' })}
+              <div style={{
+                position: 'absolute',
+                top: -60, // Más espacio arriba
+                left: '50%',
+                transform: 'translateX(-50%)',
+                whiteSpace: 'nowrap',
+                zIndex: 2
+              }}>
+                <Text
+                  strong
+                  style={{
+                    color: isSectionBlocked(tribunaOeste.id) ? '#999' : tribunaOeste.color,
+                    textDecoration: isSectionBlocked(tribunaOeste.id) ? 'line-through' : 'none',
+                    fontSize: '14px'
+                  }}
+                >
+                  {tribunaOeste.name} {isSectionBlocked(tribunaOeste.id) && '(BLOQUEADA)'}
+                </Text>
+              </div>
+              {renderSectionCard(tribunaOeste, { 
+                transform: 'rotate(-90deg)',
+                marginTop: 50 // Más espacio para el texto
+              })}
             </div>
           )}
 
@@ -197,38 +206,47 @@ const GenericSeatMapRenderer = ({
             CAMPO
           </div>
 
-          {/* Tribuna Este - Rotada 90 grados */}
+          {/* Tribuna Este */}
           {tribunaEste && (
             <div style={{ 
               display: 'flex', 
               flexDirection: 'column', 
               alignItems: 'center', 
-              minWidth: 120, 
+              minWidth: 200, // Aumentado el ancho mínimo
               justifyContent: 'center',
-              position: 'relative'
+              position: 'relative',
+              marginLeft: 40 // Margen adicional aumentado
             }}>
-              <Text
-                strong
-                style={{
-                  marginBottom: 15,
-                  transform: 'rotate(90deg)',
-                  transformOrigin: 'right bottom',
-                  whiteSpace: 'nowrap',
-                  display: 'inline-block',
-                  color: isSectionBlocked(tribunaEste.id) ? '#999' : tribunaEste.color,
-                  textDecoration: isSectionBlocked(tribunaEste.id) ? 'line-through' : 'none'
-                }}
-              >
-                {tribunaEste.name} {isSectionBlocked(tribunaEste.id) && '(BLOQUEADA)'}
-              </Text>
-              {renderSectionCard(tribunaEste, { transform: 'rotate(90deg)' })}
+              <div style={{
+                position: 'absolute',
+                top: -60, // Más espacio arriba
+                left: '50%',
+                transform: 'translateX(-50%)',
+                whiteSpace: 'nowrap',
+                zIndex: 2
+              }}>
+                <Text
+                  strong
+                  style={{
+                    color: isSectionBlocked(tribunaEste.id) ? '#999' : tribunaEste.color,
+                    textDecoration: isSectionBlocked(tribunaEste.id) ? 'line-through' : 'none',
+                    fontSize: '14px'
+                  }}
+                >
+                  {tribunaEste.name} {isSectionBlocked(tribunaEste.id) && '(BLOQUEADA)'}
+                </Text>
+              </div>
+              {renderSectionCard(tribunaEste, { 
+                transform: 'rotate(90deg)',
+                marginTop: 50 // Más espacio para el texto
+              })}
             </div>
           )}
         </div>
 
         {/* Tribuna Sur */}
         {tribunaSur && (
-          <div style={{ textAlign: 'center' }}>
+          <div style={{ textAlign: 'center', marginTop: 20 }}>
             {renderSectionCard(tribunaSur)}
             {renderSectionHeader(tribunaSur)}
           </div>
@@ -236,7 +254,7 @@ const GenericSeatMapRenderer = ({
 
         {/* VIP */}
         {vipSection && (
-          <div style={{ textAlign: 'center', marginTop: 20 }}>
+          <div style={{ textAlign: 'center', marginTop: 30 }}>
             {renderSectionHeader(vipSection)}
             {renderSectionCard(vipSection, {
               border: `2px solid ${isSectionBlocked(vipSection.id) ? '#ccc' : vipSection.color}`,
