@@ -315,9 +315,10 @@ const EditableSeatRenderer = ({
         display: 'flex', 
         flexDirection: 'column', 
         alignItems: 'center', 
-        gap: 15,
-        minWidth: 400,
-        padding: '20px'
+        gap: 20,
+        padding: '20px',
+        maxWidth: '800px',
+        margin: '0 auto'
       }}>
         <Title level={4} style={{ margin: 0, color: COLORS.neutral.darker }}>
           {config?.cinemaName || name} - Modo Edición
@@ -329,48 +330,63 @@ const EditableSeatRenderer = ({
         {/* Pantalla */}
         <div
           style={{
-            width: config?.screenWidth || 300,
-            height: 20,
+            width: '100%',
+            maxWidth: config?.screenWidth || 600,
+            height: 30,
             backgroundColor: '#333',
-            borderRadius: '10px 10px 0 0',
+            borderRadius: '15px 15px 0 0',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             color: 'white',
-            fontSize: 12,
-            marginBottom: 20,
-            boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
+            fontSize: 14,
+            fontWeight: 'bold',
+            marginBottom: 30,
+            boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
+            border: '2px solid #222'
           }}
         >
           PANTALLA
         </div>
 
         {/* Renderizar secciones en orden */}
-        {sortedSections.map(section => (
-          <div key={section.id} style={{ textAlign: 'center', marginBottom: 15, width: '100%', maxWidth: '500px' }}>
-            {renderSectionHeader(section)}
-            <Card style={{ 
-              padding: 10, 
-              borderRadius: 8, 
-              margin: 5,
-              ...(section.id === 'premium' && {
-                border: '2px solid #9C27B0',
-                backgroundColor: '#F3E5F5'
-              })
+        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center' }}>
+          {sortedSections.map(section => (
+            <div key={section.id} style={{ 
+              width: '100%', 
+              maxWidth: '700px', 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center' 
             }}>
-              <EditableSeatGrid
-                sectionId={section.id}
-                rows={section.rows}
-                seatsPerRow={section.seatsPerRow}
-                color={section.color}
-                name={section.name}
-                blockedSeats={filterBlockedBySection(section.id)}
-                sectionBlocked={isSectionBlocked(section.id)}
-                onSeatToggle={onSeatToggle}
-              />
-            </Card>
-          </div>
-        ))}
+              {renderSectionHeader(section)}
+              <Card style={{ 
+                padding: 12, 
+                borderRadius: 8, 
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'center',
+                ...(section.id === 'premium' && {
+                  border: '2px solid #9C27B0',
+                  backgroundColor: '#F3E5F520'
+                })
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                  <EditableSeatGrid
+                    sectionId={section.id}
+                    rows={section.rows}
+                    seatsPerRow={section.seatsPerRow}
+                    color={section.color}
+                    name={section.name}
+                    blockedSeats={filterBlockedBySection(section.id)}
+                    sectionBlocked={isSectionBlocked(section.id)}
+                    onSeatToggle={onSeatToggle}
+                  />
+                </div>
+              </Card>
+            </div>
+          ))}
+        </div>
       </div>
     );
   };
@@ -388,9 +404,10 @@ const EditableSeatRenderer = ({
         display: 'flex', 
         flexDirection: 'column', 
         alignItems: 'center', 
-        gap: 15,
-        minWidth: 400,
-        padding: '20px'
+        gap: 20,
+        padding: '20px',
+        maxWidth: '900px',
+        margin: '0 auto'
       }}>
         <Title level={4} style={{ margin: 0, color: COLORS.neutral.darker }}>
           {config?.theaterName || name} - Modo Edición
@@ -402,49 +419,63 @@ const EditableSeatRenderer = ({
         {/* Escenario */}
         <div
           style={{
-            width: config?.stageWidth || 250,
-            height: 30,
+            width: '100%',
+            maxWidth: config?.stageWidth || 500,
+            height: 40,
             backgroundColor: '#8B4513',
             borderRadius: 8,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             color: 'white',
-            fontSize: 14,
-            marginBottom: 20,
-            boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
-            border: '2px solid #654321'
+            fontSize: 16,
+            fontWeight: 'bold',
+            marginBottom: 30,
+            boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
+            border: '3px solid #654321'
           }}
         >
           ESCENARIO
         </div>
 
         {/* Renderizar secciones en orden */}
-        {sortedSections.map(section => (
-          <div key={section.id} style={{ textAlign: 'center', marginBottom: 15, width: '100%', maxWidth: '500px' }}>
-            {renderSectionHeader(section)}
-            <Card style={{ 
-              padding: 10, 
-              borderRadius: 8, 
-              margin: 5,
-              ...(section.id === 'boxes' && {
-                border: '2px solid #9C27B0',
-                backgroundColor: '#F3E5F5'
-              })
+        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 25, alignItems: 'center' }}>
+          {sortedSections.map(section => (
+            <div key={section.id} style={{ 
+              width: '100%', 
+              maxWidth: section.id === 'boxes' ? '400px' : '800px',
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center' 
             }}>
-              <EditableSeatGrid
-                sectionId={section.id}
-                rows={section.rows}
-                seatsPerRow={section.seatsPerRow}
-                color={section.color}
-                name={section.name}
-                blockedSeats={filterBlockedBySection(section.id)}
-                sectionBlocked={isSectionBlocked(section.id)}
-                onSeatToggle={onSeatToggle}
-              />
-            </Card>
-          </div>
-        ))}
+              {renderSectionHeader(section)}
+              <Card style={{ 
+                padding: 15, 
+                borderRadius: 8, 
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'center',
+                ...(section.id === 'boxes' && {
+                  border: '2px solid #9C27B0',
+                  backgroundColor: '#F3E5F520'
+                })
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                  <EditableSeatGrid
+                    sectionId={section.id}
+                    rows={section.rows}
+                    seatsPerRow={section.seatsPerRow}
+                    color={section.color}
+                    name={section.name}
+                    blockedSeats={filterBlockedBySection(section.id)}
+                    sectionBlocked={isSectionBlocked(section.id)}
+                    onSeatToggle={onSeatToggle}
+                  />
+                </div>
+              </Card>
+            </div>
+          ))}
+        </div>
       </div>
     );
   };
@@ -460,7 +491,9 @@ const EditableSeatRenderer = ({
         gap: '16px',
         padding: '20px',
         backgroundColor: COLORS.neutral.grey1,
-        borderRadius: '12px'
+        borderRadius: '12px',
+        maxWidth: '1000px',
+        margin: '0 auto'
       }}>
         <Title level={4} style={{ margin: 0, color: COLORS.neutral.darker }}>
           {name} - Modo Edición
@@ -469,11 +502,16 @@ const EditableSeatRenderer = ({
         {/* Controles de sección */}
         {renderSectionControls()}
 
-        <div style={{ width: '100%', maxWidth: '800px' }}>
+        <div style={{ width: '100%' }}>
           {sortedSections.map(section => (
             <div key={section.id} style={{ marginBottom: '24px' }}>
               {renderSectionHeader(section)}
-              <Card style={{ padding: 10, borderRadius: 8, margin: 5 }}>
+              <Card style={{ 
+                padding: 15, 
+                borderRadius: 8, 
+                display: 'flex', 
+                justifyContent: 'center' 
+              }}>
                 <EditableSeatGrid
                   sectionId={section.id}
                   rows={section.rows}

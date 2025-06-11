@@ -288,26 +288,11 @@ const EventSeatMapEditor = () => {
                 borderColor: COLORS?.primary?.main || "#1890ff"
               }}
             >
-              Crear Evento
+              Crear evento
             </Button>
           </Space>
         </div>
       </Card>
-
-      {/* Debug info - remover en producción */}
-      {process.env.NODE_ENV === 'development' && (
-        <Card style={{ marginBottom: '24px', backgroundColor: '#f6f6f6' }}>
-          <Title level={5}>Debug Info:</Title>
-          <div style={{ fontSize: '12px', fontFamily: 'monospace' }}>
-            <div>Event Type: {eventData?.type}</div>
-            <div>Requires SeatMap: {requiresSeatMap().toString()}</div>
-            <div>Location ID: {eventData?.location}</div>
-            <div>Location Data: {locationData ? 'Loaded' : 'Not loaded'}</div>
-            <div>SeatMap ID: {locationData?.seatMapId || 'Not available'}</div>
-            <div>SeatMap Data: {seatMapData ? 'Loaded' : 'Not loaded'}</div>
-          </div>
-        </Card>
-      )}
 
       {/* Estadísticas */}
       {seatMapData && (
@@ -318,7 +303,7 @@ const EventSeatMapEditor = () => {
                 <Title level={3} style={{ color: COLORS?.primary?.main, margin: 0 }}>
                   {getTotalSeats()}
                 </Title>
-                <Text>Total de Asientos</Text>
+                <Text>Total de asientos</Text>
               </div>
             </Card>
           </Col>
@@ -328,7 +313,7 @@ const EventSeatMapEditor = () => {
                 <Title level={3} style={{ color: '#52c41a', margin: 0 }}>
                   {getAvailableSeatsCount()}
                 </Title>
-                <Text>Asientos Disponibles</Text>
+                <Text>Asientos disponibles</Text>
               </div>
             </Card>
           </Col>
@@ -338,7 +323,7 @@ const EventSeatMapEditor = () => {
                 <Title level={3} style={{ color: '#ff4d4f', margin: 0 }}>
                   {getBlockedSeatsCount()}
                 </Title>
-                <Text>Asientos Bloqueados</Text>
+                <Text>Asientos bloqueados</Text>
               </div>
             </Card>
           </Col>
@@ -348,7 +333,7 @@ const EventSeatMapEditor = () => {
       {/* Controles de secciones */}
       {!previewMode && seatMapData && (
         <Card style={{ marginBottom: '24px' }}>
-          <Title level={4}>Control de Secciones</Title>
+          <Title level={4}>Control de secciones</Title>
           <Text style={{ color: COLORS?.neutral?.grey4, marginBottom: '16px', display: 'block' }}>
             Bloquea secciones completas para eventos especiales o mantenimiento
           </Text>
@@ -376,7 +361,7 @@ const EventSeatMapEditor = () => {
       {/* Instrucciones */}
       {!previewMode && seatMapData && (
         <Alert
-          message="Modo de Edición Activo"
+          message="Modo de edición activo"
           description="Haz clic en los asientos para bloquearlos/desbloquearlos individualmente, o usa los controles de sección arriba para bloquear secciones completas."
           type="info"
           showIcon

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Layout, Typography, Card, Avatar, Button, Divider, Skeleton, Empty, Space, Tag, Tabs, Spin, Alert, Modal } from "antd";
+import { Layout, Typography, Card, Avatar, Button, Divider, Skeleton, Empty, Space, Tag, Tabs, Spin, Alert, Modal, Collapse, Badge, Row, Col } from "antd";
 import { 
   UserOutlined, 
   MailOutlined, 
@@ -10,7 +10,11 @@ import {
   ClockCircleOutlined,
   EyeOutlined,
   DeleteOutlined,
-  ExclamationCircleOutlined
+  ExclamationCircleOutlined,
+  DownOutlined,
+  UpOutlined,
+  TeamOutlined,
+  EuroOutlined
 } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import axios from "axios";
@@ -24,6 +28,7 @@ dayjs.locale('es');
 const { Content } = Layout;
 const { Title, Text } = Typography;
 const { confirm } = Modal;
+const { Panel } = Collapse;
 
 const Profile = () => {
   const [user, setUser] = useState(null);
@@ -175,145 +180,286 @@ const Profile = () => {
     }
   };
 
-  const renderTicket = (ticket) => {
-    const event = events[ticket.eventId] || {};
-    const isExpired = event.date && dayjs(event.date).isBefore(dayjs());
-    const canCancel = ticket.status === 'paid' && !isExpired;
-
-    // Helper function to safely get location name
-    const getLocationDisplay = (location) => {
-      if (!location) return "Ubicación no disponible";
-      if (typeof location === 'string') return location;
-      if (typeof location === 'object') {
-        return location.name || location.address || "Ubicación no disponible";
+  // Agrupar tickets por evento
+  const groupTicketsByEvent = (tickets) => {
+    const grouped = {};
+    tickets.forEach(ticket => {
+      const eventId = ticket.eventId;
+      if (!grouped[eventId]) {
+        grouped[eventId] = {
+          event: events[eventId] || {},
+          tickets: []
+        };
       }
-      return "Ubicación no disponible";
-    };
+      grouped[eventId].tickets.push(ticket);
+    });
+    return grouped;
+  };
+
+  const getLocationDisplay = (location) => {
+    if (!location) return "Ubicación no disponible";
+    if (typeof location === 'string') return location;
+    if (typeof location === 'object') {
+      return location.name || location.address || "Ubicación no disponible";
+    }
+    return "Ubicación no disponible";
+  };
+
+  const renderSeatsList = (seats) => {
+    if (!seats || seats.length === 0) return null;
+    
+    return (
+      <div style={{ marginTop: '8px' }}>
+        <Text style={{ color: COLORS.neutral.grey4, fontSize: '13px' }}>
+          <strong>Asientos:</strong>
+        </Text>
+        <ul style={{ 
+          margin: '4px 0 0 16px', 
+          padding: 0,
+          color: COLORS.neutral.grey4,
+          fontSize: '13px'
+        }}>
+          {seats.map((seat, index) => (
+            <li key={index} style={{ marginBottom: '2px' }}>
+              Sección {seat.sectionId}, Fila {seat.row}, Asiento {seat.seat}
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  };
+
+  const renderTicketDetail = (ticket, isExpired) => {
+    const canCancel = ticket.status === 'paid' && !isExpired;
+    
+    return (
+      <div key={ticket._id} style={{ 
+        padding: '16px', 
+        border: `1px solid ${COLORS.neutral.grey2}`, 
+        borderRadius: '8px',
+        marginBottom: '12px',
+        backgroundColor: COLORS.neutral.white
+      }}>
+        <Row gutter={[16, 8]} align="middle">
+          <Col span={18}>
+            <Space direction="vertical" size={4} style={{ width: '100%' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Text strong style={{ color: COLORS.neutral.darker }}>
+                  ID: {formatTicketId(ticket._id)}
+                </Text>
+                {getTicketStatusTag(ticket.status)}
+              </div>
+              
+              <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                <Tag color="blue" icon={<TagOutlined />}>
+                  {ticket.ticketType}
+                </Tag>
+                <Tag color="purple" icon={<TeamOutlined />}>
+                  {ticket.quantity} {ticket.quantity > 1 ? "Entradas" : "Entrada"}
+                </Tag>
+                <Tag color="green" icon={<EuroOutlined />}>
+                  {(ticket.price * ticket.quantity).toFixed(2)}€
+                </Tag>
+              </div>
+
+              {renderSeatsList(ticket.selectedSeats)}
+              
+              <Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
+                Comprado el {dayjs(ticket.purchasedAt).format('DD/MM/YYYY HH:mm')}
+              </Text>
+            </Space>
+          </Col>
+          
+          <Col span={6} style={{ textAlign: 'right' }}>
+            <Space direction="vertical" size={8}>
+              <Button 
+                type="text" 
+                size="small"
+                icon={<EyeOutlined />} 
+                onClick={() => {
+                  Modal.info({
+                    title: 'Detalles Completos de la Entrada',
+                    width: 600,
+                    content: (
+                      <div style={{ marginTop: 16 }}>
+                        <p><strong>ID:</strong> {formatTicketId(ticket._id)}</p>
+                        <p><strong>Tipo:</strong> {ticket.ticketType}</p>
+                        <p><strong>Cantidad:</strong> {ticket.quantity}</p>
+                        <p><strong>Precio unitario:</strong> {ticket.price}€</p>
+                        <p><strong>Precio total:</strong> {(ticket.price * ticket.quantity).toFixed(2)}€</p>
+                        <p><strong>Estado:</strong> {getTicketStatusTag(ticket.status)}</p>
+                        <p><strong>Comprado:</strong> {dayjs(ticket.purchasedAt).format('DD/MM/YYYY HH:mm')}</p>
+                        {ticket.selectedSeats && ticket.selectedSeats.length > 0 && (
+                          <div>
+                            <p><strong>Asientos seleccionados:</strong></p>
+                            <ul style={{ marginLeft: '20px' }}>
+                              {ticket.selectedSeats.map((seat, index) => (
+                                <li key={index} style={{ marginBottom: '4px' }}>
+                                  <strong>Sección:</strong> {seat.sectionId} - <strong>Fila:</strong> {seat.row} - <strong>Asiento:</strong> {seat.seat} ({seat.price}€)
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    ),
+                  });
+                }}
+              >
+                Ver más
+              </Button>
+              
+              {canCancel && (
+                <Button 
+                  type="text" 
+                  danger 
+                  size="small"
+                  icon={<DeleteOutlined />}
+                  onClick={() => handleCancelTicket(ticket._id)}
+                >
+                  Cancelar
+                </Button>
+              )}
+            </Space>
+          </Col>
+        </Row>
+      </div>
+    );
+  };
+
+  const renderEventGroup = (eventId, eventGroup) => {
+    const { event, tickets: eventTickets } = eventGroup;
+    const isExpired = event.date && dayjs(event.date).isBefore(dayjs());
+    
+    const totalTickets = eventTickets.reduce((sum, ticket) => sum + ticket.quantity, 0);
+    const totalPrice = eventTickets.reduce((sum, ticket) => sum + (ticket.price * ticket.quantity), 0);
+    const uniqueTypes = [...new Set(eventTickets.map(t => t.ticketType))];
 
     return (
       <Card 
-        key={ticket._id} 
+        key={eventId}
         hoverable
         style={{ 
-          marginBottom: "16px", 
+          marginBottom: "20px", 
           borderRadius: "12px",
           border: "none",
           boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
           transition: "all 0.3s ease",
         }}
         bodyStyle={{ padding: "20px" }}
-        actions={[
-          <Button 
-            type="text" 
-            icon={<EyeOutlined />} 
-            onClick={() => {
-              Modal.info({
-                title: 'Detalles de la Entrada',
-                width: 600,
-                content: (
-                  <div style={{ marginTop: 16 }}>
-                    <p><strong>ID:</strong> {formatTicketId(ticket._id)}</p>
-                    <p><strong>Evento:</strong> {event.name || "Evento no disponible"}</p>
-                    <p><strong>Fecha:</strong> {event.date ? dayjs(event.date).format('DD [de] MMMM [de] YYYY, HH:mm') : 'No disponible'}</p>
-                    <p><strong>Ubicación:</strong> {getLocationDisplay(event.location)}</p>
-                    <p><strong>Tipo:</strong> {ticket.ticketType}</p>
-                    <p><strong>Cantidad:</strong> {ticket.quantity}</p>
-                    <p><strong>Precio total:</strong> {(ticket.price * ticket.quantity).toFixed(2)}€</p>
-                    <p><strong>Estado:</strong> {getTicketStatusTag(ticket.status)}</p>
-                    <p><strong>Comprado:</strong> {dayjs(ticket.purchasedAt).format('DD/MM/YYYY HH:mm')}</p>
-                    {ticket.selectedSeats && ticket.selectedSeats.length > 0 && (
-                      <p><strong>Asientos:</strong> {ticket.selectedSeats.map(seat => seat.id).join(', ')}</p>
-                    )}
-                  </div>
-                ),
-              });
+      >
+        <div style={{ display: "flex", gap: "20px", marginBottom: "16px" }}>
+          {/* Imagen del evento */}
+          {event.image && (
+            <img 
+              src={event.image} 
+              alt={event.name || "Evento"}
+              style={{ 
+                width: "80px", 
+                height: "80px", 
+                borderRadius: "8px", 
+                objectFit: "cover",
+                flexShrink: 0
+              }}
+            />
+          )}
+          
+          <div style={{ flex: 1 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <div style={{ flex: 1 }}>
+                <Text 
+                  strong 
+                  style={{ 
+                    fontSize: "20px", 
+                    color: COLORS.neutral.darker,
+                    display: "block",
+                    marginBottom: "8px"
+                  }}
+                >
+                  {event.name || "Evento no disponible"}
+                </Text>
+                
+                <Space direction="vertical" size={4} style={{ marginBottom: "12px" }}>
+                  <Text style={{ color: COLORS.neutral.grey4, display: "flex", alignItems: "center" }}>
+                    <CalendarOutlined style={{ marginRight: "8px", color: COLORS.neutral.grey4 }} /> 
+                    {event.date ? dayjs(event.date).format("DD [de] MMMM [de] YYYY, HH:mm") : "Fecha no disponible"}
+                  </Text>
+                  
+                  <Text style={{ color: COLORS.neutral.grey4, display: "flex", alignItems: "center" }}>
+                    <EnvironmentOutlined style={{ marginRight: "8px", color: COLORS.neutral.grey4 }} /> 
+                    {getLocationDisplay(event.location)}
+                  </Text>
+                </Space>
+
+                {isExpired && (
+                  <Tag color="orange" style={{ marginBottom: "8px" }}>Evento finalizado</Tag>
+                )}
+              </div>
+              
+              <Space direction="vertical" align="end" style={{ textAlign: 'right' }}>
+                <Badge count={eventTickets.length} color={COLORS.primary.main}>
+                  <Tag color="blue" style={{ margin: 0 }}>
+                    {eventTickets.length} {eventTickets.length > 1 ? 'Compras' : 'Compra'}
+                  </Tag>
+                </Badge>
+                
+                <Tag color="purple">
+                  <TeamOutlined /> {totalTickets} {totalTickets > 1 ? "Entradas" : "Entrada"}
+                </Tag>
+                
+                <Text style={{ fontWeight: "600", color: COLORS.primary.dark, fontSize: "18px" }}>
+                  {totalPrice.toFixed(2)}€
+                </Text>
+                
+                <Text style={{ color: COLORS.neutral.grey4, fontSize: "12px" }}>
+                  Total del evento
+                </Text>
+              </Space>
+            </div>
+          </div>
+        </div>
+
+        {/* Resumen de tipos de entrada */}
+        <div style={{ marginBottom: "16px" }}>
+          <Text style={{ color: COLORS.neutral.grey4, fontSize: "13px", marginRight: "8px" }}>
+            Tipos de entrada:
+          </Text>
+          {uniqueTypes.map(type => (
+            <Tag key={type} size="small" style={{ margin: "2px" }}>
+              {type}
+            </Tag>
+          ))}
+        </div>
+
+        {/* Collapse con detalles de cada ticket */}
+        <Collapse 
+          size="small"
+          expandIcon={({ isActive }) => 
+            isActive ? <UpOutlined /> : <DownOutlined />
+          }
+          style={{
+            backgroundColor: 'transparent',
+            border: 'none'
+          }}
+        >
+          <Panel 
+            header={
+              <Text style={{ color: COLORS.primary.main, fontWeight: 500 }}>
+                Ver detalles de {eventTickets.length} {eventTickets.length > 1 ? 'compras' : 'compra'}
+              </Text>
+            } 
+            key="details"
+            style={{
+              backgroundColor: COLORS.neutral.grey1,
+              border: `1px solid ${COLORS.neutral.grey2}`,
+              borderRadius: '6px'
             }}
           >
-            Ver detalles
-          </Button>,
-          canCancel && (
-            <Button 
-              type="text" 
-              danger 
-              icon={<DeleteOutlined />}
-              onClick={() => handleCancelTicket(ticket._id)}
-            >
-              Cancelar
-            </Button>
-          )
-        ].filter(Boolean)}
-      >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-          <div style={{ flex: 1 }}>
-            {/* Imagen del evento */}
-            {event.image && (
-              <img 
-                src={event.image} 
-                alt={event.name || "Evento"}
-                style={{ 
-                  width: "60px", 
-                  height: "60px", 
-                  borderRadius: "8px", 
-                  objectFit: "cover",
-                  marginBottom: "12px"
-                }}
-              />
-            )}
-            
-            <Text 
-              strong 
-              style={{ 
-                fontSize: "18px", 
-                color: COLORS.neutral.darker,
-                display: "block",
-                marginBottom: "8px"
-              }}
-            >
-              {event.name || "Evento no disponible"}
-            </Text>
-            
-            <Space direction="vertical" size={4} style={{ marginBottom: "12px" }}>
-              <Text style={{ color: COLORS.neutral.grey4, display: "flex", alignItems: "center" }}>
-                <CalendarOutlined style={{ marginRight: "8px", color: COLORS.neutral.grey4 }} /> 
-                {event.date ? dayjs(event.date).format("DD [de] MMMM [de] YYYY, HH:mm") : "Fecha no disponible"}
-              </Text>
-              
-              <Text style={{ color: COLORS.neutral.grey4, display: "flex", alignItems: "center" }}>
-                <EnvironmentOutlined style={{ marginRight: "8px", color: COLORS.neutral.grey4 }} /> 
-                {getLocationDisplay(event.location)}
-              </Text>
-
-              <Text style={{ color: COLORS.neutral.grey4, display: "flex", alignItems: "center" }}>
-                <TagOutlined style={{ marginRight: "8px", color: COLORS.neutral.grey4 }} /> 
-                ID: {formatTicketId(ticket._id)}
-              </Text>
-            </Space>
-
-            {isExpired && ticket.status === 'paid' && (
-              <Tag color="orange" style={{ marginBottom: "8px" }}>Evento finalizado</Tag>
-            )}
-          </div>
-          
-          <Space direction="vertical" align="end" style={{ textAlign: 'right' }}>
-            {getTicketStatusTag(ticket.status)}
-            
-            <Tag color={'blue'}>
-              {ticket.ticketType}
-            </Tag>
-            
-            <Tag color={COLORS.primary.main}>
-              <TagOutlined /> {ticket.quantity} {ticket.quantity > 1 ? "Entradas" : "Entrada"}
-            </Tag>
-            
-            <Text style={{ fontWeight: "600", color: COLORS.primary.dark, fontSize: "16px" }}>
-              {(ticket.price * ticket.quantity).toFixed(2)}€
-            </Text>
-            
-            <Text style={{ color: COLORS.neutral.grey4, fontSize: "12px" }}>
-              Comprado el {dayjs(ticket.purchasedAt).format('DD/MM/YY')}
-            </Text>
-          </Space>
-        </div>
+            <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+              {eventTickets.map(ticket => renderTicketDetail(ticket, isExpired))}
+            </div>
+          </Panel>
+        </Collapse>
       </Card>
     );
   };
@@ -346,6 +492,30 @@ const Profile = () => {
     const pendingTickets = filterTicketsByStatus(tickets, 'pending');
     const cancelledTickets = filterTicketsByStatus(tickets, 'cancelled');
 
+    const renderTicketTab = (ticketsList, emptyMessage) => {
+      if (ticketsList.length === 0) {
+        return (
+          <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description={emptyMessage}
+          >
+            {emptyMessage.includes('activas') && (
+              <Link to="/">
+                <Button type="primary" style={{ backgroundColor: COLORS.primary.main }}>
+                  Explorar eventos
+                </Button>
+              </Link>
+            )}
+          </Empty>
+        );
+      }
+
+      const groupedTickets = groupTicketsByEvent(ticketsList);
+      return Object.entries(groupedTickets).map(([eventId, eventGroup]) => 
+        renderEventGroup(eventId, eventGroup)
+      );
+    };
+
     return (
       <Tabs 
         activeKey={activeTab} 
@@ -354,48 +524,30 @@ const Profile = () => {
           {
             key: 'active',
             label: `Activas (${activeTickets.length})`,
-            children: activeTickets.length > 0 ? (
-              activeTickets.map(renderTicket)
-            ) : (
-              <Empty
-                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                description="No tienes entradas activas"
-              >
-                <Link to="/">
-                  <Button type="primary" style={{ backgroundColor: COLORS.primary.main }}>
-                    Explorar eventos
-                  </Button>
-                </Link>
-              </Empty>
-            )
+            children: renderTicketTab(activeTickets, "No tienes entradas activas")
           },
           {
             key: 'pending',
             label: `Pendientes (${pendingTickets.length})`,
-            children: pendingTickets.length > 0 ? (
-              pendingTickets.map(renderTicket)
-            ) : (
-              <Empty
-                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                description="No tienes entradas pendientes"
-              />
-            )
+            children: renderTicketTab(pendingTickets, "No tienes entradas pendientes")
           },
           {
             key: 'cancelled',
             label: `Canceladas (${cancelledTickets.length})`,
-            children: cancelledTickets.length > 0 ? (
-              cancelledTickets.map(renderTicket)
-            ) : (
-              <Empty
-                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                description="No tienes entradas canceladas"
-              />
-            )
+            children: renderTicketTab(cancelledTickets, "No tienes entradas canceladas")
           }
         ]}
       />
     );
+  };
+
+  // Función para mostrar el nombre completo del usuario
+  const getFullName = (user) => {
+    if (!user) return "";
+    const parts = [];
+    if (user.name) parts.push(user.name);
+    if (user.surname) parts.push(user.surname);
+    return parts.join(' ') || user.username || "Usuario";
   };
 
   return (
@@ -452,8 +604,12 @@ const Profile = () => {
                 />
                 
                 <Title level={2} style={{ marginTop: "16px", marginBottom: "4px", color: COLORS.neutral.darker }}>
-                  {user.name} {user.surname}
+                  {getFullName(user)}
                 </Title>
+                
+                <Text style={{ color: COLORS.neutral.grey4, display: "flex", alignItems: "center", marginBottom: "4px" }}>
+                  <UserOutlined style={{ marginRight: "6px" }} /> @{user.username}
+                </Text>
                 
                 <Text style={{ color: COLORS.neutral.grey4, display: "flex", alignItems: "center" }}>
                   <MailOutlined style={{ marginRight: "6px" }} /> {user.email}
