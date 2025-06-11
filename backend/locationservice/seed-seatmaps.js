@@ -5,12 +5,13 @@ const seedSeatMaps = async (dbConnection) => {
 
   const seatMaps = [
     // ============= ESTADIOS DE FÚTBOL =============
+    // Estadio Santiago Bernabéu - Capacidad: 476
     {
       id: 'football1',
-      name: 'Estadio Municipal',
+      name: 'Estadio Santiago Bernabéu',
       type: 'football',
       config: {
-        stadiumName: 'Estadio Municipal',
+        stadiumName: 'Estadio Santiago Bernabéu',
         fieldDimensions: { width: 400, height: 260 }
       },
       sections: [
@@ -18,7 +19,7 @@ const seedSeatMaps = async (dbConnection) => {
           id: 'tribuna-norte',
           name: 'Tribuna Norte',
           rows: 8,
-          seatsPerRow: 17,
+          seatsPerRow: 15,
           price: 50000,
           color: '#4CAF50',
           position: 'north',
@@ -28,7 +29,7 @@ const seedSeatMaps = async (dbConnection) => {
           id: 'tribuna-este',
           name: 'Tribuna Este',
           rows: 6,
-          seatsPerRow: 15,
+          seatsPerRow: 14,
           price: 75000,
           color: '#2196F3',
           position: 'east',
@@ -38,7 +39,7 @@ const seedSeatMaps = async (dbConnection) => {
           id: 'tribuna-oeste',
           name: 'Tribuna Oeste',
           rows: 6,
-          seatsPerRow: 15,
+          seatsPerRow: 14,
           price: 75000,
           color: '#2196F3',
           position: 'west',
@@ -48,7 +49,7 @@ const seedSeatMaps = async (dbConnection) => {
           id: 'tribuna-sur',
           name: 'Tribuna Sur',
           rows: 8,
-          seatsPerRow: 17,
+          seatsPerRow: 15,
           price: 50000,
           color: '#4CAF50',
           position: 'south',
@@ -58,7 +59,7 @@ const seedSeatMaps = async (dbConnection) => {
           id: 'vip',
           name: 'Palcos VIP',
           rows: 2,
-          seatsPerRow: 12,
+          seatsPerRow: 14,
           price: 150000,
           color: '#FF9800',
           position: 'vip',
@@ -66,12 +67,13 @@ const seedSeatMaps = async (dbConnection) => {
         }
       ]
     },
+    // Estadio Camp Nou - Capacidad: 714
     {
       id: 'football2',
-      name: 'Estadio Metropolitano',
+      name: 'Estadio Camp Nou',
       type: 'football',
       config: {
-        stadiumName: 'Estadio Metropolitano',
+        stadiumName: 'Estadio Camp Nou',
         fieldDimensions: { width: 450, height: 280 }
       },
       sections: [
@@ -79,7 +81,7 @@ const seedSeatMaps = async (dbConnection) => {
           id: 'tribuna-norte',
           name: 'Tribuna Norte',
           rows: 10,
-          seatsPerRow: 20,
+          seatsPerRow: 18,
           price: 60000,
           color: '#4CAF50',
           position: 'north',
@@ -98,7 +100,7 @@ const seedSeatMaps = async (dbConnection) => {
         {
           id: 'tribuna-oeste',
           name: 'Tribuna Oeste',
-          rows: 10,
+          rows: 8,
           seatsPerRow: 17,
           price: 85000,
           color: '#2196F3',
@@ -108,8 +110,8 @@ const seedSeatMaps = async (dbConnection) => {
         {
           id: 'tribuna-sur',
           name: 'Tribuna Sur',
-          rows: 8,
-          seatsPerRow: 20,
+          rows: 10,
+          seatsPerRow: 18,
           price: 60000,
           color: '#4CAF50',
           position: 'south',
@@ -119,7 +121,7 @@ const seedSeatMaps = async (dbConnection) => {
           id: 'vip',
           name: 'Palcos VIP',
           rows: 3,
-          seatsPerRow: 16,
+          seatsPerRow: 14,
           price: 180000,
           color: '#FF9800',
           position: 'vip',
@@ -127,12 +129,13 @@ const seedSeatMaps = async (dbConnection) => {
         }
       ]
     },
+    // Estadio La Rosaleda - Capacidad: 200
     {
       id: 'football3',
-      name: 'Estadio Juvenil',
+      name: 'Estadio La Rosaleda',
       type: 'football',
       config: {
-        stadiumName: 'Estadio Juvenil',
+        stadiumName: 'Estadio La Rosaleda',
         fieldDimensions: { width: 350, height: 220 }
       },
       sections: [
@@ -180,12 +183,13 @@ const seedSeatMaps = async (dbConnection) => {
     },
 
     // ============= CINES =============
+    // Cines Callao - Capacidad: 192
     {
       id: 'cinema1',
-      name: 'Sala Estándar',
+      name: 'Cines Callao',
       type: 'cinema',
       config: {
-        cinemaName: 'Sala Estándar',
+        cinemaName: 'Cines Callao',
         screenWidth: 300
       },
       sections: [
@@ -221,63 +225,65 @@ const seedSeatMaps = async (dbConnection) => {
         }
       ]
     },
+    // Cinesa La Maquinista - Capacidad: 324
     {
       id: 'cinema2',
-      name: 'Sala Premium',
+      name: 'Cinesa La Maquinista',
       type: 'cinema',
       config: {
-        cinemaName: 'Sala Premium',
+        cinemaName: 'Cinesa La Maquinista',
         screenWidth: 400
       },
       sections: [
         {
-          id: 'premium',
-          name: 'Premium',
-          rows: 2,
-          seatsPerRow: 12,
-          price: 25000,
-          color: '#9C27B0',
-          position: 'premium',
-          order: 1
-        },
-        {
           id: 'front',
           name: 'Delanteras',
           rows: 4,
-          seatsPerRow: 20,
+          seatsPerRow: 18,
           price: 10000,
           color: '#4CAF50',
           position: 'front',
-          order: 2
+          order: 1
         },
         {
           id: 'middle',
           name: 'Centrales',
           rows: 6,
-          seatsPerRow: 20,
+          seatsPerRow: 18,
           price: 15000,
           color: '#2196F3',
           position: 'middle',
-          order: 3
+          order: 2
         },
         {
           id: 'back',
           name: 'Traseras',
           rows: 5,
-          seatsPerRow: 20,
+          seatsPerRow: 18,
           price: 12000,
           color: '#FF9800',
           position: 'back',
+          order: 3
+        },
+        {
+          id: 'premium',
+          name: 'Premium',
+          rows: 2,
+          seatsPerRow: 18,
+          price: 25000,
+          color: '#9C27B0',
+          position: 'premium',
           order: 4
         }
       ]
     },
+    // Cines Verdi - Capacidad: 86
     {
       id: 'cinema3',
-      name: 'Sala Íntima',
+      name: 'Cines Verdi',
       type: 'cinema',
       config: {
-        cinemaName: 'Sala Íntima',
+        cinemaName: 'Cines Verdi',
         screenWidth: 200
       },
       sections: [
@@ -295,7 +301,7 @@ const seedSeatMaps = async (dbConnection) => {
           id: 'middle',
           name: 'Centrales',
           rows: 3,
-          seatsPerRow: 12,
+          seatsPerRow: 11,
           price: 11000,
           color: '#2196F3',
           position: 'middle',
@@ -305,7 +311,7 @@ const seedSeatMaps = async (dbConnection) => {
           id: 'back',
           name: 'Traseras',
           rows: 3,
-          seatsPerRow: 10,
+          seatsPerRow: 11,
           price: 9000,
           color: '#FF9800',
           position: 'back',
@@ -315,12 +321,13 @@ const seedSeatMaps = async (dbConnection) => {
     },
 
     // ============= TEATROS =============
+    // Teatro Real - Capacidad: 540
     {
       id: 'theater1',
-      name: 'Teatro Clásico',
+      name: 'Teatro Real',
       type: 'theater',
       config: {
-        theaterName: 'Teatro Clásico',
+        theaterName: 'Teatro Real',
         stageWidth: 250
       },
       sections: [
@@ -356,12 +363,13 @@ const seedSeatMaps = async (dbConnection) => {
         }
       ]
     },
+    // Teatro Español - Capacidad: 204
     {
       id: 'theater2',
-      name: 'Teatro Moderno',
+      name: 'Teatro Español',
       type: 'theater',
       config: {
-        theaterName: 'Teatro Moderno',
+        theaterName: 'Teatro Español',
         stageWidth: 280
       },
       sections: [
@@ -387,19 +395,20 @@ const seedSeatMaps = async (dbConnection) => {
         }
       ]
     },
+    // Gran Teatre del Liceu - Capacidad: 1044
     {
       id: 'theater3',
-      name: 'Teatro de Ópera',
+      name: 'Gran Teatre del Liceu',
       type: 'theater',
       config: {
-        theaterName: 'Teatro de Ópera',
+        theaterName: 'Gran Teatre del Liceu',
         stageWidth: 400
       },
       sections: [
         {
           id: 'boxes',
           name: 'Palcos VIP',
-          rows: 2,
+          rows: 4,
           seatsPerRow: 8,
           price: 120000,
           color: '#9C27B0',

@@ -1,3 +1,4 @@
+
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
@@ -55,7 +56,6 @@ const getSeatMapInfo = async (seatMapId) => {
 // Ruta para crear un evento
 app.post("/event", async (req, res) => {
   try {
-    console.log('Received req.body:', req.body);
     
     const { 
       name, 
@@ -67,7 +67,10 @@ app.post("/event", async (req, res) => {
       price, 
       state,
       sectionPricing,
-      usesSectionPricing 
+      usesSectionPricing,
+      blockedSeats,
+      blockedSections,
+      seatMapConfiguration
     } = req.body;
 
     // Verificar si faltan campos obligatorios
@@ -80,16 +83,10 @@ app.post("/event", async (req, res) => {
 
     const eventDescription = description || `Evento de ${type}`;
 
-    // Obtener información de la ubicación
-    const locationResponse = await axios.get(`${locationServiceUrl}/locations/${location}`);
-    const locationDoc = locationResponse.data;
-
-    if (!locationDoc) return res.status(400).json({ error: "Location not found" });
-
     let eventData = {
       name,
       date: new Date(date),
-      location: locationDoc._id,
+      location: location._id,
       type,
       description: eventDescription,
       state: state || 'proximo',
@@ -120,30 +117,49 @@ app.post("/event", async (req, res) => {
       eventData.capacity = sectionPricing.reduce((total, section) => total + section.capacity, 0);
       eventData.price = Math.min(...sectionPricing.map(section => section.price));
       
-      console.log('Creating event with section pricing:', {
-        totalCapacity: eventData.capacity,
-        basePrice: eventData.price,
-        sections: sectionPricing.length
-      });
     } else {
       // Pricing tradicional
-      eventData.capacity = capacity || locationDoc.capacity || 100;
+      eventData.capacity = capacity || location.capacity || 100;
       eventData.price = price || 0;
       eventData.usesSectionPricing = false;
       
-      console.log('Creating event with traditional pricing:', {
-        capacity: eventData.capacity,
-        price: eventData.price
-      });
     }
+
+    // Manejo de configuración de asientos bloqueados
+    if (location.seatMapId && (blockedSeats || blockedSections || seatMapConfiguration)) {
+
+      // Usar seatMapConfiguration si está disponible, sino crear una nueva
+      const seatMapConfig = seatMapConfiguration || {
+        seatMapId: location.seatMapId,
+        blockedSeats: blockedSeats || [],
+        blockedSections: blockedSections || [],
+        configuredAt: new Date()
+      };
+
+      eventData.seatMapConfiguration = seatMapConfig;
+      eventData.blockedSeats = (seatMapConfig.blockedSeats && Array.isArray(seatMapConfig.blockedSeats)) ? seatMapConfig.blockedSeats : [];
+      eventData.blockedSections = (seatMapConfig.blockedSections && Array.isArray(seatMapConfig.blockedSections)) ? seatMapConfig.blockedSections : [];
+
+    } else {
+      // Inicializar arrays vacíos si no hay configuración de bloqueos
+      eventData.blockedSeats = [];
+      eventData.blockedSections = [];
+    }
+
+    if (!eventData.blockedSeats) eventData.blockedSeats = [];
+    if (!eventData.blockedSections) eventData.blockedSections = [];
 
     // Crear el nuevo evento
     const newEvent = new EventModel(eventData);
 
-    console.log('Creating event with data:', newEvent.toObject());
     await newEvent.save();
     
-    res.status(201).json(newEvent);
+    // Poblar la ubicación antes de devolver
+    const savedEvent = await EventModel.findById(newEvent._id);
+    const eventObj = savedEvent.toObject();
+    eventObj.location = location;
+
+    res.status(201).json(eventObj);
   } catch (error) {
     console.error("Error creating event:", error);
     res.status(500).json({ error: "Internal Server Error", details: error.message });
@@ -239,9 +255,66 @@ app.get("/events/:eventId", async (req, res) => {
       };
     }
 
+    // Añadir estadísticas de bloqueos
+    const blockingStats = {
+      blockedSeats: eventObj.blockedSeats ? eventObj.blockedSeats.length : 0,
+      blockedSections: eventObj.blockedSections ? eventObj.blockedSections.length : 0,
+      hasBlocks: (eventObj.blockedSeats && eventObj.blockedSeats.length > 0) || (eventObj.blockedSections && eventObj.blockedSections.length > 0)
+    };
+    eventObj.blockingStats = blockingStats;
+
     res.status(200).json(eventObj);
   } catch (error) {
     console.error("Error fetching event details:", error);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+});
+
+// Ruta para actualizar bloqueos de asientos de un evento existente
+app.put("/events/:eventId/seat-blocks", async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const { blockedSeats, blockedSections } = req.body;
+
+    const event = await EventModel.findById(eventId);
+    if (!event) return res.status(404).json({ error: "Event not found" });
+
+    // Actualizar configuración de bloqueos
+    if (event.seatMapConfiguration) {
+      event.seatMapConfiguration.blockedSeats = blockedSeats || [];
+      event.seatMapConfiguration.blockedSections = blockedSections || [];
+      event.seatMapConfiguration.configuredAt = new Date();
+    } else {
+      // Crear configuración si no existe
+      const locationResponse = await axios.get(`${locationServiceUrl}/locations/${event.location}`);
+      const location = locationResponse.data;
+      
+      event.seatMapConfiguration = {
+        seatMapId: location.seatMapId,
+        blockedSeats: blockedSeats || [],
+        blockedSections: blockedSections || [],
+        configuredAt: new Date()
+      };
+    }
+
+    // Actualizar arrays directos
+    event.blockedSeats = blockedSeats || [];
+    event.blockedSections = blockedSections || [];
+
+    await event.save();
+
+    console.log(`Updated seat blocks for event ${eventId}:`, {
+      blockedSeats: event.blockedSeats.length,
+      blockedSections: event.blockedSections.length
+    });
+
+    res.status(200).json({
+      message: "Seat blocks updated successfully",
+      blockedSeats: event.blockedSeats.length,
+      blockedSections: event.blockedSections.length
+    });
+  } catch (error) {
+    console.error("Error updating seat blocks:", error);
     res.status(500).json({ error: "Internal Server Error", details: error.message });
   }
 });
