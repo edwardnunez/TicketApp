@@ -10,8 +10,6 @@ añadir imagenes a eventos
 
 cambiar icono de pestaña
 
-perfeccionar tarjetas de eventos (mas detalladas)
-
 eliminar precio de creacion de evento (o añadir diseccion por secciones en funcion de la location pq sino no tiene sentido)
 
 mejorar el cambio de contraseña en editar perfil (falta probarlo)
@@ -20,8 +18,4 @@ corregir como se guardan los tickets en bd (distinguir por precion en vez de met
 
 retocar formato de lista de tickets comprados enProfile
 
-los precios de las sections no se guardan bien, revisar eventservice y eventcreation
-
 el campo price del ticket hace una media de todos los tickets para calcular el precio por ticket. revisar por si no es correcto
-
-no consgo que el resumen de buyerinfo muestre el precio bien
