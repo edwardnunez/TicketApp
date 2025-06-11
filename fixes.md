@@ -28,4 +28,4 @@ no consgo que el resumen de buyerinfo muestre el precio bien
 
 comprobar que el event data llegue bien
 
-en el evento hacer un array de asientos bloqueados (o secciones) que luego se rendericen sobre el mapa al cpmprar entradas
+revisar por que los blockedseats y blockedsections se guardan en bd pero no se aplican a la hora de comprar entradas
