@@ -529,7 +529,7 @@ const TicketPurchase = () => {
                   </Text>
                   <Text style={{ color: COLORS.neutral.grey4 }}>
                     <EnvironmentOutlined style={{ marginRight: '4px' }} />
-                    {event.location?.name}
+                    {typeof event.location === 'string' ? event.location : event.location?.name || 'Ubicación no especificada'}
                   </Text>
                 </Space>
               </Col>
