@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Layout, Typography, Card, Avatar, Button, Divider, Skeleton, Empty, Space, Tag, Tabs, Spin, Alert, Modal, Collapse, Badge, Row, Col } from "antd";
+import { Layout, Typography, Card, Avatar, Button, Divider, Skeleton, Empty, Space, Tag, Tabs, Spin, Alert, Modal, Collapse, Badge, Row, Col, QRCode } from "antd";
 import { 
   UserOutlined, 
   MailOutlined, 
@@ -14,7 +14,8 @@ import {
   DownOutlined,
   UpOutlined,
   TeamOutlined,
-  EuroOutlined
+  EuroOutlined,
+  QrcodeOutlined
 } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import axios from "axios";
@@ -275,38 +276,82 @@ const Profile = () => {
               <Button 
                 type="text" 
                 size="small"
-                icon={<EyeOutlined />} 
+                icon={<QrcodeOutlined />} 
                 onClick={() => {
                   Modal.info({
-                    title: 'Detalles Completos de la Entrada',
-                    width: 600,
+                    title: 'Código QR de la Entrada',
+                    width: 400,
+                    centered: true,
                     content: (
-                      <div style={{ marginTop: 16 }}>
-                        <p><strong>ID:</strong> {formatTicketId(ticket._id)}</p>
-                        <p><strong>Tipo:</strong> {ticket.ticketType}</p>
-                        <p><strong>Cantidad:</strong> {ticket.quantity}</p>
-                        <p><strong>Precio unitario:</strong> {ticket.price}€</p>
-                        <p><strong>Precio total:</strong> {(ticket.price * ticket.quantity).toFixed(2)}€</p>
-                        <p><strong>Estado:</strong> {getTicketStatusTag(ticket.status)}</p>
-                        <p><strong>Comprado:</strong> {dayjs(ticket.purchasedAt).format('DD/MM/YYYY HH:mm')}</p>
-                        {ticket.selectedSeats && ticket.selectedSeats.length > 0 && (
-                          <div>
-                            <p><strong>Asientos seleccionados:</strong></p>
-                            <ul style={{ marginLeft: '20px' }}>
-                              {ticket.selectedSeats.map((seat, index) => (
-                                <li key={index} style={{ marginBottom: '4px' }}>
-                                  <strong>Sección:</strong> {seat.sectionId} - <strong>Fila:</strong> {seat.row} - <strong>Asiento:</strong> {seat.seat} ({seat.price}€)
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
+                      <div style={{ 
+                        textAlign: 'center', 
+                        padding: '20px 0',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '16px'
+                      }}>
+                        <div style={{ 
+                          backgroundColor: COLORS.neutral.white,
+                          padding: '20px',
+                          borderRadius: '8px',
+                          border: `1px solid ${COLORS.neutral.grey2}`,
+                          display: 'inline-block'
+                        }}>
+                          {ticket.qrCode ? (
+                            <QRCode 
+                              value={ticket.qrCode} 
+                              size={200}
+                              level="M"
+                              includeMargin={true}
+                            />
+                          ) : (
+                            <div style={{
+                              width: '200px',
+                              height: '200px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              backgroundColor: COLORS.neutral.grey1,
+                              borderRadius: '4px'
+                            }}>
+                              <Text style={{ color: COLORS.neutral.grey4 }}>
+                                QR no disponible
+                              </Text>
+                            </div>
+                          )}
+                        </div>
+                        
+                        <div style={{ textAlign: 'center' }}>
+                          <Text strong style={{ display: 'block', marginBottom: '4px' }}>
+                            {formatTicketId(ticket._id)}
+                          </Text>
+                          <Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
+                            Presenta este código en el evento
+                          </Text>
+                        </div>
+                        
+                        {ticket.ticketNumber && (
+                          <Text style={{ 
+                            color: COLORS.neutral.grey4, 
+                            fontSize: '10px',
+                            fontFamily: 'monospace'
+                          }}>
+                            Ticket: {ticket.ticketNumber}
+                          </Text>
                         )}
                       </div>
                     ),
+                    okText: 'Cerrar',
+                    onOk: () => {},
                   });
                 }}
+                style={{ 
+                  color: COLORS.primary.main,
+                  borderColor: COLORS.primary.main
+                }}
               >
-                Ver más
+                Ver QR
               </Button>
               
               {canCancel && (
