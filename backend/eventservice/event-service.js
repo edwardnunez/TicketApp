@@ -15,6 +15,7 @@ app.use(cors());
 
 const mongoUriEvents = process.env.MONGODB_URI || "mongodb://localhost:27017/eventdb";
 const locationServiceUrl = process.env.LOCATION_SERVICE_URL || "http://localhost:8004";
+const ticketServiceUrl = process.env.TICKET_SERVICE_URL || "http://localhost:8002";
 
 const eventDbConnection = mongoose.createConnection(mongoUriEvents, { useNewUrlParser: true, useUnifiedTopology: true });
 
@@ -402,6 +403,46 @@ app.put("/events/:eventId/seat-blocks", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error", details: error.message });
   }
 });
+
+app.delete("/events/:eventId", async (req, res) => {
+  try {
+    const { eventId } = req.params;
+
+    // Verificar que el evento existe
+    const event = await EventModel.findById(eventId);
+    if (!event) {
+      return res.status(404).json({ error: "Evento no encontrado" });
+    }
+
+    try {
+      await axios.delete(`${ticketServiceUrl}/tickets/event/${eventId}`);
+      console.log(`Tickets eliminados para el evento ${eventId}`);
+    } catch (ticketError) {
+      console.warn(`Error eliminando tickets para evento ${eventId}:`, ticketError.message);
+      // Continuamos con la eliminación del evento aunque falle la eliminación de tickets
+    }
+
+    // Eliminar el evento
+    await EventModel.findByIdAndDelete(eventId);
+
+    console.log(`Evento ${eventId} eliminado correctamente`);
+
+    res.status(200).json({
+      success: true,
+      message: "Evento y tickets asociados eliminados correctamente",
+      eventId: eventId,
+      eventName: event.name
+    });
+
+  } catch (error) {
+    console.error("Error eliminando evento:", error);
+    res.status(500).json({ 
+      error: "Error interno del servidor", 
+      details: error.message 
+    });
+  }
+});
+
 
 const server = app.listen(port, async () => {
   console.log(`🚀 Event Service listening at http://localhost:${port}`);

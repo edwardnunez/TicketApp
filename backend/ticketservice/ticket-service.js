@@ -456,6 +456,31 @@ app.get('/tickets/:id', validateObjectId, async (req, res) => {
   }
 });
 
+app.delete("/tickets/event/:eventId", async (req, res) => {
+  try {
+    const { eventId } = req.params;
+
+    // Eliminar todos los tickets del evento
+    const result = await TicketModel.deleteMany({ eventId: eventId });
+
+    console.log(`Eliminados ${result.deletedCount} tickets para el evento ${eventId}`);
+
+    res.status(200).json({
+      success: true,
+      message: `Eliminados ${result.deletedCount} tickets del evento`,
+      deletedCount: result.deletedCount,
+      eventId: eventId
+    });
+
+  } catch (error) {
+    console.error("Error eliminando tickets por evento:", error);
+    res.status(500).json({ 
+      error: "Error interno del servidor", 
+      details: error.message 
+    });
+  }
+});
+
 app.delete('/tickets/:id', validateObjectId, async (req, res) => {
   try {
     const { id } = req.params;
