@@ -8,7 +8,6 @@ import {
   EnvironmentOutlined,
   TagOutlined,
   ClockCircleOutlined,
-  EyeOutlined,
   DeleteOutlined,
   ExclamationCircleOutlined,
   DownOutlined,

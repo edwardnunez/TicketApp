@@ -15,7 +15,9 @@ import {
   Tabs, 
   Space, 
   Tooltip,
-  notification
+  notification,
+  Select,
+  Pagination
 } from "antd";
 import { 
   CalendarOutlined, 
@@ -25,7 +27,10 @@ import {
   StarOutlined,
   TagOutlined,
   ArrowRightOutlined,
-  PictureOutlined
+  PictureOutlined,
+  SortAscendingOutlined,
+  SortDescendingOutlined,
+  FilterOutlined
 } from "@ant-design/icons";
 import axios from "axios";
 import dayjs from "dayjs";
@@ -38,12 +43,20 @@ const { Title, Text, Paragraph } = Typography;
 const { RangePicker } = DatePicker;
 const { Meta } = Card;
 const { TabPane } = Tabs;
+const { Option } = Select;
 
 const Home = () => {
   const [allEvents, setAllEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
+  const [displayedEvents, setDisplayedEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState(null);
+  const [searchText, setSearchText] = useState('');
+  const [dateRange, setDateRange] = useState(null);
+  const [sortBy, setSortBy] = useState('date');
+  const [sortOrder, setSortOrder] = useState('asc');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(12);
   const [api, contextHolder] = notification.useNotification();
   
   const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
@@ -64,7 +77,8 @@ const Home = () => {
           ...event,
           date: dayjs(event.date).format("YYYY-MM-DD"),
           image: event.image || "/images/default.jpg",
-          category: mapEventTypeToCategory(event.type)
+          category: mapEventTypeToCategory(event.type),
+          state: event.state || 'proximo'
         }));
 
         setAllEvents(events);
@@ -82,6 +96,59 @@ const Home = () => {
       });
   }, [gatewayUrl, api]);
 
+  // Aplicar filtros y ordenación
+  useEffect(() => {
+    let filtered = [...allEvents];
+
+    // Filtro por texto de búsqueda
+    if (searchText) {
+      filtered = filtered.filter(event => 
+        event.name.toLowerCase().includes(searchText.toLowerCase()) ||
+        event.location.name.toLowerCase().includes(searchText.toLowerCase())
+      );
+    }
+
+    // Filtro por categoría
+    if (activeCategory) {
+      filtered = filtered.filter(event => event.category === activeCategory);
+    }
+
+    // Filtro por rango de fechas
+    if (dateRange && dateRange.length === 2) {
+      const [start, end] = dateRange;
+      filtered = filtered.filter(event => {
+        const eventDate = dayjs(event.date);
+        return eventDate.isBetween(start, end, null, "[]");
+      });
+    }
+
+    // Ordenación
+    filtered.sort((a, b) => {
+      let compareValue = 0;
+      
+      if (sortBy === 'date') {
+        compareValue = dayjs(a.date).valueOf() - dayjs(b.date).valueOf();
+      } else if (sortBy === 'name') {
+        compareValue = a.name.localeCompare(b.name);
+      } else if (sortBy === 'state') {
+        const stateOrder = { 'activo': 1, 'proximo': 2, 'finalizado': 3, 'cancelado': 4 };
+        compareValue = (stateOrder[a.state] || 5) - (stateOrder[b.state] || 5);
+      }
+
+      return sortOrder === 'asc' ? compareValue : -compareValue;
+    });
+
+    setFilteredEvents(filtered);
+    setCurrentPage(1); // Reset a la primera página cuando se filtran los eventos
+  }, [allEvents, searchText, activeCategory, dateRange, sortBy, sortOrder]);
+
+  // Paginación
+  useEffect(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    setDisplayedEvents(filteredEvents.slice(startIndex, endIndex));
+  }, [filteredEvents, currentPage, pageSize]);
+
   const mapEventTypeToCategory = (type) => {
     const typeMap = {
       'concert': 'Conciertos',
@@ -94,35 +161,23 @@ const Home = () => {
   };
 
   const handleSearch = (e) => {
-    const searchTerm = e.target.value.toLowerCase();
-    filterEvents(searchTerm, activeCategory);
+    setSearchText(e.target.value);
   };
 
   const handleDateFilter = (dates) => {
-    if (!dates) {
-      return filterEvents('', activeCategory);
-    }
-    
-    const [start, end] = dates;
-    setFilteredEvents(
-      allEvents.filter((event) => {
-        const matchesCategory = !activeCategory || event.category === activeCategory;
-        const matchesDate = dayjs(event.date).isBetween(start, end, null, "[]");
-        return matchesCategory && matchesDate;
-      })
-    );
+    setDateRange(dates);
   };
 
-  const filterEvents = (searchTerm = '', category = null) => {
+  const handleCategoryFilter = (category) => {
     setActiveCategory(category);
-    
-    setFilteredEvents(
-      allEvents.filter((event) => {
-        const matchesSearch = event.name.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesCategory = !category || event.category === category;
-        return matchesSearch && matchesCategory;
-      })
-    );
+  };
+
+  const clearAllFilters = () => {
+    setSearchText('');
+    setActiveCategory(null);
+    setDateRange(null);
+    setSortBy('date');
+    setSortOrder('asc');
   };
 
   const getCategoryColor = (categoryName) => {
@@ -133,6 +188,26 @@ const Home = () => {
       case "Festivales": return COLORS.categories.festivales;
       case "Cine": return COLORS.categories.cine;
       default: return COLORS.primary.main;
+    }
+  };
+
+  const getStateColor = (state) => {
+    switch(state) {
+      case "activo": return COLORS.status.success;
+      case "proximo": return COLORS.status.info;
+      case "finalizado": return COLORS.neutral.grey4;
+      case "cancelado": return COLORS.status.error;
+      default: return COLORS.neutral.grey3;
+    }
+  };
+
+  const getStateLabel = (state) => {
+    switch(state) {
+      case "activo": return "Activo";
+      case "proximo": return "Próximo";
+      case "finalizado": return "Finalizado";
+      case "cancelado": return "Cancelado";
+      default: return "Desconocido";
     }
   };
 
@@ -182,6 +257,13 @@ const Home = () => {
           }}>
             {event.category}
           </Tag>
+          <Tag color={getStateColor(event.state)} style={{ 
+            position: 'absolute', 
+            bottom: '10px', 
+            left: '10px' 
+          }}>
+            {getStateLabel(event.state)}
+          </Tag>
         </div>
       }
       actions={[
@@ -197,6 +279,7 @@ const Home = () => {
         boxShadow: '0 1px 2px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.07), 0 4px 8px rgba(0,0,0,0.07)',
         border: featured ? `1px solid ${getCategoryColor(event.category)}` : 'none',
         transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+        opacity: event.state === 'cancelado' ? 0.6 : 1
       }}
     >
       <Meta
@@ -275,36 +358,49 @@ const Home = () => {
               background: COLORS.neutral.white, 
               borderRadius: '8px', 
               padding: '24px',
-              maxWidth: '800px',
+              maxWidth: '900px',
               margin: '0 auto',
               boxShadow: '0 8px 16px rgba(0,0,0,0.1)'
             }}>
               <Row gutter={16} align="middle">
-                <Col xs={24} sm={12} md={14}>
+                <Col xs={24} sm={12} md={10}>
                   <Input
                     size="large"
                     placeholder="Buscar eventos..."
                     prefix={<SearchOutlined style={{ color: COLORS.neutral.grey4 }} />}
+                    value={searchText}
                     onChange={handleSearch}
                     style={{ width: '100%' }}
                   />
                 </Col>
-                <Col xs={24} sm={12} md={10}>
+                <Col xs={24} sm={12} md={8}>
                   <RangePicker 
                     size="large"
+                    value={dateRange}
                     onChange={handleDateFilter}
                     style={{ width: '100%' }}
                     placeholder={['Desde', 'Hasta']}
                   />
+                </Col>
+                <Col xs={24} sm={12} md={6}>
+                  <Button 
+                    size="large"
+                    onClick={clearAllFilters}
+                    style={{ width: '100%' }}
+                    icon={<FilterOutlined />}
+                  >
+                    Limpiar filtros
+                  </Button>
                 </Col>
               </Row>
             </div>
           </div>
         </div>
 
-        {/* Categorías destacadas */}
+        {/* Contenido principal */}
         <div style={{ maxWidth: '1200px', margin: '40px auto 20px', padding: '0 20px' }}>
           <Space direction="vertical" size={24} style={{ width: '100%' }}>
+            {/* Categorías destacadas */}
             <div>
               <Title level={4} style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', color: COLORS.neutral.dark }}>
                 <TagOutlined style={{ marginRight: '8px', color: COLORS.primary.main }} />
@@ -313,7 +409,7 @@ const Home = () => {
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
                 <Button 
                   type={activeCategory === null ? 'primary' : 'default'}
-                  onClick={() => filterEvents('', null)}
+                  onClick={() => handleCategoryFilter(null)}
                   style={{
                     backgroundColor: activeCategory === null ? COLORS.primary.main : '',
                     borderColor: activeCategory === null ? COLORS.primary.main : ''
@@ -330,13 +426,46 @@ const Home = () => {
                       color: activeCategory === category.name ? COLORS.neutral.white : category.color,
                       backgroundColor: activeCategory === category.name ? category.color : 'transparent'
                     }}
-                    onClick={() => filterEvents('', category.name)}
+                    onClick={() => handleCategoryFilter(category.name)}
                   >
                     {category.name}
                   </Button>
                 ))}
               </div>
             </div>
+
+            {/* Controles de ordenación */}
+            <Card style={{ borderRadius: '8px', boxShadow: '0 1px 2px rgba(0,0,0,0.07)' }}>
+              <Row gutter={16} justify="space-between" align="middle">
+                <Col xs={24} md={12}>
+                  <Space>
+                    <Text strong>Ordenar por:</Text>
+                    <Select
+                      value={sortBy}
+                      onChange={setSortBy}
+                      style={{ width: 120 }}
+                    >
+                      <Option value="date">
+                        <CalendarOutlined /> Fecha
+                      </Option>
+                      <Option value="name">Nombre</Option>
+                      <Option value="state">Estado</Option>
+                    </Select>
+                    <Button
+                      icon={sortOrder === 'asc' ? <SortAscendingOutlined /> : <SortDescendingOutlined />}
+                      onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                    >
+                      {sortOrder === 'asc' ? 'Ascendente' : 'Descendente'}
+                    </Button>
+                  </Space>
+                </Col>
+                <Col xs={24} md={12} style={{ textAlign: 'right' }}>
+                  <Text type="secondary">
+                    Mostrando {displayedEvents.length} de {filteredEvents.length} eventos
+                  </Text>
+                </Col>
+              </Row>
+            </Card>
 
             {/* Contenido principal con tabs */}
             <Tabs 
@@ -352,14 +481,14 @@ const Home = () => {
                 tab={
                   <span>
                     <StarOutlined style={{ color: COLORS.primary.main }} />
-                    Próximos eventos
+                    Eventos ({filteredEvents.length})
                   </span>
                 } 
                 key="1"
               >
                 {loading ? (
                   <Row gutter={[24, 24]}>
-                    {[...Array(8)].map((_, i) => (
+                    {[...Array(12)].map((_, i) => (
                       <Col xs={24} sm={12} md={8} lg={6} key={i}>
                         <Card>
                           <Skeleton active avatar paragraph={{ rows: 2 }} />
@@ -368,35 +497,63 @@ const Home = () => {
                     ))}
                   </Row>
                 ) : (
-                  filteredEvents.length > 0 ? (
-                    <Row gutter={[24, 24]}>
-                      {filteredEvents.map((event) => (
-                        <Col xs={24} sm={12} md={8} lg={6} key={event._id}>
-                          <EventCard event={event} />
-                        </Col>
-                      ))}
-                    </Row>
-                  ) : (
-                    <Empty
-                      image={Empty.PRESENTED_IMAGE_SIMPLE}
-                      description={
-                        <span style={{ color: COLORS.neutral.grey4 }}>
-                          No se encontraron eventos con los filtros seleccionados
-                        </span>
-                      }
-                    >
-                      <Button 
-                        type="primary" 
-                        onClick={() => filterEvents('', null)}
-                        style={{
-                          backgroundColor: COLORS.primary.main,
-                          borderColor: COLORS.primary.main
-                        }}
+                  <>
+                    {displayedEvents.length > 0 ? (
+                      <>
+                        <Row gutter={[24, 24]}>
+                          {displayedEvents.map((event) => (
+                            <Col xs={24} sm={12} md={8} lg={6} key={event._id}>
+                              <EventCard event={event} />
+                            </Col>
+                          ))}
+                        </Row>
+                        
+                        {/* Paginación */}
+                        <div style={{ textAlign: 'center', marginTop: '32px' }}>
+                          <Pagination
+                            current={currentPage}
+                            total={filteredEvents.length}
+                            pageSize={pageSize}
+                            showSizeChanger
+                            showQuickJumper
+                            showTotal={(total, range) => `${range[0]}-${range[1]} de ${total} eventos`}
+                            onChange={(page, size) => {
+                              setCurrentPage(page);
+                              setPageSize(size);
+                            }}
+                            onShowSizeChange={(current, size) => {
+                              setCurrentPage(1);
+                              setPageSize(size);
+                            }}
+                            pageSizeOptions={['8', '12', '16', '24']}
+                            style={{
+                              marginTop: '24px'
+                            }}
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <Empty
+                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                        description={
+                          <span style={{ color: COLORS.neutral.grey4 }}>
+                            No se encontraron eventos con los filtros seleccionados
+                          </span>
+                        }
                       >
-                        Ver todos los eventos
-                      </Button>
-                    </Empty>
-                  )
+                        <Button 
+                          type="primary" 
+                          onClick={clearAllFilters}
+                          style={{
+                            backgroundColor: COLORS.primary.main,
+                            borderColor: COLORS.primary.main
+                          }}
+                        >
+                          Limpiar filtros
+                        </Button>
+                      </Empty>
+                    )}
+                  </>
                 )}
               </TabPane>
             </Tabs>
@@ -406,4 +563,5 @@ const Home = () => {
     </Layout>
   );
 };
+
 export default Home;
