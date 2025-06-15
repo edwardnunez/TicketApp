@@ -35,7 +35,6 @@ import { COLORS } from "../components/colorscheme";
 
 const { Content } = Layout;
 const { Text } = Typography;
-const { confirm } = Modal;
 
 // Avatares predefinidos
 const avatars = [
@@ -57,6 +56,10 @@ const EditProfile = () => {
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [profileError, setProfileError] = useState({});
   const [passwordError, setPasswordError] = useState({});
+  
+  // Estado para el modal de confirmación
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [pendingPasswordValues, setPendingPasswordValues] = useState(null);
 
   const navigate = useNavigate();
   
@@ -158,6 +161,8 @@ const EditProfile = () => {
       .then((res) => {
         message.success("¡Contraseña actualizada correctamente!");
         passwordForm.resetFields();
+        setShowPasswordModal(false);
+        setPendingPasswordValues(null);
       })
       .catch((err) => {
         console.error("Error al actualizar la contraseña:", err);
@@ -182,46 +187,22 @@ const EditProfile = () => {
 
   // Manejar cambio de contraseña con confirmación
   const handlePasswordSubmit = (values) => {
-    confirm({
-      title: '¿Estás seguro de que quieres cambiar tu contraseña?',
-      icon: <ExclamationCircleOutlined style={{ color: COLORS.status.warning }} />,
-      content: (
-        <div style={{ marginTop: '16px' }}>
-          <Text style={{ color: COLORS.neutral.dark }}>
-            Esta acción cambiará tu contraseña actual. Asegúrate de recordar la nueva contraseña.
-          </Text>
-          <br />
-          <br />
-          <Text style={{ color: COLORS.neutral.grey4, fontSize: '14px' }}>
-            Se cerrará tu sesión automáticamente en otros dispositivos por seguridad.
-          </Text>
-        </div>
-      ),
-      okText: 'Sí, cambiar contraseña',
-      cancelText: 'Cancelar',
-      okType: 'primary',
-      okButtonProps: {
-        style: {
-          backgroundColor: COLORS.status.warning,
-          borderColor: COLORS.status.warning,
-        }
-      },
-      cancelButtonProps: {
-        style: {
-          borderColor: COLORS.neutral.grey3,
-          color: COLORS.neutral.dark,
-        }
-      },
-      onOk() {
-        executePasswordChange(values);
-      },
-      onCancel() {
-        console.log('Cambio de contraseña cancelado');
-      },
-      centered: true,
-      maskClosable: false,
-      width: 480,
-    });
+    setPendingPasswordValues(values);
+    setShowPasswordModal(true);
+  };
+
+  // Confirmar cambio de contraseña
+  const handleConfirmPasswordChange = () => {
+    if (pendingPasswordValues) {
+      executePasswordChange(pendingPasswordValues);
+    }
+  };
+
+  // Cancelar cambio de contraseña
+  const handleCancelPasswordChange = () => {
+    setShowPasswordModal(false);
+    setPendingPasswordValues(null);
+    console.log('Cambio de contraseña cancelado');
   };
 
   return (
@@ -538,6 +519,49 @@ const EditProfile = () => {
             </Card>
           </Space>
         )}
+
+        {/* Modal de confirmación de cambio de contraseña */}
+        <Modal
+          title={
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <ExclamationCircleOutlined style={{ color: COLORS.status.warning }} />
+              <span>¿Estás seguro de que quieres cambiar tu contraseña?</span>
+            </div>
+          }
+          open={showPasswordModal}
+          onOk={handleConfirmPasswordChange}
+          onCancel={handleCancelPasswordChange}
+          okText="Sí, cambiar contraseña"
+          cancelText="Cancelar"
+          okType="primary"
+          confirmLoading={passwordLoading}
+          okButtonProps={{
+            style: {
+              backgroundColor: COLORS.status.warning,
+              borderColor: COLORS.status.warning,
+            }
+          }}
+          cancelButtonProps={{
+            style: {
+              borderColor: COLORS.neutral.grey3,
+              color: COLORS.neutral.dark,
+            }
+          }}
+          centered
+          maskClosable={false}
+          width={480}
+        >
+          <div style={{ marginTop: '16px' }}>
+            <Text style={{ color: COLORS.neutral.dark }}>
+              Esta acción cambiará tu contraseña actual. Asegúrate de recordar la nueva contraseña.
+            </Text>
+            <br />
+            <br />
+            <Text style={{ color: COLORS.neutral.grey4, fontSize: '14px' }}>
+              Se cerrará tu sesión automáticamente en otros dispositivos por seguridad.
+            </Text>
+          </div>
+        </Modal>
       </Content>
     </Layout>
   );
