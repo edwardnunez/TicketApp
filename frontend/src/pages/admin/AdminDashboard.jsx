@@ -16,8 +16,8 @@ import {
   Input,
   Select,
   DatePicker,
-  Dropdown,
-  Menu
+  Modal,
+  notification
 } from 'antd';
 import { 
   PlusOutlined, 
@@ -32,7 +32,9 @@ import {
   CheckCircleOutlined,
   StopOutlined,
   FilterOutlined,
-  ClearOutlined
+  ClearOutlined,
+  DeleteOutlined,
+  ExclamationCircleOutlined
 } from '@ant-design/icons';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
@@ -58,6 +60,10 @@ const AdminDashboard = () => {
     state: 'all',
     dateRange: null
   });
+
+  // Hook para notificaciones y modales
+  const [api, contextHolder] = notification.useNotification();
+  const [modal, modalContextHolder] = Modal.useModal();
 
   const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
 
@@ -216,6 +222,78 @@ const AdminDashboard = () => {
            filters.dateRange !== null;
   };
 
+  const deleteEvent = async (eventId, eventName) => {
+    modal.confirm({
+      title: '¿Estás seguro de eliminar este evento?',
+      icon: <ExclamationCircleOutlined style={{ color: COLORS?.status?.error || "#ff4d4f" }} />,
+      content: (
+        <div style={{ marginTop: '16px' }}>
+          <p style={{ marginBottom: '12px' }}>
+            Se eliminará el evento: <strong style={{ color: COLORS?.neutral?.darker || "#262626" }}>{eventName}</strong>
+          </p>
+          <div style={{ 
+            padding: '12px', 
+            backgroundColor: '#fff2f0', 
+            border: '1px solid #ffccc7',
+            borderRadius: '6px',
+            marginTop: '12px'
+          }}>
+            <p style={{ 
+              color: COLORS?.status?.error || "#ff4d4f", 
+              margin: 0,
+              fontSize: '14px',
+              fontWeight: '500'
+            }}>
+              ⚠️ También se eliminarán todos los tickets asociados a este evento. Esta acción no se puede deshacer.
+            </p>
+          </div>
+        </div>
+      ),
+      okText: 'Sí, eliminar',
+      okType: 'danger',
+      cancelText: 'Cancelar',
+      okButtonProps: {
+        style: {
+          backgroundColor: COLORS?.status?.error || "#ff4d4f",
+          borderColor: COLORS?.status?.error || "#ff4d4f",
+          color: "#ffffff"
+        }
+      },
+      cancelButtonProps: {
+        style: {
+          borderColor: COLORS?.neutral?.grey3 || "#d9d9d9"
+        }
+      },
+      onOk: async () => {
+        try {
+          setLoading(true);
+          await axios.delete(`${gatewayUrl}/events/${eventId}`);
+          
+          // Actualizar la lista de eventos localmente
+          setEvents(prevEvents => prevEvents.filter(event => event._id !== eventId));
+          
+          // Mostrar mensaje de éxito usando notification
+          api.success({
+            message: 'Evento eliminado',
+            description: 'El evento y todos sus tickets asociados han sido eliminados correctamente.',
+            placement: 'top',
+            duration: 4
+          });
+        } catch (error) {
+          console.error("Error deleting event:", error);
+          api.error({
+            message: 'Error al eliminar',
+            description: 'No se pudo eliminar el evento. Por favor, inténtalo de nuevo.',
+            placement: 'top',
+            duration: 4
+          });
+        } finally {
+          setLoading(false);
+        }
+      },
+    });
+  };
+
   const columns = [
     {
       title: 'Nombre del evento',
@@ -306,13 +384,18 @@ const AdminDashboard = () => {
               </Button>
             </Link>
           </Tooltip>
-          <Tooltip title="Editar evento">
+          <Tooltip title="Eliminar evento">
             <Button 
-              icon={<AppstoreOutlined />}
+              danger
+              icon={<DeleteOutlined />}
               size="small"
-              style={{ borderColor: COLORS?.neutral?.grey3 || "#d9d9d9" }}
+              onClick={() => deleteEvent(record._id, record.name)}
+              style={{ 
+                borderColor: COLORS?.status?.error || "#ff4d4f",
+                color: COLORS?.status?.error || "#ff4d4f"
+              }}
             >
-              Editar
+              Eliminar
             </Button>
           </Tooltip>
         </Space>
@@ -350,6 +433,10 @@ const AdminDashboard = () => {
 
   return (
     <Layout style={{ minHeight: '100vh', backgroundColor: COLORS?.neutral?.white || "#ffffff" }}>
+      {/* Agregamos los context holders para que funcionen las notificaciones y modales */}
+      {contextHolder}
+      {modalContextHolder}
+      
       <Content style={{ padding: '40px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           {/* Header with breadcrumb */}
