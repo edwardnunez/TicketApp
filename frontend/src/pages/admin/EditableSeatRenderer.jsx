@@ -84,32 +84,66 @@ const EditableSeatRenderer = ({
     </Card>
   );
 
-  // Header simplificado para secciones (solo título, sin botones)
-  const renderSectionHeader = (section) => (
-    <div style={{
-      padding: '8px 12px',
-      backgroundColor: isSectionBlocked(section.id) ? '#ff4d4f20' : section.color + '20',
-      borderLeft: `4px solid ${isSectionBlocked(section.id) ? '#ff4d4f' : section.color}`,
-      marginBottom: '8px',
-      borderRadius: '4px'
-    }}>
-      <Text strong style={{ color: COLORS.neutral.darker }}>
-        {section.name}
-      </Text>
-      <Text style={{ 
-        color: COLORS.neutral.grey4, 
-        fontSize: '12px',
-        marginLeft: '8px'
-      }}>
-        ({section.rows} filas × {section.seatsPerRow} asientos)
-        {isSectionBlocked(section.id) && (
-          <span style={{ color: '#ff4d4f', marginLeft: '8px' }}>
-            - Sección bloqueada
-          </span>
+  // Función para renderizar tarjetas de sección (similar al GenericSeatRenderer)
+  const renderSectionCard = (section, additionalStyles = {}) => {
+    const sectionBlocked = isSectionBlocked(section.id);
+    
+    return (
+      <Card 
+        style={{ 
+          padding: 10, 
+          margin: 5,
+          opacity: sectionBlocked ? 0.5 : 1,
+          backgroundColor: sectionBlocked ? '#f5f5f5' : 'white',
+          border: sectionBlocked ? '2px dashed #ccc' : '1px solid #d9d9d9',
+          ...additionalStyles
+        }}
+      >
+        {sectionBlocked && (
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1,
+            borderRadius: 6
+          }}>
+            <Text strong style={{ color: '#999', fontSize: 12 }}>SECCIÓN BLOQUEADA</Text>
+          </div>
         )}
+        <EditableSeatGrid
+          sectionId={section.id}
+          rows={section.rows}
+          seatsPerRow={section.seatsPerRow}
+          color={section.color}
+          name={section.name}
+          blockedSeats={filterBlockedBySection(section.id)}
+          sectionBlocked={sectionBlocked}
+          onSeatToggle={onSeatToggle}
+        />
+      </Card>
+    );
+  };
+
+  const renderSectionHeader = (section) => {
+    const sectionBlocked = isSectionBlocked(section.id);
+    return (
+      <Text 
+        strong 
+        style={{ 
+          color: sectionBlocked ? '#999' : section.color,
+          textDecoration: sectionBlocked ? 'line-through' : 'none'
+        }}
+      >
+        {section.name} {sectionBlocked && '(BLOQUEADA)'}
       </Text>
-    </div>
-  );
+    );
+  };
 
   const renderFootballLayout = () => {
     const tribunaNorte = sections.find(s => s.id.includes('norte') || s.name.toLowerCase().includes('norte'));
@@ -123,8 +157,10 @@ const EditableSeatRenderer = ({
         display: 'flex', 
         flexDirection: 'column', 
         alignItems: 'center', 
-        gap: 20,
-        padding: '20px'
+        gap: 30, 
+        minWidth: 1000,
+        minHeight: 700,
+        padding: '30px'
       }}>
         <Title level={4} style={{ margin: 0, color: COLORS.neutral.darker }}>
           {config?.stadiumName || name} - Modo Edición
@@ -133,171 +169,148 @@ const EditableSeatRenderer = ({
         {/* Controles de sección */}
         {renderSectionControls()}
 
+        {/* Tribuna Norte */}
+        {tribunaNorte && (
+          <div style={{ textAlign: 'center' }}>
+            {renderSectionHeader(tribunaNorte)}
+            {renderSectionCard(tribunaNorte)}
+          </div>
+        )}
+
+        {/* Fila central horizontal: Tribuna Oeste | Campo | Tribuna Este */}
         <div style={{ 
           display: 'flex', 
-          flexDirection: 'column', 
           alignItems: 'center', 
-          gap: 30, 
-          minWidth: 800, 
-          minHeight: 600
+          justifyContent: 'center', 
+          width: '100%', 
+          gap: 80
         }}>
-          {/* Tribuna Norte */}
-          {tribunaNorte && (
-            <div style={{ textAlign: 'center', width: '100%', maxWidth: '600px' }}>
-              {renderSectionHeader(tribunaNorte)}
-              <Card style={{ padding: 10, margin: 5 }}>
-                <EditableSeatGrid
-                  sectionId={tribunaNorte.id}
-                  rows={tribunaNorte.rows}
-                  seatsPerRow={tribunaNorte.seatsPerRow}
-                  color={tribunaNorte.color}
-                  name={tribunaNorte.name}
-                  blockedSeats={filterBlockedBySection(tribunaNorte.id)}
-                  sectionBlocked={isSectionBlocked(tribunaNorte.id)}
-                  onSeatToggle={onSeatToggle}
-                />
-              </Card>
+          {/* Tribuna Oeste */}
+          {tribunaOeste && (
+            <div style={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              minWidth: 200,
+              justifyContent: 'center',
+              position: 'relative',
+              marginRight: 40
+            }}>
+              <div style={{
+                position: 'absolute',
+                top: -70,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                whiteSpace: 'nowrap',
+                zIndex: 2
+              }}>
+                <Text
+                  strong
+                  style={{
+                    color: isSectionBlocked(tribunaOeste.id) ? '#999' : tribunaOeste.color,
+                    textDecoration: isSectionBlocked(tribunaOeste.id) ? 'line-through' : 'none',
+                    fontSize: '14px'
+                  }}
+                >
+                  {tribunaOeste.name} {isSectionBlocked(tribunaOeste.id) && '(BLOQUEADA)'}
+                </Text>
+              </div>
+              {renderSectionCard(tribunaOeste, { 
+                transform: 'rotate(-90deg)',
+                marginTop: 50
+              })}
             </div>
           )}
 
-          {/* Fila central horizontal */}
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'flex-start', 
-            justifyContent: 'center', 
-            width: '100%', 
-            gap: 40 
-          }}>
-            {/* Tribuna Oeste */}
-            {tribunaOeste && (
-              <div style={{ 
-                display: 'flex', 
-                flexDirection: 'column', 
-                alignItems: 'center', 
-                minWidth: 120 
-              }}>
-                <div style={{ marginBottom: '12px', width: '200px' }}>
-                  {renderSectionHeader(tribunaOeste)}
-                </div>
-                <Card style={{ padding: 8, borderRadius: 8, transform: 'rotate(-90deg)' }}>
-                  <EditableSeatGrid
-                    sectionId={tribunaOeste.id}
-                    rows={tribunaOeste.rows}
-                    seatsPerRow={tribunaOeste.seatsPerRow}
-                    color={tribunaOeste.color}
-                    name={tribunaOeste.name}
-                    blockedSeats={filterBlockedBySection(tribunaOeste.id)}
-                    sectionBlocked={isSectionBlocked(tribunaOeste.id)}
-                    onSeatToggle={onSeatToggle}
-                  />
-                </Card>
-              </div>
-            )}
-
-            {/* Campo */}
-            <div
-              style={{
-                width: config?.fieldDimensions?.width || 400,
-                height: config?.fieldDimensions?.height || 260,
-                backgroundColor: '#4CAF50',
-                borderRadius: 8,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white',
-                fontSize: 24,
-                fontWeight: 'bold',
-                boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-                border: '3px solid #2E7D32',
-                position: 'relative',
-                flexShrink: 0,
-                textShadow: '2px 2px 4px rgba(0,0,0,0.5)'
-              }}
-            >
-              <div style={{ 
-                position: 'absolute', 
-                top: '50%', 
-                left: '50%', 
-                transform: 'translate(-50%, -50%)', 
-                width: 80, 
-                height: 80, 
-                border: '2px solid white', 
-                borderRadius: '50%' 
-              }}></div>
-              CAMPO
-            </div>
-
-            {/* Tribuna Este */}
-            {tribunaEste && (
-              <div style={{ 
-                display: 'flex', 
-                flexDirection: 'column', 
-                alignItems: 'center', 
-                minWidth: 120 
-              }}>
-                <div style={{ marginBottom: '12px', width: '200px' }}>
-                  {renderSectionHeader(tribunaEste)}
-                </div>
-                <Card style={{ padding: 8, borderRadius: 8, transform: 'rotate(90deg)' }}>
-                  <EditableSeatGrid
-                    sectionId={tribunaEste.id}
-                    rows={tribunaEste.rows}
-                    seatsPerRow={tribunaEste.seatsPerRow}
-                    color={tribunaEste.color}
-                    name={tribunaEste.name}
-                    blockedSeats={filterBlockedBySection(tribunaEste.id)}
-                    sectionBlocked={isSectionBlocked(tribunaEste.id)}
-                    onSeatToggle={onSeatToggle}
-                  />
-                </Card>
-              </div>
-            )}
+          {/* Campo */}
+          <div
+            style={{
+              width: config?.fieldDimensions?.width || 400,
+              height: config?.fieldDimensions?.height || 260,
+              backgroundColor: '#4CAF50',
+              borderRadius: 8,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              fontSize: 24,
+              fontWeight: 'bold',
+              boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+              border: '3px solid #2E7D32',
+              position: 'relative',
+              flexShrink: 0,
+              textShadow: '2px 2px 4px rgba(0,0,0,0.5)'
+            }}
+          >
+            <div style={{ 
+              position: 'absolute', 
+              top: '50%', 
+              left: '50%', 
+              transform: 'translate(-50%, -50%)', 
+              width: 80, 
+              height: 80, 
+              border: '2px solid white', 
+              borderRadius: '50%' 
+            }}></div>
+            CAMPO
           </div>
 
-          {/* Tribuna Sur */}
-          {tribunaSur && (
-            <div style={{ textAlign: 'center', width: '100%', maxWidth: '600px' }}>
-              <Card style={{ padding: 10, margin: 5 }}>
-                <EditableSeatGrid
-                  sectionId={tribunaSur.id}
-                  rows={tribunaSur.rows}
-                  seatsPerRow={tribunaSur.seatsPerRow}
-                  color={tribunaSur.color}
-                  name={tribunaSur.name}
-                  blockedSeats={filterBlockedBySection(tribunaSur.id)}
-                  sectionBlocked={isSectionBlocked(tribunaSur.id)}
-                  onSeatToggle={onSeatToggle}
-                />
-              </Card>
-              {renderSectionHeader(tribunaSur)}
-            </div>
-          )}
-
-          {/* VIP */}
-          {vipSection && (
-            <div style={{ textAlign: 'center', marginTop: 20, width: '100%', maxWidth: '400px' }}>
-              {renderSectionHeader(vipSection)}
-              <Card style={{ 
-                border: `2px solid ${vipSection.color}`, 
-                padding: 10, 
-                borderRadius: 8, 
-                margin: 5, 
-                backgroundColor: vipSection.color + '20'
+          {/* Tribuna Este */}
+          {tribunaEste && (
+            <div style={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              minWidth: 200,
+              justifyContent: 'center',
+              position: 'relative',
+              marginLeft: 40
+            }}>
+              <div style={{
+                position: 'absolute',
+                top: -70,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                whiteSpace: 'nowrap',
+                zIndex: 2
               }}>
-                <EditableSeatGrid
-                  sectionId={vipSection.id}
-                  rows={vipSection.rows}
-                  seatsPerRow={vipSection.seatsPerRow}
-                  color={vipSection.color}
-                  name={vipSection.name}
-                  blockedSeats={filterBlockedBySection(vipSection.id)}
-                  sectionBlocked={isSectionBlocked(vipSection.id)}
-                  onSeatToggle={onSeatToggle}
-                />
-              </Card>
+                <Text
+                  strong
+                  style={{
+                    color: isSectionBlocked(tribunaEste.id) ? '#999' : tribunaEste.color,
+                    textDecoration: isSectionBlocked(tribunaEste.id) ? 'line-through' : 'none',
+                    fontSize: '14px'
+                  }}
+                >
+                  {tribunaEste.name} {isSectionBlocked(tribunaEste.id) && '(BLOQUEADA)'}
+                </Text>
+              </div>
+              {renderSectionCard(tribunaEste, { 
+                transform: 'rotate(90deg)',
+                marginTop: 50
+              })}
             </div>
           )}
         </div>
+
+        {/* Tribuna Sur */}
+        {tribunaSur && (
+          <div style={{ textAlign: 'center', marginTop: 20 }}>
+            {renderSectionCard(tribunaSur)}
+            {renderSectionHeader(tribunaSur)}
+          </div>
+        )}
+
+        {/* VIP */}
+        {vipSection && (
+          <div style={{ textAlign: 'center', marginTop: 30 }}>
+            {renderSectionHeader(vipSection)}
+            {renderSectionCard(vipSection, {
+              border: `2px solid ${isSectionBlocked(vipSection.id) ? '#ccc' : vipSection.color}`,
+              backgroundColor: isSectionBlocked(vipSection.id) ? '#f5f5f5' : vipSection.color + '20'
+            })}
+          </div>
+        )}
       </div>
     );
   };
@@ -315,10 +328,9 @@ const EditableSeatRenderer = ({
         display: 'flex', 
         flexDirection: 'column', 
         alignItems: 'center', 
-        gap: 20,
-        padding: '20px',
-        maxWidth: '800px',
-        margin: '0 auto'
+        gap: 10,
+        minWidth: 400,
+        padding: '20px'
       }}>
         <Title level={4} style={{ margin: 0, color: COLORS.neutral.darker }}>
           {config?.cinemaName || name} - Modo Edición
@@ -330,63 +342,34 @@ const EditableSeatRenderer = ({
         {/* Pantalla */}
         <div
           style={{
-            width: '100%',
-            maxWidth: config?.screenWidth || 600,
-            height: 30,
+            width: config?.screenWidth || 300,
+            height: 20,
             backgroundColor: '#333',
-            borderRadius: '15px 15px 0 0',
+            borderRadius: '10px 10px 0 0',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             color: 'white',
-            fontSize: 14,
-            fontWeight: 'bold',
-            marginBottom: 30,
-            boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
-            border: '2px solid #222'
+            fontSize: 12,
+            marginBottom: 20,
+            boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
           }}
         >
           PANTALLA
         </div>
 
         {/* Renderizar secciones en orden */}
-        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center' }}>
-          {sortedSections.map(section => (
-            <div key={section.id} style={{ 
-              width: '100%', 
-              maxWidth: '700px', 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center' 
-            }}>
-              {renderSectionHeader(section)}
-              <Card style={{ 
-                padding: 12, 
-                borderRadius: 8, 
-                width: '100%',
-                display: 'flex',
-                justifyContent: 'center',
-                ...(section.id === 'premium' && {
-                  border: '2px solid #9C27B0',
-                  backgroundColor: '#F3E5F520'
-                })
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'center' }}>
-                  <EditableSeatGrid
-                    sectionId={section.id}
-                    rows={section.rows}
-                    seatsPerRow={section.seatsPerRow}
-                    color={section.color}
-                    name={section.name}
-                    blockedSeats={filterBlockedBySection(section.id)}
-                    sectionBlocked={isSectionBlocked(section.id)}
-                    onSeatToggle={onSeatToggle}
-                  />
-                </div>
-              </Card>
-            </div>
-          ))}
-        </div>
+        {sortedSections.map(section => (
+          <div key={section.id} style={{ textAlign: 'center', marginBottom: 15 }}>
+            {renderSectionHeader(section)}
+            {renderSectionCard(section, {
+              ...(section.id === 'premium' && !isSectionBlocked(section.id) && {
+                border: '2px solid #9C27B0',
+                backgroundColor: '#F3E5F5'
+              })
+            })}
+          </div>
+        ))}
       </div>
     );
   };
@@ -404,10 +387,9 @@ const EditableSeatRenderer = ({
         display: 'flex', 
         flexDirection: 'column', 
         alignItems: 'center', 
-        gap: 20,
-        padding: '20px',
-        maxWidth: '900px',
-        margin: '0 auto'
+        gap: 15,
+        minWidth: 400,
+        padding: '20px'
       }}>
         <Title level={4} style={{ margin: 0, color: COLORS.neutral.darker }}>
           {config?.theaterName || name} - Modo Edición
@@ -419,63 +401,35 @@ const EditableSeatRenderer = ({
         {/* Escenario */}
         <div
           style={{
-            width: '100%',
-            maxWidth: config?.stageWidth || 500,
-            height: 40,
+            width: config?.stageWidth || 250,
+            height: 30,
             backgroundColor: '#8B4513',
             borderRadius: 8,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             color: 'white',
-            fontSize: 16,
-            fontWeight: 'bold',
-            marginBottom: 30,
-            boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
-            border: '3px solid #654321'
+            fontSize: 14,
+            marginBottom: 20,
+            boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+            border: '2px solid #654321'
           }}
         >
           ESCENARIO
         </div>
 
         {/* Renderizar secciones en orden */}
-        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 25, alignItems: 'center' }}>
-          {sortedSections.map(section => (
-            <div key={section.id} style={{ 
-              width: '100%', 
-              maxWidth: section.id === 'boxes' ? '400px' : '800px',
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center' 
-            }}>
-              {renderSectionHeader(section)}
-              <Card style={{ 
-                padding: 15, 
-                borderRadius: 8, 
-                width: '100%',
-                display: 'flex',
-                justifyContent: 'center',
-                ...(section.id === 'boxes' && {
-                  border: '2px solid #9C27B0',
-                  backgroundColor: '#F3E5F520'
-                })
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'center' }}>
-                  <EditableSeatGrid
-                    sectionId={section.id}
-                    rows={section.rows}
-                    seatsPerRow={section.seatsPerRow}
-                    color={section.color}
-                    name={section.name}
-                    blockedSeats={filterBlockedBySection(section.id)}
-                    sectionBlocked={isSectionBlocked(section.id)}
-                    onSeatToggle={onSeatToggle}
-                  />
-                </div>
-              </Card>
-            </div>
-          ))}
-        </div>
+        {sortedSections.map(section => (
+          <div key={section.id} style={{ textAlign: 'center', marginBottom: 15 }}>
+            {renderSectionHeader(section)}
+            {renderSectionCard(section, {
+              ...(section.id === 'boxes' && !isSectionBlocked(section.id) && {
+                border: '2px solid #9C27B0',
+                backgroundColor: '#F3E5F5'
+              })
+            })}
+          </div>
+        ))}
       </div>
     );
   };
@@ -502,29 +456,64 @@ const EditableSeatRenderer = ({
         {/* Controles de sección */}
         {renderSectionControls()}
 
-        <div style={{ width: '100%' }}>
-          {sortedSections.map(section => (
-            <div key={section.id} style={{ marginBottom: '24px' }}>
-              {renderSectionHeader(section)}
-              <Card style={{ 
-                padding: 15, 
-                borderRadius: 8, 
-                display: 'flex', 
-                justifyContent: 'center' 
-              }}>
-                <EditableSeatGrid
-                  sectionId={section.id}
-                  rows={section.rows}
-                  seatsPerRow={section.seatsPerRow}
-                  color={section.color}
-                  name={section.name}
-                  blockedSeats={filterBlockedBySection(section.id)}
-                  sectionBlocked={isSectionBlocked(section.id)}
-                  onSeatToggle={onSeatToggle}
-                />
-              </Card>
-            </div>
-          ))}
+        <div style={{ width: '100%', maxWidth: '800px' }}>
+          {sortedSections.map(section => {
+            const sectionBlocked = isSectionBlocked(section.id);
+            return (
+              <div key={section.id} style={{ marginBottom: '24px', position: 'relative' }}>
+                <div style={{
+                  padding: '12px 16px',
+                  backgroundColor: sectionBlocked ? '#f5f5f5' : section.color + '20',
+                  borderLeft: `4px solid ${sectionBlocked ? '#ccc' : section.color}`,
+                  marginBottom: '12px',
+                  borderRadius: '4px',
+                  opacity: sectionBlocked ? 0.6 : 1
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Title level={5} style={{ 
+                      margin: 0, 
+                      color: sectionBlocked ? '#999' : COLORS.neutral.darker,
+                      textDecoration: sectionBlocked ? 'line-through' : 'none'
+                    }}>
+                      {section.name} {sectionBlocked && '(BLOQUEADA)'}
+                    </Title>
+                  </div>
+                  <Typography.Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
+                    {section.rows} filas × {section.seatsPerRow} asientos por fila
+                  </Typography.Text>
+                </div>
+                <div style={{ position: 'relative' }}>
+                  {sectionBlocked && (
+                    <div style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      zIndex: 1,
+                      borderRadius: 6
+                    }}>
+                      <Text strong style={{ color: '#999', fontSize: 14 }}>SECCIÓN BLOQUEADA</Text>
+                    </div>
+                  )}
+                  <EditableSeatGrid
+                    sectionId={section.id}
+                    rows={section.rows}
+                    seatsPerRow={section.seatsPerRow}
+                    color={section.color}
+                    name={section.name}
+                    blockedSeats={filterBlockedBySection(section.id)}
+                    sectionBlocked={sectionBlocked}
+                    onSeatToggle={onSeatToggle}
+                  />
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     );
