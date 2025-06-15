@@ -6,8 +6,6 @@ import axios from 'axios';
 
 const { Title, Text } = Typography;
 
-const LOCATION_SERVICE_URL = process.env.REACT_APP_LOCATION_SERVICE_URL || "http://localhost:8004";
-
 export default function SelectTickets({ 
   selectedTicketType, setSelectedTicketType, 
   quantity, setQuantity, 
@@ -20,6 +18,8 @@ export default function SelectTickets({
   const [seatMapData, setSeatMapData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  
+  const gatewayUrl = process.env.REACT_API_ENDPOINT || "http://localhost:8000";
 
   const requiresSeatMap = useCallback(() => {
     if (!event?.type) return false;
@@ -88,7 +88,7 @@ export default function SelectTickets({
       setError(null);
 
       try {
-        const response = await axios.get(`${LOCATION_SERVICE_URL}/seatmaps/${seatMapId}`);
+        const response = await axios.get(`${gatewayUrl}/seatmaps/${seatMapId}`);
         const seatMapData = response.data;
         
         // Validar compatibilidad

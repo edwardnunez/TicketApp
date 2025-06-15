@@ -1,6 +1,6 @@
-compra de entradas:
-    - mirar a ver si necesito algun campo mas
-    - enviar ticket por email
-    - generar qr para enviarlo por email
-
 añadir imagenes a eventos
+
+enviar ticket por email
+
+corregir que las secciones estan descuadradas en algunos casos
+ - cines al editar: hacer los asientos impares por fila

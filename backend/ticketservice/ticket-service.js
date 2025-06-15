@@ -2,6 +2,9 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import Ticket from './ticket-model.js';
+import crypto from 'crypto';
+import QRCode from 'qrcode';
+import axios from 'axios';
 
 const app = express();
 const port = 8002;
@@ -11,6 +14,54 @@ app.use(cors({ origin: ["http://localhost:3000", "http://localhost:8000"] }));
 
 const mongoUri = process.env.MONGODB_URI || "mongodb://localhost:27017/ticketdb";
 mongoose.connect(mongoUri, { useNewUrlParser: true, useUnifiedTopology: true });
+
+// Función para generar número de ticket único
+const generateTicketNumber = () => {
+  const timestamp = Date.now().toString(36);
+  const random = Math.random().toString(36).substring(2, 8);
+  return `TKT-${timestamp}-${random}`.toUpperCase();
+};
+
+// Función para generar código de validación
+const generateValidationCode = () => {
+  return crypto.randomBytes(16).toString('hex').toUpperCase();
+};
+
+// Función para generar datos del QR
+const generateQRData = (ticket) => {
+  return JSON.stringify({
+    ticketId: ticket._id,
+    ticketNumber: ticket.ticketNumber,
+    eventId: ticket.eventId,
+    userId: ticket.userId,
+    validationCode: ticket.validationCode,
+    purchaseDate: ticket.purchasedAt,
+    status: ticket.status,
+    quantity: ticket.quantity,
+    ticketType: ticket.ticketType,
+    seats: ticket.selectedSeats || []
+  });
+};
+
+// Función para generar QR code como string base64
+const generateQRCode = async (data) => {
+  try {
+    const qrString = await QRCode.toDataURL(data, {
+      type: 'image/png',
+      width: 300,
+      margin: 2,
+      color: {
+        dark: '#000000',
+        light: '#FFFFFF'
+      }
+    });
+    return qrString;
+  } catch (error) {
+    console.error('Error generando QR:', error);
+    throw new Error('No se pudo generar el código QR');
+  }
+};
+
 
 // Middleware para validación de ObjectId
 const validateObjectId = (req, res, next) => {
@@ -79,16 +130,26 @@ app.get('/tickets/occupied/:eventId', validateObjectId, async (req, res) => {
   }
 });
 
+// Comprar tickets con generación de QR
 app.post('/tickets/purchase', async (req, res) => {
   try {
-    const { userId, eventId, ticketType, quantity, price, customerInfo, selectedSeats } = req.body;
-
+    const { 
+      userId, 
+      eventId, 
+      ticketType, 
+      quantity, 
+      price, 
+      customerInfo, 
+      selectedSeats,
+      paymentInfo,
+      metadata
+    } = req.body;
 
     // Validaciones básicas
-    if (!userId || !eventId || !quantity || !price) {
+    if (!userId || !eventId || !quantity || !price || !customerInfo) {
       return res.status(400).json({
         error: "Campos requeridos faltantes",
-        message: "userId, eventId, quantity y price son requeridos"
+        message: "userId, eventId, quantity, price y customerInfo son requeridos"
       });
     }
 
@@ -99,32 +160,125 @@ app.post('/tickets/purchase', async (req, res) => {
       });
     }
 
+    // Generar identificadores únicos
+    const ticketNumber = generateTicketNumber();
+    const validationCode = generateValidationCode();
+
+    // Crear el ticket inicial CON qrCode temporal
     const newTicket = new Ticket({
       userId,
       eventId,
-      ticketType: ticketType,
+      ticketType,
       price,
       quantity,
       selectedSeats,
       status: 'paid',
-      customerInfo
+      customerInfo,
+      paymentInfo: paymentInfo || {
+        method: 'demo',
+        transactionId: `TXN-${Date.now()}`
+      },
+      metadata: metadata || {},
+      ticketNumber,
+      validationCode,
+      qrCode: 'temp' // QR temporal para evitar el error de validación
     });
 
+    // Guardar el ticket para obtener el _id
     const savedTicket = await newTicket.save();
+
+    // Generar datos del QR con el ticket guardado
+    const qrData = generateQRData(savedTicket);
+    const qrCodeString = await generateQRCode(qrData);
+
+    // Actualizar el ticket con el QR generado
+    savedTicket.qrCode = qrCodeString;
+    await savedTicket.save();
+
+    // Generar ID de compra para mostrar al usuario
+    const purchaseId = `TKT-${savedTicket._id.toString().slice(-8).toUpperCase()}`;
 
     res.status(201).json({
       success: true,
       message: "Tickets comprados exitosamente",
-      ticket: savedTicket,
-      ticketId: `TKT-${savedTicket._id.toString().slice(-8).toUpperCase()}`
+      ticket: {
+        ...savedTicket.toObject(),
+        qrCode: qrCodeString
+      },
+      ticketId: purchaseId,
+      qrCode: qrCodeString
     });
-
 
   } catch (error) {
     console.error('Error comprando tickets:', error);
     res.status(500).json({
       error: "Error interno del servidor",
-      message: "No se pudo completar la compra"
+      message: "No se pudo completar la compra",
+      details: error.message
+    });
+  }
+});
+
+app.get('/tickets/:id', validateObjectId, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const ticket = await Ticket.findById(id).lean();
+
+    if (!ticket) {
+      return res.status(404).json({
+        error: "Ticket no encontrado",
+        message: "El ticket solicitado no existe"
+      });
+    }
+
+    res.json({
+      success: true,
+      ticket
+    });
+
+  } catch (error) {
+    console.error('Error obteniendo ticket:', error);
+    res.status(500).json({
+      error: "Error interno del servidor",
+      message: "No se pudo obtener el ticket"
+    });
+  }
+});
+
+// Obtener QR de un ticket específico
+app.get('/tickets/:id/qr', validateObjectId, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const ticket = await Ticket.findById(id).select('qrCode ticketNumber status').lean();
+
+    if (!ticket) {
+      return res.status(404).json({
+        error: "Ticket no encontrado",
+        message: "El ticket solicitado no existe"
+      });
+    }
+
+    if (!ticket.qrCode) {
+      return res.status(404).json({
+        error: "QR no disponible",
+        message: "Este ticket no tiene un código QR generado"
+      });
+    }
+
+    res.json({
+      success: true,
+      qrCode: ticket.qrCode,
+      ticketNumber: ticket.ticketNumber,
+      status: ticket.status
+    });
+
+  } catch (error) {
+    console.error('Error obteniendo QR del ticket:', error);
+    res.status(500).json({
+      error: "Error interno del servidor",
+      message: "No se pudo obtener el código QR"
     });
   }
 });
@@ -298,6 +452,31 @@ app.get('/tickets/:id', validateObjectId, async (req, res) => {
     res.status(500).json({
       error: "Error interno del servidor",
       message: "No se pudo obtener el ticket"
+    });
+  }
+});
+
+app.delete("/tickets/event/:eventId", async (req, res) => {
+  try {
+    const { eventId } = req.params;
+
+    // Eliminar todos los tickets del evento
+    const result = await TicketModel.deleteMany({ eventId: eventId });
+
+    console.log(`Eliminados ${result.deletedCount} tickets para el evento ${eventId}`);
+
+    res.status(200).json({
+      success: true,
+      message: `Eliminados ${result.deletedCount} tickets del evento`,
+      deletedCount: result.deletedCount,
+      eventId: eventId
+    });
+
+  } catch (error) {
+    console.error("Error eliminando tickets por evento:", error);
+    res.status(500).json({ 
+      error: "Error interno del servidor", 
+      details: error.message 
     });
   }
 });

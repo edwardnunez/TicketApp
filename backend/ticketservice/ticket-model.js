@@ -16,6 +16,11 @@ const ticketSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   quantity: { type: Number, required: true },
   status: { type: String, enum: ['pending', 'paid', 'cancelled'], default: 'pending' },
+  //QR info
+  qrCode: { type: String, required: true, unique: true },
+  ticketNumber: { type: String, required: true, unique: true },
+  validationCode: { type: String, required: true },
+
   purchasedAt: { type: Date, default: Date.now }
 });
 

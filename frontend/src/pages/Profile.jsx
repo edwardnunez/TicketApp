@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Layout, Typography, Card, Avatar, Button, Divider, Skeleton, Empty, Space, Tag, Tabs, Spin, Alert, Modal, Collapse, Badge, Row, Col } from "antd";
+import { Layout, Typography, Card, Avatar, Button, Divider, Skeleton, Empty, Space, Tag, Tabs, Spin, Alert, Modal, Collapse, Badge, Row, Col, Image } from "antd";
 import { 
   UserOutlined, 
   MailOutlined, 
@@ -8,13 +8,13 @@ import {
   EnvironmentOutlined,
   TagOutlined,
   ClockCircleOutlined,
-  EyeOutlined,
   DeleteOutlined,
   ExclamationCircleOutlined,
   DownOutlined,
   UpOutlined,
   TeamOutlined,
-  EuroOutlined
+  EuroOutlined,
+  QrcodeOutlined
 } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import axios from "axios";
@@ -38,6 +38,10 @@ const Profile = () => {
   const [ticketsLoading, setTicketsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('active');
+  
+  // Estados para el modal QR
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [selectedTicket, setSelectedTicket] = useState(null);
 
   const token = localStorage.getItem("token");
   const username = localStorage.getItem("username");
@@ -121,6 +125,11 @@ const Profile = () => {
     } finally {
       setTicketsLoading(false);
     }
+  };
+
+  const handleShowQR = (ticket) => {
+    setSelectedTicket(ticket);
+    setShowQRModal(true);
   };
 
   const handleCancelTicket = (ticketId) => {
@@ -272,43 +281,20 @@ const Profile = () => {
           
           <Col span={6} style={{ textAlign: 'right' }}>
             <Space direction="vertical" size={8}>
-              <Button 
-                type="text" 
-                size="small"
-                icon={<EyeOutlined />} 
-                onClick={() => {
-                  Modal.info({
-                    title: 'Detalles Completos de la Entrada',
-                    width: 600,
-                    content: (
-                      <div style={{ marginTop: 16 }}>
-                        <p><strong>ID:</strong> {formatTicketId(ticket._id)}</p>
-                        <p><strong>Tipo:</strong> {ticket.ticketType}</p>
-                        <p><strong>Cantidad:</strong> {ticket.quantity}</p>
-                        <p><strong>Precio unitario:</strong> {ticket.price}€</p>
-                        <p><strong>Precio total:</strong> {(ticket.price * ticket.quantity).toFixed(2)}€</p>
-                        <p><strong>Estado:</strong> {getTicketStatusTag(ticket.status)}</p>
-                        <p><strong>Comprado:</strong> {dayjs(ticket.purchasedAt).format('DD/MM/YYYY HH:mm')}</p>
-                        {ticket.selectedSeats && ticket.selectedSeats.length > 0 && (
-                          <div>
-                            <p><strong>Asientos seleccionados:</strong></p>
-                            <ul style={{ marginLeft: '20px' }}>
-                              {ticket.selectedSeats.map((seat, index) => (
-                                <li key={index} style={{ marginBottom: '4px' }}>
-                                  <strong>Sección:</strong> {seat.sectionId} - <strong>Fila:</strong> {seat.row} - <strong>Asiento:</strong> {seat.seat} ({seat.price}€)
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                      </div>
-                    ),
-                  });
-                }}
-              >
-                Ver más
-              </Button>
-              
+              {ticket.status === 'paid' && (
+                <Button 
+                  type="text" 
+                  size="small"
+                  icon={<QrcodeOutlined />} 
+                  onClick={() => handleShowQR(ticket)}
+                  style={{ 
+                    color: COLORS.primary.main,
+                    borderColor: COLORS.primary.main
+                  }}
+                >
+                  Ver QR
+                </Button>
+              )}
               {canCancel && (
                 <Button 
                   type="text" 
@@ -695,6 +681,77 @@ const Profile = () => {
             />
           </Card>
         )}
+
+        {/* Modal QR Code */}
+        <Modal
+          title={
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <QrcodeOutlined style={{ color: COLORS.primary.main }} />
+              <span>Código QR de la entrada</span>
+            </div>
+          }
+          open={showQRModal}
+          onCancel={() => setShowQRModal(false)}
+          footer={[
+            <Button key="close" onClick={() => setShowQRModal(false)}>
+              Cerrar
+            </Button>
+          ]}
+          width={400}
+          centered
+        >
+          {selectedTicket && (
+            <div style={{ textAlign: 'center', padding: '20px' }}>
+              {/* Información del ticket */}
+              <div style={{ marginBottom: '24px' }}>
+                <Text strong style={{ display: 'block', fontSize: '16px', marginBottom: '8px' }}>
+                  {formatTicketId(selectedTicket._id)}
+                </Text>
+                <Text style={{ color: COLORS.neutral.grey4, display: 'block', marginBottom: '4px' }}>
+                  {events[selectedTicket.eventId]?.name || "Evento"}
+                </Text>
+                <Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
+                  {selectedTicket.ticketType} • {selectedTicket.quantity} entrada{selectedTicket.quantity > 1 ? 's' : ''}
+                </Text>
+              </div>
+
+              <Divider />
+              {/* QR Code */}
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'center', 
+                marginBottom: '16px',
+                padding: '20px',
+                backgroundColor: COLORS.neutral.white,
+                borderRadius: '8px',
+                border: `1px solid ${COLORS.neutral.grey2}`
+              }}>
+                <Image
+                    src={selectedTicket.qrCode}
+                    alt="Código QR del ticket"
+                    width={200}
+                    height={200}
+                    style={{ 
+                      border: 'none',
+                      borderRadius: '8px'
+                    }}
+                    preview={{
+                      mask: 'Ver código QR completo'
+                    }}
+                  />
+              </div>
+
+              {/* Instrucciones */}
+              <Alert
+                message="Instrucciones de uso"
+                description="Presenta este código QR en la entrada del evento para acceder. Asegúrate de que la pantalla esté limpia y con buen brillo."
+                type="info"
+                showIcon
+                style={{ textAlign: 'left' }}
+              />
+            </div>
+          )}
+        </Modal>
       </Content>
     </Layout>
   );
