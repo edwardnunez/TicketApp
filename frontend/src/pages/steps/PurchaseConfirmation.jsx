@@ -248,16 +248,6 @@ export default function Confirmation({
         <Button size="large" onClick={() => navigate('/')}>
           Volver al inicio
         </Button>
-        <Button 
-          size="large" 
-          onClick={() => navigate('/profile/tickets')}
-          style={{
-            borderColor: COLORS.primary.main,
-            color: COLORS.primary.main
-          }}
-        >
-          Mis tickets
-        </Button>
       </Space>
 
       <div style={{ 

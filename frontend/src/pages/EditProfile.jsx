@@ -14,7 +14,8 @@ import {
   Divider,
   Tooltip,
   Skeleton,
-  Alert
+  Alert,
+  Modal
 } from "antd";
 import { 
   UserOutlined, 
@@ -24,7 +25,8 @@ import {
   ArrowLeftOutlined,
   EyeInvisibleOutlined,
   EyeTwoTone,
-  SecurityScanOutlined
+  SecurityScanOutlined,
+  ExclamationCircleOutlined
 } from "@ant-design/icons";
 import axios from "axios";
 
@@ -33,6 +35,7 @@ import { COLORS } from "../components/colorscheme";
 
 const { Content } = Layout;
 const { Text } = Typography;
+const { confirm } = Modal;
 
 // Avatares predefinidos
 const avatars = [
@@ -138,8 +141,8 @@ const EditProfile = () => {
       });
   };
 
-  // Manejar cambio de contraseña
-  const handlePasswordSubmit = (values) => {
+  // Función para ejecutar el cambio de contraseña
+  const executePasswordChange = (values) => {
     setPasswordError({});
     setPasswordLoading(true);
     
@@ -175,6 +178,50 @@ const EditProfile = () => {
       .finally(() => {
         setPasswordLoading(false);
       });
+  };
+
+  // Manejar cambio de contraseña con confirmación
+  const handlePasswordSubmit = (values) => {
+    confirm({
+      title: '¿Estás seguro de que quieres cambiar tu contraseña?',
+      icon: <ExclamationCircleOutlined style={{ color: COLORS.status.warning }} />,
+      content: (
+        <div style={{ marginTop: '16px' }}>
+          <Text style={{ color: COLORS.neutral.dark }}>
+            Esta acción cambiará tu contraseña actual. Asegúrate de recordar la nueva contraseña.
+          </Text>
+          <br />
+          <br />
+          <Text style={{ color: COLORS.neutral.grey4, fontSize: '14px' }}>
+            Se cerrará tu sesión automáticamente en otros dispositivos por seguridad.
+          </Text>
+        </div>
+      ),
+      okText: 'Sí, cambiar contraseña',
+      cancelText: 'Cancelar',
+      okType: 'primary',
+      okButtonProps: {
+        style: {
+          backgroundColor: COLORS.status.warning,
+          borderColor: COLORS.status.warning,
+        }
+      },
+      cancelButtonProps: {
+        style: {
+          borderColor: COLORS.neutral.grey3,
+          color: COLORS.neutral.dark,
+        }
+      },
+      onOk() {
+        executePasswordChange(values);
+      },
+      onCancel() {
+        console.log('Cambio de contraseña cancelado');
+      },
+      centered: true,
+      maskClosable: false,
+      width: 480,
+    });
   };
 
   return (
