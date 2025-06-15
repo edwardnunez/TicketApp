@@ -65,7 +65,6 @@ app.get("/users/search", async (req, res) => {
 
     const queryParams = username ? `?username=${username}` : userId ? `?userId=${userId}` : '';
 
-    // Fixed: Use userServiceUrl instead of hardcoded URL
     const usersResponse = await axios.get(`${userServiceUrl}/users/search${queryParams}`);
 
     res.json(usersResponse.data);
@@ -123,7 +122,9 @@ app.post('/tickets/purchase', async (req, res) => {
 app.get('/tickets/user/:userId/details', async (req, res) => {
     try {
       const { userId } = req.params;
-      const ticketResponse = await axios.get(`${ticketServiceUrl}/tickets/user/${userId}/details`);
+      const ticketResponse = await axios.get(`${ticketServiceUrl}/tickets/user/${userId}/details`, {
+        params: req.query
+      });
       res.json(ticketResponse.data);
     } catch (error) {
       returnError(res, error);
@@ -133,7 +134,9 @@ app.get('/tickets/user/:userId/details', async (req, res) => {
 app.get('/tickets/user/:userId', async (req, res) => {
     try {
       const { userId } = req.params;
-      const ticketResponse = await axios.get(`${ticketServiceUrl}/tickets/user/${userId}`);
+      const ticketResponse = await axios.get(`${ticketServiceUrl}/tickets/user/${userId}`, {
+        params: req.query
+      });
       res.json(ticketResponse.data);
     } catch (error) {
       returnError(res, error);
@@ -143,8 +146,9 @@ app.get('/tickets/user/:userId', async (req, res) => {
 app.get('/tickets/event/:eventId', async (req, res) => {
   try {
       const { eventId } = req.params;
-      // Fixed: Removed extra slash in URL
-      const ticketResponse = await axios.get(`${ticketServiceUrl}/tickets/event/${eventId}`);
+      const ticketResponse = await axios.get(`${ticketServiceUrl}/tickets/event/${eventId}`, {
+        params: req.query
+      });
       res.json(ticketResponse.data);
   } catch (error) {
       returnError(res, error);
@@ -161,6 +165,17 @@ app.get('/tickets/:id', async (req, res) => {
     }
 });
 
+// Nuevo endpoint para obtener QR de un ticket
+app.get('/tickets/:id/qr', async (req, res) => {
+  try {
+      const { id } = req.params;
+      const ticketResponse = await axios.get(`${ticketServiceUrl}/tickets/${id}/qr`);
+      res.json(ticketResponse.data);
+    } catch (error) {
+      returnError(res, error);
+    }
+});
+
 app.get('/tickets/user/:userId/events', async (req, res) => {
   try {
       const { userId } = req.params;
@@ -169,6 +184,28 @@ app.get('/tickets/user/:userId/events', async (req, res) => {
     } catch (error) {
       returnError(res, error);
     }
+});
+
+// Nuevo endpoint para eliminar tickets por evento
+app.delete("/tickets/event/:eventId", async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const ticketResponse = await axios.delete(`${ticketServiceUrl}/tickets/event/${eventId}`);
+    res.json(ticketResponse.data);
+  } catch (error) {
+    returnError(res, error);
+  }
+});
+
+// Nuevo endpoint para cancelar/eliminar un ticket específico
+app.delete('/tickets/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const ticketResponse = await axios.delete(`${ticketServiceUrl}/tickets/${id}`);
+    res.json(ticketResponse.data);
+  } catch (error) {
+    returnError(res, error);
+  }
 });
 
 // **Event Routes**
@@ -193,6 +230,59 @@ app.get("/events", async (req, res) => {
 app.get("/events/:eventId", async (req, res) => {
   try {
     const eventResponse = await axios.get(`${eventServiceUrl}/events/${req.params.eventId}`);
+    res.json(eventResponse.data);
+  } catch (error) {
+    returnError(res, error);
+  }
+});
+
+// Nuevo endpoint para actualizar estados de eventos manualmente
+app.post("/events/update-states", async (req, res) => {
+  try {
+    const eventResponse = await axios.post(`${eventServiceUrl}/events/update-states`, req.body);
+    res.json(eventResponse.data);
+  } catch (error) {
+    returnError(res, error);
+  }
+});
+
+// Nuevo endpoint para obtener estadísticas de eventos por estado
+app.get("/events/stats/states", async (req, res) => {
+  try {
+    const eventResponse = await axios.get(`${eventServiceUrl}/events/stats/states`);
+    res.json(eventResponse.data);
+  } catch (error) {
+    returnError(res, error);
+  }
+});
+
+// Nuevo endpoint para cambiar el estado de un evento
+app.patch("/events/:eventId/state", async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const eventResponse = await axios.patch(`${eventServiceUrl}/events/${eventId}/state`, req.body);
+    res.json(eventResponse.data);
+  } catch (error) {
+    returnError(res, error);
+  }
+});
+
+// Nuevo endpoint para actualizar bloqueos de asientos
+app.put("/events/:eventId/seat-blocks", async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const eventResponse = await axios.put(`${eventServiceUrl}/events/${eventId}/seat-blocks`, req.body);
+    res.json(eventResponse.data);
+  } catch (error) {
+    returnError(res, error);
+  }
+});
+
+// Nuevo endpoint para eliminar un evento
+app.delete("/events/:eventId", async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const eventResponse = await axios.delete(`${eventServiceUrl}/events/${eventId}`);
     res.json(eventResponse.data);
   } catch (error) {
     returnError(res, error);

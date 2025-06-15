@@ -13,7 +13,11 @@ import {
   Tag, 
   Tooltip, 
   Breadcrumb,
-  Input
+  Input,
+  Select,
+  DatePicker,
+  Modal,
+  notification
 } from 'antd';
 import { 
   PlusOutlined, 
@@ -26,7 +30,11 @@ import {
   BarChartOutlined,
   ClockCircleOutlined,
   CheckCircleOutlined,
-  StopOutlined
+  StopOutlined,
+  FilterOutlined,
+  ClearOutlined,
+  DeleteOutlined,
+  ExclamationCircleOutlined
 } from '@ant-design/icons';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
@@ -37,12 +45,26 @@ import { COLORS } from "../../components/colorscheme";
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
+const { Option } = Select;
+const { RangePicker } = DatePicker;
 
 const AdminDashboard = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
-  const [searchText, setSearchText] = useState('');
+  
+  // Estados para filtros
+  const [filters, setFilters] = useState({
+    searchText: '',
+    category: 'all',
+    state: 'all',
+    dateRange: null
+  });
+
+  // Hook para notificaciones y modales
+  const [api, contextHolder] = notification.useNotification();
+  const [modal, modalContextHolder] = Modal.useModal();
+
   const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
 
   useEffect(() => {
@@ -116,9 +138,161 @@ const AdminDashboard = () => {
     }
   };
 
-  const filteredEvents = events.filter(event => 
-    event.name.toLowerCase().includes(searchText.toLowerCase())
-  );
+  // Función para obtener categorías únicas
+  const getUniqueCategories = () => {
+    const categories = [...new Set(events.map(event => event.category))];
+    return categories.sort();
+  };
+
+  // Función para obtener estados únicos
+  const getUniqueStates = () => {
+    const states = [...new Set(events.map(event => event.state))];
+    return states.sort();
+  };
+
+  // Función principal de filtrado
+  const getFilteredEvents = () => {
+    return events.filter(event => {
+      // Filtro por texto de búsqueda
+      const matchesSearch = event.name.toLowerCase().includes(filters.searchText.toLowerCase());
+      
+      // Filtro por categoría
+      const matchesCategory = filters.category === 'all' || event.category === filters.category;
+      
+      // Filtro por estado
+      const matchesState = filters.state === 'all' || event.state === filters.state;
+      
+      // Filtro por rango de fechas
+      let matchesDate = true;
+      if (filters.dateRange && filters.dateRange.length === 2) {
+        const eventDate = dayjs(event.date);
+        const [startDate, endDate] = filters.dateRange;
+        matchesDate = eventDate.isAfter(startDate.startOf('day')) && eventDate.isBefore(endDate.endOf('day'));
+      }
+      
+      return matchesSearch && matchesCategory && matchesState && matchesDate;
+    });
+  };
+
+  const filteredEvents = getFilteredEvents();
+
+  // Funciones para manejar cambios en filtros
+  const handleSearchChange = (e) => {
+    setFilters(prev => ({
+      ...prev,
+      searchText: e.target.value
+    }));
+  };
+
+  const handleCategoryChange = (value) => {
+    setFilters(prev => ({
+      ...prev,
+      category: value
+    }));
+  };
+
+  const handleStateChange = (value) => {
+    setFilters(prev => ({
+      ...prev,
+      state: value
+    }));
+  };
+
+  const handleDateRangeChange = (dates) => {
+    setFilters(prev => ({
+      ...prev,
+      dateRange: dates
+    }));
+  };
+
+  const clearAllFilters = () => {
+    setFilters({
+      searchText: '',
+      category: 'all',
+      state: 'all',
+      dateRange: null
+    });
+  };
+
+  // Verificar si hay filtros activos
+  const hasActiveFilters = () => {
+    return filters.searchText !== '' || 
+           filters.category !== 'all' || 
+           filters.state !== 'all' || 
+           filters.dateRange !== null;
+  };
+
+  const deleteEvent = async (eventId, eventName) => {
+    modal.confirm({
+      title: '¿Estás seguro de eliminar este evento?',
+      icon: <ExclamationCircleOutlined style={{ color: COLORS?.status?.error || "#ff4d4f" }} />,
+      content: (
+        <div style={{ marginTop: '16px' }}>
+          <p style={{ marginBottom: '12px' }}>
+            Se eliminará el evento: <strong style={{ color: COLORS?.neutral?.darker || "#262626" }}>{eventName}</strong>
+          </p>
+          <div style={{ 
+            padding: '12px', 
+            backgroundColor: '#fff2f0', 
+            border: '1px solid #ffccc7',
+            borderRadius: '6px',
+            marginTop: '12px'
+          }}>
+            <p style={{ 
+              color: COLORS?.status?.error || "#ff4d4f", 
+              margin: 0,
+              fontSize: '14px',
+              fontWeight: '500'
+            }}>
+              ⚠️ También se eliminarán todos los tickets asociados a este evento. Esta acción no se puede deshacer.
+            </p>
+          </div>
+        </div>
+      ),
+      okText: 'Sí, eliminar',
+      okType: 'danger',
+      cancelText: 'Cancelar',
+      okButtonProps: {
+        style: {
+          backgroundColor: COLORS?.status?.error || "#ff4d4f",
+          borderColor: COLORS?.status?.error || "#ff4d4f",
+          color: "#ffffff"
+        }
+      },
+      cancelButtonProps: {
+        style: {
+          borderColor: COLORS?.neutral?.grey3 || "#d9d9d9"
+        }
+      },
+      onOk: async () => {
+        try {
+          setLoading(true);
+          await axios.delete(`${gatewayUrl}/events/${eventId}`);
+          
+          // Actualizar la lista de eventos localmente
+          setEvents(prevEvents => prevEvents.filter(event => event._id !== eventId));
+          
+          // Mostrar mensaje de éxito usando notification
+          api.success({
+            message: 'Evento eliminado',
+            description: 'El evento y todos sus tickets asociados han sido eliminados correctamente.',
+            placement: 'top',
+            duration: 4
+          });
+        } catch (error) {
+          console.error("Error deleting event:", error);
+          api.error({
+            message: 'Error al eliminar',
+            description: 'No se pudo eliminar el evento. Por favor, inténtalo de nuevo.',
+            placement: 'top',
+            duration: 4
+          });
+        } finally {
+          setLoading(false);
+        }
+      },
+    });
+  };
 
   const columns = [
     {
@@ -210,13 +384,18 @@ const AdminDashboard = () => {
               </Button>
             </Link>
           </Tooltip>
-          <Tooltip title="Editar evento">
+          <Tooltip title="Eliminar evento">
             <Button 
-              icon={<AppstoreOutlined />}
+              danger
+              icon={<DeleteOutlined />}
               size="small"
-              style={{ borderColor: COLORS?.neutral?.grey3 || "#d9d9d9" }}
+              onClick={() => deleteEvent(record._id, record.name)}
+              style={{ 
+                borderColor: COLORS?.status?.error || "#ff4d4f",
+                color: COLORS?.status?.error || "#ff4d4f"
+              }}
             >
-              Editar
+              Eliminar
             </Button>
           </Tooltip>
         </Space>
@@ -224,29 +403,29 @@ const AdminDashboard = () => {
     },
   ];
 
-  // Dashboard stats actualizadas con los nuevos estados
+  // Dashboard stats actualizadas con los eventos filtrados
   const stats = [
     { 
       title: 'Total de Eventos', 
-      value: events.length, 
+      value: filteredEvents.length, 
       icon: <AppstoreOutlined />, 
       color: COLORS?.primary?.main || "#1890ff" 
     },
     { 
       title: 'Eventos Activos', 
-      value: events.filter(e => e.state === 'activo').length, 
+      value: filteredEvents.filter(e => e.state === 'activo').length, 
       icon: <CheckCircleOutlined />, 
       color: COLORS?.status?.success || "#52c41a"
     },
     { 
       title: 'Próximos Eventos', 
-      value: events.filter(e => e.state === 'proximo').length, 
+      value: filteredEvents.filter(e => e.state === 'proximo').length, 
       icon: <ClockCircleOutlined />, 
       color: COLORS?.status?.info || "#1890ff"
     },
     { 
       title: 'Finalizados', 
-      value: events.filter(e => e.state === 'finalizado').length, 
+      value: filteredEvents.filter(e => e.state === 'finalizado').length, 
       icon: <BarChartOutlined />, 
       color: COLORS?.neutral?.grey4 || "#8c8c8c"
     }
@@ -254,6 +433,10 @@ const AdminDashboard = () => {
 
   return (
     <Layout style={{ minHeight: '100vh', backgroundColor: COLORS?.neutral?.white || "#ffffff" }}>
+      {/* Agregamos los context holders para que funcionen las notificaciones y modales */}
+      {contextHolder}
+      {modalContextHolder}
+      
       <Content style={{ padding: '40px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           {/* Header with breadcrumb */}
@@ -348,59 +531,130 @@ const AdminDashboard = () => {
             ))}
           </Row>
 
-          {/* Search and filters */}
+          {/* Filtros mejorados */}
           <Card 
             style={{ 
               marginBottom: '24px', 
               borderRadius: '8px',
               boxShadow: '0 1px 2px rgba(0,0,0,0.07)'
             }}
+            title={
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ display: 'flex', alignItems: 'center' }}>
+                  <FilterOutlined style={{ marginRight: '8px' }} />
+                  Filtros de búsqueda
+                </span>
+                {hasActiveFilters() && (
+                  <Button 
+                    size="small" 
+                    icon={<ClearOutlined />} 
+                    onClick={clearAllFilters}
+                    style={{ color: COLORS?.status?.error || "#ff4d4f" }}
+                  >
+                    Limpiar filtros
+                  </Button>
+                )}
+              </div>
+            }
           >
-            <Row gutter={16} justify="space-between" align="middle">
-              <Col xs={24} md={8}>
+            <Row gutter={[16, 16]}>
+              <Col xs={24} md={6}>
                 <Input
                   placeholder="Buscar eventos..."
                   prefix={<SearchOutlined style={{ color: COLORS?.neutral?.grey3 || "#d9d9d9" }} />}
                   allowClear
-                  onChange={(e) => setSearchText(e.target.value)}
+                  value={filters.searchText}
+                  onChange={handleSearchChange}
                   style={{ borderRadius: '6px' }}
                   size="large"
                 />
               </Col>
-              <Col xs={24} md={16} style={{ textAlign: 'right' }}>
-                <Space wrap>
-                  <Button 
-                    icon={<CalendarOutlined />} 
-                    style={{ borderRadius: '6px' }}
-                  >
-                    Fecha
-                  </Button>
-                  <Button 
-                    icon={<AppstoreOutlined />} 
-                    style={{ borderRadius: '6px' }}
-                  >
-                    Categoría
-                  </Button>
-                  <Button 
-                    icon={<CheckCircleOutlined />} 
-                    style={{ borderRadius: '6px' }}
-                  >
-                    Estado
-                  </Button>
-                  <Button 
-                    type="primary" 
-                    icon={<SearchOutlined />} 
-                    style={{ 
-                      backgroundColor: COLORS?.primary?.main || "#1890ff",
-                      borderColor: COLORS?.primary?.main || "#1890ff",
-                      borderRadius: '6px'
-                    }}
-                  >
-                    Buscar
-                  </Button>
-                </Space>
+              <Col xs={24} md={5}>
+                <Select
+                  placeholder="Categoría"
+                  style={{ width: '100%' }}
+                  size="large"
+                  value={filters.category}
+                  onChange={handleCategoryChange}
+                >
+                  <Option value="all">Todas las categorías</Option>
+                  {getUniqueCategories().map(category => (
+                    <Option key={category} value={category}>
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <span style={{ 
+                          width: '8px', 
+                          height: '8px', 
+                          borderRadius: '50%', 
+                          backgroundColor: getCategoryColor(category),
+                          marginRight: '8px'
+                        }}></span>
+                        {category}
+                      </div>
+                    </Option>
+                  ))}
+                </Select>
+              </Col>
+              <Col xs={24} md={5}>
+                <Select
+                  placeholder="Estado"
+                  style={{ width: '100%' }}
+                  size="large"
+                  value={filters.state}
+                  onChange={handleStateChange}
+                >
+                  <Option value="all">Todos los estados</Option>
+                  {getUniqueStates().map(state => (
+                    <Option key={state} value={state}>
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                        {getStateIcon(state)}
+                        <span style={{ marginLeft: '8px' }}>
+                          {getStateLabel(state)}
+                        </span>
+                      </div>
+                    </Option>
+                  ))}
+                </Select>
+              </Col>
+              <Col xs={24} md={8}>
+                <RangePicker
+                  placeholder={['Fecha inicio', 'Fecha fin']}
+                  style={{ width: '100%' }}
+                  size="large"
+                  value={filters.dateRange}
+                  onChange={handleDateRangeChange}
+                  format="DD/MM/YYYY"
+                />
               </Col>
             </Row>
+            
+            {/* Indicador de filtros activos */}
+            {hasActiveFilters() && (
+              <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #f0f0f0' }}>
+                <Space wrap>
+                  <Text type="secondary">Filtros activos:</Text>
+                  {filters.searchText && (
+                    <Tag closable onClose={() => setFilters(prev => ({ ...prev, searchText: '' }))}>
+                      Búsqueda: "{filters.searchText}"
+                    </Tag>
+                  )}
+                  {filters.category !== 'all' && (
+                    <Tag closable onClose={() => setFilters(prev => ({ ...prev, category: 'all' }))}>
+                      Categoría: {filters.category}
+                    </Tag>
+                  )}
+                  {filters.state !== 'all' && (
+                    <Tag closable onClose={() => setFilters(prev => ({ ...prev, state: 'all' }))}>
+                      Estado: {getStateLabel(filters.state)}
+                    </Tag>
+                  )}
+                  {filters.dateRange && (
+                    <Tag closable onClose={() => setFilters(prev => ({ ...prev, dateRange: null }))}>
+                      Fechas: {filters.dateRange[0].format('DD/MM/YYYY')} - {filters.dateRange[1].format('DD/MM/YYYY')}
+                    </Tag>
+                  )}
+                </Space>
+              </div>
+            )}
           </Card>
 
           {/* Events table */}
@@ -420,7 +674,14 @@ const AdminDashboard = () => {
               boxShadow: '0 1px 2px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.07)'
             }}
             extra={
-              <Text type="secondary">Total: {filteredEvents.length} eventos</Text>
+              <Space>
+                <Text type="secondary">
+                  Mostrando: {filteredEvents.length} de {events.length} eventos
+                </Text>
+                {hasActiveFilters() && (
+                  <Tag color="blue">Filtrado</Tag>
+                )}
+              </Space>
             }
           >
             <Table
