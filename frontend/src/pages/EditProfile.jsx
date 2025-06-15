@@ -15,7 +15,8 @@ import {
   Tooltip,
   Skeleton,
   Alert,
-  Modal
+  Modal,
+  notification
 } from "antd";
 import { 
   UserOutlined, 
@@ -26,7 +27,8 @@ import {
   EyeInvisibleOutlined,
   EyeTwoTone,
   SecurityScanOutlined,
-  ExclamationCircleOutlined
+  ExclamationCircleOutlined,
+  CheckCircleOutlined
 } from "@ant-design/icons";
 import axios from "axios";
 
@@ -57,9 +59,14 @@ const EditProfile = () => {
   const [profileError, setProfileError] = useState({});
   const [passwordError, setPasswordError] = useState({});
   
-  // Estado para el modal de confirmación
+  // Estado para el modal de confirmación de contraseña
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [pendingPasswordValues, setPendingPasswordValues] = useState(null);
+
+  // Estado para el modal de confirmación de perfil
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [pendingProfileValues, setPendingProfileValues] = useState(null);
+  const [updatedFieldsList, setUpdatedFieldsList] = useState([]);
 
   const navigate = useNavigate();
   
@@ -72,6 +79,21 @@ const EditProfile = () => {
   const validateEmailFormat = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
+  };
+
+  // Función para mostrar notificación de éxito personalizada
+  const showSuccessNotification = (title, description, duration = 4) => {
+    notification.success({
+      message: title,
+      description: description,
+      icon: <CheckCircleOutlined style={{ color: COLORS.status.success }} />,
+      placement: 'topRight',
+      duration: duration,
+      style: {
+        borderRadius: '8px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+      }
+    });
   };
 
   // Obtener datos del usuario al montar el componente
@@ -111,8 +133,8 @@ const EditProfile = () => {
     setSelectedAvatar(e.target.value);
   };
 
-  // Manejar actualización de perfil (sin contraseña)
-  const handleProfileSubmit = (values) => {
+  // Función para ejecutar la actualización del perfil
+  const executeProfileUpdate = (values) => {
     setProfileError({});
     const updatedUser = { ...values, avatar: selectedAvatar };
 
@@ -121,13 +143,35 @@ const EditProfile = () => {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
-        message.success("¡Perfil actualizado correctamente!");
+        // Mostrar notificación de éxito detallada
+        const fieldsText = updatedFieldsList.length > 0 
+          ? `Se han actualizado: ${updatedFieldsList.join(', ')}.`
+          : 'Perfil actualizado correctamente.';
+        
+        showSuccessNotification(
+          '¡Perfil actualizado!',
+          fieldsText + ' Los cambios se han guardado exitosamente.',
+          5
+        );
 
         if (values.username && values.username !== username) {
           localStorage.setItem("username", values.username);
         }
 
-        navigate("/profile");
+        setUserData({
+          name: values.name,
+          surname: values.surname,
+          email: values.email,
+          username: values.username,
+        });
+
+        setShowProfileModal(false);
+        setPendingProfileValues(null);
+        setUpdatedFieldsList([]);
+
+        setTimeout(() => {
+          navigate("/profile");
+        }, 1500);
       })
       .catch((err) => {
         console.error("Error al actualizar el perfil:", err);
@@ -141,10 +185,45 @@ const EditProfile = () => {
         } else {
           message.error("No se pudo actualizar el perfil.");
         }
+
+        // Cerrar modal en caso de error
+        setShowProfileModal(false);
+        setPendingProfileValues(null);
+        setUpdatedFieldsList([]);
       });
   };
 
-  // Función para ejecutar el cambio de contraseña
+  // Manejar actualización de perfil (con confirmación)
+  const handleProfileSubmit = (values) => {
+    // Determinar qué campos se han actualizado
+    const updatedFields = [];
+    if (values.username !== userData.username) updatedFields.push('nombre de usuario');
+    if (values.name !== userData.name) updatedFields.push('nombre');
+    if (values.surname !== userData.surname) updatedFields.push('apellido');
+    if (values.email !== userData.email) updatedFields.push('email');
+    if (selectedAvatar !== userData.avatar) updatedFields.push('avatar');
+
+    // Guardar los valores pendientes y mostrar modal
+    setPendingProfileValues(values);
+    setUpdatedFieldsList(updatedFields);
+    setShowProfileModal(true);
+  };
+
+  // Confirmar cambios de perfil
+  const handleConfirmProfileUpdate = () => {
+    if (pendingProfileValues) {
+      executeProfileUpdate(pendingProfileValues);
+    }
+  };
+
+  // Cancelar cambios de perfil
+  const handleCancelProfileUpdate = () => {
+    setShowProfileModal(false);
+    setPendingProfileValues(null);
+    setUpdatedFieldsList([]);
+    console.log('Actualización de perfil cancelada');
+  };
+
   const executePasswordChange = (values) => {
     setPasswordError({});
     setPasswordLoading(true);
@@ -159,10 +238,21 @@ const EditProfile = () => {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
-        message.success("¡Contraseña actualizada correctamente!");
+        // Mostrar notificación de éxito para contraseña
+        showSuccessNotification(
+          '¡Contraseña actualizada!',
+          'Tu contraseña se ha cambiado correctamente. Tu cuenta está ahora más segura.',
+          6
+        );
+        
         passwordForm.resetFields();
         setShowPasswordModal(false);
         setPendingPasswordValues(null);
+
+        // Redirigir a perfil después de un breve delay
+        setTimeout(() => {
+          navigate("/profile");
+        }, 1500);
       })
       .catch((err) => {
         console.error("Error al actualizar la contraseña:", err);
@@ -179,12 +269,16 @@ const EditProfile = () => {
             message: "No se pudo actualizar la contraseña." 
           });
         }
+
+        // Cerrar modal en caso de error
+        setShowPasswordModal(false);
+        setPendingPasswordValues(null);
       })
       .finally(() => {
         setPasswordLoading(false);
       });
   };
-
+  
   // Manejar cambio de contraseña con confirmación
   const handlePasswordSubmit = (values) => {
     setPendingPasswordValues(values);
@@ -325,7 +419,7 @@ const EditProfile = () => {
                     name="surname"
                     label={<Text style={{ color: COLORS.neutral.dark }}>Apellido</Text>}
                     initialValue={userData.surname}
-                    rules={[{ required: false }]} // Opcional, puedes cambiarlo a required: true si quieres que sea obligatorio
+                    rules={[{ required: false }]}
                   >
                     <Input 
                       prefix={<UserOutlined style={{ color: COLORS.neutral.grey4 }} />} 
@@ -400,12 +494,11 @@ const EditProfile = () => {
               </div>
             </Card>
 
-            {/* Card separado para cambio de contraseña */}
             <Card
               title={
                 <div style={{ display: "flex", alignItems: "center" }}>
                   <SecurityScanOutlined style={{ color: COLORS.status.warning, marginRight: "8px" }} />
-                  <span style={{ color: COLORS.neutral.darker }}>Cambiar Contraseña</span>
+                  <span style={{ color: COLORS.neutral.darker }}>Cambiar contraseña</span>
                 </div>
               }
               style={{
@@ -519,6 +612,54 @@ const EditProfile = () => {
             </Card>
           </Space>
         )}
+
+        {/* Modal de confirmación de cambios de perfil */}
+        <Modal
+          title={
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <CheckCircleOutlined style={{ color: COLORS.primary.main }} />
+              <span>¿Confirmar los cambios en tu perfil?</span>
+            </div>
+          }
+          open={showProfileModal}
+          onOk={handleConfirmProfileUpdate}
+          onCancel={handleCancelProfileUpdate}
+          okText="Sí, guardar cambios"
+          cancelText="Cancelar"
+          okType="primary"
+          okButtonProps={{
+            style: {
+              backgroundColor: COLORS.primary.main,
+              borderColor: COLORS.primary.main,
+            }
+          }}
+          cancelButtonProps={{
+            style: {
+              borderColor: COLORS.neutral.grey3,
+              color: COLORS.neutral.dark,
+            }
+          }}
+          centered
+          maskClosable={false}
+          width={480}
+        >
+          <div style={{ marginTop: '16px' }}>
+            <Text style={{ color: COLORS.neutral.dark }}>
+              {updatedFieldsList.length > 0 ? (
+                <>
+                  Se actualizarán los siguientes campos: <strong>{updatedFieldsList.join(', ')}</strong>.
+                </>
+              ) : (
+                'Se guardará la información de tu perfil.'
+              )}
+            </Text>
+            <br />
+            <br />
+            <Text style={{ color: COLORS.neutral.grey4, fontSize: '14px' }}>
+              Una vez confirmado, serás redirigido a tu perfil para ver los cambios.
+            </Text>
+          </div>
+        </Modal>
 
         {/* Modal de confirmación de cambio de contraseña */}
         <Modal

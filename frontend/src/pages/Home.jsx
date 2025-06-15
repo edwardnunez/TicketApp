@@ -304,9 +304,6 @@ const Home = () => {
                 <CalendarOutlined style={{ marginRight: '5px', color: COLORS.neutral.grey4 }} /> 
                 {dayjs(event.date).format("DD MMM YYYY")}
               </Text>
-              {event.price && (
-                <Tag color={COLORS.primary.main}>{event.price}</Tag>
-              )}
             </div>
             <Text style={{ display: 'flex', alignItems: 'center', color: COLORS.neutral.grey4 }}>
               <EnvironmentOutlined style={{ marginRight: '5px', color: COLORS.neutral.grey4 }} /> 
