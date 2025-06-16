@@ -20,7 +20,8 @@ import {
   Modal,
   Table,
   Popconfirm,
-  ColorPicker
+  ColorPicker,
+  Result
 } from 'antd';
 import { 
   EnvironmentOutlined, 
@@ -29,17 +30,15 @@ import {
   ArrowLeftOutlined,
   InfoCircleOutlined,
   AppstoreOutlined,
-  FormOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
   TeamOutlined,
-  GlobalOutlined,
   HomeOutlined,
   PlusOutlined,
-  EditOutlined,
   DeleteOutlined,
-  EyeOutlined,
-  LockOutlined
+  LockOutlined,
+  CalendarOutlined,
+  ReloadOutlined
 } from '@ant-design/icons';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
@@ -66,6 +65,9 @@ const LocationCreation = () => {
   const [sections, setSections] = useState([]);
   const [locationName, setLocationName] = useState('');
   const [createdSeatMapId, setCreatedSeatMapId] = useState(null);
+
+  const [successModalVisible, setSuccessModalVisible] = useState(false);
+  const [createdLocationName, setCreatedLocationName] = useState('');
   
   const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
 
@@ -209,18 +211,10 @@ const LocationCreation = () => {
       const response = await axios.post(`${gatewayUrl}/location`, locationData);
       
       if (response.status === 201 || response.status === 200) {
-        setSuccessMessage('Ubicación creada exitosamente');
+        setCreatedLocationName(values.name);
+        setSuccessModalVisible(true);
         message.success('Ubicación creada exitosamente');
-        
-        form.resetFields();
-        setSelectedCategory(null);
-        setCreatedSeatMapId(null);
-        setLocationName('');
-        
-        setTimeout(() => {
-          navigate('/admin/locations');
-        }, 2000);
-      }
+        }
       
     } catch (error) {
       console.error("Error creando ubicación:", error);
@@ -363,6 +357,22 @@ const LocationCreation = () => {
       setSeatMapLoading(false);
     }
   };
+
+  const handleGoToEvents = () => {
+    setSuccessModalVisible(false);
+    navigate('/events');
+    };
+
+    const handleCreateAnother = () => {
+    setSuccessModalVisible(false);
+    form.resetFields();
+    setSelectedCategory(null);
+    setCreatedSeatMapId(null);
+    setLocationName('');
+    setCreatedLocationName('');
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    };
 
   const sectionColumns = [
     {
@@ -905,6 +915,48 @@ const LocationCreation = () => {
           </Form>
         </Modal>
       </Content>
+        <Modal
+            title={null}
+            open={successModalVisible}
+            onCancel={() => setSuccessModalVisible(false)}
+            footer={null}
+            width={500}
+            centered
+            maskClosable={false}
+            >
+            <Result
+                status="success"
+                title="¡Ubicación creada exitosamente!"
+                subTitle={
+                <div>
+                    <p>La ubicación <strong>"{createdLocationName}"</strong> ha sido creada correctamente.</p>
+                    <p>¿Qué desea hacer a continuación?</p>
+                </div>
+                }
+                extra={[
+                <Button 
+                    key="events" 
+                    type="primary" 
+                    icon={<CalendarOutlined />}
+                    onClick={handleGoToEvents}
+                    style={{ 
+                    backgroundColor: COLORS?.primary?.main, 
+                    borderColor: COLORS?.primary?.main || "#1890ff",
+                    marginRight: '8px'
+                    }}
+                >
+                    Ir a Eventos
+                </Button>,
+                <Button 
+                    key="another" 
+                    icon={<ReloadOutlined />}
+                    onClick={handleCreateAnother}
+                >
+                    Crear otra ubicación
+                </Button>
+                ]}
+            />
+            </Modal>
     </Layout>
   );
 };

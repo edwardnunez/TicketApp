@@ -10,3 +10,5 @@ admin puede crear localizaciones nuevas
 manejar eventos por fila en vez de por seccion
 
 añadir seccion de entrada general sin asiento
+
+revisar si es viable que se puedan añadir nuevas secciones (creo que no)
