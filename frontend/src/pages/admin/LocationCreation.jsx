@@ -412,7 +412,7 @@ const LocationCreation = () => {
       )
     },
     {
-      title: 'Precio (€)',
+      title: 'Precio por defecto (€)',
       dataIndex: 'price',
       render: (text, record) => (
         <InputNumber 
