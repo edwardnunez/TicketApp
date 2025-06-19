@@ -86,7 +86,7 @@ const LocationCreation = () => {
       icon: '⚽',
       seatMapTypes: ['football'],
       requiresCapacity: true,
-      requiresSeatMap: true // Nuevo campo
+      requiresSeatMap: true
     },
     cinema: {
       label: 'Cine',
@@ -94,7 +94,7 @@ const LocationCreation = () => {
       icon: '🎬',
       seatMapTypes: ['cinema'],
       requiresCapacity: true,
-      requiresSeatMap: true // Nuevo campo
+      requiresSeatMap: true
     },
     concert: {
       label: 'Concierto',
@@ -102,7 +102,7 @@ const LocationCreation = () => {
       icon: '🎵',
       seatMapTypes: ['theater', 'football'],
       requiresCapacity: false,
-      requiresSeatMap: true // Nuevo campo
+      requiresSeatMap: true
     },
     theater: {
       label: 'Teatro',
@@ -110,7 +110,7 @@ const LocationCreation = () => {
       icon: '🎭',
       seatMapTypes: ['theater'],
       requiresCapacity: true,
-      requiresSeatMap: true // Nuevo campo
+      requiresSeatMap: true
     },
     festival: {
       label: 'Festival',
@@ -118,40 +118,63 @@ const LocationCreation = () => {
       icon: '🎪',
       seatMapTypes: [],
       requiresCapacity: false,
-      requiresSeatMap: false // No requiere seatmap
+      requiresSeatMap: false
     }
   };
 
   const seatMapTypeInfo = {
     football: {
-      label: 'Estadio de Fútbol',
+      label: 'Estadio de fútbol',
       description: 'Configuración para estadios deportivos',
+      availablePositions: ['north', 'east', 'west', 'south', 'vip'],
       defaultSections: [
-        { name: 'Tribuna Norte', position: 'north', color: '#4CAF50', rows: 8, seatsPerRow: 15, price: 50000 },
-        { name: 'Tribuna Este', position: 'east', color: '#2196F3', rows: 6, seatsPerRow: 14, price: 75000 },
-        { name: 'Tribuna Oeste', position: 'west', color: '#2196F3', rows: 6, seatsPerRow: 14, price: 75000 },
-        { name: 'Tribuna Sur', position: 'south', color: '#4CAF50', rows: 8, seatsPerRow: 15, price: 50000 }
-      ]
+        { name: 'Tribuna norte', position: 'north', color: '#4CAF50', rows: 8, seatsPerRow: 15, price: 50000 },
+        { name: 'Tribuna este', position: 'east', color: '#2196F3', rows: 6, seatsPerRow: 14, price: 75000 },
+        { name: 'Tribuna oeste', position: 'west', color: '#2196F3', rows: 6, seatsPerRow: 14, price: 75000 },
+        { name: 'Tribuna sur', position: 'south', color: '#4CAF50', rows: 8, seatsPerRow: 15, price: 50000 }
+      ],
+      limits: {
+        north: { maxRows: 15, maxSeatsPerRow: 25 },
+        east: { maxRows: 12, maxSeatsPerRow: 20 },
+        west: { maxRows: 12, maxSeatsPerRow: 20 },
+        south: { maxRows: 15, maxSeatsPerRow: 25 },
+        vip: { maxRows: 5, maxSeatsPerRow: 15 }
+      }
     },
     cinema: {
-      label: 'Sala de Cine',
+      label: 'Sala de cine',
       description: 'Configuración para salas de cine',
+      availablePositions: ['front', 'middle', 'back', 'premium'],
       defaultSections: [
         { name: 'Delanteras', position: 'front', color: '#4CAF50', rows: 3, seatsPerRow: 16, price: 8000 },
         { name: 'Centrales', position: 'middle', color: '#2196F3', rows: 5, seatsPerRow: 16, price: 12000 },
         { name: 'Traseras', position: 'back', color: '#FF9800', rows: 4, seatsPerRow: 16, price: 10000 }
-      ]
+      ],
+      limits: {
+        front: { maxRows: 5, maxSeatsPerRow: 20 },
+        middle: { maxRows: 8, maxSeatsPerRow: 20 },
+        back: { maxRows: 6, maxSeatsPerRow: 20 },
+        premium: { maxRows: 3, maxSeatsPerRow: 12 }
+      }
     },
     theater: {
       label: 'Teatro',
       description: 'Configuración para teatros y auditorios',
+      availablePositions: ['orchestra', 'mezzanine', 'balcony', 'boxes'],
       defaultSections: [
         { name: 'Platea', position: 'orchestra', color: '#4CAF50', rows: 15, seatsPerRow: 20, price: 45000 },
         { name: 'Entresuelo', position: 'mezzanine', color: '#2196F3', rows: 8, seatsPerRow: 18, price: 35000 },
         { name: 'Balcón', position: 'balcony', color: '#FF9800', rows: 6, seatsPerRow: 16, price: 25000 }
-      ]
+      ],
+      limits: {
+        orchestra: { maxRows: 20, maxSeatsPerRow: 30 },
+        mezzanine: { maxRows: 10, maxSeatsPerRow: 25 },
+        balcony: { maxRows: 8, maxSeatsPerRow: 20 },
+        boxes: { maxRows: 4, maxSeatsPerRow: 8 }
+      }
     }
   };
+
 
   // Obtener seatmaps disponibles
   useEffect(() => {
@@ -269,11 +292,31 @@ const LocationCreation = () => {
   };
 
   const addSection = () => {
+    const currentType = seatMapForm.getFieldValue('type');
+    
+    if (!currentType || !seatMapTypeInfo[currentType]) {
+      message.warning('Primero seleccione un tipo de mapa');
+      return;
+    }
+    
+    // Obtener posiciones ya usadas
+    const usedPositions = sections.map(section => section.position);
+    const availablePositions = seatMapTypeInfo[currentType].availablePositions;
+    const unusedPositions = availablePositions.filter(pos => !usedPositions.includes(pos));
+    
+    if (unusedPositions.length === 0) {
+      message.warning('No hay más tipos de sección disponibles para este tipo de mapa');
+      return;
+    }
+    
+    // Usar la primera posición disponible
+    const newPosition = unusedPositions[0];
+    
     const newSection = {
       key: `section_${Date.now()}`,
       id: `seccion_${sections.length + 1}`,
       name: `Sección ${sections.length + 1}`,
-      position: `position_${sections.length + 1}`,
+      position: newPosition,
       rows: 5,
       seatsPerRow: 10,
       price: 10000,
@@ -284,6 +327,38 @@ const LocationCreation = () => {
   };
 
   const updateSection = (key, field, value) => {
+    if (field === 'position') {
+      // Verificar que la posición no esté ya en uso por otra sección
+      const isPositionTaken = sections.some(section => 
+        section.key !== key && section.position === value
+      );
+      
+      if (isPositionTaken) {
+        message.warning('Esta posición ya está siendo utilizada por otra sección');
+        return;
+      }
+    }
+    
+    // Validar límites cuando se cambian filas o asientos por fila
+    if (field === 'rows' || field === 'seatsPerRow') {
+      const currentType = seatMapForm.getFieldValue('type');
+      const section = sections.find(s => s.key === key);
+      
+      if (section && currentType) {
+        const limits = getSectionLimits(currentType, section.position);
+        
+        if (field === 'rows' && value > limits.maxRows) {
+          message.warning(`El máximo de filas para esta posición es ${limits.maxRows}`);
+          return;
+        }
+        
+        if (field === 'seatsPerRow' && value > limits.maxSeatsPerRow) {
+          message.warning(`El máximo de asientos por fila para esta posición es ${limits.maxSeatsPerRow}`);
+          return;
+        }
+      }
+    }
+    
     setSections(sections.map(section => 
       section.key === key ? { ...section, [field]: value } : section
     ));
@@ -356,11 +431,28 @@ const LocationCreation = () => {
     } finally {
       setSeatMapLoading(false);
     }
+  }; 
+
+  const getAvailablePositionsCount = () => {
+    const currentType = seatMapForm.getFieldValue('type');
+    if (!currentType || !seatMapTypeInfo[currentType]) return 0;
+    
+    const usedPositions = sections.map(section => section.position);
+    const availablePositions = seatMapTypeInfo[currentType].availablePositions;
+    return availablePositions.filter(pos => !usedPositions.includes(pos)).length;
+  };
+
+  const getSectionLimits = (mapType, position) => {
+    if (!seatMapTypeInfo[mapType] || !seatMapTypeInfo[mapType].limits) {
+      return { maxRows: 50, maxSeatsPerRow: 100 }; // Límites por defecto
+    }
+    
+    return seatMapTypeInfo[mapType].limits[position] || { maxRows: 50, maxSeatsPerRow: 100 };
   };
 
   const handleGoToEvents = () => {
     setSuccessModalVisible(false);
-    navigate('/events');
+    navigate('/admin/events');
     };
 
     const handleCreateAnother = () => {
@@ -389,37 +481,71 @@ const LocationCreation = () => {
     {
       title: 'Posición',
       dataIndex: 'position',
-      render: (text, record) => (
-        <Input 
-          value={text} 
-          onChange={(e) => updateSection(record.key, 'position', e.target.value)}
-          placeholder="north, south, front..."
-        />
-      )
+      render: (text, record) => {
+        const currentType = seatMapForm.getFieldValue('type');
+        const availablePositions = currentType ? seatMapTypeInfo[currentType]?.availablePositions || [] : [];
+        
+        // Obtener posiciones ya usadas por otras secciones (excluyendo la actual)
+        const usedPositions = sections
+          .filter(section => section.key !== record.key)
+          .map(section => section.position);
+        
+        // Filtrar solo las posiciones disponibles
+        const selectablePositions = availablePositions.filter(pos => 
+          !usedPositions.includes(pos) || pos === text
+        );
+        
+        return (
+          <Select 
+            value={text} 
+            onChange={(value) => updateSection(record.key, 'position', value)}
+            placeholder="Seleccionar posición"
+            style={{ width: '100%' }}
+          >
+            {selectablePositions.map(position => (
+              <Option key={position} value={position}>
+                {position}
+              </Option>
+            ))}
+          </Select>
+        );
+      }
     },
     {
       title: 'Filas',
       dataIndex: 'rows',
-      render: (text, record) => (
-        <InputNumber 
-          value={text} 
-          onChange={(value) => updateSection(record.key, 'rows', value)}
-          min={1}
-          max={50}
-        />
-      )
+      render: (text, record) => {
+        const currentType = seatMapForm.getFieldValue('type');
+        const limits = getSectionLimits(currentType, record.position);
+        
+        return (
+          <InputNumber 
+            value={text} 
+            onChange={(value) => updateSection(record.key, 'rows', value)}
+            min={1}
+            max={limits.maxRows}
+            placeholder={`Máx: ${limits.maxRows}`}
+          />
+        );
+      }
     },
     {
       title: 'Asientos/Fila',
       dataIndex: 'seatsPerRow',
-      render: (text, record) => (
-        <InputNumber 
-          value={text} 
-          onChange={(value) => updateSection(record.key, 'seatsPerRow', value)}
-          min={1}
-          max={100}
-        />
-      )
+      render: (text, record) => {
+        const currentType = seatMapForm.getFieldValue('type');
+        const limits = getSectionLimits(currentType, record.position);
+        
+        return (
+          <InputNumber 
+            value={text} 
+            onChange={(value) => updateSection(record.key, 'seatsPerRow', value)}
+            min={1}
+            max={limits.maxSeatsPerRow}
+            placeholder={`Máx: ${limits.maxSeatsPerRow}`}
+          />
+        );
+      }
     },
     {
       title: 'Precio por defecto (€)',
@@ -463,7 +589,11 @@ const LocationCreation = () => {
           okText="Sí"
           cancelText="No"
         >
-          <Button danger size="small" icon={<DeleteOutlined />} />
+          <Button 
+            danger 
+            size="small" 
+            icon={<DeleteOutlined />}
+          />
         </Popconfirm>
       )
     }
@@ -877,8 +1007,12 @@ const LocationCreation = () => {
                   block
                   icon={<PlusOutlined />}
                   style={{ marginBottom: '16px' }}
+                  disabled={getAvailablePositionsCount() === 0}
                 >
-                  Agregar sección
+                  {getAvailablePositionsCount() === 0 
+                    ? 'No hay más tipos de sección disponibles'
+                    : `Agregar sección (${getAvailablePositionsCount()} tipos disponibles)`
+                  }
                 </Button>
               </>
             )}
