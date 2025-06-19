@@ -57,7 +57,7 @@ app.post("/location", async (req, res) => {
   try {
     const { name, category, address, seatMapId, capacity, seatingMap } = req.body;
 
-    if (!name || !category || !address || !seatMapId) {
+    if (!name || !category || !address) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
@@ -81,11 +81,10 @@ app.post("/location", async (req, res) => {
         name,
         category,
         address,
-        seatMapId,
-        capacity,
+        ...(seatMapId && { seatMapId }),
+        ...(capacity && { capacity }),
         seatingMap: seatingMap || []
       });
-
       await locationDoc.save();
       res.status(201).json(locationDoc);
     }
