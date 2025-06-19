@@ -102,7 +102,7 @@ const LocationCreation = () => {
       icon: '🎵',
       seatMapTypes: ['theater', 'football'],
       requiresCapacity: false,
-      requiresSeatMap: true
+      requiresSeatMap: false
     },
     theater: {
       label: 'Teatro',
@@ -452,7 +452,7 @@ const LocationCreation = () => {
 
   const handleGoToEvents = () => {
     setSuccessModalVisible(false);
-    navigate('/admin/events');
+    navigate('/admin');
     };
 
     const handleCreateAnother = () => {

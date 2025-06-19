@@ -5,10 +5,7 @@ enviar ticket por email
 corregir que las secciones estan descuadradas en algunos casos
  - cines al editar: hacer los asientos impares por fila
 
-admin puede crear localizaciones nuevas
+manejar precios por fila en vez de por seccion
 
-manejar eventos por fila en vez de por seccion
+añadir seccion de entrada general sin asiento (para conciertos)
 
-añadir seccion de entrada general sin asiento
-
-revisar si es viable que se puedan añadir nuevas secciones (creo que no)
