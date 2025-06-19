@@ -65,6 +65,7 @@ const EventCreation = () => {
   const [locationSections, setLocationSections] = useState([]);
   const [usesSectionPricing, setUsesSectionPricing] = useState(false);
   const [loadingSections, setLoadingSections] = useState(false);
+  const [usesRowPricing, setUsesRowPricing] = useState(false);
   const navigate = useNavigate();
   
   const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
@@ -157,7 +158,36 @@ const EventCreation = () => {
     }
   };
 
-  // Función actualizada para obtener la capacidad del seatmap
+  const handleSectionBasePrice = (sectionId, newPrice) => {
+    setSectionPricing(prevPricing => 
+      prevPricing.map(section => 
+        section.sectionId === sectionId 
+          ? { ...section, basePrice: newPrice === '' ? '' : parseFloat(newPrice) || 0 }
+          : section
+      )
+    );
+  };
+
+  const handleSectionVariablePrice = (sectionId, newPrice) => {
+    setSectionPricing(prevPricing => 
+      prevPricing.map(section => 
+        section.sectionId === sectionId 
+          ? { ...section, variablePrice: newPrice === '' ? '' : parseFloat(newPrice) || 0 }
+          : section
+      )
+    );
+  };
+
+  const handleFrontRowFirstChange = (sectionId, frontRowFirst) => {
+    setSectionPricing(prevPricing => 
+      prevPricing.map(section => 
+        section.sectionId === sectionId 
+          ? { ...section, frontRowFirst }
+          : section
+      )
+    );
+  };
+
   const getCapacityFromSeatMap = async (seatMapId) => {
     try {
       const seatMapUrl = `${gatewayUrl}/seatmaps/${seatMapId}`;
@@ -188,12 +218,11 @@ const EventCreation = () => {
     setLocationSections([]);
     setSectionPricing([]);
     setUsesSectionPricing(false);
+    setUsesRowPricing(false); // Resetear también pricing por filas
     
     if (location && location.seatMapId) {
-      // Obtener secciones para pricing por secciones
       await fetchLocationSections(locationId);
       
-      // Si la ubicación tiene un seatMapId, obtener la capacidad del seatmap
       setLoading(true);
       try {
         const capacity = await getCapacityFromSeatMap(location.seatMapId);
@@ -228,24 +257,14 @@ const EventCreation = () => {
     }
   };
 
-  const handleSectionPriceChange = (sectionId, newPrice) => {
-    setSectionPricing(prevPricing => 
-      prevPricing.map(section => 
-        section.sectionId === sectionId 
-          ? { ...section, price: newPrice === '' ? '' : parseFloat(newPrice) || 0 }
-          : section
-      )
-    );
-  };
-
   const handleTypeChange = (value) => {
     setType(value);
-    // Resetear la ubicación seleccionada cuando cambia el tipo
     setSelectedLocation(null);
     setIsCapacityLocked(false);
     setLocationSections([]);
     setSectionPricing([]);
     setUsesSectionPricing(false);
+    setUsesRowPricing(false);
     form.setFieldsValue({ 
       location: undefined,
       capacity: undefined,
@@ -264,29 +283,34 @@ const EventCreation = () => {
       if (data.sections && data.sections.length > 0) {
         setLocationSections(data.sections);
         setUsesSectionPricing(true);
+        setUsesRowPricing(true); // Activar pricing por filas
         
-        // Inicializar pricing por secciones con precios base o 0
+        // Inicializar pricing por secciones con basePrice y variablePrice
         const initialPricing = data.sections.map(section => ({
           sectionId: section.sectionId,
           sectionName: section.sectionName,
           capacity: section.capacity,
-          price: section.basePrice || 0
+          rows: section.rows,
+          seatsPerRow: section.seatsPerRow,
+          basePrice: 0, // Precio base (fila más alejada)
+          variablePrice: 0, // Precio variable por fila
+          frontRowFirst: true // Por defecto, fila 1 es la más cara
         }));
         
         setSectionPricing(initialPricing);
-        
-        // Ocultar el campo de precio tradicional ya que usaremos pricing por secciones
         form.setFieldsValue({ price: undefined });
       } else {
         setLocationSections([]);
         setSectionPricing([]);
         setUsesSectionPricing(false);
+        setUsesRowPricing(false);
       }
     } catch (error) {
       console.error("Error obteniendo secciones:", error);
       setLocationSections([]);
       setSectionPricing([]);
       setUsesSectionPricing(false);
+      setUsesRowPricing(false);
     } finally {
       setLoadingSections(false);
     }
@@ -311,28 +335,38 @@ const EventCreation = () => {
       console.log('Event data before pricing:', eventData);
 
       // Añadir pricing según el tipo
-      if (usesSectionPricing && sectionPricing.length > 0) {
-        // Validar que todos los precios sean válidos
-        const hasInvalidPrices = sectionPricing.some(section => 
-          section.price === '' || isNaN(parseFloat(section.price)) || parseFloat(section.price) < 0
+      if (usesSectionPricing && usesRowPricing && sectionPricing.length > 0) {
+        const hasInvalidBasePrices = sectionPricing.some(section => 
+          section.basePrice === '' || isNaN(parseFloat(section.basePrice)) || parseFloat(section.basePrice) < 0
         );
         
-        if (hasInvalidPrices) {
-          setErrorMessage('Todos los precios de las secciones deben ser números válidos y no negativos');
+        const hasInvalidVariablePrices = sectionPricing.some(section => 
+          section.variablePrice === '' || isNaN(parseFloat(section.variablePrice)) || parseFloat(section.variablePrice) < 0
+        );
+        
+        if (hasInvalidBasePrices || hasInvalidVariablePrices) {
+          setErrorMessage('Todos los precios base y variables deben ser números válidos y no negativos');
           return;
         }
         
         eventData.usesSectionPricing = true;
+        eventData.usesRowPricing = true;
         eventData.sectionPricing = sectionPricing.map(section => ({
-        ...section,
-        price: parseFloat(section.price) || 0
-      }));
+          sectionId: section.sectionId,
+          sectionName: section.sectionName,
+          capacity: section.capacity,
+          rows: section.rows,
+          seatsPerRow: section.seatsPerRow,
+          basePrice: parseFloat(section.basePrice) || 0,
+          variablePrice: parseFloat(section.variablePrice) || 0,
+          frontRowFirst: section.frontRowFirst !== undefined ? section.frontRowFirst : true
+        }));
         
         // Capacidad se calcula automáticamente en el backend
         eventData.capacity = sectionPricing.reduce((total, section) => total + section.capacity, 0);
         
-        // El precio base será el mínimo de las secciones
-        eventData.price = Math.min(...sectionPricing.map(s => s.price));
+        // El precio base será el mínimo de todas las secciones
+        eventData.price = Math.min(...sectionPricing.map(s => s.basePrice || 0));
       } else {
         // Pricing tradicional
         if (!values.price || !values.capacity) {
@@ -341,6 +375,7 @@ const EventCreation = () => {
         }
         
         eventData.usesSectionPricing = false;
+        eventData.usesRowPricing = false;
         eventData.capacity = parseInt(values.capacity);
         eventData.price = parseFloat(values.price);
       }
@@ -399,12 +434,46 @@ const EventCreation = () => {
   const SectionPricingComponent = () => {
     if (!usesSectionPricing || locationSections.length === 0) return null;
 
+    const calculatePriceRange = (section) => {
+      if (!section.variablePrice || section.variablePrice === 0) {
+        return `€${section.basePrice || 0}`;
+      }
+      
+      const minPrice = section.basePrice || 0;
+      const maxPrice = minPrice + (section.variablePrice * (section.rows - 1));
+      
+      return minPrice === maxPrice ? `€${minPrice}` : `€${minPrice} - €${maxPrice}`;
+    };
+
+    const getTotalCapacity = () => {
+      return sectionPricing.reduce((total, section) => total + (section.capacity || 0), 0);
+    };
+
+    const getOverallPriceRange = () => {
+      if (sectionPricing.length === 0) return '€0';
+      
+      let minPrice = Infinity;
+      let maxPrice = 0;
+      
+      sectionPricing.forEach(section => {
+        const sectionMin = section.basePrice || 0;
+        const sectionMax = section.variablePrice && section.variablePrice > 0 
+          ? sectionMin + (section.variablePrice * (section.rows - 1))
+          : sectionMin;
+        
+        minPrice = Math.min(minPrice, sectionMin);
+        maxPrice = Math.max(maxPrice, sectionMax);
+      });
+      
+      return minPrice === maxPrice ? `€${minPrice}` : `€${minPrice} - €${maxPrice}`;
+    };
+
     return (
       <Card 
         title={
           <Space>
             <TagOutlined style={{ color: COLORS?.primary?.main || '#1890ff' }} />
-            Configuración de precios por sección
+            Configuración de precios por filas
           </Space>
         }
         style={{ 
@@ -415,8 +484,8 @@ const EventCreation = () => {
         loading={loadingSections}
       >
         <Alert
-          message="Pricing por secciones activado"
-          description="Esta ubicación tiene un mapa de asientos con secciones definidas. Configure el precio para cada sección individualmente."
+          message="Pricing por filas activado"
+          description="Esta ubicación tiene un mapa de asientos con secciones y filas definidas. Configure el precio base y el incremento por fila para cada sección."
           type="info"
           showIcon
           style={{ marginBottom: '16px' }}
@@ -427,7 +496,7 @@ const EventCreation = () => {
             const locationSection = locationSections.find(ls => ls.sectionId === section.sectionId);
             
             return (
-              <Col xs={24} sm={12} md={8} key={section.sectionId}>
+              <Col xs={24} lg={12} key={section.sectionId}>
                 <Card 
                   size="small"
                   style={{
@@ -436,27 +505,31 @@ const EventCreation = () => {
                   }}
                 >
                   <Space direction="vertical" style={{ width: '100%' }} size="small">
-                    <Text strong style={{ fontSize: '14px' }}>
-                      {section.sectionName}
-                    </Text>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Text strong style={{ fontSize: '16px' }}>
+                        {section.sectionName}
+                      </Text>
+                      <Tag color="blue" style={{ fontSize: '11px' }}>
+                        {section.rows} filas × {section.seatsPerRow} asientos
+                      </Tag>
+                    </div>
                     
                     <Text type="secondary" style={{ fontSize: '12px' }}>
-                      Capacidad: {section.capacity} asientos
+                      Capacidad total: {section.capacity} asientos
                     </Text>
                     
+                    <Divider style={{ margin: '8px 0' }} />
+                    
+                    {/* Precio base */}
                     <Form.Item
-                      label="Precio por entrada"
+                      label="Precio base (fila más alejada)"
                       style={{ margin: 0 }}
                       required
-                      rules={[
-                        { required: true, message: 'Precio requerido' },
-                        { type: 'number', min: 0, message: 'El precio debe ser mayor o igual a 0' }
-                      ]}
                     >
                       <Input
                         type="number"
-                        value={section.price === 0 ? '' : section.price}
-                        onChange={(e) => handleSectionPriceChange(section.sectionId, e.target.value)}
+                        value={section.basePrice === 0 ? '' : section.basePrice}
+                        onChange={(e) => handleSectionBasePrice(section.sectionId, e.target.value)}
                         prefix={<EuroOutlined />}
                         placeholder="0.00"
                         min={0}
@@ -464,6 +537,59 @@ const EventCreation = () => {
                         style={{ width: '100%' }}
                       />
                     </Form.Item>
+                    
+                    {/* Precio variable */}
+                    <Form.Item
+                      label="Incremento por fila hacia adelante"
+                      style={{ margin: 0 }}
+                      required
+                    >
+                      <Input
+                        type="number"
+                        value={section.variablePrice === 0 ? '' : section.variablePrice}
+                        onChange={(e) => handleSectionVariablePrice(section.sectionId, e.target.value)}
+                        prefix={<EuroOutlined />}
+                        placeholder="0.00"
+                        min={0}
+                        step={0.01}
+                        style={{ width: '100%' }}
+                      />
+                    </Form.Item>
+                    
+                    {/* Dirección de numeración */}
+                    <Form.Item
+                      label="Numeración de filas"
+                      style={{ margin: 0 }}
+                    >
+                      <Select
+                        value={section.frontRowFirst}
+                        onChange={(value) => handleFrontRowFirstChange(section.sectionId, value)}
+                        style={{ width: '100%' }}
+                      >
+                        <Option value={true}>Fila 1 = Más cara (más cerca)</Option>
+                        <Option value={false}>Fila 1 = Más barata (más lejos)</Option>
+                      </Select>
+                    </Form.Item>
+                    
+                    {/* Vista previa de precios */}
+                    <div style={{ 
+                      marginTop: '8px', 
+                      padding: '8px', 
+                      backgroundColor: '#fafafa', 
+                      borderRadius: '4px',
+                      fontSize: '12px'
+                    }}>
+                      <Text strong>Rango de precios: </Text>
+                      <Text type="success">{calculatePriceRange(section)}</Text>
+                      {section.variablePrice > 0 && (
+                        <div style={{ marginTop: '4px' }}>
+                          <Text type="secondary">
+                            Fila más barata: €{section.basePrice || 0} | 
+                            Fila más cara: €{(section.basePrice || 0) + (section.variablePrice * (section.rows - 1))}
+                          </Text>
+                        </div>
+                      )}
+                    </div>
                   </Space>
                 </Card>
               </Col>
@@ -474,13 +600,12 @@ const EventCreation = () => {
         {sectionPricing.length > 0 && (
           <Alert
             style={{ marginTop: '16px' }}
-            message="Resumen de precios"
+            message="Resumen general del evento"
             description={
               <div>
-                <p><strong>Precio mínimo:</strong> €{Math.min(...sectionPricing.map(s => s.price))}</p>
-                <p><strong>Precio máximo:</strong> €{Math.max(...sectionPricing.map(s => s.price))}</p>
-                <p><strong>Precio promedio:</strong> €{(sectionPricing.reduce((sum, s) => sum + s.price, 0) / sectionPricing.length).toFixed(2)}</p>
-                <p><strong>Capacidad total:</strong> {sectionPricing.reduce((total, s) => total + s.capacity, 0)} asientos</p>
+                <p><strong>Rango de precios total:</strong> {getOverallPriceRange()}</p>
+                <p><strong>Capacidad total:</strong> {getTotalCapacity()} asientos</p>
+                <p><strong>Número de secciones:</strong> {sectionPricing.length}</p>
               </div>
             }
             type="success"
