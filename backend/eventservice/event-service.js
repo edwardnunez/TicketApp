@@ -45,6 +45,7 @@ const upload = multer({ storage });
 
 app.use('/images/events', express.static('images/events'));
 
+// Función auxiliar para obtener información del seatmap
 const getSeatMapInfo = async (seatMapId) => {
   try {
     const response = await axios.get(`${locationServiceUrl}/seatmaps/${seatMapId}`);
@@ -91,7 +92,7 @@ const createSectionPricing = (seatMapInfo, pricingData) => {
   });
 };
 
-// Actualizar la ruta para crear un evento
+// Ruta para crear un evento
 app.post("/event", async (req, res) => {
   try {
     const { 
@@ -105,7 +106,7 @@ app.post("/event", async (req, res) => {
       state,
       sectionPricing,
       usesSectionPricing,
-      usesRowPricing, // Nuevo parámetro
+      usesRowPricing,
       blockedSeats,
       blockedSections,
       seatMapConfiguration
@@ -192,6 +193,11 @@ app.post("/event", async (req, res) => {
       };
 
       eventData.seatMapConfiguration = seatMapConfig;
+      eventData.blockedSeats = seatMapConfig.blockedSeats || [];
+      eventData.blockedSections = seatMapConfig.blockedSections || [];
+    } else {
+      eventData.blockedSeats = [];
+      eventData.blockedSections = [];
     }
 
     const newEvent = new EventModel(eventData);
@@ -208,7 +214,63 @@ app.post("/event", async (req, res) => {
   }
 });
 
-// Actualizar la ruta para obtener un evento específico
+// Ruta para obtener todos los eventos
+app.get("/events", stateService.updateStatesMiddleware.bind(stateService), async (req, res) => {
+  try {
+    const events = await EventModel.find();
+
+    const locationIds = events.map(event => event.location);
+    const locationResponses = await Promise.all(
+      locationIds.map(locationId => axios.get(`${locationServiceUrl}/locations/${locationId}`))
+    );
+
+    const locationMap = {};
+    locationResponses.forEach(response => {
+      const location = response.data;
+      locationMap[location._id] = location;
+    });
+
+    const eventsWithLocations = events.map(event => {
+      const e = event.toObject();
+      e.location = locationMap[e.location.toString()] || null;
+      
+      // Información de rango de precios
+      if (e.usesSectionPricing && e.sectionPricing && e.sectionPricing.length > 0) {
+        if (e.usesRowPricing) {
+          e.priceRange = {
+            min: event.getMinPrice(),
+            max: event.getMaxPrice(),
+            display: event.getPriceRange()
+          };
+        } else {
+          const prices = e.sectionPricing.map(section => section.price || section.basePrice);
+          e.priceRange = {
+            min: Math.min(...prices),
+            max: Math.max(...prices),
+            display: Math.min(...prices) === Math.max(...prices) 
+              ? `€${Math.min(...prices)}` 
+              : `€${Math.min(...prices)} - €${Math.max(...prices)}`
+          };
+        }
+      } else {
+        e.priceRange = {
+          min: e.price,
+          max: e.price,
+          display: `€${e.price}`
+        };
+      }
+      
+      return e;
+    });
+
+    res.status(200).json(eventsWithLocations);
+  } catch (error) {
+    console.error("Error fetching events:", error);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+});
+
+// Ruta para obtener un evento específico
 app.get("/events/:eventId", stateService.updateStatesMiddleware.bind(stateService), async (req, res) => {
   try {
     const event = await EventModel.findById(req.params.eventId);
@@ -245,11 +307,13 @@ app.get("/events/:eventId", stateService.updateStatesMiddleware.bind(stateServic
     }
 
     // Estadísticas de bloqueos
+    const blockedSeats = eventObj.seatMapConfiguration?.blockedSeats || eventObj.blockedSeats || [];
+    const blockedSections = eventObj.seatMapConfiguration?.blockedSections || eventObj.blockedSections || [];
+    
     const blockingStats = {
-      blockedSeats: (eventObj.seatMapConfiguration?.blockedSeats || []).length,
-      blockedSections: (eventObj.seatMapConfiguration?.blockedSections || []).length,
-      hasBlocks: (eventObj.seatMapConfiguration?.blockedSeats || []).length > 0 || 
-                 (eventObj.seatMapConfiguration?.blockedSections || []).length > 0
+      blockedSeats: blockedSeats.length,
+      blockedSections: blockedSections.length,
+      hasBlocks: blockedSeats.length > 0 || blockedSections.length > 0
     };
     eventObj.blockingStats = blockingStats;
 
@@ -260,7 +324,7 @@ app.get("/events/:eventId", stateService.updateStatesMiddleware.bind(stateServic
   }
 });
 
-// Nueva ruta para obtener el precio de un asiento específico
+// Ruta para obtener el precio de un asiento específico
 app.get("/events/:eventId/seat-price/:sectionId/:row/:seat", async (req, res) => {
   try {
     const { eventId, sectionId, row, seat } = req.params;
@@ -288,7 +352,7 @@ app.get("/events/:eventId/seat-price/:sectionId/:row/:seat", async (req, res) =>
   }
 });
 
-// Nueva ruta para obtener precios de múltiples asientos
+// Ruta para obtener precios de múltiples asientos
 app.post("/events/:eventId/seats-pricing", async (req, res) => {
   try {
     const { eventId } = req.params;
@@ -334,3 +398,203 @@ app.post("/events/:eventId/seats-pricing", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error", details: error.message });
   }
 });
+
+// Ruta manual para actualizar estados
+app.post("/events/update-states", async (req, res) => {
+  try {
+    const result = await stateService.updateEventStates();
+    res.json({
+      success: true,
+      message: "Estados actualizados correctamente",
+      ...result
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
+  }
+});
+
+// Ruta para obtener estadísticas de eventos por estado
+app.get("/events/stats/states", async (req, res) => {
+  try {
+    const stats = await EventModel.aggregate([
+      {
+        $group: {
+          _id: '$state',
+          count: { $sum: 1 },
+          events: {
+            $push: {
+              id: '$_id',
+              name: '$name',
+              date: '$date'
+            }
+          }
+        }
+      },
+      {
+        $sort: { '_id': 1 }
+      }
+    ]);
+
+    const formattedStats = stats.reduce((acc, stat) => {
+      acc[stat._id] = {
+        count: stat.count,
+        events: stat.events
+      };
+      return acc;
+    }, {});
+
+    res.json(formattedStats);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Ruta para cambiar manualmente el estado de un evento
+app.patch("/events/:eventId/state", async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const { state } = req.body;
+
+    const validStates = ['activo', 'proximo', 'finalizado', 'cancelado'];
+    if (!validStates.includes(state)) {
+      return res.status(400).json({ 
+        error: `Estado inválido. Estados válidos: ${validStates.join(', ')}` 
+      });
+    }
+
+    const event = await EventModel.findByIdAndUpdate(
+      eventId, 
+      { state }, 
+      { new: true }
+    );
+
+    if (!event) {
+      return res.status(404).json({ error: "Evento no encontrado" });
+    }
+
+    res.json({
+      success: true,
+      message: `Estado del evento actualizado a '${state}'`,
+      event: {
+        id: event._id,
+        name: event.name,
+        state: event.state,
+        date: event.date
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Ruta para actualizar bloqueos de asientos
+app.put("/events/:eventId/seat-blocks", async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const { blockedSeats, blockedSections } = req.body;
+
+    const event = await EventModel.findById(eventId);
+    if (!event) return res.status(404).json({ error: "Event not found" });
+
+    if (event.seatMapConfiguration) {
+      event.seatMapConfiguration.blockedSeats = blockedSeats || [];
+      event.seatMapConfiguration.blockedSections = blockedSections || [];
+      event.seatMapConfiguration.configuredAt = new Date();
+    } else {
+      const locationResponse = await axios.get(`${locationServiceUrl}/locations/${event.location}`);
+      const location = locationResponse.data;
+      
+      event.seatMapConfiguration = {
+        seatMapId: location.seatMapId,
+        blockedSeats: blockedSeats || [],
+        blockedSections: blockedSections || [],
+        configuredAt: new Date()
+      };
+    }
+
+    event.blockedSeats = blockedSeats || [];
+    event.blockedSections = blockedSections || [];
+
+    await event.save();
+
+    console.log(`Updated seat blocks for event ${eventId}:`, {
+      blockedSeats: event.blockedSeats.length,
+      blockedSections: event.blockedSections.length
+    });
+
+    res.status(200).json({
+      message: "Seat blocks updated successfully",
+      blockedSeats: event.blockedSeats.length,
+      blockedSections: event.blockedSections.length
+    });
+  } catch (error) {
+    console.error("Error updating seat blocks:", error);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+});
+
+// Ruta para eliminar un evento
+app.delete("/events/:eventId", async (req, res) => {
+  try {
+    const { eventId } = req.params;
+
+    // Verificar que el evento existe
+    const event = await EventModel.findById(eventId);
+    if (!event) {
+      return res.status(404).json({ error: "Evento no encontrado" });
+    }
+
+    try {
+      await axios.delete(`${ticketServiceUrl}/tickets/event/${eventId}`);
+      console.log(`Tickets eliminados para el evento ${eventId}`);
+    } catch (ticketError) {
+      console.warn(`Error eliminando tickets para evento ${eventId}:`, ticketError.message);
+      // Continuamos con la eliminación del evento aunque falle la eliminación de tickets
+    }
+
+    // Eliminar el evento
+    await EventModel.findByIdAndDelete(eventId);
+
+    console.log(`Evento ${eventId} eliminado correctamente`);
+
+    res.status(200).json({
+      success: true,
+      message: "Evento y tickets asociados eliminados correctamente",
+      eventId: eventId,
+      eventName: event.name
+    });
+
+  } catch (error) {
+    console.error("Error eliminando evento:", error);
+    res.status(500).json({ 
+      error: "Error interno del servidor", 
+      details: error.message 
+    });
+  }
+});
+
+const server = app.listen(port, async () => {
+  console.log(`🚀 Event Service listening at http://localhost:${port}`);
+  
+  stateService.startCronJobs();
+  
+  // Ejecutar actualización inicial después de 2 segundos
+  setTimeout(async () => {
+    console.log('🔄 Ejecutando actualización inicial de estados...');
+    const result = await stateService.updateEventStates();
+    if (result.finalizados > 0 || result.activados > 0) {
+      console.log('✅ Actualización inicial completada:', result);
+    } else {
+      console.log('✅ Estados ya actualizados');
+    }
+  }, 2000);
+});
+
+server.on("close", () => {
+  eventDbConnection.close();
+});
+
+export default server;

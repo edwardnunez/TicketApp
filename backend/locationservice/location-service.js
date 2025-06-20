@@ -308,6 +308,8 @@ app.get('/location/:locationId/sections', async (req, res) => {
       sectionId: section.id,
       sectionName: section.name,
       capacity: section.rows * section.seatsPerRow,
+      rows: section.rows,
+      seatsPerRow: section.seatsPerRow,
       basePrice: section.price,
       color: section.color,
       position: section.position,
