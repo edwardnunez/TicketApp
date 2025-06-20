@@ -283,8 +283,8 @@ const EventCreation = () => {
       if (data.sections && data.sections.length > 0) {
         setLocationSections(data.sections);
         setUsesSectionPricing(true);
-        setUsesRowPricing(true); // Activar pricing por filas
-        
+        setUsesRowPricing(true);
+        console.log("Secciones obtenidas:", data.sections);
         // Inicializar pricing por secciones con basePrice y variablePrice
         const initialPricing = data.sections.map(section => ({
           sectionId: section.sectionId,
@@ -292,8 +292,8 @@ const EventCreation = () => {
           capacity: section.capacity,
           rows: section.rows,
           seatsPerRow: section.seatsPerRow,
-          basePrice: 0, // Precio base (fila más alejada)
-          variablePrice: 0, // Precio variable por fila
+          basePrice: 0,
+          variablePrice: 0,
           frontRowFirst: true // Por defecto, fila 1 es la más cara
         }));
         
@@ -362,6 +362,7 @@ const EventCreation = () => {
           frontRowFirst: section.frontRowFirst !== undefined ? section.frontRowFirst : true
         }));
         
+        console.log( eventData.sectionPricing.rows);
         // Capacidad se calcula automáticamente en el backend
         eventData.capacity = sectionPricing.reduce((total, section) => total + section.capacity, 0);
         
@@ -441,6 +442,9 @@ const EventCreation = () => {
       
       const minPrice = section.basePrice || 0;
       const maxPrice = minPrice + (section.variablePrice * (section.rows - 1));
+
+      console.log(section.variablePrice);
+      console.log(section.rows);
       
       return minPrice === maxPrice ? `€${minPrice}` : `€${minPrice} - €${maxPrice}`;
     };

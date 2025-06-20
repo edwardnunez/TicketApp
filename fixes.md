@@ -9,3 +9,4 @@ manejar precios por fila en vez de por seccion
 
 añadir seccion de entrada general sin asiento (para conciertos)
 
+al renderizar el mapa para comprar entradas da NaN en todos los precios

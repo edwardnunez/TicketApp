@@ -84,7 +84,6 @@ const eventSchema = new mongoose.Schema({
   // Precio base (para compatibilidad hacia atrás)
   price: { type: Number, required: true, min: 0 },
   
-  // Nuevo: Pricing por secciones con filas
   sectionPricing: [sectionPricingSchema],
   
   // Flag para indicar si el evento usa pricing por secciones con filas
@@ -93,7 +92,6 @@ const eventSchema = new mongoose.Schema({
     default: false 
   },
   
-  // Nuevo flag para indicar si usa pricing por filas
   usesRowPricing: { 
     type: Boolean, 
     default: false 
