@@ -203,8 +203,8 @@ const seedSeatMaps = async (dbConnection) => {
         {
           id: 'pista',
           name: 'Pista',
-          rows: 0, // No tiene filas definidas
-          seatsPerRow: 0, // No tiene asientos por fila
+          rows: 1, // No tiene filas definidas
+          seatsPerRow: 1, // No tiene asientos por fila
           price: 45000,
           color: '#FF5722',
           position: 'center',
@@ -276,8 +276,8 @@ const seedSeatMaps = async (dbConnection) => {
         {
           id: 'pista',
           name: 'Pista',
-          rows: 0,
-          seatsPerRow: 0,
+          rows: 1,
+          seatsPerRow: 1,
           price: 50000,
           color: '#FF5722',
           position: 'center',
