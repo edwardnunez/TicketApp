@@ -57,7 +57,7 @@ const EventSeatMapEditor = () => {
 
   const requiresSeatMap = useCallback(() => {
     if (!eventData?.type) return false;
-    const seatMapTypes = ['cinema', 'theater', 'theatre', 'football', 'soccer', 'sports', 'stadium'];
+    const seatMapTypes = ['cinema', 'theater', 'theatre', 'football', 'soccer', 'sports', 'stadium', 'concert'];
     return seatMapTypes.includes(eventData.type.toLowerCase());
   }, [eventData?.type]);
 

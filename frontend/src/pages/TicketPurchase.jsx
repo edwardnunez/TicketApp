@@ -287,15 +287,6 @@ const TicketPurchase = () => {
               lastName: formData.lastName,
               email: formData.email,
               phone: formData.phone
-          },
-          paymentInfo: {
-              method: 'demo', // En producción: 'stripe', 'paypal', etc.
-              transactionId: `TXN-${Date.now()}`
-          },
-          metadata: {
-              ipAddress: '127.0.0.1', // En producción obtendrías la IP real
-              userAgent: navigator.userAgent,
-              referrer: document.referrer
           }
         };
 
