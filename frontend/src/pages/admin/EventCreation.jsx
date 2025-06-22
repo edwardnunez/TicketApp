@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { 
   Layout, 
@@ -131,7 +130,7 @@ const EventCreation = () => {
         } else if (type === 'cinema') {
           return location.category === 'cinema';
         } else if (type === 'concert') {
-          return location.category === 'concert';
+          return location.category === 'concert' || location.category === 'stadium';
         } else if (type === 'theater') {
           return location.category === 'theater';
         } else if (type === 'festival') {
@@ -287,15 +286,19 @@ const EventCreation = () => {
         console.log("Secciones obtenidas:", data.sections);
         // Inicializar pricing por secciones con basePrice y variablePrice
         const initialPricing = data.sections.map(section => ({
-          sectionId: section.sectionId,
-          sectionName: section.sectionName,
-          capacity: section.capacity,
-          rows: section.rows,
-          seatsPerRow: section.seatsPerRow,
-          basePrice: 0,
-          variablePrice: 0,
-          frontRowFirst: true // Por defecto, fila 1 es la más cara
-        }));
+        sectionId: section.sectionId,
+        sectionName: section.sectionName,
+        capacity: section.hasNumberedSeats === false
+          ? section.capacity
+          : section.rows * section.seatsPerRow,
+        rows: section.hasNumberedSeats === false ? 1 : section.rows,
+        seatsPerRow: section.hasNumberedSeats === false ? section.capacity : section.seatsPerRow,
+        hasNumberedSeats: section.hasNumberedSeats !== false, // default to true
+        basePrice: 0,
+        variablePrice: 0,
+        frontRowFirst: true
+      }));
+
         
         setSectionPricing(initialPricing);
         form.setFieldsValue({ price: undefined });
@@ -355,8 +358,9 @@ const EventCreation = () => {
           sectionId: section.sectionId,
           sectionName: section.sectionName,
           capacity: section.capacity,
-          rows: section.rows,
-          seatsPerRow: section.seatsPerRow,
+          rows: section.hasNumberedSeats ? section.rows : 1,
+          seatsPerRow: section.hasNumberedSeats ? section.seatsPerRow : section.capacity,
+          hasNumberedSeats: section.hasNumberedSeats !== false,
           basePrice: parseFloat(section.basePrice) || 0,
           variablePrice: parseFloat(section.variablePrice) || 0,
           frontRowFirst: section.frontRowFirst !== undefined ? section.frontRowFirst : true
@@ -426,9 +430,15 @@ const EventCreation = () => {
     accept: 'image/*'
   };
 
-  // Función para obtener información del seatmap
   const getSeatMapInfo = (seatMapId) => {
     const seatMap = seatMaps.find(sm => sm.id === seatMapId);
+    if (seatMap && type) {
+      // Verificar compatibilidad con el tipo de evento
+      const isCompatible = seatMap.compatibleEventTypes?.includes(type) || 
+                          seatMap.type === type ||
+                          (type === 'concert' && seatMap.type === 'football'); // Conciertos pueden usar mapas de estadio
+      return { ...seatMap, isCompatible };
+    }
     return seatMap;
   };
 
@@ -436,15 +446,17 @@ const EventCreation = () => {
     if (!usesSectionPricing || locationSections.length === 0) return null;
 
     const calculatePriceRange = (section) => {
+      // Si la sección no tiene asientos numerados (ej: pista)
+      if (!section.hasNumberedSeats) {
+        return `€${section.basePrice || 0}`;
+      }
+      
       if (!section.variablePrice || section.variablePrice === 0) {
         return `€${section.basePrice || 0}`;
       }
       
       const minPrice = section.basePrice || 0;
       const maxPrice = minPrice + (section.variablePrice * (section.rows - 1));
-
-      console.log(section.variablePrice);
-      console.log(section.rows);
       
       return minPrice === maxPrice ? `€${minPrice}` : `€${minPrice} - €${maxPrice}`;
     };
@@ -498,6 +510,7 @@ const EventCreation = () => {
         <Row gutter={[16, 16]}>
           {sectionPricing.map((section, index) => {
             const locationSection = locationSections.find(ls => ls.sectionId === section.sectionId);
+            const isNumberedSeats = section.hasNumberedSeats !== false; // Por defecto true
             
             return (
               <Col xs={24} lg={12} key={section.sectionId}>
@@ -513,20 +526,23 @@ const EventCreation = () => {
                       <Text strong style={{ fontSize: '16px' }}>
                         {section.sectionName}
                       </Text>
-                      <Tag color="blue" style={{ fontSize: '11px' }}>
-                        {section.rows} filas × {section.seatsPerRow} asientos
+                      <Tag color={isNumberedSeats ? "blue" : "orange"} style={{ fontSize: '11px' }}>
+                        {isNumberedSeats ? 
+                          `${section.rows} filas × ${section.seatsPerRow} asientos` : 
+                          'Entrada General'
+                        }
                       </Tag>
                     </div>
                     
                     <Text type="secondary" style={{ fontSize: '12px' }}>
-                      Capacidad total: {section.capacity} asientos
+                      Capacidad total: {section.capacity} {isNumberedSeats ? 'asientos' : 'personas'}
                     </Text>
                     
                     <Divider style={{ margin: '8px 0' }} />
                     
                     {/* Precio base */}
                     <Form.Item
-                      label="Precio base (fila más alejada)"
+                      label={isNumberedSeats ? "Precio base (fila más alejada)" : "Precio único"}
                       style={{ margin: 0 }}
                       required
                     >
@@ -542,38 +558,42 @@ const EventCreation = () => {
                       />
                     </Form.Item>
                     
-                    {/* Precio variable */}
-                    <Form.Item
-                      label="Incremento por fila hacia adelante"
-                      style={{ margin: 0 }}
-                      required
-                    >
-                      <Input
-                        type="number"
-                        value={section.variablePrice === 0 ? '' : section.variablePrice}
-                        onChange={(e) => handleSectionVariablePrice(section.sectionId, e.target.value)}
-                        prefix={<EuroOutlined />}
-                        placeholder="0.00"
-                        min={0}
-                        step={0.01}
-                        style={{ width: '100%' }}
-                      />
-                    </Form.Item>
-                    
-                    {/* Dirección de numeración */}
-                    <Form.Item
-                      label="Numeración de filas"
-                      style={{ margin: 0 }}
-                    >
-                      <Select
-                        value={section.frontRowFirst}
-                        onChange={(value) => handleFrontRowFirstChange(section.sectionId, value)}
-                        style={{ width: '100%' }}
-                      >
-                        <Option value={true}>Fila 1 = Más cara (más cerca)</Option>
-                        <Option value={false}>Fila 1 = Más barata (más lejos)</Option>
-                      </Select>
-                    </Form.Item>
+                    {/* Precio variable - solo para asientos numerados */}
+                    {isNumberedSeats && (
+                      <>
+                        <Form.Item
+                          label="Incremento por fila hacia adelante"
+                          style={{ margin: 0 }}
+                          required
+                        >
+                          <Input
+                            type="number"
+                            value={section.variablePrice === 0 ? '' : section.variablePrice}
+                            onChange={(e) => handleSectionVariablePrice(section.sectionId, e.target.value)}
+                            prefix={<EuroOutlined />}
+                            placeholder="0.00"
+                            min={0}
+                            step={0.01}
+                            style={{ width: '100%' }}
+                          />
+                        </Form.Item>
+                        
+                        {/* Dirección de numeración - solo para asientos numerados */}
+                        <Form.Item
+                          label="Numeración de filas"
+                          style={{ margin: 0 }}
+                        >
+                          <Select
+                            value={section.frontRowFirst}
+                            onChange={(value) => handleFrontRowFirstChange(section.sectionId, value)}
+                            style={{ width: '100%' }}
+                          >
+                            <Option value={true}>Fila 1 = Más cara (más cerca)</Option>
+                            <Option value={false}>Fila 1 = Más barata (más lejos)</Option>
+                          </Select>
+                        </Form.Item>
+                      </>
+                    )}
                     
                     {/* Vista previa de precios */}
                     <div style={{ 
@@ -583,9 +603,11 @@ const EventCreation = () => {
                       borderRadius: '4px',
                       fontSize: '12px'
                     }}>
-                      <Text strong>Rango de precios: </Text>
+                      <Text strong>
+                        {isNumberedSeats ? 'Rango de precios: ' : 'Precio: '}
+                      </Text>
                       <Text type="success">{calculatePriceRange(section)}</Text>
-                      {section.variablePrice > 0 && (
+                      {isNumberedSeats && section.variablePrice > 0 && (
                         <div style={{ marginTop: '4px' }}>
                           <Text type="secondary">
                             Fila más barata: €{section.basePrice || 0} | 
@@ -806,17 +828,23 @@ const EventCreation = () => {
                             Por favor seleccione primero un tipo de evento
                           </div> : 
                           <div style={{ textAlign: 'center', padding: '8px' }}>
-                            No se encontraron ubicaciones
+                            No se encontraron ubicaciones compatibles
                           </div>
                       }
                     >
                       {locationOptions.map((location) => {
                         const seatMapInfo = location.seatMapId ? getSeatMapInfo(location.seatMapId) : null;
+                        const hasCompatibleSeatMap = seatMapInfo?.isCompatible !== false;
                         
                         return (
-                          <Option key={location._id} value={location._id}>
+                          <Option key={location._id} value={location._id} disabled={seatMapInfo && !hasCompatibleSeatMap}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <span style={{ flex: 1 }}>{location.name}</span>
+                              <span style={{ 
+                                flex: 1,
+                                opacity: seatMapInfo && !hasCompatibleSeatMap ? 0.5 : 1 
+                              }}>
+                                {location.name}
+                              </span>
                               <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
                                 {location.capacity && location.capacity > 0 && (
                                   <Tag 
@@ -827,16 +855,14 @@ const EventCreation = () => {
                                     Cap: {location.capacity}
                                   </Tag>
                                 )}
-                                {seatMapInfo && (
-                                  <Tooltip title={`Mapa: ${seatMapInfo.name} (${seatMapInfo.type})`}>
-                                    <Tag 
-                                      color="blue" 
-                                      size="small" 
-                                      style={{ fontSize: '10px', margin: 0 }}
-                                    >
-                                      {seatMapInfo.type}
-                                    </Tag>
-                                  </Tooltip>
+                                {!location.seatMapId && type === 'concert' && (
+                                  <Tag 
+                                    color="orange" 
+                                    size="small" 
+                                    style={{ fontSize: '10px', margin: 0 }}
+                                  >
+                                    Entrada general
+                                  </Tag>
                                 )}
                               </div>
                             </div>
@@ -1000,7 +1026,7 @@ const EventCreation = () => {
                               <Paragraph type="secondary" style={{ marginBottom: 0 }}>
                                 {type === 'football' && 'Los partidos de fútbol requieren ubicaciones de estadio y tienen asientos designados.'}
                                 {type === 'cinema' && 'Los eventos de cine requieren ubicaciones de cine y tienen capacidad limitada basada en la sala de proyección.'}
-                                {type === 'concert' && 'Los conciertos pueden realizarse en varios lugares con arreglos de asientos o de pie.'}
+                                {type === 'concert' && 'Los conciertos pueden realizarse en estadios, venues especializados o ubicaciones con entrada general, ofreciendo flexibilidad en el tipo de experiencia.'}
                                 {type === 'theater' && 'Las obras de teatro suelen realizarse en teatros con asientos asignados que ofrecen una experiencia cercana e íntima.'}
                                 {type === 'festival' && 'Los festivales son eventos al aire libre o en grandes recintos que combinan música, arte y cultura, con entradas no numeradas y sin asientos'}
                               </Paragraph>

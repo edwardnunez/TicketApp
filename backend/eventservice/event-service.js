@@ -72,9 +72,11 @@ const createSectionPricing = (seatMapInfo, pricingData) => {
         sectionName: section.name,
         basePrice: section.price || 0,
         variablePrice: 0,
-        capacity: section.rows * section.seatsPerRow,
-        rows: section.rows,
-        seatsPerRow: section.seatsPerRow,
+        capacity: section.hasNumberedSeats === false
+          ? section.capacity || 0
+          : section.rows * section.seatsPerRow,
+        rows: section.hasNumberedSeats === false ? 1 : section.rows,
+        seatsPerRow: section.hasNumberedSeats === false ? section.capacity : section.seatsPerRow,
         frontRowFirst: true
       };
     }
@@ -84,9 +86,11 @@ const createSectionPricing = (seatMapInfo, pricingData) => {
       sectionName: section.name,
       basePrice: sectionPricing.basePrice || sectionPricing.price || section.price || 0,
       variablePrice: sectionPricing.variablePrice || 0,
-      capacity: section.rows * section.seatsPerRow,
-      rows: section.rows,
-      seatsPerRow: section.seatsPerRow,
+      capacity: section.hasNumberedSeats === false
+        ? section.capacity || 0
+        : section.rows * section.seatsPerRow,
+      rows: section.hasNumberedSeats === false ? 1 : section.rows,
+      seatsPerRow: section.hasNumberedSeats === false ? section.capacity : section.seatsPerRow,
       frontRowFirst: sectionPricing.frontRowFirst !== undefined ? sectionPricing.frontRowFirst : true
     };
   });

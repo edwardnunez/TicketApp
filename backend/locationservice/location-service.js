@@ -39,13 +39,16 @@ const SeatMapModel = seatMapDbConnection.model('SeatMap', SeatMap.schema);
 
 const seedDatabases = async () => {
   try {
-    // Seed locations
+    console.log('Seeding locations...');
     await seedLocations(locationDbConnection);
     console.log('Locations seeded successfully');
     
-    // Seed seatmaps
+    // Seed seatmaps - IMPORTANTE: pasar la conexión correcta
+    console.log('Seeding seatmaps...');
     await seedSeatMaps(seatMapDbConnection);
     console.log('SeatMaps seeded successfully');
+    
+    console.log('Todas las bases de datos han sido inicializadas correctamente');
   } catch (error) {
     console.error('Error seeding databases:', error);
   }

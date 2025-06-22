@@ -1,7 +1,7 @@
 import SeatMap from './seatmap-model.js';
 
 const seedSeatMaps = async (dbConnection) => {
-  const SeatMapModel = dbConnection.model('SeatMap', SeatMap.schema);
+  const SeatMapModel = dbConnection.models.SeatMap || dbConnection.model('SeatMap', SeatMap.schema);
 
   const seatMaps = [
     // ============= ESTADIOS DE FÚTBOL =============
@@ -10,6 +10,7 @@ const seedSeatMaps = async (dbConnection) => {
       id: 'football1',
       name: 'Estadio Santiago Bernabéu',
       type: 'football',
+      compatibleEventTypes: ['football', 'concert'], 
       config: {
         stadiumName: 'Estadio Santiago Bernabéu',
         fieldDimensions: { width: 400, height: 260 }
@@ -72,6 +73,7 @@ const seedSeatMaps = async (dbConnection) => {
       id: 'football2',
       name: 'Estadio Camp Nou',
       type: 'football',
+      compatibleEventTypes: ['football', 'concert'], 
       config: {
         stadiumName: 'Estadio Camp Nou',
         fieldDimensions: { width: 450, height: 280 }
@@ -134,6 +136,7 @@ const seedSeatMaps = async (dbConnection) => {
       id: 'football3',
       name: 'Estadio La Rosaleda',
       type: 'football',
+      compatibleEventTypes: ['football'], 
       config: {
         stadiumName: 'Estadio La Rosaleda',
         fieldDimensions: { width: 350, height: 220 }
@@ -182,6 +185,192 @@ const seedSeatMaps = async (dbConnection) => {
       ]
     },
 
+    // ============= VENUES DE CONCIERTOS =============
+    // WiZink Center - Capacidad: 17,000 (aproximada)
+    {
+      id: 'concert1',
+      name: 'WiZink Center',
+      type: 'concert',
+      subtype: 'indoor_arena',
+      compatibleEventTypes: ['concert'],
+      config: {
+        venueName: 'WiZink Center',
+        stagePosition: 'center',
+        stageDimensions: { width: 80, height: 50 },
+        allowsGeneralAdmission: true
+      },
+      sections: [
+        {
+          id: 'pista',
+          name: 'Pista',
+          rows: 0, // No tiene filas definidas
+          seatsPerRow: 0, // No tiene asientos por fila
+          price: 45000,
+          color: '#FF5722',
+          position: 'center',
+          order: 1,
+          hasNumberedSeats: false, // Entrada general
+          totalCapacity: 3000 // Capacidad total de la pista
+        },
+        {
+          id: 'grada-baja',
+          name: 'Grada Baja',
+          rows: 7,
+          seatsPerRow: 10,
+          price: 55000,
+          color: '#4CAF50',
+          position: 'lower',
+          order: 2,
+          hasNumberedSeats: true
+        },
+        {
+          id: 'grada-media',
+          name: 'Grada Media',
+          rows: 5,
+          seatsPerRow: 8,
+          price: 40000,
+          color: '#2196F3',
+          position: 'middle',
+          order: 3,
+          hasNumberedSeats: true
+        },
+        {
+          id: 'grada-alta',
+          name: 'Grada Alta',
+          rows: 6,
+          seatsPerRow: 11,
+          price: 30000,
+          color: '#FF9800',
+          position: 'upper',
+          order: 4,
+          hasNumberedSeats: true
+        },
+        {
+          id: 'palcos-vip',
+          name: 'Palcos VIP',
+          rows: 2,
+          seatsPerRow: 5,
+          price: 120000,
+          color: '#9C27B0',
+          position: 'vip',
+          order: 5,
+          hasNumberedSeats: true
+        }
+      ]
+    },
+
+    // Palau Sant Jordi - Capacidad: 24,000 (aproximada)
+    {
+      id: 'concert2',
+      name: 'Palau Sant Jordi',
+      type: 'concert',
+      subtype: 'indoor_arena',
+      compatibleEventTypes: ['concert'],
+      config: {
+        venueName: 'Palau Sant Jordi',
+        stagePosition: 'center',
+        stageDimensions: { width: 100, height: 60 },
+        allowsGeneralAdmission: true
+      },
+      sections: [
+        {
+          id: 'pista',
+          name: 'Pista',
+          rows: 0,
+          seatsPerRow: 0,
+          price: 50000,
+          color: '#FF5722',
+          position: 'center',
+          order: 1,
+          hasNumberedSeats: false,
+          totalCapacity: 4000
+        },
+        {
+          id: 'lateral-este',
+          name: 'Lateral Este',
+          rows: 8,
+          seatsPerRow: 13,
+          price: 60000,
+          color: '#4CAF50',
+          position: 'east',
+          order: 2,
+          hasNumberedSeats: true
+        },
+        {
+          id: 'lateral-oeste',
+          name: 'Lateral Oeste',
+          rows: 8,
+          seatsPerRow: 13,
+          price: 60000,
+          color: '#4CAF50',
+          position: 'west',
+          order: 3,
+          hasNumberedSeats: true
+        },
+        {
+          id: 'fondo-norte',
+          name: 'Fondo Norte',
+          rows: 6,
+          seatsPerRow: 10,
+          price: 45000,
+          color: '#2196F3',
+          position: 'north',
+          order: 4,
+          hasNumberedSeats: true
+        },
+        {
+          id: 'fondo-sur',
+          name: 'Fondo Sur',
+          rows: 6,
+          seatsPerRow: 10,
+          price: 45000,
+          color: '#2196F3',
+          position: 'south',
+          order: 5,
+          hasNumberedSeats: true
+        },
+        {
+          id: 'palcos-premium',
+          name: 'Palcos Premium',
+          rows: 2,
+          seatsPerRow: 10,
+          price: 150000,
+          color: '#9C27B0',
+          position: 'vip',
+          order: 6,
+          hasNumberedSeats: true
+        }
+      ]
+    },
+
+    // Venue para entrada general solamente
+    {
+      id: 'concert3',
+      name: 'Sala General',
+      type: 'concert',
+      subtype: 'general_admission',
+      compatibleEventTypes: ['concert'],
+      config: {
+        venueName: 'Sala General',
+        stagePosition: 'north',
+        stageDimensions: { width: 40, height: 30 },
+        allowsGeneralAdmission: true
+      },
+      sections: [
+        {
+          id: 'general',
+          name: 'Entrada General',
+          rows: 0,
+          seatsPerRow: 0,
+          price: 25000,
+          color: '#607D8B',
+          position: 'general',
+          order: 1,
+          hasNumberedSeats: false,
+          totalCapacity: 2000
+        }
+      ]
+    },
     // ============= CINES =============
     // Cines Callao - Capacidad: 192
     {
@@ -452,6 +641,10 @@ const seedSeatMaps = async (dbConnection) => {
   // Insertar o actualizar cada seatmap
   for (const seatMapData of seatMaps) {
     try {
+      if (!seatMapData.compatibleEventTypes) {
+        seatMapData.compatibleEventTypes = [seatMapData.type];
+      }
+
       await SeatMapModel.findOneAndUpdate(
         { id: seatMapData.id },
         seatMapData,
