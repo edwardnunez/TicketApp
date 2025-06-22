@@ -64,11 +64,12 @@ export default function SelectTickets({
 
   // Memoize the total calculation
   const totalFromSeats = useMemo(() => {
-    return selectedSeats.reduce((total, seat) => total + seat.price, 0);
+    return selectedSeats.reduce((total, seat) => total + (seat.price || 0), 0);
   }, [selectedSeats]);
 
-  // Stable reference for handleSeatSelection
+  // Simplified handleSeatSelection - just pass through the seats with their prices
   const handleSeatSelection = useCallback((seats) => {
+    // Los asientos ya vienen con el precio correcto calculado desde SeatRenderer
     onSeatSelect(seats);
     setQuantity(seats.length);
   }, [onSeatSelect, setQuantity]);
@@ -99,20 +100,31 @@ export default function SelectTickets({
         }
         
         // Aplicar precios del evento si están disponibles
+        let updatedSeatMapData = { ...seatMapData };
+        
         if (event.usesSectionPricing && event.sectionPricing?.length > 0) {
-          const updatedSeatMapData = {
-            ...seatMapData,
-            sections: seatMapData.sections.map(section => {
-              const eventSectionPricing = event.sectionPricing.find(sp => sp.sectionId === section.id);
-              return eventSectionPricing 
-                ? { ...section, price: eventSectionPricing.price }
-                : section;
-            })
-          };
-          setSeatMapData(updatedSeatMapData);
-        } else {
-          setSeatMapData(seatMapData);
+          updatedSeatMapData.sections = seatMapData.sections.map(section => {
+            const eventSectionPricing = event.sectionPricing.find(sp => sp.sectionId === section.id);
+            
+            if (eventSectionPricing) {
+              // Si usa pricing por filas, usar el precio base como referencia
+              const displayPrice = event.usesRowPricing && eventSectionPricing.variablePrice > 0
+                ? eventSectionPricing.basePrice
+                : eventSectionPricing.basePrice || eventSectionPricing.price || section.price;
+              
+              return { 
+                ...section, 
+                price: displayPrice,
+                // Agregar información adicional para el cálculo de precios por fila
+                sectionPricing: eventSectionPricing
+              };
+            }
+            
+            return section;
+          });
         }
+        
+        setSeatMapData(updatedSeatMapData);
       } catch (err) {
         console.error('Error loading seatmap:', err);
         if (err.response?.status === 404) {
@@ -129,7 +141,7 @@ export default function SelectTickets({
     };
 
     loadSeatMapData();
-  }, [event?.location?.seatMapId, event?.type, requiresSeatMap, validateSeatMapCompatibility]);
+  }, [event?.location?.seatMapId, event?.type, event?.usesSectionPricing, event?.sectionPricing, requiresSeatMap, validateSeatMapCompatibility]);
 
   useEffect(() => {
     // Limpiar asientos seleccionados cuando cambia el evento
@@ -191,9 +203,10 @@ export default function SelectTickets({
         blockedSeats={blockedSeats}
         blockedSections={blockedSections}
         formatPrice={formatPrice}
+        event={event} // Pasar el evento para el cálculo de precios
       />
     );
-  }, [loading, error, seatMapData, selectedSeats, handleSeatSelection, occupiedSeats, blockedSeats, blockedSections, formatPrice]);
+  }, [loading, error, seatMapData, selectedSeats, handleSeatSelection, occupiedSeats, blockedSeats, blockedSections, formatPrice, event]);
 
 
   // Memoize the selected ticket type data
@@ -293,7 +306,7 @@ export default function SelectTickets({
                         </Text>
                       </div>
                       <Text strong style={{ color: COLORS.primary.main }}>
-                        {formatPrice(seat.price)}
+                        {formatPrice(seat.price || 0)}
                       </Text>
                     </div>
                   </div>
