@@ -73,12 +73,12 @@ const seatMapSchema = new mongoose.Schema({
   },
   type: { 
     type: String, 
-    enum: ['football', 'cinema', 'theater', 'concert'], 
+    enum: ['football', 'cinema', 'theater', 'concert', 'arena'], // Agregados 'concert' y 'arena'
     required: true 
   },
   subtype: {
     type: String,
-    enum: ['stadium', 'indoor_arena', 'outdoor_venue', 'general_admission'],
+    enum: ['stadium', 'indoor_arena', 'outdoor_venue', 'general_admission', 'concert_hall', 'pavilion'],
     required: false
   },
   sections: [sectionSchema],
