@@ -65,6 +65,21 @@ const createSectionPricing = (seatMapInfo, pricingData) => {
   return seatMapInfo.sections.map(section => {
     const sectionPricing = pricingData.find(p => p.sectionId === section.id);
     
+    // Calcular capacidad, filas y asientos por fila
+    let capacity, rows, seatsPerRow;
+    
+    if (section.hasNumberedSeats === false) {
+      // Sección de entrada general (como "Pista")
+      capacity = section.totalCapacity || section.capacity || 0;
+      rows = 1;
+      seatsPerRow = capacity || 1; // Asegurar que seatsPerRow nunca sea 0
+    } else {
+      // Sección con asientos numerados
+      capacity = section.rows * section.seatsPerRow;
+      rows = section.rows || 1;
+      seatsPerRow = section.seatsPerRow || 1;
+    }
+    
     if (!sectionPricing) {
       // Sección sin pricing específico, usar valores por defecto
       return {
@@ -72,11 +87,9 @@ const createSectionPricing = (seatMapInfo, pricingData) => {
         sectionName: section.name,
         basePrice: section.price || 0,
         variablePrice: 0,
-        capacity: section.hasNumberedSeats === false
-          ? section.capacity || 0
-          : section.rows * section.seatsPerRow,
-        rows: section.hasNumberedSeats === false ? 1 : section.rows,
-        seatsPerRow: section.hasNumberedSeats === false ? section.capacity : section.seatsPerRow,
+        capacity: capacity,
+        rows: rows,
+        seatsPerRow: seatsPerRow,
         frontRowFirst: true
       };
     }
@@ -86,11 +99,9 @@ const createSectionPricing = (seatMapInfo, pricingData) => {
       sectionName: section.name,
       basePrice: sectionPricing.basePrice || sectionPricing.price || section.price || 0,
       variablePrice: sectionPricing.variablePrice || 0,
-      capacity: section.hasNumberedSeats === false
-        ? section.capacity || 0
-        : section.rows * section.seatsPerRow,
-      rows: section.hasNumberedSeats === false ? 1 : section.rows,
-      seatsPerRow: section.hasNumberedSeats === false ? section.capacity : section.seatsPerRow,
+      capacity: capacity,
+      rows: rows,
+      seatsPerRow: seatsPerRow,
       frontRowFirst: sectionPricing.frontRowFirst !== undefined ? sectionPricing.frontRowFirst : true
     };
   });
