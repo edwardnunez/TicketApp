@@ -13,7 +13,9 @@ const GenericSeatMapRenderer = ({
   occupiedSeats,
   blockedSeats,
   blockedSections,
-  formatPrice
+  formatPrice,
+  event,
+  calculateSeatPrice // Agregado para evitar el error de prop faltante
 }) => {
   if (!seatMapData) return null;
 
@@ -44,6 +46,7 @@ const GenericSeatMapRenderer = ({
           opacity: sectionBlocked ? 0.5 : 1,
           backgroundColor: sectionBlocked ? '#f5f5f5' : 'white',
           border: sectionBlocked ? '2px dashed #ccc' : '1px solid #d9d9d9',
+          position: 'relative', // Agregado para posicionamiento correcto
           ...additionalStyles
         }}
       >
@@ -78,6 +81,9 @@ const GenericSeatMapRenderer = ({
           maxSeats={maxSeats}
           onSeatSelect={onSeatSelect}
           formatPrice={formatPrice}
+          event={event}
+          calculateSeatPrice={calculateSeatPrice} // Agregado para pasar la prop correctamente
+          sectionPricing={section.sectionPricing}
         />
       </Card>
     );
@@ -90,7 +96,9 @@ const GenericSeatMapRenderer = ({
         strong 
         style={{ 
           color: sectionBlocked ? '#999' : section.color,
-          textDecoration: sectionBlocked ? 'line-through' : 'none'
+          textDecoration: sectionBlocked ? 'line-through' : 'none',
+          display: 'block',
+          marginBottom: '8px' // Agregado para mejor espaciado
         }}
       >
         {section.name} {sectionBlocked && '(BLOQUEADA)'}
@@ -112,9 +120,11 @@ const GenericSeatMapRenderer = ({
         flexDirection: 'column', 
         alignItems: 'center', 
         gap: 30, 
-        minWidth: 1000, // Aumentado para dar más espacio
-        minHeight: 700, // Aumentado para dar más espacio vertical
-        padding: '30px'
+        minWidth: 1000,
+        minHeight: 700,
+        padding: '30px',
+        backgroundColor: COLORS.neutral.grey1,
+        borderRadius: '12px'
       }}>
         <Title level={4} style={{ margin: 0, color: COLORS.neutral.darker }}>
           {config?.stadiumName || name}
@@ -134,7 +144,7 @@ const GenericSeatMapRenderer = ({
           alignItems: 'center', 
           justifyContent: 'center', 
           width: '100%', 
-          gap: 80 // Aumentado el gap para más separación
+          gap: 80
         }}>
           {/* Tribuna Oeste */}
           {tribunaOeste && (
@@ -142,14 +152,14 @@ const GenericSeatMapRenderer = ({
               display: 'flex', 
               flexDirection: 'column', 
               alignItems: 'center', 
-              minWidth: 200, // Aumentado el ancho mínimo
+              minWidth: 200,
               justifyContent: 'center',
               position: 'relative',
-              marginRight: 40 // Margen adicional aumentado
+              marginRight: 40
             }}>
               <div style={{
                 position: 'absolute',
-                top: -60, // Más espacio arriba
+                top: -60,
                 left: '50%',
                 transform: 'translateX(-50%)',
                 whiteSpace: 'nowrap',
@@ -168,7 +178,7 @@ const GenericSeatMapRenderer = ({
               </div>
               {renderSectionCard(tribunaOeste, { 
                 transform: 'rotate(-90deg)',
-                marginTop: 50 // Más espacio para el texto
+                marginTop: 50
               })}
             </div>
           )}
@@ -212,14 +222,14 @@ const GenericSeatMapRenderer = ({
               display: 'flex', 
               flexDirection: 'column', 
               alignItems: 'center', 
-              minWidth: 200, // Aumentado el ancho mínimo
+              minWidth: 200,
               justifyContent: 'center',
               position: 'relative',
-              marginLeft: 40 // Margen adicional aumentado
+              marginLeft: 40
             }}>
               <div style={{
                 position: 'absolute',
-                top: -60, // Más espacio arriba
+                top: -60,
                 left: '50%',
                 transform: 'translateX(-50%)',
                 whiteSpace: 'nowrap',
@@ -238,7 +248,7 @@ const GenericSeatMapRenderer = ({
               </div>
               {renderSectionCard(tribunaEste, { 
                 transform: 'rotate(90deg)',
-                marginTop: 50 // Más espacio para el texto
+                marginTop: 50
               })}
             </div>
           )}
@@ -282,7 +292,9 @@ const GenericSeatMapRenderer = ({
         alignItems: 'center', 
         gap: 10,
         minWidth: 400,
-        padding: '20px'
+        padding: '20px',
+        backgroundColor: COLORS.neutral.grey1,
+        borderRadius: '12px'
       }}>
         <Title level={4} style={{ margin: 0, color: COLORS.neutral.darker }}>
           {config?.cinemaName || name}
@@ -339,7 +351,9 @@ const GenericSeatMapRenderer = ({
         alignItems: 'center', 
         gap: 15,
         minWidth: 400,
-        padding: '20px'
+        padding: '20px',
+        backgroundColor: COLORS.neutral.grey1,
+        borderRadius: '12px'
       }}>
         <Title level={4} style={{ margin: 0, color: COLORS.neutral.darker }}>
           {config?.theaterName || name}
@@ -462,6 +476,9 @@ const GenericSeatMapRenderer = ({
                     maxSeats={maxSeats}
                     onSeatSelect={onSeatSelect}
                     formatPrice={formatPrice}
+                    event={event}
+                    calculateSeatPrice={calculateSeatPrice}
+                    sectionPricing={section.sectionPricing}
                   />
                 </div>
               </div>

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Tooltip } from 'antd';
 import { CheckOutlined, CloseOutlined, StopOutlined } from '@ant-design/icons';
@@ -17,11 +16,14 @@ const SeatRenderer = ({
   sectionBlocked = false, // Si toda la sección está bloqueada
   maxSeats,
   onSeatSelect,
-  formatPrice
+  formatPrice,
+  event, // Nuevo: objeto del evento
+  calculateSeatPrice, // Nuevo: función para calcular precio por asiento
+  sectionPricing // Nuevo: configuración de precios de la sección
 }) => {
   const [hoveredSeat, setHoveredSeat] = useState(null);
 
-  const getSeatId = (row, seat) => `${sectionId}-${row}-${seat}`;
+  const getSeatId = (row, seat) => `${sectionId}-${row + 1}-${seat + 1}`;
   
   const isSeatOccupied = (seatId) => occupiedSeats?.includes(seatId) || false;
   const isSeatSelected = (seatId) => selectedSeats?.some(s => s.id === seatId) || false;
@@ -32,19 +34,55 @@ const SeatRenderer = ({
     return blockedSeats?.includes(seatId) || false;
   };
 
+  const getSeatPrice = (row, seat) => {
+    // Si el evento usa pricing por secciones, calcular dinámicamente
+    if (event && event.usesSectionPricing && event.sectionPricing?.length > 0) {
+      const sectionPricing = event.sectionPricing.find(sp => sp.sectionId === sectionId);
+      
+      if (sectionPricing) {
+        // Si no usa pricing por filas, devolver precio base
+        if (!event.usesRowPricing || !sectionPricing.variablePrice) {
+          return sectionPricing.basePrice || sectionPricing.price || price || event.price;
+        }
+
+        // Calcular precio por fila
+        const rowNumber = row + 1;
+        let rowMultiplier;
+        
+        if (sectionPricing.frontRowFirst) {
+          rowMultiplier = sectionPricing.rows - rowNumber + 1;
+        } else {
+          rowMultiplier = rowNumber;
+        }
+        
+        const finalPrice = sectionPricing.basePrice + (sectionPricing.variablePrice * (rowMultiplier - 1));
+        return Math.max(finalPrice, 0);
+      }
+    }
+    
+    // Si tiene función de cálculo externa, usarla
+    if (calculateSeatPrice && event) {
+      return calculateSeatPrice(sectionId, row, { sections: [{ id: sectionId, price }] }, event);
+    }
+    
+    // Fallback al precio de la sección del seatMap
+    return price || 0;
+  };
+
   const handleSeatClick = (row, seat) => {
     const seatId = getSeatId(row, seat);
     
     // No permitir interacción si el asiento está ocupado, bloqueado, o la sección está bloqueada
     if (isSeatOccupied(seatId) || isSeatBlocked(seatId) || sectionBlocked) return;
 
+    const seatPrice = getSeatPrice(row, seat);
     const seatData = {
       id: seatId,
       section: sectionName,
       sectionId,
       row: row + 1,
       seat: seat + 1,
-      price
+      price: seatPrice
     };
 
     if (isSeatSelected(seatId)) {
@@ -71,7 +109,11 @@ const SeatRenderer = ({
     if (isSeatBlocked(seatId)) {
       return 'Asiento bloqueado - No disponible';
     }
-    return `${sectionName} - Fila ${row + 1}, Asiento ${seat + 1} - ${formatPrice ? formatPrice(price) : price}`;
+    
+    const seatPrice = getSeatPrice(row, seat);
+    const formattedPrice = formatPrice ? formatPrice(seatPrice) : `€${seatPrice}`;
+    
+    return `${sectionName} - Fila ${row + 1}, Asiento ${seat + 1} - ${formattedPrice}`;
   };
 
   const renderSeat = (row, seat) => {
