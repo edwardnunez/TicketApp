@@ -23,34 +23,67 @@ export default function SelectTickets({
 
   const requiresSeatMap = useCallback(() => {
     if (!event?.type) return false;
-    // Mapear tipos de eventos a categorías de seatmap
+    
+    // Si el evento tiene seatMapId configurado, requiere mapa
+    if (event?.location?.seatMapId) return true;
+    
+    // Los conciertos pueden tener o no mapa según la configuración
+    if (event.type.toLowerCase() === 'concert' || event.type.toLowerCase() === 'concierto') {
+      return !!event?.location?.seatMapId;
+    }
+    
+    // Otros tipos que siempre requieren mapa
     const eventToSeatMapType = {
       'cinema': 'cinema',
       'theater': 'theater', 
-      'theatre': 'theater', // variante en inglés
+      'theatre': 'theater',
       'football': 'football',
       'soccer': 'football',
-      'sports': 'football', // asumir football por defecto para sports
+      'sports': 'football',
       'stadium': 'football'
     };
+    
     return Object.keys(eventToSeatMapType).includes(event.type.toLowerCase());
-  }, [event?.type]);
+  }, [event?.type, event?.location?.seatMapId]);
 
   const validateSeatMapCompatibility = useCallback((seatMapData, eventType) => {
-    if (!seatMapData || !eventType) return false;
-    
-    const compatibilityMap = {
-      'cinema': ['cinema'],
-      'theater': ['theater'],
-      'theatre': ['theater'],
-      'football': ['football'],
-      'soccer': ['football'],
-      'sports': ['football'],
-      'stadium': ['football']
+    if (!seatMapData || !eventType) {
+      return false;
+    }
+
+    const seatMapType = seatMapData.type?.toLowerCase();
+    const normalizedEventType = eventType.toLowerCase();
+
+    // Define compatibility mappings
+    const compatibilityMappings = {
+      cinema: ['cinema'],
+      theater: ['theater', 'theatre'],
+      theatre: ['theater', 'theatre'],
+      stadium: ['football', 'soccer', 'sports', 'stadium'],
+      football: ['football', 'soccer', 'sports', 'stadium'],
+      sports: ['football', 'soccer', 'sports', 'stadium', 'basketball', 'tennis'],
+      arena: ['concert', 'arena'],
+      concert: ['concert', 'arena'],
     };
-    
-    const allowedTypes = compatibilityMap[eventType.toLowerCase()] || [];
-    return allowedTypes.includes(seatMapData.type);
+
+    if (compatibilityMappings[seatMapType]) {
+      return compatibilityMappings[seatMapType].includes(normalizedEventType);
+    }
+
+    if (seatMapType === normalizedEventType) {
+      return true;
+    }
+
+    const specialCases = [
+      (seatMapType === 'theater' && ['theatre', 'concert', 'concierto'].includes(normalizedEventType)),
+      (seatMapType === 'theatre' && ['theater', 'concert', 'concierto'].includes(normalizedEventType)),
+      (seatMapType === 'football' && ['soccer', 'sports'].includes(normalizedEventType)),
+      (seatMapType === 'soccer' && ['football', 'sports'].includes(normalizedEventType)),
+      (seatMapType === 'concert' && ['concert', 'music'].includes(normalizedEventType)),
+      (seatMapType === 'arena' && ['concert', 'music'].includes(normalizedEventType))
+    ];
+
+    return specialCases.some(condition => condition);
   }, []);
 
   // Extraer asientos y secciones bloqueados del evento
