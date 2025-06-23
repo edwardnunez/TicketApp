@@ -102,10 +102,19 @@ export default function SelectTickets({
 
   // Simplified handleSeatSelection - just pass through the seats with their prices
   const handleSeatSelection = useCallback((seats) => {
-    // Los asientos ya vienen con el precio correcto calculado desde SeatRenderer
-    onSeatSelect(seats);
-    setQuantity(seats.length);
-  }, [onSeatSelect, setQuantity]);
+    const seatsWithFullInfo = seats.map(seat => ({
+        ...seat,
+        id: seat.id || `${seat.section}-${seat.row}-${seat.seat}`,
+        seatId: seat.seatId || `${seat.section}-${seat.row}-${seat.seat}`,
+        price: seat.price || 0,
+        section: seat.section,
+        row: seat.row,
+        seat: seat.seat
+      }));
+      
+      onSeatSelect(seatsWithFullInfo);
+      setQuantity(seatsWithFullInfo.length);
+    }, [onSeatSelect, setQuantity]);
 
   // Load seatmap data with proper dependencies
   useEffect(() => {
