@@ -341,17 +341,33 @@ export default function SelectTickets({
                   }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div>
-                        <Text strong>{seat.section}</Text>
-                        <br />
+                        <Text strong>{seat.section}</Text><br />
                         <Text style={{ color: COLORS.neutral.grey4 }}>
-                          Fila {seat.row}, Asiento {seat.seat}
+                          {seat.row != null && seat.seat != null
+                            ? `Fila ${seat.row}, Asiento ${seat.seat}`
+                            : `Entrada general`}
                         </Text>
                       </div>
-                      <Text strong style={{ color: COLORS.primary.main }}>
-                        {formatPrice(seat.price || 0)}
-                      </Text>
+                      <div style={{ textAlign: 'right' }}>
+                        <Text strong style={{ color: COLORS.primary.main }}>
+                          {formatPrice(seat.price || 0)}
+                        </Text><br />
+                        <Button 
+                          size="small" 
+                          type="link" 
+                          danger 
+                          onClick={() => {
+                            const newSeats = selectedSeats.filter(s => s.id !== seat.id);
+                            onSeatSelect(newSeats);
+                            setQuantity(newSeats.length);
+                          }}
+                        >
+                          Quitar
+                        </Button>
+                      </div>
                     </div>
                   </div>
+
                 ))}
               </div>
               <div style={{ 
