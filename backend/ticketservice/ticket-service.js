@@ -141,6 +141,8 @@ app.post('/tickets/purchase', async (req, res) => {
       price, 
       customerInfo, 
       selectedSeats,
+      generalAdmissionSeats, // Nuevo campo para asientos de pista
+      usesSpecificSeats,
       paymentInfo,
       metadata
     } = req.body;
@@ -164,6 +166,31 @@ app.post('/tickets/purchase', async (req, res) => {
     const ticketNumber = generateTicketNumber();
     const validationCode = generateValidationCode();
 
+    // Combinar asientos numerados y de pista en un solo array
+    let allSelectedSeats = [];
+    
+    // Agregar asientos numerados si existen
+    if (selectedSeats && selectedSeats.length > 0) {
+      allSelectedSeats = [...allSelectedSeats, ...selectedSeats];
+    }
+    
+    // Agregar asientos de pista si existen
+    if (generalAdmissionSeats && generalAdmissionSeats.length > 0) {
+      // Convertir asientos de pista al formato esperado por el schema
+      const formattedGeneralSeats = generalAdmissionSeats.map(seat => ({
+        id: seat.id,
+        sectionId: seat.section || seat.sectionId || 'pista',
+        row: null, // Los asientos de pista no tienen fila específica
+        seat: null, // Los asientos de pista no tienen asiento específico
+        price: seat.price,
+        isGeneralAdmission: true
+      }));
+      
+      allSelectedSeats = [...allSelectedSeats, ...formattedGeneralSeats];
+    }
+
+    console.log('Asientos procesados para guardado:', allSelectedSeats); // Para debugging
+
     // Crear el ticket inicial CON qrCode temporal
     const newTicket = new Ticket({
       userId,
@@ -171,14 +198,19 @@ app.post('/tickets/purchase', async (req, res) => {
       ticketType,
       price,
       quantity,
-      selectedSeats,
+      selectedSeats: allSelectedSeats, // Usar el array combinado
       status: 'paid',
       customerInfo,
       paymentInfo: paymentInfo || {
         method: 'demo',
         transactionId: `TXN-${Date.now()}`
       },
-      metadata: metadata || {},
+      metadata: {
+        ...metadata,
+        usesSpecificSeats: usesSpecificSeats || false,
+        hasGeneralAdmission: generalAdmissionSeats && generalAdmissionSeats.length > 0,
+        hasNumberedSeats: selectedSeats && selectedSeats.length > 0
+      },
       ticketNumber,
       validationCode,
       qrCode: 'temp' // QR temporal para evitar el error de validación

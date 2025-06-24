@@ -124,7 +124,12 @@ export default function BuyerInfo({
               <>
                 {selectedSeats.map((seat, index) => (
                   <div key={index} style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Text>{seat.section} - Fila {seat.row}, Asiento {seat.seat}</Text>
+                    <Text style={{ color: COLORS.neutral.grey4 }}>
+                      {seat.row != null && seat.seat != null
+                        ? `${seat.section} -  Fila ${seat.row}, Asiento ${seat.seat}`
+                        : `${seat.section} - Entrada general`}
+                    </Text>
+                    <Text></Text>
                     <Text strong>{formatPrice(seat.price || 0)}</Text>
                   </div>
                 ))}

@@ -1,7 +1,7 @@
 import React from 'react';
-import { Typography, Card } from 'antd';
 import SeatRenderer from './SeatRenderer';
 import { COLORS } from '../../../components/colorscheme';
+import { Typography, notification, Card } from 'antd';
 
 const { Title, Text } = Typography;
 
@@ -91,6 +91,7 @@ const GenericSeatMapRenderer = ({
           <GeneralAdmissionRenderer
             section={section}
             sectionBlocked={sectionBlocked}
+            occupiedSeats={filterOccupiedBySection(section.id)}
             formatPrice={formatPrice}
             selectedSeats={selectedSeats}
             onSeatSelect={onSeatSelect}
@@ -490,6 +491,7 @@ const GenericSeatMapRenderer = ({
                     sectionBlocked={isSectionBlocked(pistaSection.id)}
                     formatPrice={formatPrice}
                     selectedSeats={selectedSeats}
+                    occupiedSeats={filterOccupiedBySection(pistaSection.id)}
                     onSeatSelect={onSeatSelect}
                     maxSeats={maxSeats}
                   />
@@ -875,6 +877,7 @@ const GenericSeatMapRenderer = ({
                       section={section}
                       sectionBlocked={sectionBlocked}
                       formatPrice={formatPrice}
+                      occupiedSeats={filterOccupiedBySection(section.id)}
                       selectedSeats={selectedSeats}
                       onSeatSelect={onSeatSelect}
                       maxSeats={maxSeats}
@@ -906,31 +909,48 @@ const GenericSeatMapRenderer = ({
   }
 };
 
-// Componente para secciones de entrada general (sin asientos numerados)
 const GeneralAdmissionRenderer = ({ 
   section, 
   sectionBlocked, 
   formatPrice, 
   selectedSeats, 
+  occupiedSeats = [],
   onSeatSelect, 
   maxSeats 
 }) => {
-  const isSelected = selectedSeats.some(s => s.sectionId === section.id);
+  const sameSectionSelected = selectedSeats.filter(s => s.sectionId === section.id);
+  const isSelected = sameSectionSelected.length > 0;
+
+  // Capacidad
+  const occupiedCount = occupiedSeats.filter(seatId => seatId.startsWith(section.id)).length;
+  const totalCapacity = section.totalCapacity || 0;
+  const remainingCapacity = Math.max(totalCapacity - occupiedCount, 0);
+
+  const isFullyBooked = sectionBlocked || remainingCapacity <= 0;
 
   const handleSectionClick = () => {
-    if (sectionBlocked) return;
+    if (isFullyBooked) return;
+
+    const sameSectionSelected = selectedSeats.filter(s => s.sectionId === section.id);
+
+    if (sameSectionSelected.length >= remainingCapacity) {
+      notification.warning({
+        message: 'Capacidad insuficiente',
+        description: `Solo quedan ${remainingCapacity} entradas disponibles en esta sección.`,
+        placement: 'topRight'
+      });
+      return;
+    }
 
     const sectionData = {
-      id: `${section.id}-GA`,
+      id: `${section.id}-GA-${Date.now()}`, // Único
       section: section.name,
       sectionId: section.id,
       price: section.price,
       isGeneralAdmission: true
     };
 
-    if (isSelected) {
-      onSeatSelect(selectedSeats.filter(s => s.sectionId !== section.id));
-    } else if (selectedSeats.length < maxSeats) {
+    if (selectedSeats.length < maxSeats) {
       onSeatSelect([...selectedSeats, sectionData]);
     }
   };
@@ -939,34 +959,36 @@ const GeneralAdmissionRenderer = ({
     <div
       style={{
         minHeight: 80,
-        backgroundColor: sectionBlocked ? '#f5f5f5' : (isSelected ? section.color : section.color + '30'),
-        border: `2px ${isSelected ? 'solid' : 'dashed'} ${sectionBlocked ? '#ccc' : section.color}`,
+        backgroundColor: isFullyBooked ? '#f5f5f5' : (isSelected ? section.color : section.color + '30'),
+        border: `2px ${isSelected ? 'solid' : 'dashed'} ${isFullyBooked ? '#ccc' : section.color}`,
         borderRadius: 8,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        cursor: sectionBlocked ? 'not-allowed' : 'pointer',
-        opacity: sectionBlocked ? 0.5 : 1,
+        cursor: isFullyBooked ? 'not-allowed' : 'pointer',
+        opacity: isFullyBooked ? 0.5 : 1,
         transition: 'all 0.2s ease'
       }}
       onClick={handleSectionClick}
     >
       <div style={{ textAlign: 'center', padding: '10px' }}>
         <Text strong style={{ 
-          color: sectionBlocked ? '#999' : (isSelected ? 'white' : section.color),
+          color: isFullyBooked ? '#999' : (isSelected ? 'white' : section.color),
           display: 'block',
           marginBottom: 4
         }}>
-          ENTRADA GENERAL
+          {isFullyBooked ? 'AGOTADO' : 'ENTRADA GENERAL'}
         </Text>
+        
         <Text style={{ 
-          color: sectionBlocked ? '#999' : (isSelected ? 'white' : '#666'),
+          color: isFullyBooked ? '#999' : (isSelected ? 'white' : '#666'),
           fontSize: 12
         }}>
-          Capacidad: {section.totalCapacity}
+          Capacidad disponible: {remainingCapacity} / {totalCapacity}
         </Text>
+
         <Text style={{ 
-          color: sectionBlocked ? '#999' : (isSelected ? 'white' : section.color),
+          color: isFullyBooked ? '#999' : (isSelected ? 'white' : section.color),
           fontSize: 14,
           fontWeight: 'bold',
           display: 'block',
@@ -978,5 +1000,6 @@ const GeneralAdmissionRenderer = ({
     </div>
   );
 };
+
 
 export default GenericSeatMapRenderer;
