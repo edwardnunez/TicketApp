@@ -10,6 +10,7 @@ permitir que se pueda seleccionar mas de una entrada de pista - está hecho pero
 añadir limite para comprar entradas (si quedan 3 no dejar seleccionar mas de 3) - falta probarlo
 
 cambiar la manera de asignar precio a la seccion de pista (no aumenta por fila porque no tiene filas)
+// por algun motivo pilla todos los section.hasNumberedSeats a false
 modificar la manera de asignar precio para que no se actualice al meter un numero
 
 borrar los tickets de bd cuando se borra el evento asociado
