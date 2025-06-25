@@ -35,7 +35,7 @@ const GenericSeatMapRenderer = ({
     return blockedSections && blockedSections.includes(sectionId);
   };
 
-  const renderSectionCard = (section, additionalStyles = {}) => {
+  const renderSectionCard = (section = {}) => {
     const sectionBlocked = isSectionBlocked(section.id);
     
     return (
@@ -46,8 +46,7 @@ const GenericSeatMapRenderer = ({
           opacity: sectionBlocked ? 0.5 : 1,
           backgroundColor: sectionBlocked ? '#f5f5f5' : 'white',
           border: sectionBlocked ? '2px dashed #ccc' : '1px solid #d9d9d9',
-          position: 'relative',
-          ...additionalStyles
+          position: 'relative'
         }}
       >
         {sectionBlocked && (
@@ -386,10 +385,9 @@ const GenericSeatMapRenderer = ({
               }}>
                 {renderSectionHeader(sectionWest)}
               </div>
-              {renderSectionCard(sectionWest, { 
-                transform: 'rotate(-90deg)',
-                marginTop: 50
-              })}
+              <div style={{ transform: 'rotate(-90deg)', marginTop: 50 }}>
+                {renderSectionCard(sectionWest)}
+              </div>
             </div>
           )}
 
@@ -439,65 +437,104 @@ const GenericSeatMapRenderer = ({
               </div>
             </div>
 
-            {/* Sección de Pista rodeando el escenario */}
-            {pistaSection && (
-              <div style={{ 
-                textAlign: 'center',
-                position: 'relative'
-              }}>
-                {/* Header de la sección pista */}
-                <div style={{ marginBottom: '12px' }}>
-                  {renderSectionHeader(pistaSection)}
-                </div>
-                
-                {/* Contenedor de la pista que rodea el escenario */}
-                <div style={{
-                  width: (config?.stageWidth || 300) + 120,
-                  height: (config?.stageHeight || 80) + 120,
-                  border: `3px solid ${isSectionBlocked(pistaSection.id) ? '#ccc' : pistaSection.color}`,
-                  borderRadius: '16px',
-                  backgroundColor: isSectionBlocked(pistaSection.id) ? '#f5f5f5' : pistaSection.color + '10',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  position: 'relative',
-                  opacity: isSectionBlocked(pistaSection.id) ? 0.6 : 1
+            
+{pistaSection && (
+                <div style={{ 
+                  textAlign: 'center',
+                  position: 'relative'
                 }}>
-                  {/* Overlay si está bloqueada */}
-                  {isSectionBlocked(pistaSection.id) && (
+                  {/* Header de la sección pista */}
+                  <div style={{ marginBottom: '12px' }}>
+                    <Text 
+                      strong 
+                      style={{ 
+                        color: isSectionBlocked(pistaSection.id) ? '#999' : pistaSection.color,
+                        textDecoration: isSectionBlocked(pistaSection.id) ? 'line-through' : 'none',
+                        display: 'block',
+                        marginBottom: '8px',
+                        fontSize: '14px'
+                      }}
+                    >
+                      {pistaSection.name} {isSectionBlocked(pistaSection.id) && '(BLOQUEADA)'}
+                      {!pistaSection.hasNumberedSeats && ' (Entrada General)'}
+                    </Text>
+                  </div>
+                  
+                  {/* Contenedor de la pista MÁS GRANDE */}
+                  <div style={{
+                    width: (config?.stageWidth || 300) + 120, // CAMBIADO: de +80 a +120
+                    height: (config?.stageHeight || 80) + 120, // CAMBIADO: de +80 a +120
+                    position: 'relative',
+                    margin: '0 auto'
+                  }}>
+                    {/* Área de la pista simplificada */}
                     <div style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      zIndex: 3,
-                      borderRadius: '13px',
-                      fontSize: '14px',
-                      fontWeight: 'bold',
-                      color: '#999'
+                      width: '100%',
+                      height: '100%',
+                      background: isSectionBlocked(pistaSection.id) 
+                        ? 'linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%)'
+                        : `linear-gradient(135deg, ${pistaSection.color}08 0%, ${pistaSection.color}15 50%, ${pistaSection.color}08 100%)`,
+                      border: `3px solid ${isSectionBlocked(pistaSection.id) ? '#ccc' : pistaSection.color}`,
+                      borderRadius: '12px',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      boxShadow: isSectionBlocked(pistaSection.id) 
+                        ? '0 4px 12px rgba(0,0,0,0.1)'
+                        : `0 8px 24px ${pistaSection.color}20`,
+                      transition: 'all 0.3s ease'
                     }}>
-                      PISTA BLOQUEADA
-                    </div>
-                  )}
+                      {/* Overlay de bloqueo */}
+                      {isSectionBlocked(pistaSection.id) && (
+                        <div style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          background: 'rgba(255,255,255,0.8)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          zIndex: 3,
+                          borderRadius: '9px'
+                        }}>
+                          <div style={{
+                            fontSize: '20px',
+                            marginBottom: '4px',
+                            opacity: 0.6
+                          }}>🚫</div>
+                          <Text strong style={{ 
+                            color: '#999', 
+                            fontSize: '12px'
+                          }}>
+                            PISTA BLOQUEADA
+                          </Text>
+                        </div>
+                      )}
 
-                  {/* Renderizar la pista como entrada general */}
-                  <GeneralAdmissionRenderer
-                    section={pistaSection}
-                    sectionBlocked={isSectionBlocked(pistaSection.id)}
-                    formatPrice={formatPrice}
-                    selectedSeats={selectedSeats}
-                    occupiedSeats={filterOccupiedBySection(pistaSection.id)}
-                    onSeatSelect={onSeatSelect}
-                    maxSeats={maxSeats}
-                  />
+                      {/* Componente de entrada general */}
+                      <div style={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        zIndex: 2
+                      }}>
+                        <GeneralAdmissionRenderer
+                          section={pistaSection}
+                          sectionBlocked={isSectionBlocked(pistaSection.id)}
+                          formatPrice={formatPrice}
+                          selectedSeats={selectedSeats}
+                          occupiedSeats={filterOccupiedBySection(pistaSection.id)}
+                          onSeatSelect={onSeatSelect}
+                          maxSeats={maxSeats}
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
           </div>
 
           {/* Sección Este/Derecha */}
@@ -521,10 +558,9 @@ const GenericSeatMapRenderer = ({
               }}>
                 {renderSectionHeader(sectionEast)}
               </div>
-              {renderSectionCard(sectionEast, { 
-                transform: 'rotate(90deg)',
-                marginTop: 50
-              })}
+              <div style={{ transform: 'rotate(90deg)', marginTop: 50 }}>
+                {renderSectionCard(sectionEast)}
+              </div>
             </div>
           )}
         </div>
@@ -925,8 +961,10 @@ const GeneralAdmissionRenderer = ({
   const occupiedCount = occupiedSeats.filter(seatId => seatId.startsWith(section.id)).length;
   const totalCapacity = section.totalCapacity || 0;
   const remainingCapacity = Math.max(totalCapacity - occupiedCount, 0);
+  const capacityPercentage = totalCapacity > 0 ? ((totalCapacity - remainingCapacity) / totalCapacity) * 100 : 0;
 
   const isFullyBooked = sectionBlocked || remainingCapacity <= 0;
+  const isNearCapacity = capacityPercentage > 80;
 
   const handleSectionClick = () => {
     if (isFullyBooked) return;
@@ -937,13 +975,17 @@ const GeneralAdmissionRenderer = ({
       notification.warning({
         message: 'Capacidad insuficiente',
         description: `Solo quedan ${remainingCapacity} entradas disponibles en esta sección.`,
-        placement: 'topRight'
+        placement: 'topRight',
+        style: {
+          borderRadius: '12px',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.12)'
+        }
       });
       return;
     }
 
     const sectionData = {
-      id: `${section.id}-GA-${Date.now()}`, // Único
+      id: `${section.id}-GA-${Date.now()}`,
       section: section.name,
       sectionId: section.id,
       price: section.price,
@@ -955,47 +997,161 @@ const GeneralAdmissionRenderer = ({
     }
   };
 
+  if (isFullyBooked) {
+    return (
+      <div style={{
+        padding: '20px',
+        textAlign: 'center',
+        color: '#999',
+        fontSize: '14px'
+      }}>
+        <div style={{ fontSize: '20px', marginBottom: '8px' }}>⚠️</div>
+        <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>AGOTADO</div>
+        <div style={{ fontSize: '12px' }}>No hay entradas disponibles</div>
+      </div>
+    );
+  }
+
   return (
     <div
       style={{
-        minHeight: 80,
-        backgroundColor: isFullyBooked ? '#f5f5f5' : (isSelected ? section.color : section.color + '30'),
-        border: `2px ${isSelected ? 'solid' : 'dashed'} ${isFullyBooked ? '#ccc' : section.color}`,
-        borderRadius: 8,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        cursor: isFullyBooked ? 'not-allowed' : 'pointer',
-        opacity: isFullyBooked ? 0.5 : 1,
-        transition: 'all 0.2s ease'
+        minWidth: '200px',
+        padding: '20px',
+        background: isSelected 
+          ? `linear-gradient(135deg, ${section.color} 0%, ${section.color}dd 100%)`
+          : 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%)',
+        border: `2px solid ${isSelected ? section.color : section.color + '40'}`,
+        borderRadius: '16px',
+        cursor: 'pointer',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        boxShadow: isSelected 
+          ? `0 8px 32px ${section.color}30, 0 0 0 4px ${section.color}20`
+          : '0 4px 16px rgba(0,0,0,0.08)',
+        transform: isSelected ? 'scale(1.02)' : 'scale(1)',
+        backdropFilter: 'blur(10px)',
+        position: 'relative',
+        overflow: 'hidden'
       }}
       onClick={handleSectionClick}
+      onMouseEnter={(e) => {
+        if (!isSelected) {
+          e.target.style.transform = 'scale(1.02)';
+          e.target.style.boxShadow = `0 8px 24px ${section.color}20`;
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!isSelected) {
+          e.target.style.transform = 'scale(1)';
+          e.target.style.boxShadow = '0 4px 16px rgba(0,0,0,0.08)';
+        }
+      }}
     >
-      <div style={{ textAlign: 'center', padding: '10px' }}>
-        <Text strong style={{ 
-          color: isFullyBooked ? '#999' : (isSelected ? 'white' : section.color),
-          display: 'block',
-          marginBottom: 4
+      {/* Efecto de brillo para seleccionado */}
+      {isSelected && (
+        <div style={{
+          position: 'absolute',
+          top: '-50%',
+          left: '-50%',
+          width: '200%',
+          height: '200%',
+          background: `linear-gradient(45deg, transparent 30%, ${section.color}20 50%, transparent 70%)`,
+          animation: 'shimmer 2s infinite',
+          pointerEvents: 'none'
+        }}></div>
+      )}
+
+      <div style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
+        {/* Icono y estado */}
+        <div style={{ 
+          fontSize: '24px', 
+          marginBottom: '8px',
+          filter: isSelected ? 'brightness(0) invert(1)' : 'none'
         }}>
-          {isFullyBooked ? 'AGOTADO' : 'ENTRADA GENERAL'}
-        </Text>
+          {isSelected ? '✓' : '🎫'}
+        </div>
         
-        <Text style={{ 
-          color: isFullyBooked ? '#999' : (isSelected ? 'white' : '#666'),
-          fontSize: 12
+        {/* Título */}
+        <Text strong style={{ 
+          color: isSelected ? 'white' : section.color,
+          display: 'block',
+          marginBottom: '8px',
+          fontSize: '14px',
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px'
         }}>
-          Capacidad disponible: {remainingCapacity} / {totalCapacity}
+          {isSelected ? 'SELECCIONADO' : 'ENTRADA GENERAL'}
         </Text>
 
-        <Text style={{ 
-          color: isFullyBooked ? '#999' : (isSelected ? 'white' : section.color),
-          fontSize: 14,
-          fontWeight: 'bold',
-          display: 'block',
-          marginTop: 4
+        {/* Barra de capacidad */}
+        <div style={{
+          width: '100%',
+          height: '4px',
+          backgroundColor: isSelected ? 'rgba(255,255,255,0.3)' : section.color + '20',
+          borderRadius: '2px',
+          marginBottom: '8px',
+          overflow: 'hidden'
         }}>
-          {formatPrice(section.price)}
+          <div style={{
+            height: '100%',
+            width: `${capacityPercentage}%`,
+            backgroundColor: isSelected ? 'rgba(255,255,255,0.8)' : (isNearCapacity ? '#ff4d4f' : section.color),
+            borderRadius: '2px',
+            transition: 'width 0.3s ease'
+          }}></div>
+        </div>
+        
+        {/* Información de capacidad */}
+        <Text style={{ 
+          color: isSelected ? 'rgba(255,255,255,0.9)' : '#666',
+          fontSize: '11px',
+          display: 'block',
+          marginBottom: '12px'
+        }}>
+          {remainingCapacity} de {totalCapacity} disponibles
+          {isNearCapacity && !isSelected && (
+            <span style={{ color: '#ff4d4f', marginLeft: '4px' }}>
+              (¡Pocas quedan!)
+            </span>
+          )}
         </Text>
+
+        {/* Precio destacado */}
+        <div style={{
+          padding: '8px 16px',
+          background: isSelected ? 'rgba(255,255,255,0.2)' : section.color + '10',
+          borderRadius: '20px',
+          display: 'inline-block'
+        }}>
+          <Text style={{ 
+            color: isSelected ? 'white' : section.color,
+            fontSize: '16px',
+            fontWeight: 'bold'
+          }}>
+            {formatPrice(section.price)}
+          </Text>
+        </div>
+
+        {/* Indicador de selección múltiple */}
+        {sameSectionSelected.length > 1 && (
+          <div style={{
+            position: 'absolute',
+            top: '-8px',
+            right: '-8px',
+            width: '24px',
+            height: '24px',
+            backgroundColor: section.color,
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+            fontSize: '12px',
+            fontWeight: 'bold',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+          }}>
+            {sameSectionSelected.length}
+          </div>
+        )}
       </div>
     </div>
   );
