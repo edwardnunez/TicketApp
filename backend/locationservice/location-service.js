@@ -316,6 +316,7 @@ app.get('/location/:locationId/sections', async (req, res) => {
       basePrice: section.price,
       color: section.color,
       position: section.position,
+      hasNumberedSeats: section.hasNumberedSeats,
       order: section.order || 0
     }));
 

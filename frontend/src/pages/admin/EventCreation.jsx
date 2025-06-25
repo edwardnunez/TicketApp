@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef  } from 'react';
 import { 
   Layout, 
   Form, 
@@ -157,7 +157,7 @@ const EventCreation = () => {
     }
   };
 
-  const handleSectionBasePrice = (sectionId, newPrice) => {
+  const handleSectionBasePrice = useCallback((sectionId, newPrice) => {
     setSectionPricing(prevPricing => 
       prevPricing.map(section => 
         section.sectionId === sectionId 
@@ -165,9 +165,9 @@ const EventCreation = () => {
           : section
       )
     );
-  };
+  }, []);
 
-  const handleSectionVariablePrice = (sectionId, newPrice) => {
+  const handleSectionVariablePrice = useCallback((sectionId, newPrice) => {
     setSectionPricing(prevPricing => 
       prevPricing.map(section => 
         section.sectionId === sectionId 
@@ -175,7 +175,7 @@ const EventCreation = () => {
           : section
       )
     );
-  };
+  }, []);
 
   const handleFrontRowFirstChange = (sectionId, frontRowFirst) => {
     setSectionPricing(prevPricing => 
@@ -293,7 +293,7 @@ const EventCreation = () => {
           : section.rows * section.seatsPerRow,
         rows: section.hasNumberedSeats === false ? 1 : section.rows,
         seatsPerRow: section.hasNumberedSeats === false ? section.capacity : section.seatsPerRow,
-        hasNumberedSeats: section.hasNumberedSeats !== false, // default to true
+        hasNumberedSeats: section.hasNumberedSeats !== false,
         basePrice: 0,
         variablePrice: 0,
         frontRowFirst: true
@@ -344,11 +344,11 @@ const EventCreation = () => {
         );
         
         const hasInvalidVariablePrices = sectionPricing.some(section => 
-          section.variablePrice === '' || isNaN(parseFloat(section.variablePrice)) || parseFloat(section.variablePrice) < 0
+          section.hasNumberedSeats !== false && (section.variablePrice === '' || isNaN(parseFloat(section.variablePrice)) || parseFloat(section.variablePrice) < 0)
         );
         
         if (hasInvalidBasePrices || hasInvalidVariablePrices) {
-          setErrorMessage('Todos los precios base y variables deben ser números válidos y no negativos');
+          setErrorMessage('Todos los precios base deben ser números válidos y no negativos. Para secciones con asientos numerados, el precio variable también es obligatorio.');
           return;
         }
         
@@ -510,7 +510,10 @@ const EventCreation = () => {
         <Row gutter={[16, 16]}>
           {sectionPricing.map((section, index) => {
             const locationSection = locationSections.find(ls => ls.sectionId === section.sectionId);
-            const isNumberedSeats = section.hasNumberedSeats !== false; // Por defecto true
+            const isNumberedSeats = section.hasNumberedSeats !== false;
+            console.log(`Section ${index + 1}:`, section);
+            console.log(section.hasNumberedSeats, section.rows, section.seatsPerRow);
+            console.log("variable" +isNumberedSeats);
             
             return (
               <Col xs={24} lg={12} key={section.sectionId}>
@@ -529,7 +532,7 @@ const EventCreation = () => {
                       <Tag color={isNumberedSeats ? "blue" : "orange"} style={{ fontSize: '11px' }}>
                         {isNumberedSeats ? 
                           `${section.rows} filas × ${section.seatsPerRow} asientos` : 
-                          'Entrada General'
+                          'Entrada general'
                         }
                       </Tag>
                     </div>
@@ -548,7 +551,7 @@ const EventCreation = () => {
                     >
                       <Input
                         type="number"
-                        value={section.basePrice === 0 ? '' : section.basePrice}
+                        value={section.basePrice}
                         onChange={(e) => handleSectionBasePrice(section.sectionId, e.target.value)}
                         prefix={<EuroOutlined />}
                         placeholder="0.00"
