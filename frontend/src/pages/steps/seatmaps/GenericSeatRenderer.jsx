@@ -159,31 +159,36 @@ const GenericSeatMapRenderer = ({
         }}>
           {/* Tribuna Oeste */}
           {tribunaOeste && (
-            <div style={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center', 
-              minWidth: 200,
-              justifyContent: 'center',
-              position: 'relative',
-              marginRight: 40
+          <div style={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            minWidth: 200,
+            justifyContent: 'center',
+            position: 'relative',
+            marginRight: 40
+          }}>
+            <div style={{
+              position: 'absolute',
+              top: -80,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              whiteSpace: 'nowrap',
+              zIndex: 2
             }}>
-              <div style={{
-                position: 'absolute',
-                top: -60,
-                left: '50%',
-                transform: 'translateX(-50%)',
-                whiteSpace: 'nowrap',
-                zIndex: 2
-              }}>
-                {renderSectionHeader(tribunaOeste)}
-              </div>
-              {renderSectionCard(tribunaOeste, { 
-                transform: 'rotate(-90deg)',
-                marginTop: 50
-              })}
+              {renderSectionHeader(tribunaOeste)}
             </div>
-          )}
+            
+            {/* Contenedor rotado */}
+            <div style={{ 
+              transform: 'rotate(-90deg)',
+              transformOrigin: 'center center',
+              marginTop: 60
+            }}>
+              {renderSectionCard(tribunaOeste)}
+            </div>
+          </div>
+        )}
 
           {/* Campo o Escenario */}
           <div
@@ -238,32 +243,36 @@ const GenericSeatMapRenderer = ({
 
           {/* Tribuna Este */}
           {tribunaEste && (
-            <div style={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center', 
-              minWidth: 200,
-              justifyContent: 'center',
-              position: 'relative',
-              marginLeft: 40
+          <div style={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            minWidth: 200,
+            justifyContent: 'center',
+            position: 'relative',
+            marginLeft: 40
+          }}>
+            <div style={{
+              position: 'absolute',
+              top: -80,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              whiteSpace: 'nowrap',
+              zIndex: 2
             }}>
-              <div style={{
-                position: 'absolute',
-                top: -60,
-                left: '50%',
-                transform: 'translateX(-50%)',
-                whiteSpace: 'nowrap',
-                zIndex: 2
-              }}>
-                {renderSectionHeader(tribunaEste)}
-              </div>
-              {renderSectionCard(tribunaEste, { 
-                transform: 'rotate(90deg)',
-                marginTop: 50
-              })}
+              {renderSectionHeader(tribunaEste)}
             </div>
-          )}
-        </div>
+            
+            <div style={{ 
+              transform: 'rotate(90deg)',
+              transformOrigin: 'center center',
+              marginTop: 60
+            }}>
+              {renderSectionCard(tribunaEste)}
+            </div>
+          </div>
+        )}
+      </div>
 
         {/* Tribuna Sur */}
         {tribunaSur && (
