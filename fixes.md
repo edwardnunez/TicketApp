@@ -9,8 +9,6 @@ añadir limite para comprar entradas (si quedan 3 no dejar seleccionar mas de 3)
 
 modificar la manera de asignar precio para que no se actualice al meter un numero
 
-borrar los tickets de bd cuando se borra el evento asociado
-
 crear mapas de conciertos
 
 poner guapo todo el tema de mapas de entradas (no se como :D)

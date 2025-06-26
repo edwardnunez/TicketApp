@@ -12,6 +12,8 @@ const port = 8002;
 app.use(express.json());
 app.use(cors({ origin: ["http://localhost:3000", "http://localhost:8000"] }));
 
+const EVENT_SERVICE_URL = process.env.EVENT_SERVICE_URL || "http://localhost:8003";
+
 const mongoUri = process.env.MONGODB_URI || "mongodb://localhost:27017/ticketdb";
 mongoose.connect(mongoUri, { useNewUrlParser: true, useUnifiedTopology: true });
 
@@ -493,7 +495,7 @@ app.delete("/tickets/event/:eventId", async (req, res) => {
     const { eventId } = req.params;
 
     // Eliminar todos los tickets del evento
-    const result = await TicketModel.deleteMany({ eventId: eventId });
+    const result = await Ticket.deleteMany({ eventId: eventId });
 
     console.log(`Eliminados ${result.deletedCount} tickets para el evento ${eventId}`);
 
