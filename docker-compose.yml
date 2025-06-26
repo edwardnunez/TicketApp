@@ -45,9 +45,11 @@ services:
       - "8003:8003"
     environment:
       - MONGODB_URI=mongodb://mongo:27017/eventdb
+      - TICKET_SERVICE_URL=http://ticketservice:8002
       - LOCATION_SERVICE_URL=http://locationservice:8004
     depends_on:
       - mongo
+      - ticketservice
       - locationservice
 
   gateway:
