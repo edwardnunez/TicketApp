@@ -56,7 +56,6 @@ const getSeatMapInfo = async (seatMapId) => {
   }
 };
 
-// Función auxiliar para crear sectionPricing con información de filas del seatmap
 const createSectionPricing = (seatMapInfo, pricingData) => {
   if (!seatMapInfo || !seatMapInfo.sections || !pricingData) {
     return [];
@@ -70,9 +69,13 @@ const createSectionPricing = (seatMapInfo, pricingData) => {
     
     if (section.hasNumberedSeats === false) {
       // Sección de entrada general (como "Pista")
-      capacity = section.totalCapacity || section.capacity || 0;
+      if (sectionPricing && sectionPricing.capacity) {
+        capacity = sectionPricing.capacity; 
+      } else {
+        capacity = section.totalCapacity || section.capacity || 0;
+      }
       rows = 1;
-      seatsPerRow = capacity || 1; // Asegurar que seatsPerRow nunca sea 0
+      seatsPerRow = capacity; 
     } else {
       // Sección con asientos numerados
       capacity = section.rows * section.seatsPerRow;
