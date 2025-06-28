@@ -35,6 +35,15 @@ const GenericSeatMapRenderer = ({
     return blockedSections && blockedSections.includes(sectionId);
   };
 
+  
+  const getSectionCapacityFromPricing = (sectionId) => {
+    if (!event?.sectionPricing) return null;
+    const pricing = event.sectionPricing.find(p => p.sectionId === sectionId);
+    console.log(`Section ${sectionId} pricing:`, pricing);
+    console.log(`Capacity for section ${sectionId}:`, pricing ? pricing.capacity : null);
+    return pricing ? pricing.capacity : null;
+  };
+
   const renderSectionCard = (section = {}) => {
     const sectionBlocked = isSectionBlocked(section.id);
     
@@ -95,6 +104,8 @@ const GenericSeatMapRenderer = ({
             selectedSeats={selectedSeats}
             onSeatSelect={onSeatSelect}
             maxSeats={maxSeats}
+            event={event}
+            sectionCapacityFromPricing={getSectionCapacityFromPricing(section.id)}
           />
         )}
       </Card>
@@ -538,6 +549,8 @@ const GenericSeatMapRenderer = ({
                           occupiedSeats={filterOccupiedBySection(pistaSection.id)}
                           onSeatSelect={onSeatSelect}
                           maxSeats={maxSeats}
+                          event={event}
+                          sectionCapacityFromPricing={getSectionCapacityFromPricing(pistaSection.id)}
                         />
                       </div>
                     </div>
@@ -875,8 +888,18 @@ const GenericSeatMapRenderer = ({
                   </div>
                   <Typography.Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
                     {section.hasNumberedSeats 
-                      ? `${section.rows} filas × ${section.seatsPerRow} asientos por fila`
-                      : `Capacidad: ${section.totalCapacity} personas`
+                      ? (() => {
+                          const pricingCapacity = getSectionCapacityFromPricing(section.id);
+                          const displayCapacity = pricingCapacity || (section.rows * section.seatsPerRow);
+                          const displayRows = event?.sectionPricing?.find(p => p.sectionId === section.id)?.rows || section.rows;
+                          const displaySeatsPerRow = event?.sectionPricing?.find(p => p.sectionId === section.id)?.seatsPerRow || section.seatsPerRow;
+                          return `${displayRows} filas × ${displaySeatsPerRow} asientos por fila (${displayCapacity} total)`;
+                        })()
+                      : (() => {
+                          const pricingCapacity = getSectionCapacityFromPricing(section.id);
+                          const displayCapacity = pricingCapacity || section.totalCapacity;
+                          return `Capacidad: ${displayCapacity} personas`;
+                        })()
                     }
                   </Typography.Text>
                 </div>
@@ -926,6 +949,8 @@ const GenericSeatMapRenderer = ({
                       selectedSeats={selectedSeats}
                       onSeatSelect={onSeatSelect}
                       maxSeats={maxSeats}
+                      event={event}
+                      sectionCapacityFromPricing={getSectionCapacityFromPricing(section.id)}
                     />
                   )}
                 </div>
@@ -961,14 +986,17 @@ const GeneralAdmissionRenderer = ({
   selectedSeats, 
   occupiedSeats = [],
   onSeatSelect, 
-  maxSeats 
+  maxSeats,
+  event,
+  sectionCapacityFromPricing
 }) => {
   const sameSectionSelected = selectedSeats.filter(s => s.sectionId === section.id);
   const isSelected = sameSectionSelected.length > 0;
 
   // Capacidad
+  const pricingCapacity = sectionCapacityFromPricing;
   const occupiedCount = occupiedSeats.filter(seatId => seatId.startsWith(section.id)).length;
-  const totalCapacity = section.totalCapacity || 0;
+  const totalCapacity = pricingCapacity || section.totalCapacity || 0;
   const remainingCapacity = Math.max(totalCapacity - occupiedCount, 0);
   const capacityPercentage = totalCapacity > 0 ? ((totalCapacity - remainingCapacity) / totalCapacity) * 100 : 0;
 

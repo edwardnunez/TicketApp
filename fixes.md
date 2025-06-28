@@ -13,4 +13,7 @@ crear mapas de conciertos
 
 poner guapo todo el tema de mapas de entradas (no se como :D)
 
-añadir valor por defecto de 0 a los campos de precio de secciones
+añadir valor por defecto de 0 a los campos de precio de secciones -probar
+
+hay problemas con la capacidad de la pista - deberia establecerse en event creation
+la capacidad de la pista no se guarda bien
