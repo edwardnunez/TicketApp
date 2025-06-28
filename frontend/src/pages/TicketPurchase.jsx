@@ -300,32 +300,31 @@ const TicketPurchase = () => {
         }
       }
 
-      // Determinar si se usan asientos específicos o cantidad general
       const usesSpecificSeats = requiresSeatMap() && selectedSeats.length > 0;
       
       const finalQuantity = usesSpecificSeats ? selectedSeats.length : quantity;
       const totalPrice = getTotalPrice();
       const unitPrice = totalPrice / finalQuantity;
 
-      // CORRECCIÓN: Filtrar selectedSeats para asegurarse de que solo se envíen 
-      // asientos con seat y row válidos (asientos numerados)
-      let validSelectedSeats = null;
+      // Preparar selectedSeats - siempre se envía
+      let validSelectedSeats = [];
+      
       if (usesSpecificSeats && selectedSeats.length > 0) {
-        // Filtrar solo asientos que tienen seat y row (asientos numerados)
-        const numberedSeats = selectedSeats.filter(seat => 
-          seat.seat !== undefined && 
-          seat.row !== undefined && 
-          seat.seat !== null && 
-          seat.row !== null
-        );
-        
-        // Si hay asientos numerados, usar esos; si no, es entrada general
-        if (numberedSeats.length > 0) {
-          validSelectedSeats = numberedSeats;
-        } else {
-          // Es entrada general (pista), no enviar selectedSeats
-          validSelectedSeats = null;
-        }
+        // Procesar los asientos seleccionados
+        validSelectedSeats = selectedSeats.map(seat => {
+          // Si tiene seat y row definidos (asientos numerados)
+          if (seat.seat !== undefined && seat.row !== undefined && 
+              seat.seat !== null && seat.row !== null) {
+            return seat; // Mantener el asiento tal como está
+          } else {
+            // Si es pista (entrada general), establecer row y seat como null
+            return {
+              ...seat,
+              row: null,
+              seat: null
+            };
+          }
+        });
       }
 
       const ticketData = {
@@ -335,9 +334,8 @@ const TicketPurchase = () => {
         quantity: finalQuantity,
         price: unitPrice,
         totalPrice: totalPrice,
-        // Solo incluir selectedSeats si realmente son asientos numerados
-        selectedSeats: validSelectedSeats,
-        usesSpecificSeats: validSelectedSeats !== null,
+        selectedSeats: validSelectedSeats, // Siempre se envía, puede ser array vacío
+        usesSpecificSeats: usesSpecificSeats,
         customerInfo: {
           firstName: formData.firstName,
           lastName: formData.lastName,
@@ -364,7 +362,7 @@ const TicketPurchase = () => {
           purchaseDate: new Date(),
           qrCode: response.data.ticket.qrCode,
           selectedSeats: validSelectedSeats,
-          usesSpecificSeats: validSelectedSeats !== null
+          usesSpecificSeats: usesSpecificSeats
         });
         
         setPurchaseComplete(true);
