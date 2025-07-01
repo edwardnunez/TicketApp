@@ -438,26 +438,26 @@ const EditableSeatRenderer = ({
   const renderConcertLayout = () => {
     // Identificar secciones por nombres comunes en conciertos
     const sectionNorth = sections.find(s => 
-      s.id.includes('north') || s.name.toLowerCase().includes('north') ||
-      s.id.includes('norte') || s.name.toLowerCase().includes('norte') ||
+      s.position.includes('north') || s.name.toLowerCase().includes('north') ||
+      s.position.includes('norte') || s.name.toLowerCase().includes('norte') ||
       s.name.toLowerCase().includes('fondo') || s.name.toLowerCase().includes('back')
     );
     
     const sectionEast = sections.find(s => 
-      s.id.includes('east') || s.name.toLowerCase().includes('east') ||
-      s.id.includes('este') || s.name.toLowerCase().includes('este') ||
+      s.position.includes('east') || s.name.toLowerCase().includes('east') ||
+      s.position.includes('este') || s.name.toLowerCase().includes('este') ||
       s.name.toLowerCase().includes('right') || s.name.toLowerCase().includes('derecha')
     );
     
     const sectionWest = sections.find(s => 
-      s.id.includes('west') || s.name.toLowerCase().includes('west') ||
-      s.id.includes('oeste') || s.name.toLowerCase().includes('oeste') ||
+      s.position.includes('west') || s.name.toLowerCase().includes('west') ||
+      s.position.includes('oeste') || s.name.toLowerCase().includes('oeste') ||
       s.name.toLowerCase().includes('left') || s.name.toLowerCase().includes('izquierda')
     );
     
     const sectionSouth = sections.find(s => 
-      s.id.includes('south') || s.name.toLowerCase().includes('south') ||
-      s.id.includes('sur') || s.name.toLowerCase().includes('sur') ||
+      s.position.includes('south') || s.name.toLowerCase().includes('south') ||
+      s.position.includes('sur') || s.name.toLowerCase().includes('sur') ||
       s.name.toLowerCase().includes('front') || s.name.toLowerCase().includes('frente')
     );
 
