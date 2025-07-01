@@ -125,6 +125,7 @@ const EditableSeatRenderer = ({
           blockedSeats={filterBlockedBySection(section.id)}
           sectionBlocked={sectionBlocked}
           onSeatToggle={onSeatToggle}
+          hasNumberedSeats={section.hasNumberedSeats}
         />
       </Card>
     );
@@ -434,6 +435,338 @@ const EditableSeatRenderer = ({
     );
   };
 
+  const renderConcertLayout = () => {
+    // Identificar secciones por nombres comunes en conciertos
+    const sectionNorth = sections.find(s => 
+      s.position.includes('north') || s.name.toLowerCase().includes('north') ||
+      s.position.includes('norte') || s.name.toLowerCase().includes('norte') ||
+      s.name.toLowerCase().includes('fondo') || s.name.toLowerCase().includes('back')
+    );
+    
+    const sectionEast = sections.find(s => 
+      s.position.includes('east') || s.name.toLowerCase().includes('east') ||
+      s.position.includes('este') || s.name.toLowerCase().includes('este') ||
+      s.name.toLowerCase().includes('right') || s.name.toLowerCase().includes('derecha')
+    );
+    
+    const sectionWest = sections.find(s => 
+      s.position.includes('west') || s.name.toLowerCase().includes('west') ||
+      s.position.includes('oeste') || s.name.toLowerCase().includes('oeste') ||
+      s.name.toLowerCase().includes('left') || s.name.toLowerCase().includes('izquierda')
+    );
+    
+    const sectionSouth = sections.find(s => 
+      s.position.includes('south') || s.name.toLowerCase().includes('south') ||
+      s.position.includes('sur') || s.name.toLowerCase().includes('sur') ||
+      s.name.toLowerCase().includes('front') || s.name.toLowerCase().includes('frente')
+    );
+
+    // Secciones de entrada general sin asientos numerados (PISTA)
+    const pistaSection = sections.find(s => 
+      s.hasNumberedSeats === false || 
+      s.name.toLowerCase().includes('general') ||
+      s.name.toLowerCase().includes('pista')
+    );
+
+    // Sección VIP (puede estar separada)
+    const vipSection = sections.find(s => 
+      s.id.includes('vip') || s.name.toLowerCase().includes('vip') ||
+      s.name.toLowerCase().includes('premium') || s.name.toLowerCase().includes('palco')
+    );
+
+    // Resto de secciones que no coincidan con las anteriores
+    const otherSections = sections.filter(s => 
+      s !== sectionNorth && s !== sectionEast && s !== sectionWest && 
+      s !== sectionSouth && s !== vipSection && s !== pistaSection
+    );
+
+    return (
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        gap: 30, 
+        minWidth: 1200,
+        minHeight: 800,
+        padding: '30px'
+      }}>
+        <Title level={4} style={{ margin: 0, color: COLORS.neutral.darker }}>
+          {config?.venueName || name} - Modo Edición
+        </Title>
+
+        {/* Controles de sección */}
+        {renderSectionControls()}
+
+        {/* Sección Norte/Fondo */}
+        {sectionNorth && (
+          <div style={{ textAlign: 'center' }}>
+            {renderSectionHeader(sectionNorth)}
+            {renderSectionCard(sectionNorth)}
+          </div>
+        )}
+
+        {/* Fila central horizontal: Sección Oeste | Escenario+Pista | Sección Este */}
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          width: '100%', 
+          gap: 60
+        }}>
+          {/* Sección Oeste/Izquierda */}
+          {sectionWest && (
+            <div style={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              minWidth: 200,
+              justifyContent: 'center',
+              position: 'relative',
+              marginRight: 40
+            }}>
+              <div style={{
+                position: 'absolute',
+                top: -70,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                whiteSpace: 'nowrap',
+                zIndex: 2
+              }}>
+                <Text
+                  strong
+                  style={{
+                    color: isSectionBlocked(sectionWest.id) ? '#999' : sectionWest.color,
+                    textDecoration: isSectionBlocked(sectionWest.id) ? 'line-through' : 'none',
+                    fontSize: '14px'
+                  }}
+                >
+                  {sectionWest.name} {isSectionBlocked(sectionWest.id) && '(BLOQUEADA)'}
+                </Text>
+              </div>
+              {renderSectionCard(sectionWest, { 
+                transform: 'rotate(-90deg)',
+                marginTop: 50
+              })}
+            </div>
+          )}
+
+          {/* Área central: Escenario + Pista */}
+          <div style={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center',
+            gap: '16px',
+            position: 'relative'
+          }}>
+            {/* Escenario */}
+            <div
+              style={{
+                width: config?.stageWidth || 300,
+                height: config?.stageHeight || 80,
+                background: 'linear-gradient(135deg, #FF6B35 0%, #F7931E 50%, #FFD23F 100%)',
+                borderRadius: 12,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                fontSize: 20,
+                fontWeight: 'bold',
+                boxShadow: '0 8px 16px rgba(0,0,0,0.2)',
+                border: '3px solid #E55A00',
+                position: 'relative',
+                textShadow: '2px 2px 4px rgba(0,0,0,0.7)',
+                zIndex: 2
+              }}
+            >
+              {/* Luces del escenario */}
+              <div style={{
+                position: 'absolute',
+                top: '-8px',
+                left: '20%',
+                right: '20%',
+                height: '4px',
+                background: 'linear-gradient(90deg, #FFD700, #FFA500, #FFD700)',
+                borderRadius: '2px',
+                boxShadow: '0 0 10px rgba(255, 215, 0, 0.8)'
+              }}></div>
+              
+              <div style={{ fontSize: '22px', marginBottom: '4px' }}>
+                Escenario
+              </div>
+              
+            </div>
+
+            {/* Sección de Pista rodeando el escenario */}
+            {pistaSection && (
+              <div style={{ 
+                textAlign: 'center',
+                position: 'relative'
+              }}>
+                {/* Header de la sección pista */}
+                <div style={{ marginBottom: '12px' }}>
+                  {renderSectionHeader(pistaSection)}
+                </div>
+                
+                {/* Contenedor de la pista que rodea el escenario */}
+                <div style={{
+                  width: config?.stageWidth + 120 || 420,
+                  height: config?.stageHeight + 120 || 200,
+                  border: `3px solid ${isSectionBlocked(pistaSection.id) ? '#ccc' : pistaSection.color}`,
+                  borderRadius: '16px',
+                  backgroundColor: isSectionBlocked(pistaSection.id) ? '#f5f5f5' : pistaSection.color + '10',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  position: 'relative',
+                  opacity: isSectionBlocked(pistaSection.id) ? 0.6 : 1
+                }}>
+                  {/* Overlay si está bloqueada */}
+                  {isSectionBlocked(pistaSection.id) && (
+                    <div style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      zIndex: 3,
+                      borderRadius: '13px',
+                      fontSize: '14px',
+                      fontWeight: 'bold',
+                      color: '#999'
+                    }}>
+                      PISTA BLOQUEADA
+                    </div>
+                  )}
+
+                  {/* Área de pista con patrón */}
+                  <div style={{
+                    position: 'absolute',
+                    top: '16px',
+                    left: '16px',
+                    right: '16px',
+                    bottom: '16px',
+                    borderRadius: '12px',
+                    backgroundImage: `radial-gradient(circle at 50% 50%, ${pistaSection.color}20 0%, transparent 50%)`,
+                    backgroundSize: '30px 30px',
+                    opacity: 0.3
+                  }}></div>
+
+                  {/* Información de entrada general */}
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '50px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    fontSize: '11px',
+                    color: '#666',
+                    border: '1px solid #ddd'
+                  }}>
+                    Entrada general - Sin asientos numerados
+                  </div>
+                </div>
+
+                {/* Estadísticas de la pista */}
+                <div style={{ 
+                  marginTop: '8px', 
+                  textAlign: 'center', 
+                  fontSize: '11px', 
+                  color: COLORS?.neutral?.grey4 || '#999'
+                }}>
+                  {isSectionBlocked(pistaSection.id) ? (
+                    <span style={{ color: '#ff4d4f' }}>
+                      Pista bloqueada
+                    </span>
+                  ) : (
+                    <span>
+                      {pistaSection.name}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Sección Este/Derecha */}
+          {sectionEast && (
+            <div style={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              minWidth: 200,
+              justifyContent: 'center',
+              position: 'relative',
+              marginLeft: 40
+            }}>
+              <div style={{
+                position: 'absolute',
+                top: -70,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                whiteSpace: 'nowrap',
+                zIndex: 2
+              }}>
+                <Text
+                  strong
+                  style={{
+                    color: isSectionBlocked(sectionEast.id) ? '#999' : sectionEast.color,
+                    textDecoration: isSectionBlocked(sectionEast.id) ? 'line-through' : 'none',
+                    fontSize: '14px'
+                  }}
+                >
+                  {sectionEast.name} {isSectionBlocked(sectionEast.id) && '(BLOQUEADA)'}
+                </Text>
+              </div>
+              {renderSectionCard(sectionEast, { 
+                transform: 'rotate(90deg)',
+                marginTop: 50
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Sección Sur/Frente */}
+        {sectionSouth && (
+          <div style={{ textAlign: 'center', marginTop: 20 }}>
+            {renderSectionCard(sectionSouth)}
+            {renderSectionHeader(sectionSouth)}
+          </div>
+        )}
+
+        {/* Sección VIP */}
+        {vipSection && (
+          <div style={{ textAlign: 'center', marginTop: 30 }}>
+            {renderSectionHeader(vipSection)}
+            {renderSectionCard(vipSection, {
+              border: `2px solid ${isSectionBlocked(vipSection.id) ? '#ccc' : vipSection.color}`,
+              backgroundColor: isSectionBlocked(vipSection.id) ? '#f5f5f5' : vipSection.color + '20',
+              boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+            })}
+          </div>
+        )}
+
+        {/* Otras secciones adicionales */}
+        {otherSections.length > 0 && (
+          <div style={{ marginTop: 30, display: 'flex', flexWrap: 'wrap', gap: 20, justifyContent: 'center' }}>
+            {otherSections.map(section => (
+              <div key={section.id} style={{ textAlign: 'center' }}>
+                {renderSectionHeader(section)}
+                {renderSectionCard(section)}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const renderGenericLayout = () => {
     const sortedSections = [...sections].sort((a, b) => (a.order || 0) - (b.order || 0));
 
@@ -509,6 +842,7 @@ const EditableSeatRenderer = ({
                     blockedSeats={filterBlockedBySection(section.id)}
                     sectionBlocked={sectionBlocked}
                     onSeatToggle={onSeatToggle}
+                    hasNumberedSeats={section.hasNumberedSeats}
                   />
                 </div>
               </div>
@@ -527,6 +861,8 @@ const EditableSeatRenderer = ({
       return renderCinemaLayout();
     case 'theater':
       return renderTheaterLayout();
+    case 'concert':
+      return renderConcertLayout();
     default:
       return renderGenericLayout();
   }

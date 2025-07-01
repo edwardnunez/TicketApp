@@ -478,6 +478,22 @@ const AdminDashboard = () => {
                 Crear nuevo evento
               </Button>
             </Col>
+            <Col>
+              <Button
+                type="primary"
+                size="large"
+                icon={<PlusOutlined />}
+                onClick={() => window.location.href = '/create-location'}
+                style={{ 
+                  backgroundColor: COLORS?.primary?.main || "#1890ff",
+                  borderColor: COLORS?.primary?.main || "#1890ff",
+                  borderRadius: '6px',
+                  boxShadow: '0 2px 4px rgba(24, 144, 255, 0.2)'
+                }}
+              >
+                Crear nueva ubicación
+              </Button>
+            </Col>
           </Row>
 
           {/* Error message */}

@@ -11,7 +11,8 @@ const EditableSeatGrid = ({
   name: sectionName,
   blockedSeats,
   sectionBlocked,
-  onSeatToggle
+  onSeatToggle,
+  hasNumberedSeats
 }) => {
   const [hoveredSeat, setHoveredSeat] = useState(null);
 
@@ -133,6 +134,22 @@ const EditableSeatGrid = ({
       </div>
     </div>
   );
+
+  if (!hasNumberedSeats) {
+    return (
+      <div style={{
+        padding: '12px',
+        textAlign: 'center',
+        fontStyle: 'italic',
+        color: COLORS?.neutral?.grey4 || '#999',
+        backgroundColor: '#fffaf0',
+        border: '1px dashed #ffa940',
+        borderRadius: 6
+      }}>
+        Zona de entrada general - sin asientos numerados
+      </div>
+    );
+  }
 
   return (
     <div style={{ 

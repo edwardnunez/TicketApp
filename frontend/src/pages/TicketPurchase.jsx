@@ -169,20 +169,41 @@ const TicketPurchase = () => {
     setQuantity(seats.length);
   };
 
-  // Función para verificar si el evento requiere selección de asientos
   const requiresSeatMap = () => {
     if (!event?.type) return false;
-    const categoriesWithSeats = ['cinema', 'theater', 'football', 'sports'];
-    return categoriesWithSeats.includes(event.type.toLowerCase());
+    
+    // Si el evento tiene seatMapId configurado, requiere mapa
+    if (event?.location?.seatMapId) return true;
+    
+    // Los conciertos pueden tener o no mapa según la configuración
+    if (event.type.toLowerCase() === 'concert' || event.type.toLowerCase() === 'concierto') {
+      return !!event?.location?.seatMapId;
+    }
+    
+    // Otros tipos que siempre requieren mapa
+    const eventToSeatMapType = {
+      'cinema': 'cinema',
+      'theater': 'theater', 
+      'theatre': 'theater',
+      'football': 'football',
+      'soccer': 'football',
+      'sports': 'football',
+      'stadium': 'football'
+    };
+    
+    return Object.keys(eventToSeatMapType).includes(event.type.toLowerCase());
   };
 
+
   const getTotalPrice = () => {
-    // Si requiere mapa de asientos, usar el precio de los asientos seleccionados
+    // Si requiere mapa de asientos Y hay asientos seleccionados, usar el precio de los asientos
     if (requiresSeatMap() && selectedSeats.length > 0) {
       return selectedSeats.reduce((total, seat) => total + seat.price, 0);
     }
-    // Si no, usar el precio del tipo de ticket por la cantidad
-    return getCorrectPrice(selectedTicketType) * quantity;
+    
+    // Si no requiere mapa de asientos O no hay asientos seleccionados, usar precio por cantidad
+    const ticketPrice = getCorrectPrice(selectedTicketType);
+    return ticketPrice * quantity;
   };
 
   const getCorrectPrice = (ticketType) => {
@@ -211,6 +232,15 @@ const TicketPurchase = () => {
           api.warning({
             message: 'Selección requerida',
             description: 'Debes seleccionar al menos un asiento.',
+            placement: 'top',
+          });
+          return;
+        }
+        // Permitir múltiples asientos de pista
+        if (selectedSeats.length > 6) {
+          api.warning({
+            message: 'Límite excedido',
+            description: 'Puedes seleccionar máximo 6 asientos.',
             placement: 'top',
           });
           return;
@@ -253,96 +283,116 @@ const TicketPurchase = () => {
 
   const handlePurchase = async () => {
     try {
-        setProcessing(true);
-        
-        const formData = form.getFieldsValue();
-        const username = localStorage.getItem("username");
-        
-        let userId = null;
-        if (username) {
-          try {
-              const userResponse = await axios.get(`${gatewayUrl}/users/search`, {
-              params: { username }
-              });
-              userId = userResponse.data._id;
-          } catch (error) {
-              console.error("Error obteniendo datos del usuario:", error);
-          }
+      setProcessing(true);
+      
+      const formData = form.getFieldsValue();
+      const username = localStorage.getItem("username");
+      
+      let userId = null;
+      if (username) {
+        try {
+          const userResponse = await axios.get(`${gatewayUrl}/users/search`, {
+            params: { username }
+          });
+          userId = userResponse.data._id;
+        } catch (error) {
+          console.error("Error obteniendo datos del usuario:", error);
         }
+      }
 
-        const finalQuantity = requiresSeatMap() ? selectedSeats.length : quantity;
-        const unitPrice = requiresSeatMap() ? 
-          selectedSeats.reduce((total, seat) => total + seat.price, 0) / selectedSeats.length :
-          getCorrectPrice(selectedTicketType);
+      const usesSpecificSeats = requiresSeatMap() && selectedSeats.length > 0;
+      
+      const finalQuantity = usesSpecificSeats ? selectedSeats.length : quantity;
+      const totalPrice = getTotalPrice();
+      const unitPrice = totalPrice / finalQuantity;
 
-        const ticketData = {
-          userId: userId,
-          eventId: id,
-          ticketType: selectedTicketType,
+      // Preparar selectedSeats - siempre se envía
+      let validSelectedSeats = [];
+      
+      if (usesSpecificSeats && selectedSeats.length > 0) {
+        // Procesar los asientos seleccionados
+        validSelectedSeats = selectedSeats.map(seat => {
+          // Si tiene seat y row definidos (asientos numerados)
+          if (seat.seat !== undefined && seat.row !== undefined && 
+              seat.seat !== null && seat.row !== null) {
+            return seat; // Mantener el asiento tal como está
+          } else {
+            // Si es pista (entrada general), establecer row y seat como null
+            return {
+              ...seat,
+              row: null,
+              seat: null
+            };
+          }
+        });
+      }
+
+      const ticketData = {
+        userId: userId,
+        eventId: id,
+        ticketType: selectedTicketType,
+        quantity: finalQuantity,
+        price: unitPrice,
+        totalPrice: totalPrice,
+        selectedSeats: validSelectedSeats, // Siempre se envía, puede ser array vacío
+        usesSpecificSeats: usesSpecificSeats,
+        customerInfo: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone
+        }
+      };
+
+      console.log('Enviando datos del ticket:', ticketData); // Para debugging
+
+      const response = await axios.post(`${gatewayUrl}/tickets/purchase`, ticketData);
+      
+      if (response.data.success) {
+        const ticketTypeInfo = getTicketTypeInfo(selectedTicketType);
+        
+        setTicketInfo({
+          id: response.data.ticketId,
+          eventName: event.name,
+          type: selectedTicketType,
+          typeName: ticketTypeInfo?.label || selectedTicketType,
           quantity: finalQuantity,
-          price: unitPrice,
-          selectedSeats: requiresSeatMap() ? selectedSeats : undefined,
-          customerInfo: {
-              firstName: formData.firstName,
-              lastName: formData.lastName,
-              email: formData.email,
-              phone: formData.phone
-          },
-          paymentInfo: {
-              method: 'demo', // En producción: 'stripe', 'paypal', etc.
-              transactionId: `TXN-${Date.now()}`
-          },
-          metadata: {
-              ipAddress: '127.0.0.1', // En producción obtendrías la IP real
-              userAgent: navigator.userAgent,
-              referrer: document.referrer
-          }
-        };
-
-        const response = await axios.post(`${gatewayUrl}/tickets/purchase`, ticketData);
+          unitPrice: unitPrice,
+          totalPrice: totalPrice,
+          purchaseDate: new Date(),
+          qrCode: response.data.ticket.qrCode,
+          selectedSeats: validSelectedSeats,
+          usesSpecificSeats: usesSpecificSeats
+        });
         
-        if (response.data.success) {
-          const ticketTypeInfo = getTicketTypeInfo(selectedTicketType);
-          
-          setTicketInfo({
-              id: response.data.ticketId,
-              eventName: event.name,
-              type: selectedTicketType,
-              typeName: ticketTypeInfo?.label || selectedTicketType,
-              quantity: finalQuantity,
-              unitPrice: unitPrice,
-              totalPrice: getTotalPrice(),
-              purchaseDate: new Date(),
-              qrCode: response.data.ticket.qrCode,
-              selectedSeats: requiresSeatMap() ? selectedSeats : undefined
-          });
-          
-          setPurchaseComplete(true);
-          setCurrentStep(3);
-          
-          api.success({
-              message: 'Compra exitosa',
-              description: '¡Tus tickets han sido comprados exitosamente!',
-              placement: 'top',
-          });
-        }
+        setPurchaseComplete(true);
+        setCurrentStep(3);
         
-    } catch (error) {
-        console.error('Error purchasing tickets:', error);
-        
-        let errorMessage = 'Hubo un problema al procesar tu compra. Por favor intenta nuevamente.';
-        
-        if (error.response?.data?.message) {
-          errorMessage = error.response.data.message;
-        }
-        
-        api.error({
-          message: 'Error en la compra',
-          description: errorMessage,
+        api.success({
+          message: 'Compra exitosa',
+          description: '¡Tus tickets han sido comprados exitosamente!',
           placement: 'top',
         });
+      }
+      
+    } catch (error) {
+      console.error('Error purchasing tickets:', error);
+      
+      let errorMessage = 'Hubo un problema al procesar tu compra. Por favor intenta nuevamente.';
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.data?.details) {
+        errorMessage = error.response.data.details;
+      }
+      
+      api.error({
+        message: 'Error en la compra',
+        description: errorMessage,
+        placement: 'top',
+      });
     } finally {
-        setProcessing(false);
+      setProcessing(false);
     }
   };
 

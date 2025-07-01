@@ -27,24 +27,27 @@ const seedLocations = async (locationDbConnection) => {
       seatingMap: []
     },
     {
-      name: "Palau Sant Jordi",
-      category: "concert",
-      address: "Passeig Olímpic, 17, 08038 Barcelona",
-      seatMapId: null,
-      seatingMap: []
-    },
-    {
       name: "WiZink Center",
       category: "concert",
       address: "Av. Felipe II, s/n, 28009 Madrid",
-      seatMapId: null,
+      seatMapId: "concert1", // Mapa específico de concierto con pista
+      capacity: 17000,
+      seatingMap: []
+    },
+    {
+      name: "Palau Sant Jordi",
+      category: "concert",
+      address: "Passeig Olímpic, 17, 08038 Barcelona",
+      seatMapId: "concert2", // Mapa específico de concierto con pista
+      capacity: 24000,
       seatingMap: []
     },
     {
       name: "Teatro Circo Price",
       category: "concert",
       address: "Ronda de Atocha, 35, 28012 Madrid",
-      seatMapId: null,
+      seatMapId: null, // Sin mapa de asientos - entrada general
+      capacity: 1800,
       seatingMap: []
     },
     {

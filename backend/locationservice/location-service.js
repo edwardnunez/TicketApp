@@ -39,13 +39,16 @@ const SeatMapModel = seatMapDbConnection.model('SeatMap', SeatMap.schema);
 
 const seedDatabases = async () => {
   try {
-    // Seed locations
+    console.log('Seeding locations...');
     await seedLocations(locationDbConnection);
     console.log('Locations seeded successfully');
     
-    // Seed seatmaps
+    // Seed seatmaps - IMPORTANTE: pasar la conexión correcta
+    console.log('Seeding seatmaps...');
     await seedSeatMaps(seatMapDbConnection);
     console.log('SeatMaps seeded successfully');
+    
+    console.log('Todas las bases de datos han sido inicializadas correctamente');
   } catch (error) {
     console.error('Error seeding databases:', error);
   }
@@ -57,7 +60,7 @@ app.post("/location", async (req, res) => {
   try {
     const { name, category, address, seatMapId, capacity, seatingMap } = req.body;
 
-    if (!name || !category || !address || !seatMapId) {
+    if (!name || !category || !address) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
@@ -81,11 +84,10 @@ app.post("/location", async (req, res) => {
         name,
         category,
         address,
-        seatMapId,
-        capacity,
+        ...(seatMapId && { seatMapId }),
+        ...(capacity && { capacity }),
         seatingMap: seatingMap || []
       });
-
       await locationDoc.save();
       res.status(201).json(locationDoc);
     }
@@ -309,9 +311,12 @@ app.get('/location/:locationId/sections', async (req, res) => {
       sectionId: section.id,
       sectionName: section.name,
       capacity: section.rows * section.seatsPerRow,
+      rows: section.rows,
+      seatsPerRow: section.seatsPerRow,
       basePrice: section.price,
       color: section.color,
       position: section.position,
+      hasNumberedSeats: section.hasNumberedSeats,
       order: section.order || 0
     }));
 

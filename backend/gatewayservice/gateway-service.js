@@ -328,6 +328,15 @@ app.get("/seatmaps", async (req, res) => {
   }
 });
 
+app.post("/seatmaps", async (req, res) => {
+  try {
+    const locationResponse = await axios.post(`${locationServiceUrl}/seatmaps`, req.body);
+    res.json(locationResponse.data);
+  } catch (error) {
+    returnError(res, error);
+  }
+});
+
 app.get("/seatmaps/:id", async (req, res) => {
   try {
     const seatMapResponse = await axios.get(`${locationServiceUrl}/seatmaps/${req.params.id}`);

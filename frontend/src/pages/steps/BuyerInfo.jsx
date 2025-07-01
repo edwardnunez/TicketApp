@@ -124,7 +124,12 @@ export default function BuyerInfo({
               <>
                 {selectedSeats.map((seat, index) => (
                   <div key={index} style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Text>{seat.section} - Fila {seat.row}, Asiento {seat.seat}</Text>
+                    <Text style={{ color: COLORS.neutral.grey4 }}>
+                      {seat.row != null && seat.seat != null
+                        ? `${seat.section} -  Fila ${seat.row}, Asiento ${seat.seat}`
+                        : `${seat.section} - Entrada general`}
+                    </Text>
+                    <Text></Text>
                     <Text strong>{formatPrice(seat.price || 0)}</Text>
                   </div>
                 ))}
@@ -140,9 +145,14 @@ export default function BuyerInfo({
               </>
             ) : (
               <>
+                {/* Mostrar resumen por tipo de ticket cuando no hay mapa de asientos */}
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <Text>Tickets {ticketTypes.find(t => t.key === selectedTicketType)?.label}:</Text>
                   <Text strong>{quantity}</Text>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Text>Precio unitario:</Text>
+                  <Text strong>{formatPrice(getCorrectPrice(selectedTicketType))}</Text>
                 </div>
                 <Divider style={{ margin: '12px 0' }} />
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
