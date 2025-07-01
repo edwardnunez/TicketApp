@@ -56,6 +56,60 @@ const getSeatMapInfo = async (seatMapId) => {
   }
 };
 
+const createSectionPricing = (seatMapInfo, pricingData) => {
+  if (!seatMapInfo || !seatMapInfo.sections || !pricingData) {
+    return [];
+  }
+  
+  return seatMapInfo.sections.map(section => {
+    const sectionPricing = pricingData.find(p => p.sectionId === section.id);
+    
+    // Calcular capacidad, filas y asientos por fila
+    let capacity, rows, seatsPerRow;
+    
+    if (section.hasNumberedSeats === false) {
+      // Sección de entrada general (como "Pista")
+      if (sectionPricing && sectionPricing.capacity) {
+        capacity = sectionPricing.capacity; 
+      } else {
+        capacity = section.totalCapacity || section.capacity || 0;
+      }
+      rows = 1;
+      seatsPerRow = capacity; 
+    } else {
+      // Sección con asientos numerados
+      capacity = section.rows * section.seatsPerRow;
+      rows = section.rows || 1;
+      seatsPerRow = section.seatsPerRow || 1;
+    }
+    
+    if (!sectionPricing) {
+      // Sección sin pricing específico, usar valores por defecto
+      return {
+        sectionId: section.id,
+        sectionName: section.name,
+        basePrice: section.price || 0,
+        variablePrice: 0,
+        capacity: capacity,
+        rows: rows,
+        seatsPerRow: seatsPerRow,
+        frontRowFirst: true
+      };
+    }
+    
+    return {
+      sectionId: section.id,
+      sectionName: section.name,
+      basePrice: sectionPricing.basePrice || sectionPricing.price || section.price || 0,
+      variablePrice: sectionPricing.variablePrice || 0,
+      capacity: capacity,
+      rows: rows,
+      seatsPerRow: seatsPerRow,
+      frontRowFirst: sectionPricing.frontRowFirst !== undefined ? sectionPricing.frontRowFirst : true
+    };
+  });
+};
+
 // Ruta para crear un evento
 app.post("/event", async (req, res) => {
   try {
@@ -70,6 +124,7 @@ app.post("/event", async (req, res) => {
       state,
       sectionPricing,
       usesSectionPricing,
+      usesRowPricing,
       blockedSeats,
       blockedSections,
       seatMapConfiguration
@@ -84,7 +139,6 @@ app.post("/event", async (req, res) => {
     }
 
     const eventDescription = description || `Evento de ${type}`;
-
     const eventDate = new Date(date);
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -109,30 +163,42 @@ app.post("/event", async (req, res) => {
       image: '/images/default.jpg'
     };
 
-    // Manejo del pricing por secciones
+    // Manejo del pricing por secciones y filas
     if (usesSectionPricing && sectionPricing && sectionPricing.length > 0) {
+      // Validar datos de sectionPricing
       for (const section of sectionPricing) {
-        if (!section.sectionId || !section.sectionName || section.price === undefined || !section.capacity) {
+        if (!section.sectionId || !section.sectionName || section.basePrice === undefined) {
           return res.status(400).json({ 
-            error: "Invalid section pricing data. All sections must have sectionId, sectionName, price, and capacity" 
+            error: "Invalid section pricing data. All sections must have sectionId, sectionName, and basePrice" 
           });
         }
         
-        if (section.price < 0) {
+        if (section.basePrice < 0 || (section.variablePrice && section.variablePrice < 0)) {
           return res.status(400).json({ 
-            error: `Price for section ${section.sectionName} cannot be negative` 
+            error: `Prices for section ${section.sectionName} cannot be negative` 
           });
         }
       }
 
-      eventData.sectionPricing = sectionPricing;
+      // Si hay seatMapId, obtener información del seatmap para completar los datos
+      let finalSectionPricing = sectionPricing;
+      if (location.seatMapId) {
+        const seatMapInfo = await getSeatMapInfo(location.seatMapId);
+        if (seatMapInfo) {
+          finalSectionPricing = createSectionPricing(seatMapInfo, sectionPricing);
+        }
+      }
+
+      eventData.sectionPricing = finalSectionPricing;
       eventData.usesSectionPricing = true;
-      eventData.capacity = sectionPricing.reduce((total, section) => total + section.capacity, 0);
-      eventData.price = Math.min(...sectionPricing.map(section => section.price));
+      eventData.usesRowPricing = usesRowPricing || false;
+      eventData.capacity = finalSectionPricing.reduce((total, section) => total + section.capacity, 0);
+      eventData.price = Math.min(...finalSectionPricing.map(section => section.basePrice || section.price || 0));
     } else {
       eventData.capacity = capacity || location.capacity || 100;
       eventData.price = price || 0;
       eventData.usesSectionPricing = false;
+      eventData.usesRowPricing = false;
     }
 
     // Configuración de asientos bloqueados
@@ -188,14 +254,22 @@ app.get("/events", stateService.updateStatesMiddleware.bind(stateService), async
       
       // Información de rango de precios
       if (e.usesSectionPricing && e.sectionPricing && e.sectionPricing.length > 0) {
-        const prices = e.sectionPricing.map(section => section.price);
-        e.priceRange = {
-          min: Math.min(...prices),
-          max: Math.max(...prices),
-          display: Math.min(...prices) === Math.max(...prices) 
-            ? `€${Math.min(...prices)}` 
-            : `€${Math.min(...prices)} - €${Math.max(...prices)}`
-        };
+        if (e.usesRowPricing) {
+          e.priceRange = {
+            min: event.getMinPrice(),
+            max: event.getMaxPrice(),
+            display: event.getPriceRange()
+          };
+        } else {
+          const prices = e.sectionPricing.map(section => section.price || section.basePrice);
+          e.priceRange = {
+            min: Math.min(...prices),
+            max: Math.max(...prices),
+            display: Math.min(...prices) === Math.max(...prices) 
+              ? `€${Math.min(...prices)}` 
+              : `€${Math.min(...prices)} - €${Math.max(...prices)}`
+          };
+        }
       } else {
         e.priceRange = {
           min: e.price,
@@ -234,15 +308,13 @@ app.get("/events/:eventId", stateService.updateStatesMiddleware.bind(stateServic
       }
     }
 
-    // Información de rango de precios
-    if (eventObj.usesSectionPricing && eventObj.sectionPricing && eventObj.sectionPricing.length > 0) {
-      const prices = eventObj.sectionPricing.map(section => section.price);
+    // Información detallada de pricing
+    if (eventObj.usesSectionPricing) {
+      eventObj.sectionPricingInfo = event.getSectionPricingInfo();
       eventObj.priceRange = {
-        min: Math.min(...prices),
-        max: Math.max(...prices),
-        display: Math.min(...prices) === Math.max(...prices) 
-          ? `€${Math.min(...prices)}` 
-          : `€${Math.min(...prices)} - €${Math.max(...prices)}`
+        min: event.getMinPrice(),
+        max: event.getMaxPrice(),
+        display: event.getPriceRange()
       };
     } else {
       eventObj.priceRange = {
@@ -253,16 +325,94 @@ app.get("/events/:eventId", stateService.updateStatesMiddleware.bind(stateServic
     }
 
     // Estadísticas de bloqueos
+    const blockedSeats = eventObj.seatMapConfiguration?.blockedSeats || eventObj.blockedSeats || [];
+    const blockedSections = eventObj.seatMapConfiguration?.blockedSections || eventObj.blockedSections || [];
+    
     const blockingStats = {
-      blockedSeats: eventObj.blockedSeats ? eventObj.blockedSeats.length : 0,
-      blockedSections: eventObj.blockedSections ? eventObj.blockedSections.length : 0,
-      hasBlocks: (eventObj.blockedSeats && eventObj.blockedSeats.length > 0) || (eventObj.blockedSections && eventObj.blockedSections.length > 0)
+      blockedSeats: blockedSeats.length,
+      blockedSections: blockedSections.length,
+      hasBlocks: blockedSeats.length > 0 || blockedSections.length > 0
     };
     eventObj.blockingStats = blockingStats;
 
     res.status(200).json(eventObj);
   } catch (error) {
     console.error("Error fetching event details:", error);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+});
+
+// Ruta para obtener el precio de un asiento específico
+app.get("/events/:eventId/seat-price/:sectionId/:row/:seat", async (req, res) => {
+  try {
+    const { eventId, sectionId, row, seat } = req.params;
+    
+    const event = await EventModel.findById(eventId);
+    if (!event) return res.status(404).json({ error: "Event not found" });
+
+    const seatId = `${sectionId}-${row}-${seat}`;
+    const price = event.getSeatPrice(sectionId, parseInt(row), parseInt(seat));
+    const isBlocked = event.isSeatBlocked(seatId);
+
+    res.status(200).json({
+      eventId,
+      seatId,
+      sectionId,
+      row: parseInt(row),
+      seat: parseInt(seat),
+      price,
+      isBlocked,
+      available: !isBlocked
+    });
+  } catch (error) {
+    console.error("Error fetching seat price:", error);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+});
+
+// Ruta para obtener precios de múltiples asientos
+app.post("/events/:eventId/seats-pricing", async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const { seats } = req.body; // Array de objetos { sectionId, row, seat }
+    
+    if (!seats || !Array.isArray(seats)) {
+      return res.status(400).json({ error: "seats array is required" });
+    }
+
+    const event = await EventModel.findById(eventId);
+    if (!event) return res.status(404).json({ error: "Event not found" });
+
+    const seatsPricing = seats.map(seatInfo => {
+      const { sectionId, row, seat } = seatInfo;
+      const seatId = `${sectionId}-${row}-${seat}`;
+      const price = event.getSeatPrice(sectionId, parseInt(row), parseInt(seat));
+      const isBlocked = event.isSeatBlocked(seatId);
+
+      return {
+        seatId,
+        sectionId,
+        row: parseInt(row),
+        seat: parseInt(seat),
+        price,
+        isBlocked,
+        available: !isBlocked
+      };
+    });
+
+    const totalPrice = seatsPricing
+      .filter(seat => seat.available)
+      .reduce((total, seat) => total + seat.price, 0);
+
+    res.status(200).json({
+      eventId,
+      seats: seatsPricing,
+      totalPrice,
+      availableSeats: seatsPricing.filter(seat => seat.available).length,
+      blockedSeats: seatsPricing.filter(seat => seat.isBlocked).length
+    });
+  } catch (error) {
+    console.error("Error fetching seats pricing:", error);
     res.status(500).json({ error: "Internal Server Error", details: error.message });
   }
 });
@@ -358,7 +508,7 @@ app.patch("/events/:eventId/state", async (req, res) => {
   }
 });
 
-// Ruta existente para actualizar bloqueos de asientos
+// Ruta para actualizar bloqueos de asientos
 app.put("/events/:eventId/seat-blocks", async (req, res) => {
   try {
     const { eventId } = req.params;
@@ -404,6 +554,7 @@ app.put("/events/:eventId/seat-blocks", async (req, res) => {
   }
 });
 
+// Ruta para eliminar un evento
 app.delete("/events/:eventId", async (req, res) => {
   try {
     const { eventId } = req.params;
@@ -442,7 +593,6 @@ app.delete("/events/:eventId", async (req, res) => {
     });
   }
 });
-
 
 const server = app.listen(port, async () => {
   console.log(`🚀 Event Service listening at http://localhost:${port}`);

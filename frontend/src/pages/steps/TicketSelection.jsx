@@ -23,34 +23,67 @@ export default function SelectTickets({
 
   const requiresSeatMap = useCallback(() => {
     if (!event?.type) return false;
-    // Mapear tipos de eventos a categorías de seatmap
+    
+    // Si el evento tiene seatMapId configurado, requiere mapa
+    if (event?.location?.seatMapId) return true;
+    
+    // Los conciertos pueden tener o no mapa según la configuración
+    if (event.type.toLowerCase() === 'concert' || event.type.toLowerCase() === 'concierto') {
+      return !!event?.location?.seatMapId;
+    }
+    
+    // Otros tipos que siempre requieren mapa
     const eventToSeatMapType = {
       'cinema': 'cinema',
       'theater': 'theater', 
-      'theatre': 'theater', // variante en inglés
+      'theatre': 'theater',
       'football': 'football',
       'soccer': 'football',
-      'sports': 'football', // asumir football por defecto para sports
+      'sports': 'football',
       'stadium': 'football'
     };
+    
     return Object.keys(eventToSeatMapType).includes(event.type.toLowerCase());
-  }, [event?.type]);
+  }, [event?.type, event?.location?.seatMapId]);
 
   const validateSeatMapCompatibility = useCallback((seatMapData, eventType) => {
-    if (!seatMapData || !eventType) return false;
-    
-    const compatibilityMap = {
-      'cinema': ['cinema'],
-      'theater': ['theater'],
-      'theatre': ['theater'],
-      'football': ['football'],
-      'soccer': ['football'],
-      'sports': ['football'],
-      'stadium': ['football']
+    if (!seatMapData || !eventType) {
+      return false;
+    }
+
+    const seatMapType = seatMapData.type?.toLowerCase();
+    const normalizedEventType = eventType.toLowerCase();
+
+    // Define compatibility mappings
+    const compatibilityMappings = {
+      cinema: ['cinema'],
+      theater: ['theater', 'theatre'],
+      theatre: ['theater', 'theatre'],
+      stadium: ['football', 'soccer', 'sports', 'stadium'],
+      football: ['football', 'soccer', 'sports', 'stadium'],
+      sports: ['football', 'soccer', 'sports', 'stadium', 'basketball', 'tennis'],
+      arena: ['concert', 'arena'],
+      concert: ['concert', 'arena'],
     };
-    
-    const allowedTypes = compatibilityMap[eventType.toLowerCase()] || [];
-    return allowedTypes.includes(seatMapData.type);
+
+    if (compatibilityMappings[seatMapType]) {
+      return compatibilityMappings[seatMapType].includes(normalizedEventType);
+    }
+
+    if (seatMapType === normalizedEventType) {
+      return true;
+    }
+
+    const specialCases = [
+      (seatMapType === 'theater' && ['theatre', 'concert', 'concierto'].includes(normalizedEventType)),
+      (seatMapType === 'theatre' && ['theater', 'concert', 'concierto'].includes(normalizedEventType)),
+      (seatMapType === 'football' && ['soccer', 'sports'].includes(normalizedEventType)),
+      (seatMapType === 'soccer' && ['football', 'sports'].includes(normalizedEventType)),
+      (seatMapType === 'concert' && ['concert', 'music'].includes(normalizedEventType)),
+      (seatMapType === 'arena' && ['concert', 'music'].includes(normalizedEventType))
+    ];
+
+    return specialCases.some(condition => condition);
   }, []);
 
   // Extraer asientos y secciones bloqueados del evento
@@ -64,14 +97,24 @@ export default function SelectTickets({
 
   // Memoize the total calculation
   const totalFromSeats = useMemo(() => {
-    return selectedSeats.reduce((total, seat) => total + seat.price, 0);
+    return selectedSeats.reduce((total, seat) => total + (seat.price || 0), 0);
   }, [selectedSeats]);
 
-  // Stable reference for handleSeatSelection
+  // Simplified handleSeatSelection - just pass through the seats with their prices
   const handleSeatSelection = useCallback((seats) => {
-    onSeatSelect(seats);
-    setQuantity(seats.length);
-  }, [onSeatSelect, setQuantity]);
+    const seatsWithFullInfo = seats.map(seat => ({
+        ...seat,
+        id: seat.id || `${seat.section}-${seat.row}-${seat.seat}`,
+        seatId: seat.seatId || `${seat.section}-${seat.row}-${seat.seat}`,
+        price: seat.price || 0,
+        section: seat.section,
+        row: seat.row,
+        seat: seat.seat
+      }));
+      
+      onSeatSelect(seatsWithFullInfo);
+      setQuantity(seatsWithFullInfo.length);
+    }, [onSeatSelect, setQuantity]);
 
   // Load seatmap data with proper dependencies
   useEffect(() => {
@@ -99,20 +142,31 @@ export default function SelectTickets({
         }
         
         // Aplicar precios del evento si están disponibles
+        let updatedSeatMapData = { ...seatMapData };
+        
         if (event.usesSectionPricing && event.sectionPricing?.length > 0) {
-          const updatedSeatMapData = {
-            ...seatMapData,
-            sections: seatMapData.sections.map(section => {
-              const eventSectionPricing = event.sectionPricing.find(sp => sp.sectionId === section.id);
-              return eventSectionPricing 
-                ? { ...section, price: eventSectionPricing.price }
-                : section;
-            })
-          };
-          setSeatMapData(updatedSeatMapData);
-        } else {
-          setSeatMapData(seatMapData);
+          updatedSeatMapData.sections = seatMapData.sections.map(section => {
+            const eventSectionPricing = event.sectionPricing.find(sp => sp.sectionId === section.id);
+            
+            if (eventSectionPricing) {
+              // Si usa pricing por filas, usar el precio base como referencia
+              const displayPrice = event.usesRowPricing && eventSectionPricing.variablePrice > 0
+                ? eventSectionPricing.basePrice
+                : eventSectionPricing.basePrice || eventSectionPricing.price || section.price;
+              
+              return { 
+                ...section, 
+                price: displayPrice,
+                // Agregar información adicional para el cálculo de precios por fila
+                sectionPricing: eventSectionPricing
+              };
+            }
+            
+            return section;
+          });
         }
+        
+        setSeatMapData(updatedSeatMapData);
       } catch (err) {
         console.error('Error loading seatmap:', err);
         if (err.response?.status === 404) {
@@ -129,7 +183,7 @@ export default function SelectTickets({
     };
 
     loadSeatMapData();
-  }, [event?.location?.seatMapId, event?.type, requiresSeatMap, validateSeatMapCompatibility]);
+  }, [event?.location?.seatMapId, event?.type, event?.usesSectionPricing, event?.sectionPricing, requiresSeatMap, validateSeatMapCompatibility]);
 
   useEffect(() => {
     // Limpiar asientos seleccionados cuando cambia el evento
@@ -191,9 +245,10 @@ export default function SelectTickets({
         blockedSeats={blockedSeats}
         blockedSections={blockedSections}
         formatPrice={formatPrice}
+        event={event} // Pasar el evento para el cálculo de precios
       />
     );
-  }, [loading, error, seatMapData, selectedSeats, handleSeatSelection, occupiedSeats, blockedSeats, blockedSections, formatPrice]);
+  }, [loading, error, seatMapData, selectedSeats, handleSeatSelection, occupiedSeats, blockedSeats, blockedSections, formatPrice, event]);
 
 
   // Memoize the selected ticket type data
@@ -286,17 +341,33 @@ export default function SelectTickets({
                   }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div>
-                        <Text strong>{seat.section}</Text>
-                        <br />
+                        <Text strong>{seat.section}</Text><br />
                         <Text style={{ color: COLORS.neutral.grey4 }}>
-                          Fila {seat.row}, Asiento {seat.seat}
+                          {seat.row != null && seat.seat != null
+                            ? `Fila ${seat.row}, Asiento ${seat.seat}`
+                            : `Entrada general`}
                         </Text>
                       </div>
-                      <Text strong style={{ color: COLORS.primary.main }}>
-                        {formatPrice(seat.price)}
-                      </Text>
+                      <div style={{ textAlign: 'right' }}>
+                        <Text strong style={{ color: COLORS.primary.main }}>
+                          {formatPrice(seat.price || 0)}
+                        </Text><br />
+                        <Button 
+                          size="small" 
+                          type="link" 
+                          danger 
+                          onClick={() => {
+                            const newSeats = selectedSeats.filter(s => s.id !== seat.id);
+                            onSeatSelect(newSeats);
+                            setQuantity(newSeats.length);
+                          }}
+                        >
+                          Quitar
+                        </Button>
+                      </div>
                     </div>
                   </div>
+
                 ))}
               </div>
               <div style={{ 

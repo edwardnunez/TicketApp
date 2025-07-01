@@ -13,7 +13,9 @@ import {
   Divider,
   Tag,
   Row,
-  Col
+  Col,
+  InputNumber,
+  Tooltip
 } from 'antd';
 import { 
   SaveOutlined, 
@@ -21,7 +23,9 @@ import {
   LockOutlined, 
   UnlockOutlined,
   EyeOutlined,
-  WarningOutlined
+  WarningOutlined,
+  UserOutlined,
+  TeamOutlined
 } from '@ant-design/icons';
 import { COLORS } from '../../components/colorscheme';
 import GenericSeatMapRenderer from '../steps/seatmaps/GenericSeatRenderer';
@@ -44,6 +48,7 @@ const EventSeatMapEditor = () => {
   const [error, setError] = useState(null);
   const [blockedSeats, setBlockedSeats] = useState([]);
   const [blockedSections, setBlockedSections] = useState([]);
+  const [generalAdmissionCapacities, setGeneralAdmissionCapacities] = useState({});
   const [previewMode, setPreviewMode] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
@@ -57,7 +62,7 @@ const EventSeatMapEditor = () => {
 
   const requiresSeatMap = useCallback(() => {
     if (!eventData?.type) return false;
-    const seatMapTypes = ['cinema', 'theater', 'theatre', 'football', 'soccer', 'sports', 'stadium'];
+    const seatMapTypes = ['cinema', 'theater', 'theatre', 'football', 'soccer', 'sports', 'stadium', 'concert'];
     return seatMapTypes.includes(eventData.type.toLowerCase());
   }, [eventData?.type]);
 
@@ -103,6 +108,16 @@ const EventSeatMapEditor = () => {
         const response = await axios.get(`${gatewayUrl}/seatmaps/${locationData.seatMapId}`);
         console.log('Seatmap data loaded:', response.data);
         setSeatMapData(response.data);
+        
+        // Inicializar capacidades para secciones de entrada general
+        const initialCapacities = {};
+        response.data.sections.forEach(section => {
+          if (!section.hasNumberedSeats && section.totalCapacity) {
+            initialCapacities[section.id] = section.totalCapacity;
+          }
+        });
+        setGeneralAdmissionCapacities(initialCapacities);
+        
       } catch (err) {
         console.error('Error loading seatmap:', err);
         setError('No se pudo cargar el mapa de asientos');
@@ -125,22 +140,51 @@ const EventSeatMapEditor = () => {
     });
   }, []);
 
+  // Manejar cambio de capacidad para secciones de entrada general
+  const handleCapacityChange = useCallback((sectionId, newCapacity) => {
+    setGeneralAdmissionCapacities(prev => ({
+      ...prev,
+      [sectionId]: newCapacity
+    }));
+  }, []);
+
   // Manejar bloqueo/desbloqueo de secciones completas
   const handleSectionToggle = useCallback((sectionId) => {
+    const section = seatMapData?.sections.find(s => s.id === sectionId);
+    if (!section) return;
+
     setBlockedSections(prev => {
       if (prev.includes(sectionId)) {
-        // Desbloquear sección y todos sus asientos
-        const sectionSeats = getAllSeatsInSection(sectionId);
-        setBlockedSeats(currentBlocked => 
-          currentBlocked.filter(seatId => !sectionSeats.includes(seatId))
-        );
+        // Desbloquear sección
+        if (section.hasNumberedSeats) {
+          // Si tiene asientos numerados, desbloquear todos sus asientos
+          const sectionSeats = getAllSeatsInSection(sectionId);
+          setBlockedSeats(currentBlocked => 
+            currentBlocked.filter(seatId => !sectionSeats.includes(seatId))
+          );
+        } else {
+          // Si es entrada general, restaurar capacidad original
+          setGeneralAdmissionCapacities(current => ({
+            ...current,
+            [sectionId]: section.totalCapacity
+          }));
+        }
         return prev.filter(id => id !== sectionId);
       } else {
-        // Bloquear sección y todos sus asientos
-        const sectionSeats = getAllSeatsInSection(sectionId);
-        setBlockedSeats(currentBlocked => 
-          [...new Set([...currentBlocked, ...sectionSeats])]
-        );
+        // Bloquear sección
+        if (section.hasNumberedSeats) {
+          // Si tiene asientos numerados, bloquear todos sus asientos
+          const sectionSeats = getAllSeatsInSection(sectionId);
+          setBlockedSeats(currentBlocked => 
+            [...new Set([...currentBlocked, ...sectionSeats])]
+          );
+        } else {
+          // Si es entrada general, poner capacidad a 0
+          setGeneralAdmissionCapacities(current => ({
+            ...current,
+            [sectionId]: 0
+          }));
+        }
         return [...prev, sectionId];
       }
     });
@@ -151,7 +195,7 @@ const EventSeatMapEditor = () => {
     if (!seatMapData) return [];
     
     const section = seatMapData.sections.find(s => s.id === sectionId);
-    if (!section) return [];
+    if (!section || !section.hasNumberedSeats) return [];
 
     const seats = [];
     for (let row = 0; row < section.rows; row++) {
@@ -172,10 +216,12 @@ const EventSeatMapEditor = () => {
         location: locationData || eventData.location,
         blockedSeats: blockedSeats,
         blockedSections: blockedSections,
+        generalAdmissionCapacities: generalAdmissionCapacities,
         seatMapConfiguration: {
           seatMapId: locationData?.seatMapId,
           blockedSeats: blockedSeats,
           blockedSections: blockedSections,
+          generalAdmissionCapacities: generalAdmissionCapacities,
           configuredAt: new Date().toISOString()
         }
       };
@@ -196,13 +242,38 @@ const EventSeatMapEditor = () => {
   // Funciones de utilidad
   const getTotalSeats = () => {
     if (!seatMapData) return 0;
-    return seatMapData.sections.reduce((total, section) => 
-      total + (section.rows * section.seatsPerRow), 0
-    );
+    return seatMapData.sections.reduce((total, section) => {
+      if (section.hasNumberedSeats) {
+        return total + (section.rows * section.seatsPerRow);
+      } else {
+        // Para entrada general, usar la capacidad configurada
+        return total + (generalAdmissionCapacities[section.id] || section.totalCapacity || 0);
+      }
+    }, 0);
   };
 
-  const getBlockedSeatsCount = () => blockedSeats.length;
+  const getBlockedSeatsCount = () => {
+    let blockedCount = blockedSeats.length;
+    
+    // Añadir asientos bloqueados de secciones de entrada general
+    seatMapData?.sections.forEach(section => {
+      if (!section.hasNumberedSeats && blockedSections.includes(section.id)) {
+        blockedCount += (section.totalCapacity || 0);
+      }
+    });
+    
+    return blockedCount;
+  };
+
   const getAvailableSeatsCount = () => getTotalSeats() - getBlockedSeatsCount();
+
+  const isConcertVenue = () => {
+    return seatMapData?.type === 'concert';
+  };
+
+  const hasGeneralAdmissionSections = () => {
+    return seatMapData?.sections.some(section => !section.hasNumberedSeats);
+  };
 
   if (!eventData) {
     return null;
@@ -251,10 +322,15 @@ const EventSeatMapEditor = () => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <Title level={2} style={{ margin: 0, color: COLORS?.neutral?.darker }}>
-              Configurar Mapa de Asientos
+              {isConcertVenue() ? 'Configurar Concierto' : 'Configurar Mapa de Asientos'}
             </Title>
             <Text style={{ color: COLORS?.neutral?.grey4 }}>
               Evento: {eventData.name}
+              {isConcertVenue() && (
+                <Tag color="purple" style={{ marginLeft: '8px' }}>
+                  <TeamOutlined /> Concierto
+                </Tag>
+              )}
             </Text>
             {locationData && (
               <div style={{ marginTop: '4px' }}>
@@ -303,7 +379,7 @@ const EventSeatMapEditor = () => {
                 <Title level={3} style={{ color: COLORS?.primary?.main, margin: 0 }}>
                   {getTotalSeats()}
                 </Title>
-                <Text>Total de asientos</Text>
+                <Text>{isConcertVenue() ? 'Capacidad total' : 'Total de asientos'}</Text>
               </div>
             </Card>
           </Col>
@@ -313,7 +389,7 @@ const EventSeatMapEditor = () => {
                 <Title level={3} style={{ color: '#52c41a', margin: 0 }}>
                   {getAvailableSeatsCount()}
                 </Title>
-                <Text>Asientos disponibles</Text>
+                <Text>{isConcertVenue() ? 'Entradas disponibles' : 'Asientos disponibles'}</Text>
               </div>
             </Card>
           </Col>
@@ -323,7 +399,7 @@ const EventSeatMapEditor = () => {
                 <Title level={3} style={{ color: '#ff4d4f', margin: 0 }}>
                   {getBlockedSeatsCount()}
                 </Title>
-                <Text>Asientos bloqueados</Text>
+                <Text>{isConcertVenue() ? 'Entradas bloqueadas' : 'Asientos bloqueados'}</Text>
               </div>
             </Card>
           </Col>
@@ -335,25 +411,40 @@ const EventSeatMapEditor = () => {
         <Card style={{ marginBottom: '24px' }}>
           <Title level={4}>Control de secciones</Title>
           <Text style={{ color: COLORS?.neutral?.grey4, marginBottom: '16px', display: 'block' }}>
-            Bloquea secciones completas para eventos especiales o mantenimiento
+            {isConcertVenue() 
+              ? 'Bloquea secciones completas para eventos especiales o control de aforo'
+              : 'Bloquea secciones completas para eventos especiales o mantenimiento'
+            }
           </Text>
           <Space wrap>
-            {seatMapData.sections.map(section => (
-              <Tag
-                key={section.id}
-                color={blockedSections.includes(section.id) ? 'red' : section.color}
-                style={{ 
-                  cursor: 'pointer',
-                  padding: '4px 8px',
-                  fontSize: '14px'
-                }}
-                onClick={() => handleSectionToggle(section.id)}
-                icon={blockedSections.includes(section.id) ? <LockOutlined /> : <UnlockOutlined />}
-              >
-                {section.name}
-                {blockedSections.includes(section.id) && ' (Bloqueada)'}
-              </Tag>
-            ))}
+            {seatMapData.sections.map(section => {
+              const isBlocked = blockedSections.includes(section.id);
+              const sectionInfo = section.hasNumberedSeats 
+                ? `${section.rows}x${section.seatsPerRow} asientos`
+                : `Capacidad: ${generalAdmissionCapacities[section.id] || section.totalCapacity}`;
+              
+              return (
+                <Tooltip 
+                  key={section.id}
+                  title={`${section.name} - ${sectionInfo}`}
+                >
+                  <Tag
+                    color={isBlocked ? 'red' : section.color}
+                    style={{ 
+                      cursor: 'pointer',
+                      padding: '4px 8px',
+                      fontSize: '14px'
+                    }}
+                    onClick={() => handleSectionToggle(section.id)}
+                    icon={isBlocked ? <LockOutlined /> : <UnlockOutlined />}
+                  >
+                    {section.name}
+                    {!section.hasNumberedSeats && <UserOutlined style={{ marginLeft: '4px' }} />}
+                    {isBlocked && ' (Bloqueada)'}
+                  </Tag>
+                </Tooltip>
+              );
+            })}
           </Space>
         </Card>
       )}
@@ -361,8 +452,12 @@ const EventSeatMapEditor = () => {
       {/* Instrucciones */}
       {!previewMode && seatMapData && (
         <Alert
-          message="Modo de edición activo"
-          description="Haz clic en los asientos para bloquearlos/desbloquearlos individualmente, o usa los controles de sección arriba para bloquear secciones completas."
+          message={isConcertVenue() ? "Modo de edición activo - Concierto" : "Modo de edición activo"}
+          description={
+            isConcertVenue() 
+              ? "Ajusta las capacidades de entrada general, bloquea secciones completas, o haz clic en asientos numerados para bloquearlos individualmente."
+              : "Haz clic en los asientos para bloquearlos/desbloquearlos individualmente, o usa los controles de sección arriba para bloquear secciones completas."
+          }
           type="info"
           showIcon
           style={{ marginBottom: '24px' }}
@@ -401,6 +496,7 @@ const EventSeatMapEditor = () => {
                 onSeatSelect={() => {}}
                 maxSeats={0}
                 occupiedSeats={blockedSeats}
+                generalAdmissionCapacities={generalAdmissionCapacities}
                 formatPrice={(price) => `$${price}`}
               />
             ) : (
@@ -408,8 +504,10 @@ const EventSeatMapEditor = () => {
                 seatMapData={seatMapData}
                 blockedSeats={blockedSeats}
                 blockedSections={blockedSections}
+                generalAdmissionCapacities={generalAdmissionCapacities}
                 onSeatToggle={handleSeatToggle}
                 onSectionToggle={handleSectionToggle}
+                onCapacityChange={handleCapacityChange}
               />
             )}
           </div>
@@ -449,15 +547,39 @@ const EventSeatMapEditor = () => {
             <Text strong>Fecha:</Text> {new Date(eventData.date).toLocaleDateString()}
           </div>
           <div style={{ marginBottom: '12px' }}>
-            <Text strong>Asientos bloqueados:</Text> {getBlockedSeatsCount()}
+            <Text strong>Tipo:</Text> {isConcertVenue() ? 'Concierto' : eventData.type}
+          </div>
+          <div style={{ marginBottom: '12px' }}>
+            <Text strong>Capacidad total:</Text> {getTotalSeats()}
+          </div>
+          <div style={{ marginBottom: '12px' }}>
+            <Text strong>{isConcertVenue() ? 'Entradas bloqueadas:' : 'Asientos bloqueados:'}</Text> {getBlockedSeatsCount()}
           </div>
           <div style={{ marginBottom: '12px' }}>
             <Text strong>Secciones bloqueadas:</Text> {blockedSections.length}
           </div>
+          {hasGeneralAdmissionSections() && (
+            <div style={{ marginBottom: '12px' }}>
+              <Text strong>Secciones de entrada general:</Text>
+              <div style={{ marginTop: '4px' }}>
+                {seatMapData.sections
+                  .filter(section => !section.hasNumberedSeats)
+                  .map(section => (
+                    <Tag key={section.id} style={{ margin: '2px' }}>
+                      {section.name}: {generalAdmissionCapacities[section.id] || section.totalCapacity}
+                    </Tag>
+                  ))}
+              </div>
+            </div>
+          )}
           {(getBlockedSeatsCount() > 0 || blockedSections.length > 0) && (
             <Alert
               message="Configuración de bloqueos aplicada"
-              description="Los asientos y secciones bloqueados no estarán disponibles para la venta"
+              description={
+                isConcertVenue() 
+                  ? "Las secciones y entradas bloqueadas no estarán disponibles para la venta"
+                  : "Los asientos y secciones bloqueados no estarán disponibles para la venta"
+              }
               type="warning"
               showIcon
               style={{ marginTop: '12px' }}

@@ -111,7 +111,11 @@ export default function Confirmation({
                         backgroundColor: COLORS.neutral.grey1,
                         borderRadius: '4px'
                       }}>
-                        <Text>{seat.section} - Fila {seat.row}, Asiento {seat.seat}</Text>
+                        <Text style={{ color: COLORS.neutral.grey4 }}>
+                          {seat.row != null && seat.seat != null
+                            ? `${seat.section} -  Fila ${seat.row}, Asiento ${seat.seat}`
+                            : `${seat.section} - Entrada general`}
+                        </Text>
                         <Text strong>{formatPrice(seatPrice)}</Text>
                       </div>
                     );

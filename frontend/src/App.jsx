@@ -18,6 +18,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
+import LocationCreation from "./pages/admin/LocationCreation";
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
 
         <Route path="/admin" element={<AdminRoute element={<AdminDashboard />} />} />
         <Route path="/create-event" element={<AdminRoute element={<EventCreation />} />} />
+        <Route path="/create-location" element={<AdminRoute element={<LocationCreation />} />} />
         <Route path="/admin/event-seatmap-config" element={<AdminRoute element={<EventSeatMapEditor />} />} />
 
         <Route path="*" element={<ErrorPage />} /> 
