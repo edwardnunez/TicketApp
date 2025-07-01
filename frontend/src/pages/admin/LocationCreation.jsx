@@ -100,9 +100,10 @@ const LocationCreation = () => {
       label: 'Concierto',
       description: 'Venue para conciertos y espectáculos musicales',
       icon: '🎵',
-      seatMapTypes: ['theater', 'football'],
-      requiresCapacity: false,
-      requiresSeatMap: false
+      seatMapTypes: ['concert', 'football'],
+      requiresCapacity: true,
+      requiresSeatMap: false,
+      allowOptionalSeatMap: true
     },
     theater: {
       label: 'Teatro',
@@ -171,6 +172,29 @@ const LocationCreation = () => {
         mezzanine: { maxRows: 10, maxSeatsPerRow: 25 },
         balcony: { maxRows: 8, maxSeatsPerRow: 20 },
         boxes: { maxRows: 4, maxSeatsPerRow: 8 }
+      }
+    },
+    concert: {
+      label: 'Venue de conciertos',
+      description: 'Configuración para venues de conciertos y espectáculos musicales',
+      availablePositions: ['pista', 'grada-baja', 'grada-media', 'grada-alta', 'palcos-vip', 'lateral-este', 'lateral-oeste', 'fondo-norte', 'fondo-sur', 'general'],
+      defaultSections: [
+        { name: 'Pista', position: 'pista', color: '#FF5722', rows: 1, seatsPerRow: 1, price: 50000, hasNumberedSeats: false, totalCapacity: 300 },
+        { name: 'Grada Baja', position: 'grada-baja', color: '#4CAF50', rows: 7, seatsPerRow: 10, price: 60000 },
+        { name: 'Grada Media', position: 'grada-media', color: '#2196F3', rows: 5, seatsPerRow: 8, price: 45000 },
+        { name: 'Grada Alta', position: 'grada-alta', color: '#FF9800', rows: 6, seatsPerRow: 11, price: 30000 }
+      ],
+      limits: {
+        pista: { maxRows: 1, maxSeatsPerRow: 1 }, // Para entrada general
+        'grada-baja': { maxRows: 10, maxSeatsPerRow: 15 },
+        'grada-media': { maxRows: 8, maxSeatsPerRow: 12 },
+        'grada-alta': { maxRows: 10, maxSeatsPerRow: 15 },
+        'palcos-vip': { maxRows: 3, maxSeatsPerRow: 10 },
+        'lateral-este': { maxRows: 12, maxSeatsPerRow: 20 },
+        'lateral-oeste': { maxRows: 12, maxSeatsPerRow: 20 },
+        'fondo-norte': { maxRows: 10, maxSeatsPerRow: 15 },
+        'fondo-sur': { maxRows: 10, maxSeatsPerRow: 15 },
+        general: { maxRows: 1, maxSeatsPerRow: 1 } // Para entrada general
       }
     }
   };
@@ -276,7 +300,7 @@ const LocationCreation = () => {
 
     setSeatMapModalVisible(true);
     setSections([]);
-    seatMapForm.setFieldsValue({ name: locationName }); // Pre-llenar con el nombre de la ubicación
+    seatMapForm.setFieldsValue({ name: locationName });
   };
 
   const handleSeatMapTypeChange = (type) => {
@@ -377,9 +401,12 @@ const LocationCreation = () => {
     setSeatMapLoading(true);
     
     try {
-      const totalCapacity = sections.reduce((total, section) => 
-        total + (section.rows * section.seatsPerRow), 0
-      );
+      const totalCapacity = sections.reduce((total, section) => {
+        if (section.hasNumberedSeats === false && section.totalCapacity) {
+          return total + section.totalCapacity; // Usar totalCapacity para entrada general
+        }
+        return total + (section.rows * section.seatsPerRow);
+      }, 0);
 
       const seatMapData = {
         id: `${values.type}_${Date.now()}`,
@@ -398,7 +425,13 @@ const LocationCreation = () => {
           ...(values.type === 'theater' && {
             theaterName: values.name,
             stageWidth: 250
-          })
+          }),
+          ...(values.type === 'concert' && {
+          venueName: values.name,
+          stagePosition: 'center',
+          stageDimensions: { width: 80, height: 50 },
+          allowsGeneralAdmission: true
+        })
         },
         isActive: true
       };
@@ -548,6 +581,45 @@ const LocationCreation = () => {
       }
     },
     {
+      title: 'Tipo',
+      render: (_, record) => (
+        <Select
+          value={record.hasNumberedSeats !== false ? 'numbered' : 'general'}
+          onChange={(value) => {
+            const isNumbered = value === 'numbered';
+            updateSection(record.key, 'hasNumberedSeats', isNumbered);
+            if (!isNumbered) {
+              // Para entrada general, establecer valores por defecto
+              updateSection(record.key, 'rows', 1);
+              updateSection(record.key, 'seatsPerRow', 1);
+              updateSection(record.key, 'totalCapacity', record.totalCapacity || 100);
+            } else {
+              // Para asientos numerados, limpiar totalCapacity
+              updateSection(record.key, 'totalCapacity', undefined);
+            }
+          }}
+          style={{ width: '100%' }}
+        >
+          <Option value="numbered">Asientos numerados</Option>
+          <Option value="general">Entrada general</Option>
+        </Select>
+      )
+    },
+    {
+      title: 'Capacidad (si entrada general)',
+      render: (_, record) => (
+        record.hasNumberedSeats === false ? (
+          <InputNumber
+            value={record.totalCapacity}
+            onChange={(value) => updateSection(record.key, 'totalCapacity', value)}
+            min={1}
+            max={1000}
+            placeholder="Capacidad"
+          />
+        ) : null
+      )
+    },
+    {
       title: 'Precio por defecto (€)',
       dataIndex: 'price',
       render: (text, record) => (
@@ -599,11 +671,16 @@ const LocationCreation = () => {
     }
   ];
 
-  const totalSeatMapCapacity = sections.reduce((total, section) => 
-    total + (section.rows * section.seatsPerRow), 0
-  );
+  const totalSeatMapCapacity = sections.reduce((total, section) => {
+    if (section.hasNumberedSeats === false && section.totalCapacity) {
+      return total + section.totalCapacity;
+    }
+    return total + (section.rows * section.seatsPerRow);
+  }, 0);
 
   const requiresSeatMap = selectedCategory && categoryInfo[selectedCategory].requiresSeatMap;
+  const allowsOptionalSeatMap = selectedCategory && categoryInfo[selectedCategory].allowOptionalSeatMap;
+
 
   return (
     <Layout style={{ minHeight: '100vh', backgroundColor: COLORS?.neutral?.white || '#ffffff' }}>
@@ -736,8 +813,9 @@ const LocationCreation = () => {
                         <span>
                           Mapa de asientos 
                           {requiresSeatMap && <span style={{ color: 'red' }}>*</span>}
+                          {allowsOptionalSeatMap && <span style={{ color: '#1890ff', fontSize: '12px' }}> (opcional)</span>}
                         </span>
-                        {requiresSeatMap && (
+                        {(requiresSeatMap || allowsOptionalSeatMap) && (
                           <Button 
                             type="primary" 
                             size="small" 
@@ -755,7 +833,13 @@ const LocationCreation = () => {
                     rules={requiresSeatMap ? [{ required: true, message: 'Debe crear un mapa de asientos para esta categoría' }] : []}
                   >
                     <Input
-                      placeholder={requiresSeatMap ? "Debe crear un mapa de asientos" : "No se requiere mapa de asientos"}
+                      placeholder={
+                        requiresSeatMap 
+                          ? "Debe crear un mapa de asientos" 
+                          : allowsOptionalSeatMap 
+                            ? "Mapa de asientos opcional - puede dejarlo vacío"
+                            : "No se requiere mapa de asientos"
+                      }
                       size="large"
                       disabled={true}
                       value={createdSeatMapId ? `Mapa creado: ${locationName}` : ''}
@@ -827,6 +911,8 @@ const LocationCreation = () => {
                       <p>{categoryInfo[selectedCategory].description}</p>
                       {categoryInfo[selectedCategory].requiresSeatMap ? (
                         <p><strong>Esta categoría requiere un mapa de asientos obligatorio</strong></p>
+                      ) : categoryInfo[selectedCategory].allowOptionalSeatMap ? (
+                        <p><strong>Esta categoría permite crear un mapa de asientos opcional</strong></p>
                       ) : (
                         <p><strong>Esta categoría no requiere mapa de asientos</strong></p>
                       )}
