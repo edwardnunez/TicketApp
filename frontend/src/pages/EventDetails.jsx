@@ -13,7 +13,10 @@ import {
   Skeleton,
   Alert,
   Divider,
-  Image
+  Image,
+  Table,
+  Tooltip,
+  Badge
 } from "antd";
 import { 
   CalendarOutlined, 
@@ -25,13 +28,21 @@ import {
   InfoCircleOutlined,
   TagOutlined,
   FireOutlined,
-  PictureOutlined
+  PictureOutlined,
+  EuroOutlined,
+  TableOutlined,
+  StopOutlined,
+  CheckCircleOutlined
 } from "@ant-design/icons";
 import axios from "axios";
 import dayjs from "dayjs";
+import "dayjs/locale/es";
 
 // Importamos el esquema de colores
 import { COLORS } from "../components/colorscheme";
+
+// Configurar dayjs en español
+dayjs.locale('es');
 
 const { Content } = Layout;
 const { Title, Text, Paragraph } = Typography;
@@ -58,8 +69,9 @@ const EventDetails = () => {
       .then((res) => {
         const eventData = {
           ...res.data,
-          date: dayjs(res.data.date).format("YYYY-MM-DD"),
-          image: res.data.image || "/images/default.jpg",
+          date: res.data.date,
+          // Usar imageUrl si está disponible, sino usar image por compatibilidad
+          image: res.data.imageUrl || res.data.image || "/images/default.jpg",
           // Mapear tipo de evento a categoría para consistencia con Home
           category: mapEventTypeToCategory(res.data.type)
         };
@@ -90,6 +102,26 @@ const EventDetails = () => {
     return typeMap[type] || 'Evento';
   };
 
+  const getStateColor = (state) => {
+    switch(state) {
+      case 'activo': return COLORS.status.success;
+      case 'proximo': return COLORS.status.warning;
+      case 'finalizado': return COLORS.neutral.grey4;
+      case 'cancelado': return COLORS.status.error;
+      default: return COLORS.neutral.grey4;
+    }
+  };
+
+  const getStateText = (state) => {
+    switch(state) {
+      case 'activo': return 'En venta';
+      case 'proximo': return 'Próximamente';
+      case 'finalizado': return 'Finalizado';
+      case 'cancelado': return 'Cancelado';
+      default: return state;
+    }
+  };
+
   const getCategoryColor = (categoryName) => {
     switch(categoryName) {
       case "Conciertos": return COLORS.categories.conciertos;
@@ -105,10 +137,172 @@ const EventDetails = () => {
     navigate(`/event/purchase/${id}`);
   };
 
+  const isEventAvailable = () => {
+    return event?.state === 'activo' || event?.state === 'proximo';
+  };
+
   const isEventActive = () => {
-    const eventDate = dayjs(event?.date);
-    const now = dayjs();
-    return eventDate.isAfter(now);
+    return event?.state === 'activo';
+  };
+
+  const renderPricingInfo = () => {
+    if (!event) return null;
+
+    // Si usa pricing por secciones, mostrar tabla de precios
+    if (event.usesSectionPricing && event.sectionPricingInfo) {
+      const columns = [
+        {
+          title: 'Sección',
+          dataIndex: 'sectionName',
+          key: 'sectionName',
+          render: (text) => <strong>{text}</strong>
+        },
+        {
+          title: 'Capacidad',
+          dataIndex: 'capacity',
+          key: 'capacity',
+          render: (value) => (
+            <span style={{ display: 'flex', alignItems: 'center' }}>
+              <TeamOutlined style={{ marginRight: '4px', color: COLORS.neutral.grey4 }} />
+              {value}
+            </span>
+          )
+        },
+        {
+          title: 'Precio',
+          dataIndex: 'priceRange',
+          key: 'priceRange',
+          render: (text, record) => (
+            <div>
+              <Text strong style={{ color: COLORS.primary.main }}>
+                {text}
+              </Text>
+              {record.pricingType === 'row' && (
+                <div style={{ fontSize: '12px', color: COLORS.neutral.grey4 }}>
+                  {record.frontRowFirst ? 'Fila 1 más cara' : 'Fila 1 más barata'}
+                </div>
+              )}
+            </div>
+          )
+        },
+        {
+          title: 'Filas',
+          dataIndex: 'rows',
+          key: 'rows',
+          render: (value) => (
+            <span style={{ display: 'flex', alignItems: 'center' }}>
+              <TableOutlined style={{ marginRight: '4px', color: COLORS.neutral.grey4 }} />
+              {value}
+            </span>
+          )
+        }
+      ];
+
+      return (
+        <Card style={{ 
+          borderRadius: '12px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+          marginTop: '24px'
+        }}>
+          <Title level={4} style={{ 
+            color: COLORS.neutral.darker,
+            marginBottom: '16px',
+            display: 'flex',
+            alignItems: 'center'
+          }}>
+            <EuroOutlined style={{ 
+              marginRight: '8px', 
+              color: COLORS.primary.main 
+            }} />
+            Precios por sección
+          </Title>
+          
+          <Table 
+            dataSource={event.sectionPricingInfo}
+            columns={columns}
+            pagination={false}
+            rowKey="sectionId"
+            size="middle"
+          />
+
+          {event.usesRowPricing && (
+            <Alert
+              message="Pricing variable por filas"
+              description="Los precios varían según la fila. Las filas más cercanas al escenario/campo tienen precios diferentes."
+              type="info"
+              style={{ marginTop: '16px' }}
+              showIcon
+            />
+          )}
+        </Card>
+      );
+    }
+
+    // Pricing simple
+    return (
+      <Card style={{ 
+        borderRadius: '12px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+        marginTop: '24px'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <EuroOutlined style={{ 
+            fontSize: '24px',
+            color: COLORS.primary.main,
+            marginRight: '8px' 
+          }} />
+          <Title level={2} style={{ 
+            color: COLORS.primary.main,
+            margin: 0 
+          }}>
+            €{event.price}
+          </Title>
+        </div>
+      </Card>
+    );
+  };
+
+  const renderBlockingStats = () => {
+    if (!event?.blockingStats?.hasBlocks) return null;
+
+    return (
+      <Card style={{ 
+        borderRadius: '12px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+        marginTop: '24px',
+        borderLeft: `4px solid ${COLORS.status.warning}`
+      }}>
+        <Title level={5} style={{ 
+          color: COLORS.neutral.darker,
+          marginBottom: '12px',
+          display: 'flex',
+          alignItems: 'center'
+        }}>
+          <StopOutlined style={{ 
+            marginRight: '8px', 
+            color: COLORS.status.warning 
+          }} />
+          Restricciones de disponibilidad
+        </Title>
+        
+        <Row gutter={[16, 8]}>
+          {event.blockingStats.blockedSeats > 0 && (
+            <Col xs={24} sm={12}>
+              <Text style={{ color: COLORS.neutral.grey4 }}>
+                <strong>Asientos bloqueados:</strong> {event.blockingStats.blockedSeats}
+              </Text>
+            </Col>
+          )}
+          {event.blockingStats.blockedSections > 0 && (
+            <Col xs={24} sm={12}>
+              <Text style={{ color: COLORS.neutral.grey4 }}>
+                <strong>Secciones bloqueadas:</strong> {event.blockingStats.blockedSections}
+              </Text>
+            </Col>
+          )}
+        </Row>
+      </Card>
+    );
   };
 
   if (loading) {
@@ -180,32 +374,36 @@ const EventDetails = () => {
                   boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
                 }}
               >
-                {event.image ? (
-                  <Image 
-                    alt={event.name}
-                    src={event.image}
-                    style={{ 
-                      width: '100%', 
-                      height: '400px',
-                      objectFit: 'cover'
-                    }}
-                    preview={{
-                      mask: (
-                        <div style={{ color: COLORS.neutral.white }}>
-                          <PictureOutlined /> Ver imagen completa
-                        </div>
-                      )
-                    }}
-                  />
+                {event.image && event.image !== "/images/default.jpg" ? (
+                  <div style={{ position: 'relative' }}>
+                    <Image 
+                      alt={event.name}
+                      src={event.image}
+                      style={{ 
+                        width: '100%', 
+                        height: '400px',
+                        objectFit: 'cover'
+                      }}
+                      preview={{
+                        mask: (
+                          <div style={{ color: COLORS.neutral.white }}>
+                            <PictureOutlined /> Ver imagen completa
+                          </div>
+                        )
+                      }}
+                    />
+                  </div>
                 ) : (
                   <div style={{ 
                     display: 'flex', 
+                    flexDirection: 'column',
                     alignItems: 'center', 
                     justifyContent: 'center', 
                     height: '400px',
                     backgroundColor: COLORS.neutral.grey1
                   }}>
-                    <PictureOutlined style={{ fontSize: '64px', color: COLORS.neutral.grey3 }} />
+                    <PictureOutlined style={{ fontSize: '64px', color: COLORS.neutral.grey3, marginBottom: '16px' }} />
+                    <Text style={{ color: COLORS.neutral.grey4 }}>Sin imagen disponible</Text>
                   </div>
                 )}
               </Card>
@@ -224,15 +422,18 @@ const EventDetails = () => {
                       <TagOutlined style={{ marginRight: '4px' }} />
                       {event.category}
                     </Tag>
-                    {isEventActive() && (
-                      <Tag 
-                        color={COLORS.status.success}
-                        style={{ fontSize: '14px', padding: '4px 12px', marginLeft: '8px' }}
-                      >
-                        <FireOutlined style={{ marginRight: '4px' }} />
-                        Disponible
-                      </Tag>
-                    )}
+                    
+                    <Tag 
+                      color={getStateColor(event.state)}
+                      style={{ fontSize: '14px', padding: '4px 12px', marginLeft: '8px' }}
+                    >
+                      {isEventActive() ? (
+                        <CheckCircleOutlined style={{ marginRight: '4px' }} />
+                      ) : (
+                        <ClockCircleOutlined style={{ marginRight: '4px' }} />
+                      )}
+                      {getStateText(event.state)}
+                    </Tag>
                   </div>
                   
                   <Title level={1} style={{ 
@@ -285,23 +486,46 @@ const EventDetails = () => {
                         <Text style={{ color: COLORS.neutral.grey4 }}>
                           {event.location?.address || 'Dirección no disponible'}
                         </Text>
-                        {event.location?.capacity && (
+                        {event.capacity && (
                           <>
                             <br />
                             <Text style={{ color: COLORS.neutral.grey4, display: 'flex', alignItems: 'center', marginTop: '4px' }}>
                               <TeamOutlined style={{ marginRight: '4px' }} />
-                              Capacidad: {event.location.capacity} personas
+                              Capacidad: {event.capacity.toLocaleString()} personas
                             </Text>
                           </>
                         )}
                       </div>
                     </div>
+
+                    {/* Rango de precios */}
+                    {event.priceRange && (
+                      <>
+                        <Divider style={{ margin: '12px 0' }} />
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          <EuroOutlined style={{ 
+                            fontSize: '18px', 
+                            color: COLORS.primary.main,
+                            marginRight: '12px'
+                          }} />
+                          <div>
+                            <Text style={{ fontSize: '16px', fontWeight: '600', color: COLORS.neutral.dark }}>
+                              Precios desde
+                            </Text>
+                            <br />
+                            <Text style={{ fontSize: '18px', fontWeight: 'bold', color: COLORS.primary.main }}>
+                              {event.priceRange.display}
+                            </Text>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </Space>
                 </Card>
 
                 {/* Botón de compra */}
                 <div>
-                  {isEventActive() ? (
+                  {isEventAvailable() ? (
                     <Button
                       type="primary"
                       size="large"
@@ -329,7 +553,7 @@ const EventDetails = () => {
                         fontSize: '16px'
                       }}
                     >
-                      <ClockCircleOutlined /> Evento finalizado
+                      <ClockCircleOutlined /> {getStateText(event.state)}
                     </Button>
                   )}
                   
@@ -340,13 +564,20 @@ const EventDetails = () => {
                     color: COLORS.neutral.grey4,
                     fontSize: '14px'
                   }}>
-                    {isEventActive() ? 'Reserva tu lugar ahora' : 'Este evento ya ha terminado'}
+                    {isEventAvailable() ? 'Reserva tu lugar ahora' : `Este evento está ${event.state}`}
                   </Text>
                 </div>
               </Space>
             </Col>
           </Row>
 
+          {/* Información de precios detallada */}
+          {renderPricingInfo()}
+
+          {/* Estadísticas de bloqueos */}
+          {renderBlockingStats()}
+
+          {/* Descripción del evento */}
           <Row style={{ marginTop: '48px' }}>
             <Col span={24}>
               <Card style={{ 
@@ -387,13 +618,20 @@ const EventDetails = () => {
                     </Col>
                     <Col xs={24} sm={12}>
                       <Text style={{ color: COLORS.neutral.grey4 }}>
-                        <strong>Estado:</strong> {event.state || 'Activo'}
+                        <strong>Estado:</strong> {getStateText(event.state)}
                       </Text>
                     </Col>
                     {event.location?.category && (
                       <Col xs={24} sm={12}>
                         <Text style={{ color: COLORS.neutral.grey4 }}>
                           <strong>Tipo de venue:</strong> {event.location.category}
+                        </Text>
+                      </Col>
+                    )}
+                    {event.usesSectionPricing && (
+                      <Col xs={24} sm={12}>
+                        <Text style={{ color: COLORS.neutral.grey4 }}>
+                          <strong>Sistema de precios:</strong> {event.usesRowPricing ? 'Por secciones y filas' : 'Por secciones'}
                         </Text>
                       </Col>
                     )}
