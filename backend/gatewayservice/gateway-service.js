@@ -14,6 +14,12 @@ const locationServiceUrl = process.env.LOCATION_SERVICE_URL || "http://localhost
 app.use(cors());
 app.use(express.json());
 
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ limit: '1mb', extended: true }));
+
+// Límites aumentados solo para rutas con imágenes
+const largePayloadMiddleware = express.json({ limit: '50mb' });
+
 app.set("json spaces", 40);
 
 // Health check endpoint
@@ -209,9 +215,19 @@ app.delete('/tickets/:id', async (req, res) => {
 });
 
 // **Event Routes**
-app.post("/event", async (req, res) => {
+app.post("/events", largePayloadMiddleware ,async (req, res) => {
   try {
     const eventResponse = await axios.post(`${eventServiceUrl}/event`, req.body);
+    res.json(eventResponse.data);
+  } catch (error) {
+    returnError(res, error);
+  }
+});
+
+app.patch("/events/:eventId/image", largePayloadMiddleware, async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const eventResponse = await axios.patch(`${eventServiceUrl}/events/${eventId}/image`, req.body);
     res.json(eventResponse.data);
   } catch (error) {
     returnError(res, error);

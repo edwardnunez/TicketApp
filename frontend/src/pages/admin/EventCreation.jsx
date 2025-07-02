@@ -65,6 +65,11 @@ const EventCreation = () => {
   const [usesSectionPricing, setUsesSectionPricing] = useState(false);
   const [loadingSections, setLoadingSections] = useState(false);
   const [usesRowPricing, setUsesRowPricing] = useState(false);
+
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [uploadLoading, setUploadLoading] = useState(false);
+
   const navigate = useNavigate();
   
   const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
@@ -341,6 +346,43 @@ const EventCreation = () => {
     }
   };
 
+  const handleImageChange = (info) => {
+    const { fileList } = info;
+    
+    if (fileList.length > 0) {
+      const file = fileList[0].originFileObj;
+      setImageFile(file);
+      
+      // Crear preview de la imagen
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setImageFile(null);
+      setImagePreview(null);
+    }
+  };
+
+  const convertFileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64String = reader.result.split(',')[1]; // Remover el prefijo data:...;base64,
+        resolve({
+          data: base64String,
+          contentType: file.type,
+          filename: file.name,
+          size: file.size
+        });
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+
   const onFinish = async (values) => {
     setLoading(true);
     setErrorMessage(null);
@@ -351,7 +393,7 @@ const EventCreation = () => {
       const eventData = {
         name: values.name,
         date: values.date.toISOString(),
-        location: values.location,
+        location: values.location?._id || values.location,
         type: values.type,
         description: values.description,
         state: values.state || 'proximo'
@@ -413,8 +455,7 @@ const EventCreation = () => {
           variablePrice: Math.round((parseFloat(section.variablePrice) || 0) * 100) / 100,
           frontRowFirst: section.frontRowFirst !== undefined ? section.frontRowFirst : true
         }));
-        
-        console.log( eventData.sectionPricing.rows);
+
         // Capacidad se calcula automáticamente en el backend
         eventData.capacity = sectionPricing.reduce((total, section) => {
           if (!section.hasNumberedSeats && type === 'concert') {
@@ -441,17 +482,49 @@ const EventCreation = () => {
 
       console.log('Event data prepared:', eventData);
 
-      // Navegar a la vista de configuración del seatmap con los datos del evento
+      if (imageFile) {
+        try {
+          const imageData = await convertFileToBase64(imageFile);
+          eventData.imageData = imageData;
+          console.log('Image converted to base64, size:', imageData.size);
+        } catch (error) {
+          console.error('Error converting image to base64:', error);
+          message.warning('Error al procesar la imagen, el evento se creará sin imagen');
+        }
+      }
+
+      // Crear el evento (ya no necesitamos subir imagen por separado)
+      const createEventResponse = await axios.post(`${gatewayUrl}/events`, eventData);
+      const createdEvent = createEventResponse.data;
+      
+      message.success('Evento creado correctamente');
+
+      // Navigate to seatmap configuration with event data
       navigate('/admin/event-seatmap-config', { 
         state: { 
-          eventData,
-          selectedLocation 
+          ...eventData,
+          _id: createdEvent._id,
+          imagePath: createdEvent.image
         } 
       });
       
     } catch (error) {
       console.error("Error preparando el evento:", error);
-      setErrorMessage('Hubo un error al procesar los datos del evento');
+      
+      // More specific error handling
+      if (error.response) {
+        // Server responded with error status
+        console.error('Server error:', error.response.data);
+        setErrorMessage(`Error del servidor: ${error.response.data.error || error.response.statusText}`);
+      } else if (error.request) {
+        // Request was made but no response received
+        console.error('Network error:', error.request);
+        setErrorMessage('Error de conexión. Verifica tu conexión a internet.');
+      } else {
+        // Something else happened
+        console.error('Error:', error.message);
+        setErrorMessage('Hubo un error al procesar los datos del evento');
+      }
     } finally {
       setLoading(false);
     }
@@ -477,11 +550,36 @@ const EventCreation = () => {
   };
 
   const uploadProps = {
-    beforeUpload: file => {
-      return false;
+    beforeUpload: (file) => {
+      // Validar tipo de archivo
+      const isImage = file.type.startsWith('image/');
+      if (!isImage) {
+        message.error('Solo puedes subir archivos de imagen!');
+        return false;
+      }
+      
+      // Validar tamaño (máximo 5MB)
+      const isLt5M = file.size / 1024 / 1024 < 5;
+      if (!isLt5M) {
+        message.error('La imagen debe ser menor a 5MB!');
+        return false;
+      }
+      
+      return false; // Prevenir subida automática
+    },
+    onChange: handleImageChange,
+    onRemove: () => {
+      setImageFile(null);
+      setImagePreview(null);
     },
     maxCount: 1,
-    accept: 'image/*'
+    accept: 'image/*',
+    fileList: imageFile ? [{
+      uid: '-1',
+      name: imageFile.name,
+      status: 'done',
+      url: imagePreview,
+    }] : []
   };
 
   const getSeatMapInfo = (seatMapId) => {
@@ -770,6 +868,43 @@ const EventCreation = () => {
       );
     };
 
+    const ImagePreviewComponent = () => {
+      if (!imagePreview) return null;
+      
+      return (
+        <div style={{ marginTop: '16px' }}>
+          <Text strong>Vista previa de la imagen:</Text>
+          <div style={{ 
+            marginTop: '8px',
+            border: '1px solid #d9d9d9',
+            borderRadius: '8px',
+            padding: '8px',
+            backgroundColor: '#fafafa'
+          }}>
+            <img 
+              src={imagePreview}
+              alt="Preview" 
+              style={{ 
+                maxWidth: '100%', 
+                maxHeight: '200px', 
+                borderRadius: '4px',
+                objectFit: 'cover'
+              }} 
+            />
+            <div style={{ marginTop: '8px', fontSize: '12px', color: '#666' }}>
+              {imageFile && (
+                <>
+                  <div>Nombre: {imageFile.name}</div>
+                  <div>Tamaño: {(imageFile.size / 1024).toFixed(2)} KB</div>
+                  <div>Tipo: {imageFile.type}</div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    };
+
   return (
     <Layout style={{ minHeight: '100vh', backgroundColor: COLORS?.neutral?.white || '#ffffff' }}>
       <Content style={{ padding: '40px' }}>
@@ -1041,7 +1176,7 @@ const EventCreation = () => {
                         prefix={isCapacityLocked ? <LockOutlined style={{ color: COLORS?.neutral?.grey3 || '#d9d9d9' }} /> : null}
                         suffix={
                           <span style={{ color: COLORS?.neutral?.grey3 || '#d9d9d9' }}>
-                            asientos
+                            personas
                             {isCapacityLocked && selectedLocation && (
                               <Tooltip title={`Capacidad ${selectedLocation.seatMapId ? 'calculada desde el mapa de asientos' : 'fija'} de ${selectedLocation.name}`}>
                                 <InfoCircleOutlined style={{ marginLeft: '4px' }} />
@@ -1083,12 +1218,18 @@ const EventCreation = () => {
                   <Form.Item
                     label="Imagen del evento"
                     name="image"
-                    valuePropName="file"
-                    getValueFromEvent={e => e && e.fileList && e.fileList.length > 0 ? e : null}
+                    help="Formatos soportados: JPG, PNG, GIF. Tamaño máximo: 5MB"
                   >
-                    <Upload {...uploadProps} listType="picture" maxCount={1}>
-                      <Button icon={<UploadOutlined />}>Seleccionar imagen</Button>
+                    <Upload {...uploadProps} listType="picture">
+                      <Button 
+                        icon={<UploadOutlined />} 
+                        loading={uploadLoading}
+                        disabled={loading}
+                      >
+                        {imageFile ? 'Cambiar imagen' : 'Seleccionar imagen'}
+                      </Button>
                     </Upload>
+                    <ImagePreviewComponent />
                   </Form.Item>
                 </Col>
               </Row>
