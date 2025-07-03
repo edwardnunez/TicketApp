@@ -32,18 +32,28 @@ const EventModel = eventDbConnection.model('Event', Event.schema);
 const stateService = new EventStateService();
 stateService.setEventModel(EventModel);
 
-// Configuración de almacenamiento de imágenes
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'images/events');
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ limit: '1mb', extended: true }));
+
+// Límites aumentados solo para rutas con imágenes
+const largePayloadMiddleware = express.json({ limit: '50mb' });
+
+const storage = multer.memoryStorage();
+
+const upload = multer({ 
+  storage: storage,
+  fileFilter: (req, file, cb) => {
+    // Solo permitir imágenes
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Solo se permiten archivos de imagen'), false);
+    }
   },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
+  limits: {
+    fileSize: 5 * 1024 * 1024 // Límite de 5MB
   }
 });
-const upload = multer({ storage });
-
-app.use('/images/events', express.static('images/events'));
 
 // Función auxiliar para obtener información del seatmap
 const getSeatMapInfo = async (seatMapId) => {
@@ -111,7 +121,7 @@ const createSectionPricing = (seatMapInfo, pricingData) => {
 };
 
 // Ruta para crear un evento
-app.post("/event", async (req, res) => {
+app.post("/event", largePayloadMiddleware, async (req, res) => {
   try {
     const { 
       name, 
@@ -127,7 +137,8 @@ app.post("/event", async (req, res) => {
       usesRowPricing,
       blockedSeats,
       blockedSections,
-      seatMapConfiguration
+      seatMapConfiguration,
+      imageData
     } = req.body;
 
     // Verificar si faltan campos obligatorios
@@ -156,12 +167,18 @@ app.post("/event", async (req, res) => {
     let eventData = {
       name,
       date: eventDate,
-      location: location._id,
+      location: location._id? location._id : location,
       type,
       description: eventDescription,
-      state: initialState,
-      image: '/images/default.jpg'
+      state: initialState
     };
+
+    if (imageData) {
+      eventData.imageData = imageData;
+      eventData.hasCustomImage = true;
+      eventData.image = `data:${imageData.contentType};base64,${imageData.data}`;
+    }
+
 
     // Manejo del pricing por secciones y filas
     if (usesSectionPricing && sectionPricing && sectionPricing.length > 0) {
@@ -225,9 +242,86 @@ app.post("/event", async (req, res) => {
     const eventObj = savedEvent.toObject();
     eventObj.location = location;
 
+    if (savedEvent.hasImage()) {
+      eventObj.imageUrl = savedEvent.getImageDataUrl();
+    }
+
     res.status(201).json(eventObj);
   } catch (error) {
     console.error("Error creating event:", error);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+});
+
+app.patch("/events/:eventId/image", largePayloadMiddleware, upload.single('image'), async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    
+    if (!req.file) {
+      return res.status(400).json({ error: "No image file provided" });
+    }
+
+    // Convertir buffer a base64
+    const base64Data = req.file.buffer.toString('base64');
+    
+    // Preparar datos de la imagen
+    const imageData = {
+      data: base64Data,
+      contentType: req.file.mimetype,
+      filename: req.file.originalname,
+      size: req.file.size,
+      uploadedAt: new Date()
+    };
+
+    const updatedEvent = await EventModel.findByIdAndUpdate(
+      eventId,
+      { 
+        imageData: imageData,
+        hasCustomImage: true,
+        image: `data:${req.file.mimetype};base64,${base64Data}` // Para compatibilidad
+      },
+      { new: true }
+    ).populate('location');
+
+    if (!updatedEvent) {
+      return res.status(404).json({ error: "Event not found" });
+    }
+
+    res.json({ 
+      ...updatedEvent.toObject(),
+      imageUrl: updatedEvent.getImageDataUrl(),
+      hasCustomImage: true
+    });
+  } catch (error) {
+    console.error("Error updating event image:", error);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+});
+
+app.get("/events/:eventId/image", async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    
+    const event = await EventModel.findById(eventId);
+    if (!event) {
+      return res.status(404).json({ error: "Event not found" });
+    }
+
+    if (!event.hasImage()) {
+      return res.status(404).json({ error: "Event has no custom image" });
+    }
+
+    // Devolver la imagen como data URL
+    res.json({
+      imageUrl: event.getImageDataUrl(),
+      filename: event.imageData.filename,
+      contentType: event.imageData.contentType,
+      size: event.imageData.size,
+      uploadedAt: event.imageData.uploadedAt
+    });
+
+  } catch (error) {
+    console.error("Error fetching event image:", error);
     res.status(500).json({ error: "Internal Server Error", details: error.message });
   }
 });
@@ -251,6 +345,13 @@ app.get("/events", stateService.updateStatesMiddleware.bind(stateService), async
     const eventsWithLocations = events.map(event => {
       const e = event.toObject();
       e.location = locationMap[e.location.toString()] || null;
+
+      if (event.hasImage()) {
+        e.imageUrl = event.getImageDataUrl();
+        e.hasCustomImage = true;
+      } else {
+        e.hasCustomImage = false;
+      }
       
       // Información de rango de precios
       if (e.usesSectionPricing && e.sectionPricing && e.sectionPricing.length > 0) {
@@ -299,6 +400,13 @@ app.get("/events/:eventId", stateService.updateStatesMiddleware.bind(stateServic
 
     const eventObj = event.toObject();
     eventObj.location = location || null;
+
+    if (event.hasImage()) {
+      eventObj.imageUrl = event.getImageDataUrl();
+      eventObj.hasCustomImage = true;
+    } else {
+      eventObj.hasCustomImage = false;
+    }
 
     // Información del seatmap si usa pricing por secciones
     if (eventObj.usesSectionPricing && location && location.seatMapId) {

@@ -21,6 +21,26 @@ export default function SelectTickets({
   
   const gatewayUrl = process.env.REACT_API_ENDPOINT || "http://localhost:8000";
 
+  // Calcular entradas disponibles
+  const availableTickets = useMemo(() => {
+    if (!event) return 0;
+    
+    const capacity = event.capacity || 0;
+    const soldTickets = event.soldTickets || 0;
+    
+    return Math.max(0, capacity - soldTickets);
+  }, [event?.capacity, event?.soldTickets]);
+
+  // Verificar si el evento está agotado
+  const isSoldOut = useMemo(() => {
+    return availableTickets <= 0;
+  }, [availableTickets]);
+
+  // Calcular el máximo de tickets que se pueden seleccionar
+  const maxSelectableTickets = useMemo(() => {
+    return Math.min(6, availableTickets); // Máximo 6 o las disponibles, lo que sea menor
+  }, [availableTickets]);
+
   const requiresSeatMap = useCallback(() => {
     if (!event?.type) return false;
     
@@ -102,7 +122,10 @@ export default function SelectTickets({
 
   // Simplified handleSeatSelection - just pass through the seats with their prices
   const handleSeatSelection = useCallback((seats) => {
-    const seatsWithFullInfo = seats.map(seat => ({
+    // Limitar la selección según disponibilidad
+    const limitedSeats = seats.slice(0, maxSelectableTickets);
+    
+    const seatsWithFullInfo = limitedSeats.map(seat => ({
         ...seat,
         id: seat.id || `${seat.section}-${seat.row}-${seat.seat}`,
         seatId: seat.seatId || `${seat.section}-${seat.row}-${seat.seat}`,
@@ -114,7 +137,7 @@ export default function SelectTickets({
       
       onSeatSelect(seatsWithFullInfo);
       setQuantity(seatsWithFullInfo.length);
-    }, [onSeatSelect, setQuantity]);
+    }, [onSeatSelect, setQuantity, maxSelectableTickets]);
 
   // Load seatmap data with proper dependencies
   useEffect(() => {
@@ -193,6 +216,66 @@ export default function SelectTickets({
     }
   }, [event?.id]); // Solo cuando cambia el ID del evento
 
+  useEffect(() => {
+    const needsMap = requiresSeatMap();
+    
+    if (!needsMap && ticketTypes.length > 0 && !selectedTicketType) {
+      setSelectedTicketType(ticketTypes[0].key);
+    }
+  }, [requiresSeatMap, ticketTypes, selectedTicketType, setSelectedTicketType]);
+
+  // Ajustar cantidad si excede las disponibles
+  useEffect(() => {
+    if (quantity > maxSelectableTickets) {
+      setQuantity(maxSelectableTickets);
+    }
+  }, [quantity, maxSelectableTickets, setQuantity]);
+
+  const renderAvailabilityAlert = () => {
+    if (isSoldOut) {
+      return (
+        <Alert
+          message="Evento agotado"
+          description="Lo sentimos, este evento ya no tiene entradas disponibles."
+          type="error"
+          showIcon
+          style={{ marginBottom: '24px' }}
+        />
+      );
+    }
+
+    if (availableTickets <= 10) {
+      return (
+        <Alert
+          message="¡Últimas entradas!"
+          description={`Solo quedan ${availableTickets} entrada${availableTickets !== 1 ? 's' : ''} disponible${availableTickets !== 1 ? 's' : ''}.`}
+          type="warning"
+          showIcon
+          style={{ marginBottom: '24px' }}
+        />
+      );
+    }
+
+    return (
+      <div style={{ 
+        marginBottom: '24px', 
+        padding: '12px', 
+        backgroundColor: COLORS.neutral.grey1, 
+        borderRadius: '8px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+      }}>
+        <Text style={{ color: COLORS.neutral.grey4 }}>
+          Entradas disponibles:
+        </Text>
+        <Text strong style={{ color: COLORS.primary.main }}>
+          {availableTickets}
+        </Text>
+      </div>
+    );
+  };
+
   const renderSeatMap = useCallback(() => {
     if (loading) {
       return (
@@ -240,7 +323,7 @@ export default function SelectTickets({
         seatMapData={seatMapData}
         selectedSeats={selectedSeats}
         onSeatSelect={handleSeatSelection}
-        maxSeats={6}
+        maxSeats={maxSelectableTickets}
         occupiedSeats={occupiedSeats}
         blockedSeats={blockedSeats}
         blockedSections={blockedSections}
@@ -248,8 +331,7 @@ export default function SelectTickets({
         event={event} // Pasar el evento para el cálculo de precios
       />
     );
-  }, [loading, error, seatMapData, selectedSeats, handleSeatSelection, occupiedSeats, blockedSeats, blockedSections, formatPrice, event]);
-
+  }, [loading, error, seatMapData, selectedSeats, handleSeatSelection, occupiedSeats, blockedSeats, blockedSections, formatPrice, event, maxSelectableTickets]);
 
   // Memoize the selected ticket type data
   const selectedTicketData = useMemo(() => {
@@ -259,9 +341,29 @@ export default function SelectTickets({
   // Check if seat map is required
   const needsSeatMap = requiresSeatMap();
 
+  // Si el evento está agotado, mostrar solo el mensaje de agotado
+  if (isSoldOut) {
+    return (
+      <>
+        {renderAvailabilityAlert()}
+        <Card style={{ textAlign: 'center', padding: '40px' }}>
+          <Title level={3} style={{ color: COLORS.neutral.grey4 }}>
+            Evento agotado
+          </Title>
+          <Text style={{ color: COLORS.neutral.grey4 }}>
+            Te recomendamos que revises otros eventos disponibles
+          </Text>
+        </Card>
+      </>
+    );
+  }
+
   return (
     <>
-      {/* Only show ticket type selection when there's NO seat map */}
+      {/* Mostrar información de disponibilidad */}
+      {renderAvailabilityAlert()}
+
+      {/* Mostrar selección de tipo de ticket cuando NO hay mapa de asientos */}
       {!needsSeatMap && (
         <Card style={{ marginBottom: '24px' }}>
           <Title level={4} style={{ color: COLORS.neutral.darker, marginBottom: '16px' }}>
@@ -286,18 +388,11 @@ export default function SelectTickets({
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <div style={{ flex: 1 }}>
                         <Title level={5} style={{ marginBottom: '4px', color: COLORS.neutral.darker }}>
-                          {ticket.name}
+                          {ticket.label}
                         </Title>
-                        <Text style={{ color: COLORS.neutral.grey4, marginBottom: '8px', display: 'block' }}>
-                          {ticket.description}
+                        <Text style={{ color: COLORS.neutral.grey4 }}>
+                          Entrada general
                         </Text>
-                        <Space wrap>
-                          {ticket.features.map((feature, index) => (
-                            <Tag key={index} color={COLORS.primary.light}>
-                              {feature}
-                            </Tag>
-                          ))}
-                        </Space>
                       </div>
                       <div style={{ textAlign: 'right', marginLeft: '16px' }}>
                         <Title level={4} style={{ color: COLORS.primary.main, marginBottom: '4px' }}>
@@ -314,11 +409,12 @@ export default function SelectTickets({
         </Card>
       )}
 
+      {/* Mostrar mapa de asientos cuando se requiere */}
       {needsSeatMap ? (
         <>
           <Alert
             message="Selección de asientos"
-            description={`Haz clic en los asientos que deseas comprar. Puedes seleccionar hasta 6 asientos. ${selectedSeats.length > 0 ? `Total: ${formatPrice(totalFromSeats)}` : ''}`}
+            description={`Haz clic en los asientos que deseas comprar. Puedes seleccionar hasta ${maxSelectableTickets} asientos. ${selectedSeats.length > 0 ? `Total: ${formatPrice(totalFromSeats)}` : ''}`}
             type="info"
             showIcon
             style={{ marginBottom: '24px' }}
@@ -367,7 +463,6 @@ export default function SelectTickets({
                       </div>
                     </div>
                   </div>
-
                 ))}
               </div>
               <div style={{ 
@@ -390,6 +485,7 @@ export default function SelectTickets({
           )}
         </>
       ) : (
+        /* Pantalla alternativa para eventos sin mapa de asientos */
         <Card>
           <Title level={4} style={{ color: COLORS.neutral.darker, marginBottom: '16px' }}>
             Cantidad de tickets
@@ -398,33 +494,35 @@ export default function SelectTickets({
             <Text>Cantidad:</Text>
             <InputNumber
               min={1}
-              max={6}
+              max={maxSelectableTickets}
               value={quantity}
               onChange={setQuantity}
               size="large"
               style={{ width: '120px' }}
             />
             <Text style={{ color: COLORS.neutral.grey4 }}>
-              (Máximo 6 tickets por compra)
+              (Máximo {maxSelectableTickets} tickets por compra)
             </Text>
           </div>
 
-          <div style={{ 
-            marginTop: '24px',
-            padding: '16px',
-            backgroundColor: COLORS.neutral.grey1,
-            borderRadius: '8px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center'
-          }}>
-            <div>
-              <Text>Subtotal ({quantity} ticket{quantity !== 1 ? 's' : ''}):</Text>
+          {selectedTicketData && (
+            <div style={{ 
+              marginTop: '24px',
+              padding: '16px',
+              backgroundColor: COLORS.neutral.grey1,
+              borderRadius: '8px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <div>
+                <Text>Subtotal ({quantity} ticket{quantity !== 1 ? 's' : ''}):</Text>
+              </div>
+              <Title level={4} style={{ color: COLORS.primary.main, margin: 0 }}>
+                {formatPrice(selectedTicketData.price * quantity || 0)}
+              </Title>
             </div>
-            <Title level={4} style={{ color: COLORS.primary.main, margin: 0 }}>
-              {formatPrice(selectedTicketData?.price * quantity || 0)}
-            </Title>
-          </div>
+          )}
         </Card>
       )}
     </>
