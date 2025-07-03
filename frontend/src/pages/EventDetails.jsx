@@ -374,26 +374,32 @@ const EventDetails = () => {
                   boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
                 }}
               >
-                {event.image && event.image !== "/images/default.jpg" ? (
-                  <div style={{ position: 'relative' }}>
-                    <Image 
-                      alt={event.name}
-                      src={event.image}
-                      style={{ 
-                        width: '100%', 
-                        height: '400px',
-                        objectFit: 'cover'
-                      }}
-                      preview={{
-                        mask: (
-                          <div style={{ color: COLORS.neutral.white }}>
-                            <PictureOutlined /> Ver imagen completa
-                          </div>
-                        )
-                      }}
-                    />
-                  </div>
-                ) : (
+              {event.image ? (
+                <div style={{ 
+                  position: 'relative',
+                  width: '100%',
+                  height: '400px',
+                  overflow: 'hidden'
+                }}>
+                  <Image 
+                    alt={event.name}
+                    src={event.image}
+                    width="100%"
+                    height="100%"
+                    style={{ 
+                      objectFit: 'cover',
+                      display: 'block'
+                    }}
+                    preview={{
+                      mask: (
+                        <div style={{ color: COLORS.neutral.white }}>
+                          <PictureOutlined /> Ver imagen completa
+                        </div>
+                      )
+                    }}
+                  />
+                </div>
+              ) : (
                   <div style={{ 
                     display: 'flex', 
                     flexDirection: 'column',
