@@ -15,6 +15,4 @@ al crear un evento sin mapa de asientos:
     - da error al comprar entradas - añadir condicional para que no intente cargar el seatmap y cargue una pantalla alternativa
     - al crear el evento, si le das a siguiente lo crea auto, habria que meter un modal y cambiar el boton o algo
 
-mirar a ver si puedo retocar algo de event details
-
 modificar la manera de cargar las imagenes de los eventos donde se necesiten
