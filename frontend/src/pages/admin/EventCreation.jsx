@@ -7,6 +7,7 @@ import {
   DatePicker, 
   Select, 
   message, 
+  Modal,
   Alert,
   Card,
   Row,
@@ -65,6 +66,15 @@ const EventCreation = () => {
   const [usesSectionPricing, setUsesSectionPricing] = useState(false);
   const [loadingSections, setLoadingSections] = useState(false);
   const [usesRowPricing, setUsesRowPricing] = useState(false);
+
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [uploadLoading, setUploadLoading] = useState(false);
+
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [eventDataToSave, setEventDataToSave] = useState(null);
+  const [saving, setSaving] = useState(false);
+
   const navigate = useNavigate();
   
   const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
@@ -341,6 +351,99 @@ const EventCreation = () => {
     }
   };
 
+  const handleImageChange = (info) => {
+    const { fileList } = info;
+    
+    if (fileList.length > 0) {
+      const file = fileList[0].originFileObj;
+      setImageFile(file);
+      
+      // Crear preview de la imagen
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setImageFile(null);
+      setImagePreview(null);
+    }
+  };
+
+  const convertFileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64String = reader.result.split(',')[1]; // Remover el prefijo data:...;base64,
+        resolve({
+          data: base64String,
+          contentType: file.type,
+          filename: file.name,
+          size: file.size
+        });
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleConfirmSaveEvent = async () => {
+    setSaving(true);
+    
+    try {
+      console.log('Creating event with data:', eventDataToSave);
+      
+      // Crear el evento
+      const createEventResponse = await axios.post(`${gatewayUrl}/events`, eventDataToSave);
+      const createdEvent = createEventResponse.data;
+      
+      message.success('Evento creado correctamente');
+      setShowConfirmModal(false);
+
+      // Si tiene mapa de asientos, navegar a configuración
+      if (selectedLocation && selectedLocation.seatMapId) {
+        navigate('/admin/event-seatmap-config', { 
+          state: { 
+            ...eventDataToSave,
+            _id: createdEvent._id,
+            imagePath: createdEvent.image
+          } 
+        });
+      } else {
+        // Si no tiene mapa de asientos, navegar a la lista de eventos
+        navigate('/admin');
+      }
+      
+    } catch (error) {
+      console.error("Error creando el evento:", error);
+      
+      if (error.response) {
+        console.error('Server error:', error.response.data);
+        setErrorMessage(`Error del servidor: ${error.response.data.error || error.response.statusText}`);
+      } else if (error.request) {
+        console.error('Network error:', error.request);
+        setErrorMessage('Error de conexión. Verifica tu conexión a internet.');
+      } else {
+        console.error('Error:', error.message);
+        setErrorMessage('Hubo un error al crear el evento');
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const getEventTypeLabel = (type) => {
+    const typeLabels = {
+      'football': 'Partido de fútbol',
+      'cinema': 'Cine',
+      'concert': 'Concierto',
+      'theater': 'Teatro',
+      'festival': 'Festival'
+    };
+    return typeLabels[type] || type;
+  };
+
+
   const onFinish = async (values) => {
     setLoading(true);
     setErrorMessage(null);
@@ -351,7 +454,7 @@ const EventCreation = () => {
       const eventData = {
         name: values.name,
         date: values.date.toISOString(),
-        location: values.location,
+        location: values.location?._id || values.location,
         type: values.type,
         description: values.description,
         state: values.state || 'proximo'
@@ -393,6 +496,7 @@ const EventCreation = () => {
             errorMsg += 'Para conciertos con pistas, debe especificar una capacidad válida dentro del límite máximo. ';
           }
           setErrorMessage(errorMsg.trim());
+          setLoading(false);
           return;
         }
         
@@ -413,8 +517,7 @@ const EventCreation = () => {
           variablePrice: Math.round((parseFloat(section.variablePrice) || 0) * 100) / 100,
           frontRowFirst: section.frontRowFirst !== undefined ? section.frontRowFirst : true
         }));
-        
-        console.log( eventData.sectionPricing.rows);
+
         // Capacidad se calcula automáticamente en el backend
         eventData.capacity = sectionPricing.reduce((total, section) => {
           if (!section.hasNumberedSeats && type === 'concert') {
@@ -430,6 +533,7 @@ const EventCreation = () => {
         // Pricing tradicional
         if (!values.price || !values.capacity) {
           setErrorMessage('El precio y la capacidad son obligatorios cuando no hay pricing por secciones');
+          setLoading(false);
           return;
         }
         
@@ -441,13 +545,20 @@ const EventCreation = () => {
 
       console.log('Event data prepared:', eventData);
 
-      // Navegar a la vista de configuración del seatmap con los datos del evento
-      navigate('/admin/event-seatmap-config', { 
-        state: { 
-          eventData,
-          selectedLocation 
-        } 
-      });
+      if (imageFile) {
+        try {
+          const imageData = await convertFileToBase64(imageFile);
+          eventData.imageData = imageData;
+          console.log('Image converted to base64, size:', imageData.size);
+        } catch (error) {
+          console.error('Error converting image to base64:', error);
+          message.warning('Error al procesar la imagen, el evento se creará sin imagen');
+        }
+      }
+
+      // Guardar los datos y mostrar modal de confirmación
+      setEventDataToSave(eventData);
+      setShowConfirmModal(true);
       
     } catch (error) {
       console.error("Error preparando el evento:", error);
@@ -456,6 +567,7 @@ const EventCreation = () => {
       setLoading(false);
     }
   };
+
 
   const getTypeLabel = (type) => {
     switch(type) {
@@ -477,11 +589,36 @@ const EventCreation = () => {
   };
 
   const uploadProps = {
-    beforeUpload: file => {
-      return false;
+    beforeUpload: (file) => {
+      // Validar tipo de archivo
+      const isImage = file.type.startsWith('image/');
+      if (!isImage) {
+        message.error('Solo puedes subir archivos de imagen!');
+        return false;
+      }
+      
+      // Validar tamaño (máximo 5MB)
+      const isLt5M = file.size / 1024 / 1024 < 5;
+      if (!isLt5M) {
+        message.error('La imagen debe ser menor a 5MB!');
+        return false;
+      }
+      
+      return false; // Prevenir subida automática
+    },
+    onChange: handleImageChange,
+    onRemove: () => {
+      setImageFile(null);
+      setImagePreview(null);
     },
     maxCount: 1,
-    accept: 'image/*'
+    accept: 'image/*',
+    fileList: imageFile ? [{
+      uid: '-1',
+      name: imageFile.name,
+      status: 'done',
+      url: imagePreview,
+    }] : []
   };
 
   const getSeatMapInfo = (seatMapId) => {
@@ -770,6 +907,43 @@ const EventCreation = () => {
       );
     };
 
+    const ImagePreviewComponent = () => {
+      if (!imagePreview) return null;
+      
+      return (
+        <div style={{ marginTop: '16px' }}>
+          <Text strong>Vista previa de la imagen:</Text>
+          <div style={{ 
+            marginTop: '8px',
+            border: '1px solid #d9d9d9',
+            borderRadius: '8px',
+            padding: '8px',
+            backgroundColor: '#fafafa'
+          }}>
+            <img 
+              src={imagePreview}
+              alt="Preview" 
+              style={{ 
+                maxWidth: '100%', 
+                maxHeight: '200px', 
+                borderRadius: '4px',
+                objectFit: 'cover'
+              }} 
+            />
+            <div style={{ marginTop: '8px', fontSize: '12px', color: '#666' }}>
+              {imageFile && (
+                <>
+                  <div>Nombre: {imageFile.name}</div>
+                  <div>Tamaño: {(imageFile.size / 1024).toFixed(2)} KB</div>
+                  <div>Tipo: {imageFile.type}</div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    };
+
   return (
     <Layout style={{ minHeight: '100vh', backgroundColor: COLORS?.neutral?.white || '#ffffff' }}>
       <Content style={{ padding: '40px' }}>
@@ -1041,7 +1215,7 @@ const EventCreation = () => {
                         prefix={isCapacityLocked ? <LockOutlined style={{ color: COLORS?.neutral?.grey3 || '#d9d9d9' }} /> : null}
                         suffix={
                           <span style={{ color: COLORS?.neutral?.grey3 || '#d9d9d9' }}>
-                            asientos
+                            personas
                             {isCapacityLocked && selectedLocation && (
                               <Tooltip title={`Capacidad ${selectedLocation.seatMapId ? 'calculada desde el mapa de asientos' : 'fija'} de ${selectedLocation.name}`}>
                                 <InfoCircleOutlined style={{ marginLeft: '4px' }} />
@@ -1083,12 +1257,18 @@ const EventCreation = () => {
                   <Form.Item
                     label="Imagen del evento"
                     name="image"
-                    valuePropName="file"
-                    getValueFromEvent={e => e && e.fileList && e.fileList.length > 0 ? e : null}
+                    help="Formatos soportados: JPG, PNG, GIF. Tamaño máximo: 5MB"
                   >
-                    <Upload {...uploadProps} listType="picture" maxCount={1}>
-                      <Button icon={<UploadOutlined />}>Seleccionar imagen</Button>
+                    <Upload {...uploadProps} listType="picture">
+                      <Button 
+                        icon={<UploadOutlined />} 
+                        loading={uploadLoading}
+                        disabled={loading}
+                      >
+                        {imageFile ? 'Cambiar imagen' : 'Seleccionar imagen'}
+                      </Button>
                     </Upload>
+                    <ImagePreviewComponent />
                   </Form.Item>
                 </Col>
               </Row>
@@ -1237,6 +1417,94 @@ const EventCreation = () => {
           </Card>
         </div>
       </Content>
+
+      {/* Modal de confirmación */}
+      <Modal
+        title="Confirmar creación del evento"
+        open={showConfirmModal}
+        onOk={handleConfirmSaveEvent}
+        onCancel={() => setShowConfirmModal(false)}
+        confirmLoading={saving}
+        okText="Crear Evento"
+        cancelText="Cancelar"
+        okButtonProps={{
+          style: {
+            backgroundColor: COLORS?.primary?.main || "#1890ff",
+            borderColor: COLORS?.primary?.main || "#1890ff"
+          }
+        }}
+        width={600}
+      >
+        {eventDataToSave && (
+          <div>
+            <Text>¿Estás seguro de que quieres crear el evento con la siguiente configuración?</Text>
+            <Divider />
+            
+            <div style={{ marginBottom: '12px' }}>
+              <Text strong>Evento:</Text> {eventDataToSave.name}
+            </div>
+            
+            <div style={{ marginBottom: '12px' }}>
+              <Text strong>Fecha:</Text> {new Date(eventDataToSave.date).toLocaleDateString('es-ES', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}
+            </div>
+            
+            <div style={{ marginBottom: '12px' }}>
+              <Text strong>Tipo:</Text> {getEventTypeLabel(eventDataToSave.type)}
+            </div>
+            
+            <div style={{ marginBottom: '12px' }}>
+              <Text strong>Ubicación:</Text> {selectedLocation?.name}
+            </div>
+            
+            <div style={{ marginBottom: '12px' }}>
+              <Text strong>Capacidad total:</Text> {eventDataToSave.capacity} personas
+            </div>
+            
+            <div style={{ marginBottom: '12px' }}>
+              <Text strong>Precio{eventDataToSave.usesSectionPricing ? ' desde' : ''}:</Text> €{eventDataToSave.price?.toFixed(2)}
+            </div>
+            
+            {eventDataToSave.usesSectionPricing && (
+              <div style={{ marginBottom: '12px' }}>
+                <Text strong>Secciones configuradas:</Text> {eventDataToSave.sectionPricing?.length || 0}
+              </div>
+            )}
+            
+            {imageFile && (
+              <div style={{ marginBottom: '12px' }}>
+                <Text strong>Imagen:</Text> {imageFile.name}
+              </div>
+            )}
+            
+            {!selectedLocation?.seatMapId && (
+              <Alert
+                message="Evento sin mapa de asientos"
+                description="Este evento se creará sin configuración de mapa de asientos. Una vez creado, podrás gestionarlo desde la lista de eventos."
+                type="info"
+                showIcon
+                style={{ marginTop: '12px' }}
+              />
+            )}
+            
+            {selectedLocation?.seatMapId && (
+              <Alert
+                message="Configuración de mapa de asientos"
+                description="Después de crear el evento, podrás configurar el mapa de asientos y bloquear secciones específicas."
+                type="info"
+                showIcon
+                style={{ marginTop: '12px' }}
+              />
+            )}
+          </div>
+        )}
+      </Modal>
     </Layout>
   );
 };

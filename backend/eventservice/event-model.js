@@ -98,8 +98,16 @@ const eventSchema = new mongoose.Schema({
   },
 
   seatMapConfiguration: seatMapConfigurationSchema,
+
+  imageData: {
+    data: String, // Base64 string de la imagen
+    contentType: String, // Tipo MIME (image/jpeg, image/png, etc.)
+    filename: String, // Nombre original del archivo
+    size: Number, // Tamaño en bytes
+    uploadedAt: { type: Date, default: Date.now }
+  },
+  hasCustomImage: { type: Boolean, default: false } 
   
-  image: { type: String, default: "/images/default.jpg" }
 }, { timestamps: true });
 
 // Middleware para calcular capacidad total basada en sectionPricing
@@ -112,6 +120,18 @@ eventSchema.pre('save', function(next) {
   }
   next();
 });
+
+eventSchema.methods.getImageDataUrl = function() {
+  if (this.imageData && this.imageData.data && this.imageData.contentType) {
+    return `data:${this.imageData.contentType};base64,${this.imageData.data}`;
+  }
+  return null;
+};
+
+// Método para verificar si tiene imagen personalizada
+eventSchema.methods.hasImage = function() {
+  return this.hasCustomImage && this.imageData && this.imageData.data;
+};
 
 // Método para calcular el precio de un asiento específico
 eventSchema.methods.getSeatPrice = function(sectionId, row, seat) {

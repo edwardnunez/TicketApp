@@ -76,7 +76,7 @@ const Home = () => {
         const events = res.data.map(event => ({
           ...event,
           date: dayjs(event.date).format("YYYY-MM-DD"),
-          image: event.image || "/images/default.jpg",
+          image: event.hasCustomImage ? event.imageUrl : "/event-images/default.jpg",
           category: mapEventTypeToCategory(event.type),
           state: event.state || 'proximo'
         }));
