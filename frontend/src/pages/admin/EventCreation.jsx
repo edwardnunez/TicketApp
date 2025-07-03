@@ -7,6 +7,7 @@ import {
   DatePicker, 
   Select, 
   message, 
+  Modal,
   Alert,
   Card,
   Row,
@@ -69,6 +70,10 @@ const EventCreation = () => {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [uploadLoading, setUploadLoading] = useState(false);
+
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [eventDataToSave, setEventDataToSave] = useState(null);
+  const [saving, setSaving] = useState(false);
 
   const navigate = useNavigate();
   
@@ -382,6 +387,62 @@ const EventCreation = () => {
     });
   };
 
+  const handleConfirmSaveEvent = async () => {
+    setSaving(true);
+    
+    try {
+      console.log('Creating event with data:', eventDataToSave);
+      
+      // Crear el evento
+      const createEventResponse = await axios.post(`${gatewayUrl}/events`, eventDataToSave);
+      const createdEvent = createEventResponse.data;
+      
+      message.success('Evento creado correctamente');
+      setShowConfirmModal(false);
+
+      // Si tiene mapa de asientos, navegar a configuración
+      if (selectedLocation && selectedLocation.seatMapId) {
+        navigate('/admin/event-seatmap-config', { 
+          state: { 
+            ...eventDataToSave,
+            _id: createdEvent._id,
+            imagePath: createdEvent.image
+          } 
+        });
+      } else {
+        // Si no tiene mapa de asientos, navegar a la lista de eventos
+        navigate('/admin');
+      }
+      
+    } catch (error) {
+      console.error("Error creando el evento:", error);
+      
+      if (error.response) {
+        console.error('Server error:', error.response.data);
+        setErrorMessage(`Error del servidor: ${error.response.data.error || error.response.statusText}`);
+      } else if (error.request) {
+        console.error('Network error:', error.request);
+        setErrorMessage('Error de conexión. Verifica tu conexión a internet.');
+      } else {
+        console.error('Error:', error.message);
+        setErrorMessage('Hubo un error al crear el evento');
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const getEventTypeLabel = (type) => {
+    const typeLabels = {
+      'football': 'Partido de fútbol',
+      'cinema': 'Cine',
+      'concert': 'Concierto',
+      'theater': 'Teatro',
+      'festival': 'Festival'
+    };
+    return typeLabels[type] || type;
+  };
+
 
   const onFinish = async (values) => {
     setLoading(true);
@@ -435,6 +496,7 @@ const EventCreation = () => {
             errorMsg += 'Para conciertos con pistas, debe especificar una capacidad válida dentro del límite máximo. ';
           }
           setErrorMessage(errorMsg.trim());
+          setLoading(false);
           return;
         }
         
@@ -471,6 +533,7 @@ const EventCreation = () => {
         // Pricing tradicional
         if (!values.price || !values.capacity) {
           setErrorMessage('El precio y la capacidad son obligatorios cuando no hay pricing por secciones');
+          setLoading(false);
           return;
         }
         
@@ -493,42 +556,18 @@ const EventCreation = () => {
         }
       }
 
-      // Crear el evento (ya no necesitamos subir imagen por separado)
-      const createEventResponse = await axios.post(`${gatewayUrl}/events`, eventData);
-      const createdEvent = createEventResponse.data;
-      
-      message.success('Evento creado correctamente');
-
-      // Navigate to seatmap configuration with event data
-      navigate('/admin/event-seatmap-config', { 
-        state: { 
-          ...eventData,
-          _id: createdEvent._id,
-          imagePath: createdEvent.image
-        } 
-      });
+      // Guardar los datos y mostrar modal de confirmación
+      setEventDataToSave(eventData);
+      setShowConfirmModal(true);
       
     } catch (error) {
       console.error("Error preparando el evento:", error);
-      
-      // More specific error handling
-      if (error.response) {
-        // Server responded with error status
-        console.error('Server error:', error.response.data);
-        setErrorMessage(`Error del servidor: ${error.response.data.error || error.response.statusText}`);
-      } else if (error.request) {
-        // Request was made but no response received
-        console.error('Network error:', error.request);
-        setErrorMessage('Error de conexión. Verifica tu conexión a internet.');
-      } else {
-        // Something else happened
-        console.error('Error:', error.message);
-        setErrorMessage('Hubo un error al procesar los datos del evento');
-      }
+      setErrorMessage('Hubo un error al procesar los datos del evento');
     } finally {
       setLoading(false);
     }
   };
+
 
   const getTypeLabel = (type) => {
     switch(type) {
@@ -1378,6 +1417,94 @@ const EventCreation = () => {
           </Card>
         </div>
       </Content>
+
+      {/* Modal de confirmación */}
+      <Modal
+        title="Confirmar creación del evento"
+        open={showConfirmModal}
+        onOk={handleConfirmSaveEvent}
+        onCancel={() => setShowConfirmModal(false)}
+        confirmLoading={saving}
+        okText="Crear Evento"
+        cancelText="Cancelar"
+        okButtonProps={{
+          style: {
+            backgroundColor: COLORS?.primary?.main || "#1890ff",
+            borderColor: COLORS?.primary?.main || "#1890ff"
+          }
+        }}
+        width={600}
+      >
+        {eventDataToSave && (
+          <div>
+            <Text>¿Estás seguro de que quieres crear el evento con la siguiente configuración?</Text>
+            <Divider />
+            
+            <div style={{ marginBottom: '12px' }}>
+              <Text strong>Evento:</Text> {eventDataToSave.name}
+            </div>
+            
+            <div style={{ marginBottom: '12px' }}>
+              <Text strong>Fecha:</Text> {new Date(eventDataToSave.date).toLocaleDateString('es-ES', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}
+            </div>
+            
+            <div style={{ marginBottom: '12px' }}>
+              <Text strong>Tipo:</Text> {getEventTypeLabel(eventDataToSave.type)}
+            </div>
+            
+            <div style={{ marginBottom: '12px' }}>
+              <Text strong>Ubicación:</Text> {selectedLocation?.name}
+            </div>
+            
+            <div style={{ marginBottom: '12px' }}>
+              <Text strong>Capacidad total:</Text> {eventDataToSave.capacity} personas
+            </div>
+            
+            <div style={{ marginBottom: '12px' }}>
+              <Text strong>Precio{eventDataToSave.usesSectionPricing ? ' desde' : ''}:</Text> €{eventDataToSave.price?.toFixed(2)}
+            </div>
+            
+            {eventDataToSave.usesSectionPricing && (
+              <div style={{ marginBottom: '12px' }}>
+                <Text strong>Secciones configuradas:</Text> {eventDataToSave.sectionPricing?.length || 0}
+              </div>
+            )}
+            
+            {imageFile && (
+              <div style={{ marginBottom: '12px' }}>
+                <Text strong>Imagen:</Text> {imageFile.name}
+              </div>
+            )}
+            
+            {!selectedLocation?.seatMapId && (
+              <Alert
+                message="Evento sin mapa de asientos"
+                description="Este evento se creará sin configuración de mapa de asientos. Una vez creado, podrás gestionarlo desde la lista de eventos."
+                type="info"
+                showIcon
+                style={{ marginTop: '12px' }}
+              />
+            )}
+            
+            {selectedLocation?.seatMapId && (
+              <Alert
+                message="Configuración de mapa de asientos"
+                description="Después de crear el evento, podrás configurar el mapa de asientos y bloquear secciones específicas."
+                type="info"
+                showIcon
+                style={{ marginTop: '12px' }}
+              />
+            )}
+          </div>
+        )}
+      </Modal>
     </Layout>
   );
 };

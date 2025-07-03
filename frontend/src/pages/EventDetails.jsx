@@ -71,7 +71,7 @@ const EventDetails = () => {
           ...res.data,
           date: res.data.date,
           // Usar imageUrl si está disponible, sino usar image por compatibilidad
-          image: res.data.imageUrl || res.data.image || "/images/default.jpg",
+          image: res.data.imageUrl || res.data.image || "/event-images/default.jpg",
           // Mapear tipo de evento a categoría para consistencia con Home
           category: mapEventTypeToCategory(res.data.type)
         };
