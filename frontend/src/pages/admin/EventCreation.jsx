@@ -560,6 +560,8 @@ const EventCreation = () => {
             price: Math.round((parseFloat(rowPrice.price) || 0) * 100) / 100
           }))
         }));
+        
+        console.log('EventCreation - Section pricing prepared:', eventData.sectionPricing);
 
         // Capacidad se calcula automáticamente en el backend
         eventData.capacity = sectionPricing.reduce((total, section) => {

@@ -1021,11 +1021,20 @@ const GeneralAdmissionRenderer = ({
       return;
     }
 
+    // Obtener el precio correcto del evento si está disponible
+    let correctPrice = section.price;
+    if (event && event.usesSectionPricing && event.sectionPricing?.length > 0) {
+      const eventSectionPricing = event.sectionPricing.find(sp => sp.sectionId === section.id);
+      if (eventSectionPricing) {
+        correctPrice = eventSectionPricing.defaultPrice || section.price;
+      }
+    }
+
     const sectionData = {
       id: `${section.id}-GA-${Date.now()}`,
       section: section.name,
       sectionId: section.id,
-      price: section.price,
+      price: correctPrice,
       isGeneralAdmission: true
     };
 
@@ -1164,7 +1173,17 @@ const GeneralAdmissionRenderer = ({
             fontSize: '16px',
             fontWeight: 'bold'
           }}>
-            {formatPrice(section.price)}
+            {(() => {
+              // Obtener el precio correcto del evento si está disponible
+              let correctPrice = section.price;
+              if (event && event.usesSectionPricing && event.sectionPricing?.length > 0) {
+                const eventSectionPricing = event.sectionPricing.find(sp => sp.sectionId === section.id);
+                if (eventSectionPricing) {
+                  correctPrice = eventSectionPricing.defaultPrice || section.price;
+                }
+              }
+              return formatPrice(correctPrice);
+            })()}
           </Text>
         </div>
 
