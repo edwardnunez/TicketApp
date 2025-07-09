@@ -215,7 +215,6 @@ const EventSeatMapEditor = () => {
   const handleSaveEvent = async () => {
     setSaving(true);
     try {
-      
       const eventPayload = {
         ...eventData,
         // Asegurarnos de que location tenga los datos completos

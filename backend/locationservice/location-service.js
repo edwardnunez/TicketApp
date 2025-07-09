@@ -313,8 +313,7 @@ app.get('/location/:locationId/sections', async (req, res) => {
       capacity: section.hasNumberedSeats ? section.rows * section.seatsPerRow : section.totalCapacity,
       rows: section.rows,
       seatsPerRow: section.seatsPerRow,
-      price: section.price, // Precio por defecto para compatibilidad
-      defaultPrice: section.defaultPrice || section.price, // Precio por defecto para filas no configuradas
+      defaultPrice: section.defaultPrice, // Precio por defecto para filas no configuradas
       rowPricing: section.rowPricing || [], // Precios específicos por fila
       color: section.color,
       position: section.position,

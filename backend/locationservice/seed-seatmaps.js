@@ -21,7 +21,7 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Tribuna Norte',
           rows: 8,
           seatsPerRow: 15,
-          price: 0,
+          defaultPrice: 0,
           color: '#4CAF50',
           position: 'north',
           order: 1
@@ -31,7 +31,7 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Tribuna Este',
           rows: 6,
           seatsPerRow: 14,
-          price: 0,
+          defaultPrice: 0,
           color: '#2196F3',
           position: 'east',
           order: 2
@@ -41,7 +41,7 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Tribuna Oeste',
           rows: 6,
           seatsPerRow: 14,
-          price: 0,
+          defaultPrice: 0,
           color: '#2196F3',
           position: 'west',
           order: 3
@@ -51,7 +51,7 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Tribuna Sur',
           rows: 8,
           seatsPerRow: 15,
-          price: 0,
+          defaultPrice: 0,
           color: '#4CAF50',
           position: 'south',
           order: 4
@@ -61,7 +61,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Palcos VIP',
           rows: 2,
           seatsPerRow: 14,
-          price: 0,
           defaultPrice: 150,
           rowPricing: [
             { row: 1, price: 200 },
@@ -89,7 +88,7 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Tribuna Norte',
           rows: 10,
           seatsPerRow: 18,
-          price: 0,
+          defaultPrice: 0,
           color: '#4CAF50',
           position: 'north',
           order: 1

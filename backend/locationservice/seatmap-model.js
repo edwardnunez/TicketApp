@@ -29,10 +29,6 @@ const sectionSchema = new mongoose.Schema({
     type: Number, 
     required: true 
   },
-  price: { 
-    type: Number, 
-    required: true 
-  }, // Precio por defecto para compatibilidad hacia atrás
   defaultPrice: { 
     type: Number, 
     required: true, 
@@ -79,7 +75,7 @@ sectionSchema.pre('save', function(next) {
   
   // Asegurar que defaultPrice esté configurado
   if (this.defaultPrice === undefined) {
-    this.defaultPrice = this.price;
+    this.defaultPrice = 0; // Valor por defecto si no se especifica
   }
   
   next();
