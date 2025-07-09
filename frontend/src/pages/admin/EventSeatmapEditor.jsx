@@ -215,6 +215,7 @@ const EventSeatMapEditor = () => {
   const handleSaveEvent = async () => {
     setSaving(true);
     try {
+      
       const eventPayload = {
         ...eventData,
         // Asegurarnos de que location tenga los datos completos
@@ -231,7 +232,7 @@ const EventSeatMapEditor = () => {
         }
       };
 
-      await axios.post(`${gatewayUrl}/event`, eventPayload);
+      await axios.post(`${gatewayUrl}/events`, eventPayload);
       
       message.success('Evento creado exitosamente');
       navigate('/admin');

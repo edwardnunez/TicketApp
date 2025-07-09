@@ -165,7 +165,7 @@ eventSchema.methods.getMinPrice = function() {
     }
     
     // Considerar también defaultPrice
-    if (section.defaultPrice !== undefined) {
+    if (section.defaultPrice !== undefined && section.defaultPrice !== null) {
       minPrice = Math.min(minPrice, section.defaultPrice);
     }
   });
@@ -189,7 +189,7 @@ eventSchema.methods.getMaxPrice = function() {
     }
     
     // Considerar también defaultPrice
-    if (section.defaultPrice !== undefined) {
+    if (section.defaultPrice !== undefined && section.defaultPrice !== null) {
       maxPrice = Math.max(maxPrice, section.defaultPrice);
     }
   });

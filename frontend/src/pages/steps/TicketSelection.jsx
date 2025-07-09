@@ -172,10 +172,8 @@ export default function SelectTickets({
             const eventSectionPricing = event.sectionPricing.find(sp => sp.sectionId === section.id);
             
             if (eventSectionPricing) {
-              // Si usa pricing por filas, usar el precio base como referencia
-              const displayPrice = event.usesRowPricing && eventSectionPricing.variablePrice > 0
-                ? eventSectionPricing.basePrice
-                : eventSectionPricing.basePrice || eventSectionPricing.price || section.price;
+              // Usar el precio por defecto de la sección
+              const displayPrice = eventSectionPricing.defaultPrice || section.price;
               
               return { 
                 ...section, 
@@ -190,6 +188,15 @@ export default function SelectTickets({
         }
         
         setSeatMapData(updatedSeatMapData);
+        
+        // Log para depuración
+        console.log('TicketSelection - Event pricing debug:', {
+          eventId: event._id,
+          usesSectionPricing: event.usesSectionPricing,
+          usesRowPricing: event.usesRowPricing,
+          sectionPricing: event.sectionPricing,
+          updatedSeatMapData: updatedSeatMapData
+        });
       } catch (err) {
         console.error('Error loading seatmap:', err);
         if (err.response?.status === 404) {

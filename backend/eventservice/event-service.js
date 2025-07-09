@@ -79,7 +79,7 @@ const createSectionPricing = (seatMapInfo, pricingData) => {
     
     if (section.hasNumberedSeats === false) {
       // Sección de entrada general
-      capacity = sectionPricing?.capacity || section.totalCapacity || section.capacity || 0;
+      capacity = sectionPricing?.customCapacity || sectionPricing?.capacity || section.totalCapacity || section.capacity || 0;
       rows = 1;
       seatsPerRow = capacity;
     } else {
@@ -98,7 +98,8 @@ const createSectionPricing = (seatMapInfo, pricingData) => {
         rowPricing: [],
         capacity: capacity,
         rows: rows,
-        seatsPerRow: seatsPerRow
+        seatsPerRow: seatsPerRow,
+        hasNumberedSeats: section.hasNumberedSeats !== false
       };
     }
     
@@ -109,7 +110,9 @@ const createSectionPricing = (seatMapInfo, pricingData) => {
       rowPricing: sectionPricing.rowPricing || [],
       capacity: capacity,
       rows: rows,
-      seatsPerRow: seatsPerRow
+      seatsPerRow: seatsPerRow,
+      hasNumberedSeats: section.hasNumberedSeats !== false,
+      frontRowFirst: sectionPricing.frontRowFirst !== false
     };
   });
 };
@@ -220,7 +223,7 @@ app.post("/event", largePayloadMiddleware, async (req, res) => {
       eventData.usesSectionPricing = true;
       eventData.usesRowPricing = usesRowPricing || false;
       eventData.capacity = finalSectionPricing.reduce((total, section) => total + section.capacity, 0);
-      eventData.price = Math.min(...finalSectionPricing.map(section => section.basePrice || section.price || 0));
+      eventData.price = Math.min(...finalSectionPricing.map(section => section.defaultPrice || section.price || 0));
     } else {
       eventData.capacity = capacity || location.capacity || 100;
       eventData.price = price || 0;
@@ -434,6 +437,15 @@ app.get("/events/:eventId", stateService.updateStatesMiddleware.bind(stateServic
         max: event.getMaxPrice(),
         display: event.getPriceRange()
       };
+      
+      // Log para depuración
+      console.log('Event pricing debug:', {
+        eventId: eventObj._id,
+        usesSectionPricing: eventObj.usesSectionPricing,
+        usesRowPricing: eventObj.usesRowPricing,
+        sectionPricing: eventObj.sectionPricing,
+        priceRange: eventObj.priceRange
+      });
     } else {
       eventObj.priceRange = {
         min: eventObj.price,
