@@ -94,7 +94,7 @@ const createSectionPricing = (seatMapInfo, pricingData) => {
       return {
         sectionId: section.id,
         sectionName: section.name,
-        defaultPrice: section.price || 0,
+        defaultPrice: section.defaultPrice || 0,
         rowPricing: [],
         capacity: capacity,
         rows: rows,
@@ -106,7 +106,7 @@ const createSectionPricing = (seatMapInfo, pricingData) => {
     return {
       sectionId: section.id,
       sectionName: section.name,
-      defaultPrice: sectionPricing.defaultPrice || section.price || 0,
+              defaultPrice: sectionPricing.defaultPrice || section.defaultPrice || 0,
       rowPricing: sectionPricing.rowPricing || [],
       capacity: capacity,
       rows: rows,
@@ -223,7 +223,7 @@ app.post("/event", largePayloadMiddleware, async (req, res) => {
       eventData.usesSectionPricing = true;
       eventData.usesRowPricing = usesRowPricing || false;
       eventData.capacity = finalSectionPricing.reduce((total, section) => total + section.capacity, 0);
-      eventData.price = Math.min(...finalSectionPricing.map(section => section.defaultPrice || section.price || 0));
+      eventData.price = Math.min(...finalSectionPricing.map(section => section.defaultPrice || 0));
     } else {
       eventData.capacity = capacity || location.capacity || 100;
       eventData.price = price || 0;
@@ -375,7 +375,7 @@ app.get("/events", stateService.updateStatesMiddleware.bind(stateService), async
             display: event.getPriceRange()
           };
         } else {
-          const prices = e.sectionPricing.map(section => section.price || section.basePrice);
+          const prices = e.sectionPricing.map(section => section.defaultPrice || 0);
           e.priceRange = {
             min: Math.min(...prices),
             max: Math.max(...prices),

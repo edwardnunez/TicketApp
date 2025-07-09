@@ -298,10 +298,6 @@ const EventCreation = () => {
 
   const handleLocationChange = async (locationId) => {
     const location = locations.find(loc => loc._id === locationId);
-    console.log('Debug - handleLocationChange - locationId:', locationId);
-    console.log('Debug - handleLocationChange - found location:', location);
-    console.log('Debug - handleLocationChange - location.seatMapId:', location?.seatMapId);
-    console.log('Debug - handleLocationChange - setting selectedLocation to:', location);
     setSelectedLocation(location);
     
     if (location && location.seatMapId) {
@@ -346,7 +342,6 @@ const EventCreation = () => {
         setLocationSections(data.sections);
         setUsesSectionPricing(true);
         setUsesRowPricing(true);
-        console.log("Secciones obtenidas:", data.sections);
         
         // Inicializar pricing por secciones con defaultPrice y rowPricing
         const initialPricing = data.sections.map(section => ({
@@ -428,7 +423,6 @@ const EventCreation = () => {
       
       // Crear el evento (solo para eventos sin seatmap)
       const createEventResponse = await axios.post(`${gatewayUrl}/events`, eventDataToSave);
-      const createdEvent = createEventResponse.data;
       
       message.success('Evento creado correctamente');
       setShowConfirmModal(false);
@@ -469,14 +463,8 @@ const EventCreation = () => {
     setLoading(true);
     setErrorMessage(null);
     
-    console.log('Form values:', values);
-    // Obtener la ubicación seleccionada a partir del valor del formulario
-    console.log('Debug - onFinish - values.location:', values.location);
-    console.log('Debug - onFinish - selectedLocation state:', selectedLocation);
-    
     // Usar selectedLocation directamente ya que tiene toda la información
     const locationObj = selectedLocation;
-    console.log('Debug - onFinish - locationObj (from selectedLocation):', locationObj);
     
     try {
       const eventData = {
@@ -607,11 +595,6 @@ const EventCreation = () => {
           message.warning('Error al procesar la imagen, el evento se creará sin imagen');
         }
       }
-
-      // Verificar si la ubicación tiene seatmap asociado (independientemente del pricing)
-      console.log('Debug - Final check - locationObj:', locationObj);
-      console.log('Debug - Final check - locationObj.seatMapId:', locationObj?.seatMapId);
-      console.log('Debug - Final check - condition result:', !!(locationObj && locationObj.seatMapId));
       
       if (locationObj && locationObj.seatMapId) {
         // Si tiene seatmap, crear el evento directamente y redirigir a configuración
@@ -922,9 +905,6 @@ const EventCreation = () => {
             {sectionPricing.map((section, index) => {
               const locationSection = locationSections.find(ls => ls.sectionId === section.sectionId);
               const isNumberedSeats = section.hasNumberedSeats !== false;
-              console.log(`Section ${index + 1}:`, section);
-              console.log(section.hasNumberedSeats, section.rows, section.seatsPerRow);
-              console.log("variable" +isNumberedSeats);
               
               return (
                 <Col xs={24} lg={12} key={section.sectionId}>
@@ -986,20 +966,6 @@ const EventCreation = () => {
                       {isNumberedSeats && (
                         <>
                           <RowPricingTable section={section} />
-                          
-                          <Form.Item
-                            label="Numeración de filas"
-                            style={{ margin: 0 }}
-                          >
-                            <Select
-                              value={section.frontRowFirst}
-                              onChange={(value) => handleFrontRowFirstChange(section.sectionId, value)}
-                              style={{ width: '100%' }}
-                            >
-                              <Option value={true}>Fila 1 = Más cara (más cerca)</Option>
-                              <Option value={false}>Fila 1 = Más barata (más lejos)</Option>
-                            </Select>
-                          </Form.Item>
                         </>
                       )}
 
