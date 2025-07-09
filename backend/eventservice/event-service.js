@@ -78,14 +78,10 @@ const createSectionPricing = (seatMapInfo, pricingData) => {
     let capacity, rows, seatsPerRow;
     
     if (section.hasNumberedSeats === false) {
-      // Sección de entrada general (como "Pista")
-      if (sectionPricing && sectionPricing.capacity) {
-        capacity = sectionPricing.capacity; 
-      } else {
-        capacity = section.totalCapacity || section.capacity || 0;
-      }
+      // Sección de entrada general
+      capacity = sectionPricing?.capacity || section.totalCapacity || section.capacity || 0;
       rows = 1;
-      seatsPerRow = capacity; 
+      seatsPerRow = capacity;
     } else {
       // Sección con asientos numerados
       capacity = section.rows * section.seatsPerRow;
@@ -94,28 +90,26 @@ const createSectionPricing = (seatMapInfo, pricingData) => {
     }
     
     if (!sectionPricing) {
-      // Sección sin pricing específico, usar valores por defecto
+      // Sección sin pricing específico
       return {
         sectionId: section.id,
         sectionName: section.name,
-        basePrice: section.price || 0,
-        variablePrice: 0,
+        defaultPrice: section.price || 0,
+        rowPricing: [],
         capacity: capacity,
         rows: rows,
-        seatsPerRow: seatsPerRow,
-        frontRowFirst: true
+        seatsPerRow: seatsPerRow
       };
     }
     
     return {
       sectionId: section.id,
       sectionName: section.name,
-      basePrice: sectionPricing.basePrice || sectionPricing.price || section.price || 0,
-      variablePrice: sectionPricing.variablePrice || 0,
+      defaultPrice: sectionPricing.defaultPrice || section.price || 0,
+      rowPricing: sectionPricing.rowPricing || [],
       capacity: capacity,
       rows: rows,
-      seatsPerRow: seatsPerRow,
-      frontRowFirst: sectionPricing.frontRowFirst !== undefined ? sectionPricing.frontRowFirst : true
+      seatsPerRow: seatsPerRow
     };
   });
 };
@@ -182,18 +176,34 @@ app.post("/event", largePayloadMiddleware, async (req, res) => {
 
     // Manejo del pricing por secciones y filas
     if (usesSectionPricing && sectionPricing && sectionPricing.length > 0) {
-      // Validar datos de sectionPricing
       for (const section of sectionPricing) {
-        if (!section.sectionId || !section.sectionName || section.basePrice === undefined) {
+        if (!section.sectionId || !section.sectionName || section.defaultPrice === undefined) {
           return res.status(400).json({ 
-            error: "Invalid section pricing data. All sections must have sectionId, sectionName, and basePrice" 
+            error: "Invalid section pricing data. All sections must have sectionId, sectionName, and defaultPrice" 
           });
         }
         
-        if (section.basePrice < 0 || (section.variablePrice && section.variablePrice < 0)) {
+        if (section.defaultPrice < 0) {
           return res.status(400).json({ 
-            error: `Prices for section ${section.sectionName} cannot be negative` 
+            error: `Default price for section ${section.sectionName} cannot be negative` 
           });
+        }
+        
+        // Validar rowPricing si existe
+        if (section.rowPricing && Array.isArray(section.rowPricing)) {
+          for (const rowPrice of section.rowPricing) {
+            if (rowPrice.row === undefined || rowPrice.price === undefined) {
+              return res.status(400).json({ 
+                error: `Invalid row pricing for section ${section.sectionName}. Row and price are required` 
+              });
+            }
+            
+            if (rowPrice.price < 0) {
+              return res.status(400).json({ 
+                error: `Row ${rowPrice.row} price in section ${section.sectionName} cannot be negative` 
+              });
+            }
+          }
         }
       }
 

@@ -8,3 +8,13 @@ modificar la manera de asignar precio para que no se actualice al meter un numer
 poner guapo todo el tema de mapas de entradas (no se como :D)
 
 añadir valor por defecto de 0 a los campos de precio de secciones -probar
+
+cambiar eliminar eventos por cancelar eventos
+
+añadir pasarela de pagos (paypal)
+
+cambiar precio para manejarlo por fila en vez de por seccion (va a haber que cambiar el esquema de bd)
+
+falta: 
+       modificar la vista o el backend de seleccionar entradas para mostrar ls precios
+       no se si algo mas, revisar mañana

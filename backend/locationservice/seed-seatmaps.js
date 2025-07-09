@@ -62,6 +62,11 @@ const seedSeatMaps = async (dbConnection) => {
           rows: 2,
           seatsPerRow: 14,
           price: 0,
+          defaultPrice: 150,
+          rowPricing: [
+            { row: 1, price: 200 },
+            { row: 2, price: 150 }
+          ],
           color: '#FF9800',
           position: 'vip',
           order: 5
@@ -218,6 +223,16 @@ const seedSeatMaps = async (dbConnection) => {
           rows: 7,
           seatsPerRow: 10,
           price: 0,
+          defaultPrice: 80,
+          rowPricing: [
+            { row: 1, price: 120 },
+            { row: 2, price: 110 },
+            { row: 3, price: 100 },
+            { row: 4, price: 90 },
+            { row: 5, price: 85 },
+            { row: 6, price: 82 },
+            { row: 7, price: 80 }
+          ],
           color: '#4CAF50',
           position: 'lower',
           order: 2,
@@ -229,6 +244,14 @@ const seedSeatMaps = async (dbConnection) => {
           rows: 5,
           seatsPerRow: 8,
           price: 0,
+          defaultPrice: 60,
+          rowPricing: [
+            { row: 1, price: 90 },
+            { row: 2, price: 80 },
+            { row: 3, price: 70 },
+            { row: 4, price: 65 },
+            { row: 5, price: 60 }
+          ],
           color: '#2196F3',
           position: 'middle',
           order: 3,
@@ -251,6 +274,11 @@ const seedSeatMaps = async (dbConnection) => {
           rows: 2,
           seatsPerRow: 5,
           price: 0,
+          defaultPrice: 200,
+          rowPricing: [
+            { row: 1, price: 250 },
+            { row: 2, price: 200 }
+          ],
           color: '#9C27B0',
           position: 'vip',
           order: 5,
@@ -335,6 +363,11 @@ const seedSeatMaps = async (dbConnection) => {
           rows: 2,
           seatsPerRow: 10,
           price: 0,
+          defaultPrice: 180,
+          rowPricing: [
+            { row: 1, price: 220 },
+            { row: 2, price: 180 }
+          ],
           color: '#9C27B0',
           position: 'vip',
           order: 6,
@@ -388,6 +421,12 @@ const seedSeatMaps = async (dbConnection) => {
           rows: 3,
           seatsPerRow: 16,
           price: 0,
+          defaultPrice: 8,
+          rowPricing: [
+            { row: 1, price: 6 },
+            { row: 2, price: 7 },
+            { row: 3, price: 8 }
+          ],
           color: '#4CAF50',
           position: 'front',
           order: 1
@@ -526,6 +565,19 @@ const seedSeatMaps = async (dbConnection) => {
           rows: 15,
           seatsPerRow: 20,
           price: 0,
+          defaultPrice: 120,
+          rowPricing: [
+            { row: 1, price: 200 },
+            { row: 2, price: 180 },
+            { row: 3, price: 160 },
+            { row: 4, price: 150 },
+            { row: 5, price: 140 },
+            { row: 6, price: 135 },
+            { row: 7, price: 130 },
+            { row: 8, price: 125 },
+            { row: 9, price: 122 },
+            { row: 10, price: 120 }
+          ],
           color: '#4CAF50',
           position: 'orchestra',
           order: 1
@@ -546,6 +598,8 @@ const seedSeatMaps = async (dbConnection) => {
           rows: 6,
           seatsPerRow: 16,
           price: 0,
+          defaultPrice: 80,
+          rowPricing: [], // Solo precio por defecto
           color: '#FF9800',
           position: 'balcony',
           order: 3
@@ -568,6 +622,12 @@ const seedSeatMaps = async (dbConnection) => {
           rows: 3,
           seatsPerRow: 4,
           price: 0,
+          defaultPrice: 300,
+          rowPricing: [
+            { row: 1, price: 400 },
+            { row: 2, price: 350 },
+            { row: 3, price: 300 }
+          ],
           color: '#9C27B0',
           position: 'boxes',
           order: 1

@@ -310,13 +310,16 @@ app.get('/location/:locationId/sections', async (req, res) => {
     const sections = seatMap.sections.map(section => ({
       sectionId: section.id,
       sectionName: section.name,
-      capacity: section.rows * section.seatsPerRow,
+      capacity: section.hasNumberedSeats ? section.rows * section.seatsPerRow : section.totalCapacity,
       rows: section.rows,
       seatsPerRow: section.seatsPerRow,
-      basePrice: section.price,
+      price: section.price, // Precio por defecto para compatibilidad
+      defaultPrice: section.defaultPrice || section.price, // Precio por defecto para filas no configuradas
+      rowPricing: section.rowPricing || [], // Precios específicos por fila
       color: section.color,
       position: section.position,
       hasNumberedSeats: section.hasNumberedSeats,
+      totalCapacity: section.totalCapacity,
       order: section.order || 0
     }));
 
