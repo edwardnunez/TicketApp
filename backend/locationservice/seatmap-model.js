@@ -1,5 +1,17 @@
 import mongoose from 'mongoose';
 
+const rowPricingSchema = new mongoose.Schema({
+  row: { 
+    type: Number, 
+    required: true 
+  },
+  price: { 
+    type: Number, 
+    required: true, 
+    min: 0 
+  }
+});
+
 const sectionSchema = new mongoose.Schema({
   id: { 
     type: String, 
@@ -20,7 +32,13 @@ const sectionSchema = new mongoose.Schema({
   price: { 
     type: Number, 
     required: true 
-  },
+  }, // Precio por defecto para compatibilidad hacia atrás
+  defaultPrice: { 
+    type: Number, 
+    required: true, 
+    min: 0 
+  }, // Precio por defecto para filas no configuradas
+  rowPricing: [rowPricingSchema], // Precios específicos por fila
   color: { 
     type: String, 
     required: true 
@@ -58,8 +76,49 @@ sectionSchema.pre('save', function(next) {
       this.rows = 1;
       this.seatsPerRow = this.totalCapacity;
   }
+  
+  // Asegurar que defaultPrice esté configurado
+  if (this.defaultPrice === undefined) {
+    this.defaultPrice = this.price;
+  }
+  
   next();
 });
+
+// Método para obtener el precio de una fila específica
+sectionSchema.methods.getRowPrice = function(rowNumber) {
+  if (!this.hasNumberedSeats) {
+    return this.defaultPrice;
+  }
+  
+  // Buscar precio específico para la fila
+  const rowPricing = this.rowPricing.find(rp => rp.row === rowNumber);
+  if (rowPricing) {
+    return rowPricing.price;
+  }
+  
+  // Si no hay precio específico, usar defaultPrice
+  return this.defaultPrice;
+};
+
+// Método para obtener el rango de precios de la sección
+sectionSchema.methods.getPriceRange = function() {
+  if (!this.hasNumberedSeats) {
+    return { min: this.defaultPrice, max: this.defaultPrice };
+  }
+  
+  if (!this.rowPricing || this.rowPricing.length === 0) {
+    return { min: this.defaultPrice, max: this.defaultPrice };
+  }
+  
+  const prices = this.rowPricing.map(rp => rp.price);
+  prices.push(this.defaultPrice); // Incluir precio por defecto
+  
+  return {
+    min: Math.min(...prices),
+    max: Math.max(...prices)
+  };
+};
 
 const seatMapSchema = new mongoose.Schema({
   id: { 

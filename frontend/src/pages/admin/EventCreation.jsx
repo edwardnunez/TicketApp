@@ -18,7 +18,10 @@ import {
   Breadcrumb,
   Tooltip,
   Tag,
-  Upload
+  Upload,
+  Table,
+  Popconfirm,
+  InputNumber
 } from 'antd';
 import { 
   CalendarOutlined, 
@@ -37,7 +40,10 @@ import {
   ExclamationCircleOutlined,
   UploadOutlined,
   LockOutlined,
-  EuroOutlined
+  EuroOutlined,
+  PlusOutlined,
+  DeleteOutlined,
+  EditOutlined
 } from '@ant-design/icons';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
@@ -181,26 +187,72 @@ const EventCreation = () => {
     );
   }, []);
 
-  const handleSectionBasePrice = useCallback((sectionId, newPrice) => {
+  const handleSectionDefaultPrice = useCallback((sectionId, newPrice) => {
     setSectionPricing(prevPricing => 
       prevPricing.map(section => 
         section.sectionId === sectionId 
           ? { 
               ...section, 
-              basePrice: newPrice === '' ? '' : Math.round((parseFloat(newPrice) || 0) * 100) / 100 
+              defaultPrice: newPrice === '' ? '' : Math.round((parseFloat(newPrice) || 0) * 100) / 100 
             }
           : section
       )
     );
   }, []);
 
-  const handleSectionVariablePrice = useCallback((sectionId, newPrice) => {
+  const handleRowPricingChange = useCallback((sectionId, rowPricing) => {
     setSectionPricing(prevPricing => 
       prevPricing.map(section => 
         section.sectionId === sectionId 
           ? { 
               ...section, 
-              variablePrice: newPrice === '' ? '' : Math.round((parseFloat(newPrice) || 0) * 100) / 100 
+              rowPricing: rowPricing
+            }
+          : section
+      )
+    );
+  }, []);
+
+  const addRowPrice = useCallback((sectionId) => {
+    setSectionPricing(prevPricing => 
+      prevPricing.map(section => 
+        section.sectionId === sectionId 
+          ? { 
+              ...section, 
+              rowPricing: [
+                ...(section.rowPricing || []),
+                { row: 1, price: 0 }
+              ]
+            }
+          : section
+      )
+    );
+  }, []);
+
+  const removeRowPrice = useCallback((sectionId, index) => {
+    setSectionPricing(prevPricing => 
+      prevPricing.map(section => 
+        section.sectionId === sectionId 
+          ? { 
+              ...section, 
+              rowPricing: section.rowPricing.filter((_, i) => i !== index)
+            }
+          : section
+      )
+    );
+  }, []);
+
+  const updateRowPrice = useCallback((sectionId, index, field, value) => {
+    setSectionPricing(prevPricing => 
+      prevPricing.map(section => 
+        section.sectionId === sectionId 
+          ? { 
+              ...section, 
+              rowPricing: section.rowPricing.map((rowPrice, i) => 
+                i === index 
+                  ? { ...rowPrice, [field]: value }
+                  : rowPrice
+              )
             }
           : section
       )
@@ -211,7 +263,10 @@ const EventCreation = () => {
     setSectionPricing(prevPricing => 
       prevPricing.map(section => 
         section.sectionId === sectionId 
-          ? { ...section, frontRowFirst }
+          ? { 
+              ...section, 
+              frontRowFirst: frontRowFirst
+            }
           : section
       )
     );
@@ -219,86 +274,64 @@ const EventCreation = () => {
 
   const getCapacityFromSeatMap = async (seatMapId) => {
     try {
-      const seatMapUrl = `${gatewayUrl}/seatmaps/${seatMapId}`;
-      
-      const response = await axios.get(seatMapUrl);
+      const response = await axios.get(`${gatewayUrl}/seatmaps/${seatMapId}`);
       const seatMap = response.data;
       
-      // Calcular la capacidad total sumando todas las secciones
       if (seatMap.sections && seatMap.sections.length > 0) {
         const totalCapacity = seatMap.sections.reduce((total, section) => {
-          return total + (section.rows * section.seatsPerRow);
+          if (section.hasNumberedSeats === false) {
+            return total + (section.capacity || 0);
+          } else {
+            return total + (section.rows * section.seatsPerRow);
+          }
         }, 0);
+        
         return totalCapacity;
       }
       
-      return null;
+      return 0;
     } catch (error) {
       console.error("Error obteniendo capacidad del seatmap:", error);
-      return null;
+      return 0;
     }
   };
 
   const handleLocationChange = async (locationId) => {
     const location = locations.find(loc => loc._id === locationId);
+    console.log('Debug - handleLocationChange - locationId:', locationId);
+    console.log('Debug - handleLocationChange - found location:', location);
+    console.log('Debug - handleLocationChange - location.seatMapId:', location?.seatMapId);
+    console.log('Debug - handleLocationChange - setting selectedLocation to:', location);
     setSelectedLocation(location);
-    
-    // Resetear estados de secciones
-    setLocationSections([]);
-    setSectionPricing([]);
-    setUsesSectionPricing(false);
-    setUsesRowPricing(false); // Resetear también pricing por filas
     
     if (location && location.seatMapId) {
       await fetchLocationSections(locationId);
-      
-      setLoading(true);
-      try {
-        const capacity = await getCapacityFromSeatMap(location.seatMapId);
-        if (capacity) {
-          setIsCapacityLocked(true);
-          form.setFieldsValue({ capacity: capacity });
-        } else if (location.capacity && location.capacity > 0) {
-          setIsCapacityLocked(true);
-          form.setFieldsValue({ capacity: location.capacity });
-        } else {
-          setIsCapacityLocked(false);
-          form.setFieldsValue({ capacity: undefined });
-        }
-      } catch (error) {
-        console.error("Error obteniendo capacidad:", error);
-        if (location.capacity && location.capacity > 0) {
-          setIsCapacityLocked(true);
-          form.setFieldsValue({ capacity: location.capacity });
-        } else {
-          setIsCapacityLocked(false);
-          form.setFieldsValue({ capacity: undefined });
-        }
-      } finally {
-        setLoading(false);
-      }
-    } else if (location && location.capacity && location.capacity > 0) {
+      const capacity = await getCapacityFromSeatMap(location.seatMapId);
+      form.setFieldsValue({ capacity: capacity });
       setIsCapacityLocked(true);
-      form.setFieldsValue({ capacity: location.capacity });
     } else {
-      setIsCapacityLocked(false);
+      setLocationSections([]);
+      setSectionPricing([]);
+      setUsesSectionPricing(false);
+      setUsesRowPricing(false);
       form.setFieldsValue({ capacity: undefined });
+      setIsCapacityLocked(false);
     }
   };
 
   const handleTypeChange = (value) => {
     setType(value);
     setSelectedLocation(null);
-    setIsCapacityLocked(false);
     setLocationSections([]);
     setSectionPricing([]);
     setUsesSectionPricing(false);
     setUsesRowPricing(false);
     form.setFieldsValue({ 
-      location: undefined,
+      location: undefined, 
       capacity: undefined,
-      price: undefined
+      price: undefined 
     });
+    setIsCapacityLocked(false);
   };
 
   const fetchLocationSections = async (locationId) => {
@@ -314,24 +347,24 @@ const EventCreation = () => {
         setUsesSectionPricing(true);
         setUsesRowPricing(true);
         console.log("Secciones obtenidas:", data.sections);
-        // Inicializar pricing por secciones con basePrice y variablePrice
-        const initialPricing = data.sections.map(section => ({
-        sectionId: section.sectionId,
-        sectionName: section.sectionName,
-        capacity: section.hasNumberedSeats === false
-          ? section.capacity
-          : section.rows * section.seatsPerRow,
-        maxCapacity: section.hasNumberedSeats === false ? section.totalCapacity : null,
-        rows: section.hasNumberedSeats === false ? 1 : section.rows,
-        seatsPerRow: section.hasNumberedSeats === false ? section.capacity : section.seatsPerRow,
-        hasNumberedSeats: section.hasNumberedSeats !== false,
-        basePrice: '',
-        variablePrice: '',
-        frontRowFirst: true,
-        customCapacity: section.hasNumberedSeats === false ? '' : null
-      }));
-
         
+        // Inicializar pricing por secciones con defaultPrice y rowPricing
+        const initialPricing = data.sections.map(section => ({
+          sectionId: section.sectionId,
+          sectionName: section.sectionName,
+          capacity: section.hasNumberedSeats === false
+            ? section.capacity
+            : section.rows * section.seatsPerRow,
+          maxCapacity: section.hasNumberedSeats === false ? section.totalCapacity : null,
+          rows: section.hasNumberedSeats === false ? 1 : section.rows,
+          seatsPerRow: section.hasNumberedSeats === false ? section.capacity : section.seatsPerRow,
+          hasNumberedSeats: section.hasNumberedSeats !== false,
+          defaultPrice: '',
+          rowPricing: [],
+          frontRowFirst: true,
+          customCapacity: section.hasNumberedSeats === false ? '' : null
+        }));
+
         setSectionPricing(initialPricing);
         form.setFieldsValue({ price: undefined });
       } else {
@@ -391,28 +424,17 @@ const EventCreation = () => {
     setSaving(true);
     
     try {
-      console.log('Creating event with data:', eventDataToSave);
+      console.log('Creating event without seatmap:', eventDataToSave);
       
-      // Crear el evento
+      // Crear el evento (solo para eventos sin seatmap)
       const createEventResponse = await axios.post(`${gatewayUrl}/events`, eventDataToSave);
       const createdEvent = createEventResponse.data;
       
       message.success('Evento creado correctamente');
       setShowConfirmModal(false);
 
-      // Si tiene mapa de asientos, navegar a configuración
-      if (selectedLocation && selectedLocation.seatMapId) {
-        navigate('/admin/event-seatmap-config', { 
-          state: { 
-            ...eventDataToSave,
-            _id: createdEvent._id,
-            imagePath: createdEvent.image
-          } 
-        });
-      } else {
-        // Si no tiene mapa de asientos, navegar a la lista de eventos
-        navigate('/admin');
-      }
+      // Navegar a la lista de eventos (eventos sin seatmap)
+      navigate('/admin');
       
     } catch (error) {
       console.error("Error creando el evento:", error);
@@ -443,12 +465,18 @@ const EventCreation = () => {
     return typeLabels[type] || type;
   };
 
-
   const onFinish = async (values) => {
     setLoading(true);
     setErrorMessage(null);
     
     console.log('Form values:', values);
+    // Obtener la ubicación seleccionada a partir del valor del formulario
+    console.log('Debug - onFinish - values.location:', values.location);
+    console.log('Debug - onFinish - selectedLocation state:', selectedLocation);
+    
+    // Usar selectedLocation directamente ya que tiene toda la información
+    const locationObj = selectedLocation;
+    console.log('Debug - onFinish - locationObj (from selectedLocation):', locationObj);
     
     try {
       const eventData = {
@@ -464,19 +492,30 @@ const EventCreation = () => {
 
       // Añadir pricing según el tipo
       if (usesSectionPricing && usesRowPricing && sectionPricing.length > 0) {
-        const hasInvalidBasePrices = sectionPricing.some(section => 
-          section.basePrice === '' || section.basePrice === null || section.basePrice === undefined || 
-          isNaN(parseFloat(section.basePrice)) || parseFloat(section.basePrice) <= 0
+        const hasInvalidDefaultPrices = sectionPricing.some(section => 
+          section.defaultPrice === '' || section.defaultPrice === null || section.defaultPrice === undefined || 
+          isNaN(parseFloat(section.defaultPrice)) || parseFloat(section.defaultPrice) < 0
         );
 
-        const hasInvalidVariablePrices = sectionPricing.some(section => 
-          section.hasNumberedSeats !== false && (
-            section.variablePrice === '' || section.variablePrice === null || section.variablePrice === undefined ||
-            isNaN(parseFloat(section.variablePrice)) || parseFloat(section.variablePrice) < 0
-          )
-        );
+        const hasInvalidRowPricing = sectionPricing.some(section => {
+          if (!section.rowPricing || section.rowPricing.length === 0) return false;
+          
+          return section.rowPricing.some(rowPrice => 
+            rowPrice.row === undefined || rowPrice.row === null || rowPrice.row === '' ||
+            rowPrice.price === undefined || rowPrice.price === null || rowPrice.price === '' ||
+            isNaN(parseInt(rowPrice.row)) || parseInt(rowPrice.row) <= 0 ||
+            isNaN(parseFloat(rowPrice.price)) || parseFloat(rowPrice.price) < 0
+          );
+        });
+
+        const hasDuplicateRows = sectionPricing.some(section => {
+          if (!section.rowPricing || section.rowPricing.length === 0) return false;
+          
+          const rows = section.rowPricing.map(rp => rp.row);
+          return new Set(rows).size !== rows.length;
+        });
         
-        const hasInvalidCapacities = type === 'concert' && sectionPricing.some(section => 
+        const hasInvalidCapacities = values.type === 'concert' && sectionPricing.some(section => 
           !section.hasNumberedSeats && (
             section.customCapacity === '' || section.customCapacity === null || section.customCapacity === undefined ||
             isNaN(parseInt(section.customCapacity)) || parseInt(section.customCapacity) <= 0 ||
@@ -484,13 +523,16 @@ const EventCreation = () => {
           )
         );
 
-        if (hasInvalidBasePrices || hasInvalidVariablePrices || hasInvalidCapacities) {
+        if (hasInvalidDefaultPrices || hasInvalidRowPricing || hasDuplicateRows || hasInvalidCapacities) {
           let errorMsg = '';
-          if (hasInvalidBasePrices) {
-            errorMsg += 'Todos los precios base deben ser números válidos y mayores que 0. ';
+          if (hasInvalidDefaultPrices) {
+            errorMsg += 'Todos los precios por defecto deben ser números válidos y mayores o iguales a 0. ';
           }
-          if (hasInvalidVariablePrices) {
-            errorMsg += 'Para secciones con asientos numerados, el precio variable debe ser un número válido (puede ser 0). ';
+          if (hasInvalidRowPricing) {
+            errorMsg += 'Todos los precios por fila deben tener números de fila válidos y precios mayores o iguales a 0. ';
+          }
+          if (hasDuplicateRows) {
+            errorMsg += 'No puede haber filas duplicadas en la configuración de precios por fila. ';
           }
           if (hasInvalidCapacities) {
             errorMsg += 'Para conciertos con pistas, debe especificar una capacidad válida dentro del límite máximo. ';
@@ -512,22 +554,30 @@ const EventCreation = () => {
           seatsPerRow: section.hasNumberedSeats 
             ? section.seatsPerRow 
             : parseInt(section.customCapacity) || section.capacity,
-          hasNumberedSeats: section.hasNumberedSeats !== false,
-          basePrice: Math.round((parseFloat(section.basePrice) || 0) * 100) / 100,
-          variablePrice: Math.round((parseFloat(section.variablePrice) || 0) * 100) / 100,
-          frontRowFirst: section.frontRowFirst !== undefined ? section.frontRowFirst : true
+          defaultPrice: Math.round((parseFloat(section.defaultPrice) || 0) * 100) / 100,
+          rowPricing: (section.rowPricing || []).map(rowPrice => ({
+            row: parseInt(rowPrice.row),
+            price: Math.round((parseFloat(rowPrice.price) || 0) * 100) / 100
+          }))
         }));
 
         // Capacidad se calcula automáticamente en el backend
         eventData.capacity = sectionPricing.reduce((total, section) => {
-          if (!section.hasNumberedSeats && type === 'concert') {
+          if (!section.hasNumberedSeats && values.type === 'concert') {
             return total + (parseInt(section.customCapacity) || 0);
           }
           return total + (section.capacity || 0);
         }, 0);
 
         // El precio base será el mínimo de todas las secciones (redondeado)
-        eventData.price = Math.round((Math.min(...sectionPricing.map(s => s.basePrice || 0)) * 100)) / 100;
+        const allPrices = sectionPricing.flatMap(section => {
+          const prices = [section.defaultPrice || 0];
+          if (section.rowPricing) {
+            prices.push(...section.rowPricing.map(rp => rp.price || 0));
+          }
+          return prices;
+        });
+        eventData.price = Math.round((Math.min(...allPrices) * 100)) / 100;
         
       } else {
         // Pricing tradicional
@@ -556,9 +606,52 @@ const EventCreation = () => {
         }
       }
 
-      // Guardar los datos y mostrar modal de confirmación
-      setEventDataToSave(eventData);
-      setShowConfirmModal(true);
+      // Verificar si la ubicación tiene seatmap asociado (independientemente del pricing)
+      console.log('Debug - Final check - locationObj:', locationObj);
+      console.log('Debug - Final check - locationObj.seatMapId:', locationObj?.seatMapId);
+      console.log('Debug - Final check - condition result:', !!(locationObj && locationObj.seatMapId));
+      
+      if (locationObj && locationObj.seatMapId) {
+        // Si tiene seatmap, crear el evento directamente y redirigir a configuración
+        try {
+          console.log('Creating event with seatmap, redirecting to configuration...');
+          
+          // Crear el evento
+          const createEventResponse = await axios.post(`${gatewayUrl}/events`, eventData);
+          const createdEvent = createEventResponse.data;
+          
+          message.success('Evento creado correctamente');
+          
+          // Redirigir a la página de configuración del seatmap
+          navigate('/admin/event-seatmap-config', { 
+            state: { 
+              eventData: {
+                ...eventData,
+                _id: createdEvent._id,
+                imagePath: createdEvent.image
+              },
+              selectedLocation: locationObj
+            } 
+          });
+        } catch (error) {
+          console.error("Error creando el evento:", error);
+          
+          if (error.response) {
+            console.error('Server error:', error.response.data);
+            setErrorMessage(`Error del servidor: ${error.response.data.error || error.response.statusText}`);
+          } else if (error.request) {
+            console.error('Network error:', error.request);
+            setErrorMessage('Error de conexión. Verifica tu conexión a internet.');
+          } else {
+            console.error('Error:', error.message);
+            setErrorMessage('Hubo un error al crear el evento');
+          }
+        }
+      } else {
+        // Si no tiene seatmap, mostrar modal de confirmación
+        setEventDataToSave(eventData);
+        setShowConfirmModal(true);
+      }
       
     } catch (error) {
       console.error("Error preparando el evento:", error);
@@ -567,7 +660,6 @@ const EventCreation = () => {
       setLoading(false);
     }
   };
-
 
   const getTypeLabel = (type) => {
     switch(type) {
@@ -637,23 +729,23 @@ const EventCreation = () => {
       if (!usesSectionPricing || locationSections.length === 0) return null;
 
       const calculatePriceRange = (section) => {
-        const basePrice = parseFloat(section.basePrice) || 0;
-        const variablePrice = parseFloat(section.variablePrice) || 0;
+        const defaultPrice = parseFloat(section.defaultPrice) || 0;
         
-        if (basePrice <= 0) {
+        if (defaultPrice <= 0) {
           return 'Precio no configurado';
         }
         
         if (!section.hasNumberedSeats) {
-          return `€${basePrice.toFixed(2)}`;
+          return `€${defaultPrice.toFixed(2)}`;
         }
         
-        if (variablePrice === 0) {
-          return `€${basePrice.toFixed(2)}`;
+        if (!section.rowPricing || section.rowPricing.length === 0) {
+          return `€${defaultPrice.toFixed(2)} (por defecto)`;
         }
         
-        const minPrice = Math.round((basePrice * 100)) / 100;
-        const maxPrice = Math.round(((minPrice + (variablePrice * (section.rows - 1))) * 100)) / 100;
+        const prices = section.rowPricing.map(rp => parseFloat(rp.price) || 0);
+        const minPrice = Math.min(...prices);
+        const maxPrice = Math.max(...prices);
         
         return minPrice === maxPrice ? `€${minPrice.toFixed(2)}` : `€${minPrice.toFixed(2)} - €${maxPrice.toFixed(2)}`;
       };
@@ -671,7 +763,7 @@ const EventCreation = () => {
         if (sectionPricing.length === 0) return '€0.00';
         
         const validSections = sectionPricing.filter(section => 
-          !isNaN(parseFloat(section.basePrice)) && parseFloat(section.basePrice) > 0
+          !isNaN(parseFloat(section.defaultPrice)) && parseFloat(section.defaultPrice) >= 0
         );
         
         if (validSections.length === 0) return 'Precios no configurados';
@@ -680,17 +772,103 @@ const EventCreation = () => {
         let maxPrice = 0;
         
         validSections.forEach(section => {
-          const sectionMin = Math.round(((parseFloat(section.basePrice) || 0) * 100)) / 100;
-          const variablePrice = parseFloat(section.variablePrice) || 0;
-          const sectionMax = variablePrice > 0 && section.hasNumberedSeats
-            ? Math.round(((sectionMin + (variablePrice * (section.rows - 1))) * 100)) / 100
-            : sectionMin;
+          const defaultPrice = parseFloat(section.defaultPrice) || 0;
           
-          minPrice = Math.min(minPrice, sectionMin);
-          maxPrice = Math.max(maxPrice, sectionMax);
+          if (section.rowPricing && section.rowPricing.length > 0) {
+            const prices = section.rowPricing.map(rp => parseFloat(rp.price) || 0);
+            const sectionMin = Math.min(...prices);
+            const sectionMax = Math.max(...prices);
+            
+            minPrice = Math.min(minPrice, sectionMin);
+            maxPrice = Math.max(maxPrice, sectionMax);
+          } else {
+            minPrice = Math.min(minPrice, defaultPrice);
+            maxPrice = Math.max(maxPrice, defaultPrice);
+          }
         });
         
         return minPrice === maxPrice ? `€${minPrice.toFixed(2)}` : `€${minPrice.toFixed(2)} - €${maxPrice.toFixed(2)}`;
+      };
+
+      const RowPricingTable = ({ section }) => {
+        const columns = [
+          {
+            title: 'Fila',
+            dataIndex: 'row',
+            key: 'row',
+            width: 80,
+            render: (text, record, index) => (
+              <InputNumber
+                min={1}
+                max={section.rows}
+                value={text}
+                onChange={(value) => updateRowPrice(section.sectionId, index, 'row', value)}
+                style={{ width: '100%' }}
+              />
+            )
+          },
+          {
+            title: 'Precio (€)',
+            dataIndex: 'price',
+            key: 'price',
+            render: (text, record, index) => (
+              <InputNumber
+                min={0}
+                step={0.01}
+                value={text}
+                onChange={(value) => updateRowPrice(section.sectionId, index, 'price', value)}
+                style={{ width: '100%' }}
+                prefix="€"
+              />
+            )
+          },
+          {
+            title: 'Acciones',
+            key: 'actions',
+            width: 80,
+            render: (_, record, index) => (
+              <Popconfirm
+                title="¿Eliminar este precio por fila?"
+                onConfirm={() => removeRowPrice(section.sectionId, index)}
+                okText="Sí"
+                cancelText="No"
+              >
+                <Button 
+                  type="text" 
+                  danger 
+                  icon={<DeleteOutlined />}
+                  size="small"
+                />
+              </Popconfirm>
+            )
+          }
+        ];
+
+        return (
+          <div style={{ marginTop: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <Text strong>Precios específicos por fila:</Text>
+              <Button 
+                type="dashed" 
+                size="small" 
+                icon={<PlusOutlined />}
+                onClick={() => addRowPrice(section.sectionId)}
+              >
+                Añadir fila
+              </Button>
+            </div>
+            <Table
+              columns={columns}
+              dataSource={section.rowPricing || []}
+              pagination={false}
+              size="small"
+              rowKey={(record, index) => index}
+              locale={{
+                emptyText: 'No hay precios específicos por fila configurados'
+              }}
+            />
+          </div>
+        );
       };
 
       return (
@@ -710,11 +888,33 @@ const EventCreation = () => {
         >
           <Alert
             message="Pricing por filas activado"
-            description="Esta ubicación tiene un mapa de asientos con secciones y filas definidas. Configure el precio base y el incremento por fila para cada sección."
+            description="Esta ubicación tiene un mapa de asientos con secciones y filas definidas. Configure el precio por defecto y los precios específicos por fila para cada sección."
             type="info"
             showIcon
             style={{ marginBottom: '16px' }}
           />
+          
+          <Card 
+            size="small" 
+            style={{ 
+              marginBottom: '16px',
+              backgroundColor: '#f0f9ff',
+              border: '1px solid #91d5ff'
+            }}
+          >
+            <Space direction="vertical" size="small" style={{ width: '100%' }}>
+              <Text strong style={{ color: '#1890ff' }}>
+                <InfoCircleOutlined style={{ marginRight: '8px' }} />
+                ¿Cómo funciona el sistema de precios por filas?
+              </Text>
+              <div style={{ fontSize: '13px', lineHeight: '1.5' }}>
+                <p><strong>1. Precio por defecto:</strong> Establece un precio base para todas las filas de la sección.</p>
+                <p><strong>2. Precios específicos por fila:</strong> Añade filas individuales con precios personalizados. Las filas que no configures mantendrán el precio por defecto.</p>
+                <p><strong>3. Ejemplo:</strong> Si tienes 10 filas con precio por defecto de €25, y configuras la Fila 1 a €50, entonces: Fila 1 = €50, Filas 2-10 = €25.</p>
+                <p><strong>4. Ventaja:</strong> Puedes crear precios premium para las mejores ubicaciones sin configurar todas las filas.</p>
+              </div>
+            </Space>
+          </Card>
           
           <Row gutter={[16, 16]}>
             {sectionPricing.map((section, index) => {
@@ -753,26 +953,26 @@ const EventCreation = () => {
                       <Divider style={{ margin: '8px 0' }} />
                       
                       <Form.Item
-                        label={isNumberedSeats ? "Precio base (fila más alejada)" : "Precio único"}
+                        label={isNumberedSeats ? "Precio por defecto (filas no configuradas)" : "Precio único"}
                         style={{ margin: 0 }}
                         required
                         validateStatus={
-                          section.basePrice === '' || 
-                          isNaN(parseFloat(section.basePrice)) || 
-                          parseFloat(section.basePrice) <= 0 
+                          section.defaultPrice === '' || 
+                          isNaN(parseFloat(section.defaultPrice)) || 
+                          parseFloat(section.defaultPrice) < 0 
                             ? 'error' 
                             : 'success'
                         }
                         help={
-                          section.basePrice === '' ? 'El precio base es obligatorio' :
-                          isNaN(parseFloat(section.basePrice)) || parseFloat(section.basePrice) <= 0 ? 'Debe ser un precio mayor que 0' :
+                          section.defaultPrice === '' ? 'El precio por defecto es obligatorio' :
+                          isNaN(parseFloat(section.defaultPrice)) || parseFloat(section.defaultPrice) < 0 ? 'Debe ser un precio mayor o igual a 0' :
                           null
                         }
                       >
                         <Input
                           type="number"
-                          value={section.basePrice || 0}
-                          onChange={(e) => handleSectionBasePrice(section.sectionId, e.target.value)}
+                          value={section.defaultPrice || 0}
+                          onChange={(e) => handleSectionDefaultPrice(section.sectionId, e.target.value)}
                           prefix={<EuroOutlined />}
                           placeholder="Ej: 25"
                           min={0}
@@ -783,34 +983,7 @@ const EventCreation = () => {
 
                       {isNumberedSeats && (
                         <>
-                          <Form.Item
-                            label="Incremento por fila hacia adelante"
-                            style={{ margin: 0 }}
-                            required
-                            validateStatus={
-                              section.variablePrice === '' || 
-                              isNaN(parseFloat(section.variablePrice)) || 
-                              parseFloat(section.variablePrice) < 0 
-                                ? 'error' 
-                                : 'success'
-                            }
-                            help={
-                              section.variablePrice === '' ? 'El incremento por fila es obligatorio' :
-                              isNaN(parseFloat(section.variablePrice)) || parseFloat(section.variablePrice) < 0 ? 'Debe ser un número mayor o igual a 0' :
-                              null
-                            }
-                          >
-                            <Input
-                              type="number"
-                              value={section.variablePrice || 0}
-                              onChange={(e) => handleSectionVariablePrice(section.sectionId, e.target.value)}
-                              prefix={<EuroOutlined />}
-                              placeholder="Ej: 5.00"
-                              min={0}
-                              step={0.01}
-                              style={{ width: '100%' }}
-                            />
-                          </Form.Item>
+                          <RowPricingTable section={section} />
                           
                           <Form.Item
                             label="Numeración de filas"
@@ -872,11 +1045,11 @@ const EventCreation = () => {
                           {isNumberedSeats ? 'Rango de precios: ' : 'Precio: '}
                         </Text>
                         <Text type="success">{calculatePriceRange(section)}</Text>
-                        {isNumberedSeats && section.variablePrice > 0 && (
+                        {isNumberedSeats && section.rowPricing && section.rowPricing.length > 0 && (
                           <div style={{ marginTop: '4px' }}>
                             <Text type="secondary">
-                              Fila más barata: €{(section.basePrice || 0).toFixed(2)} | 
-                              Fila más cara: €{Math.round(((((section.basePrice || 0) + (section.variablePrice * (section.rows - 1))) * 100)) / 100).toFixed(2)}
+                              Filas configuradas: {section.rowPricing.length} de {section.rows} | 
+                              Precio por defecto: €{(section.defaultPrice || 0).toFixed(2)}
                             </Text>
                           </div>
                         )}
@@ -889,19 +1062,25 @@ const EventCreation = () => {
           </Row>
           
           {sectionPricing.length > 0 && (
-            <Alert
-              style={{ marginTop: '16px' }}
-              message="Resumen general del evento"
-              description={
-                <div>
-                  <p><strong>Rango de precios total:</strong> {getOverallPriceRange()}</p>
+            <Card 
+              size="small" 
+              style={{ 
+                marginTop: '16px',
+                backgroundColor: '#f6ffed',
+                border: '1px solid #b7eb8f'
+              }}
+            >
+              <Row gutter={16}>
+                <Col span={12}>
                   <p><strong>Capacidad total:</strong> {getTotalCapacity()} asientos</p>
+                  <p><strong>Rango de precios:</strong> {getOverallPriceRange()}</p>
+                </Col>
+                <Col span={12}>
                   <p><strong>Número de secciones:</strong> {sectionPricing.length}</p>
-                </div>
-              }
-              type="success"
-              showIcon
-            />
+                  <p><strong>Secciones con precios por fila:</strong> {sectionPricing.filter(s => s.rowPricing && s.rowPricing.length > 0).length}</p>
+                </Col>
+              </Row>
+            </Card>
           )}
         </Card>
       );
@@ -911,36 +1090,37 @@ const EventCreation = () => {
       if (!imagePreview) return null;
       
       return (
-        <div style={{ marginTop: '16px' }}>
-          <Text strong>Vista previa de la imagen:</Text>
-          <div style={{ 
-            marginTop: '8px',
-            border: '1px solid #d9d9d9',
+        <Card 
+          title={
+            <Space>
+              <UploadOutlined style={{ color: COLORS?.primary?.main || '#1890ff' }} />
+              Vista previa de la imagen
+            </Space>
+          }
+          style={{ 
+            marginBottom: '24px',
             borderRadius: '8px',
-            padding: '8px',
-            backgroundColor: '#fafafa'
-          }}>
+            boxShadow: '0 1px 2px rgba(0,0,0,0.07)'
+          }}
+        >
+          <div style={{ textAlign: 'center' }}>
             <img 
-              src={imagePreview}
+              src={imagePreview} 
               alt="Preview" 
               style={{ 
                 maxWidth: '100%', 
                 maxHeight: '200px', 
-                borderRadius: '4px',
-                objectFit: 'cover'
+                borderRadius: '8px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
               }} 
             />
-            <div style={{ marginTop: '8px', fontSize: '12px', color: '#666' }}>
-              {imageFile && (
-                <>
-                  <div>Nombre: {imageFile.name}</div>
-                  <div>Tamaño: {(imageFile.size / 1024).toFixed(2)} KB</div>
-                  <div>Tipo: {imageFile.type}</div>
-                </>
-              )}
+            <div style={{ marginTop: '8px' }}>
+              <Text type="secondary">
+                {imageFile?.name} ({(imageFile?.size / 1024 / 1024).toFixed(2)} MB)
+              </Text>
             </div>
           </div>
-        </div>
+        </Card>
       );
     };
 
@@ -1483,25 +1663,13 @@ const EventCreation = () => {
               </div>
             )}
             
-            {!selectedLocation?.seatMapId && (
-              <Alert
-                message="Evento sin mapa de asientos"
-                description="Este evento se creará sin configuración de mapa de asientos. Una vez creado, podrás gestionarlo desde la lista de eventos."
-                type="info"
-                showIcon
-                style={{ marginTop: '12px' }}
-              />
-            )}
-            
-            {selectedLocation?.seatMapId && (
-              <Alert
-                message="Configuración de mapa de asientos"
-                description="Después de crear el evento, podrás configurar el mapa de asientos y bloquear secciones específicas."
-                type="info"
-                showIcon
-                style={{ marginTop: '12px' }}
-              />
-            )}
+            <Alert
+              message="Evento sin mapa de asientos"
+              description="Este evento se creará sin configuración de mapa de asientos. Una vez creado, podrás gestionarlo desde la lista de eventos."
+              type="info"
+              showIcon
+              style={{ marginTop: '12px' }}
+            />
           </div>
         )}
       </Modal>
