@@ -9,7 +9,6 @@ poner guapo todo el tema de mapas de entradas (no se como :D)
 
 añadir valor por defecto de 0 a los campos de precio de secciones -probar
 
-cambiar eliminar eventos por cancelar eventos
-
 añadir pasarela de pagos (paypal)
 
+enviar email a los usuarios cuando se cancele o elimine un evento, informando de que sus tickets han sido cancelados
