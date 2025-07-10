@@ -231,9 +231,17 @@ const EventSeatMapEditor = () => {
         }
       };
 
-      await axios.post(`${gatewayUrl}/events`, eventPayload);
+      // Si el evento ya existe (tiene _id), actualizarlo; si no, crearlo
+      if (eventData._id) {
+        console.log('Actualizando evento existente:', eventData._id);
+        await axios.put(`${gatewayUrl}/events/${eventData._id}`, eventPayload);
+        message.success('Evento actualizado exitosamente');
+      } else {
+        console.log('Creando nuevo evento');
+        await axios.post(`${gatewayUrl}/events`, eventPayload);
+        message.success('Evento creado exitosamente');
+      }
       
-      message.success('Evento creado exitosamente');
       navigate('/admin');
     } catch (err) {
       console.error('Error saving event:', err);

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef  } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { 
   Layout, 
   Form, 
@@ -55,6 +55,88 @@ import { COLORS } from "../../components/colorscheme";
 const { Content } = Layout;
 const { Option } = Select;
 const { Title, Text, Paragraph } = Typography;
+
+// Componente optimizado para la tabla de precios por fila
+const RowPricingTable = React.memo(({ section, updateRowPrice, removeRowPrice, addRowPrice }) => {
+  const columns = [
+    {
+      title: 'Fila',
+      dataIndex: 'row',
+      key: 'row',
+      width: 80,
+      render: (text, record, index) => (
+        <InputNumber
+          min={1}
+          max={section.rows}
+          value={text}
+          onChange={(value) => updateRowPrice(section.sectionId, index, 'row', value)}
+          style={{ width: '100%' }}
+        />
+      )
+    },
+    {
+      title: 'Precio (€)',
+      dataIndex: 'price',
+      key: 'price',
+      render: (text, record, index) => (
+        <InputNumber
+          min={0}
+          step={0.01}
+          value={text}
+          onChange={(value) => updateRowPrice(section.sectionId, index, 'price', value)}
+          style={{ width: '100%' }}
+          prefix="€"
+        />
+      )
+    },
+    {
+      title: 'Acciones',
+      key: 'actions',
+      width: 80,
+      render: (_, record, index) => (
+        <Popconfirm
+          title="¿Eliminar este precio por fila?"
+          onConfirm={() => removeRowPrice(section.sectionId, index)}
+          okText="Sí"
+          cancelText="No"
+        >
+          <Button 
+            type="text" 
+            danger 
+            icon={<DeleteOutlined />}
+            size="small"
+          />
+        </Popconfirm>
+      )
+    }
+  ];
+
+  return (
+    <div style={{ marginTop: '12px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+        <Text strong>Precios específicos por fila:</Text>
+        <Button 
+          type="dashed" 
+          size="small" 
+          icon={<PlusOutlined />}
+          onClick={() => addRowPrice(section.sectionId)}
+        >
+          Añadir fila
+        </Button>
+      </div>
+      <Table
+        columns={columns}
+        dataSource={section.rowPricing || []}
+        pagination={false}
+        size="small"
+        rowKey={(record, index) => index}
+        locale={{
+          emptyText: 'No hay precios específicos por fila configurados'
+        }}
+      />
+    </div>
+  );
+});
 
 const EventCreation = () => {
   const [loading, setLoading] = useState(false);
@@ -272,7 +354,7 @@ const EventCreation = () => {
     );
   }, []);
 
-  const handleFrontRowFirstChange = (sectionId, frontRowFirst) => {
+  const handleFrontRowFirstChange = useCallback((sectionId, frontRowFirst) => {
     setSectionPricing(prevPricing => 
       prevPricing.map(section => 
         section.sectionId === sectionId 
@@ -283,7 +365,7 @@ const EventCreation = () => {
           : section
       )
     );
-  };
+  }, []);
 
   const getCapacityFromSeatMap = async (seatMapId) => {
     try {
@@ -429,6 +511,8 @@ const EventCreation = () => {
   };
 
   const handleConfirmSaveEvent = async () => {
+    console.log('=== HANDLE CONFIRM SAVE EVENT CALLED ===');
+    console.log('EventDataToSave:', eventDataToSave);
     setSaving(true);
     
     try {
@@ -610,6 +694,9 @@ const EventCreation = () => {
       eventData.createdBy = currentUserId || 'Anonymous admin';
 
       console.log('Event data prepared:', eventData);
+      console.log('LocationObj:', locationObj);
+      console.log('LocationObj.seatMapId:', locationObj?.seatMapId);
+      console.log('Condition check:', locationObj && locationObj.seatMapId);
 
       if (imageFile) {
         try {
@@ -736,387 +823,313 @@ const EventCreation = () => {
     return seatMap;
   };
 
-  const SectionPricingComponent = () => {
-      if (!usesSectionPricing || locationSections.length === 0) return null;
+  const renderSectionPricing = () => {
+    if (!usesSectionPricing || locationSections.length === 0) return null;
 
-      const calculatePriceRange = (section) => {
+    const calculatePriceRange = (section) => {
+      const defaultPrice = parseFloat(section.defaultPrice) || 0;
+      
+      if (defaultPrice <= 0) {
+        return 'Precio no configurado';
+      }
+      
+      if (!section.hasNumberedSeats) {
+        return `€${defaultPrice.toFixed(2)}`;
+      }
+      
+      if (!section.rowPricing || section.rowPricing.length === 0) {
+        return `€${defaultPrice.toFixed(2)} (por defecto)`;
+      }
+      
+      const prices = section.rowPricing.map(rp => parseFloat(rp.price) || 0);
+      const minPrice = Math.min(...prices);
+      const maxPrice = Math.max(...prices);
+      
+      return minPrice === maxPrice ? `€${minPrice.toFixed(2)}` : `€${minPrice.toFixed(2)} - €${maxPrice.toFixed(2)}`;
+    };
+
+    const getTotalCapacity = () => {
+      return sectionPricing.reduce((total, section) => {
+        if (!section.hasNumberedSeats && type === 'concert') {
+          return total + (parseInt(section.customCapacity) || 0);
+        }
+        return total + (section.capacity || 0);
+      }, 0);
+    };
+
+    const getOverallPriceRange = () => {
+      if (sectionPricing.length === 0) return '€0.00';
+      
+      const validSections = sectionPricing.filter(section => 
+        !isNaN(parseFloat(section.defaultPrice)) && parseFloat(section.defaultPrice) >= 0
+      );
+      
+      if (validSections.length === 0) return 'Precios no configurados';
+      
+      let minPrice = Infinity;
+      let maxPrice = 0;
+      
+      validSections.forEach(section => {
         const defaultPrice = parseFloat(section.defaultPrice) || 0;
         
-        if (defaultPrice <= 0) {
-          return 'Precio no configurado';
-        }
-        
-        if (!section.hasNumberedSeats) {
-          return `€${defaultPrice.toFixed(2)}`;
-        }
-        
-        if (!section.rowPricing || section.rowPricing.length === 0) {
-          return `€${defaultPrice.toFixed(2)} (por defecto)`;
-        }
-        
-        const prices = section.rowPricing.map(rp => parseFloat(rp.price) || 0);
-        const minPrice = Math.min(...prices);
-        const maxPrice = Math.max(...prices);
-        
-        return minPrice === maxPrice ? `€${minPrice.toFixed(2)}` : `€${minPrice.toFixed(2)} - €${maxPrice.toFixed(2)}`;
-      };
-
-      const getTotalCapacity = () => {
-        return sectionPricing.reduce((total, section) => {
-          if (!section.hasNumberedSeats && type === 'concert') {
-            return total + (parseInt(section.customCapacity) || 0);
-          }
-          return total + (section.capacity || 0);
-        }, 0);
-      };
-
-      const getOverallPriceRange = () => {
-        if (sectionPricing.length === 0) return '€0.00';
-        
-        const validSections = sectionPricing.filter(section => 
-          !isNaN(parseFloat(section.defaultPrice)) && parseFloat(section.defaultPrice) >= 0
-        );
-        
-        if (validSections.length === 0) return 'Precios no configurados';
-        
-        let minPrice = Infinity;
-        let maxPrice = 0;
-        
-        validSections.forEach(section => {
-          const defaultPrice = parseFloat(section.defaultPrice) || 0;
+        if (section.rowPricing && section.rowPricing.length > 0) {
+          const prices = section.rowPricing.map(rp => parseFloat(rp.price) || 0);
+          const sectionMin = Math.min(...prices);
+          const sectionMax = Math.max(...prices);
           
-          if (section.rowPricing && section.rowPricing.length > 0) {
-            const prices = section.rowPricing.map(rp => parseFloat(rp.price) || 0);
-            const sectionMin = Math.min(...prices);
-            const sectionMax = Math.max(...prices);
-            
-            minPrice = Math.min(minPrice, sectionMin);
-            maxPrice = Math.max(maxPrice, sectionMax);
-          } else {
-            minPrice = Math.min(minPrice, defaultPrice);
-            maxPrice = Math.max(maxPrice, defaultPrice);
-          }
-        });
+          minPrice = Math.min(minPrice, sectionMin);
+          maxPrice = Math.max(maxPrice, sectionMax);
+        } else {
+          minPrice = Math.min(minPrice, defaultPrice);
+          maxPrice = Math.max(maxPrice, defaultPrice);
+        }
+      });
+      
+      return minPrice === maxPrice ? `€${minPrice.toFixed(2)}` : `€${minPrice.toFixed(2)} - €${maxPrice.toFixed(2)}`;
+    };
+
+
+
+    return (
+      <Card 
+        title={
+          <Space>
+            <TagOutlined style={{ color: COLORS?.primary?.main || '#1890ff' }} />
+            Configuración de precios por filas
+          </Space>
+        }
+        style={{ 
+          marginBottom: '24px',
+          borderRadius: '8px',
+          boxShadow: '0 1px 2px rgba(0,0,0,0.07)'
+        }}
+        loading={loadingSections}
+      >
+        <Alert
+          message="Pricing por filas activado"
+          description="Esta ubicación tiene un mapa de asientos con secciones y filas definidas. Configure el precio por defecto y los precios específicos por fila para cada sección."
+          type="info"
+          showIcon
+          style={{ marginBottom: '16px' }}
+        />
         
-        return minPrice === maxPrice ? `€${minPrice.toFixed(2)}` : `€${minPrice.toFixed(2)} - €${maxPrice.toFixed(2)}`;
-      };
-
-      const RowPricingTable = ({ section }) => {
-        const columns = [
-          {
-            title: 'Fila',
-            dataIndex: 'row',
-            key: 'row',
-            width: 80,
-            render: (text, record, index) => (
-              <InputNumber
-                min={1}
-                max={section.rows}
-                value={text}
-                onChange={(value) => updateRowPrice(section.sectionId, index, 'row', value)}
-                style={{ width: '100%' }}
-              />
-            )
-          },
-          {
-            title: 'Precio (€)',
-            dataIndex: 'price',
-            key: 'price',
-            render: (text, record, index) => (
-              <InputNumber
-                min={0}
-                step={0.01}
-                value={text}
-                onChange={(value) => updateRowPrice(section.sectionId, index, 'price', value)}
-                style={{ width: '100%' }}
-                prefix="€"
-              />
-            )
-          },
-          {
-            title: 'Acciones',
-            key: 'actions',
-            width: 80,
-            render: (_, record, index) => (
-              <Popconfirm
-                title="¿Eliminar este precio por fila?"
-                onConfirm={() => removeRowPrice(section.sectionId, index)}
-                okText="Sí"
-                cancelText="No"
-              >
-                <Button 
-                  type="text" 
-                  danger 
-                  icon={<DeleteOutlined />}
-                  size="small"
-                />
-              </Popconfirm>
-            )
-          }
-        ];
-
-        return (
-          <div style={{ marginTop: '12px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <Text strong>Precios específicos por fila:</Text>
-              <Button 
-                type="dashed" 
-                size="small" 
-                icon={<PlusOutlined />}
-                onClick={() => addRowPrice(section.sectionId)}
-              >
-                Añadir fila
-              </Button>
-            </div>
-            <Table
-              columns={columns}
-              dataSource={section.rowPricing || []}
-              pagination={false}
-              size="small"
-              rowKey={(record, index) => index}
-              locale={{
-                emptyText: 'No hay precios específicos por fila configurados'
-              }}
-            />
-          </div>
-        );
-      };
-
-      return (
         <Card 
-          title={
-            <Space>
-              <TagOutlined style={{ color: COLORS?.primary?.main || '#1890ff' }} />
-              Configuración de precios por filas
-            </Space>
-          }
+          size="small" 
           style={{ 
-            marginBottom: '24px',
-            borderRadius: '8px',
-            boxShadow: '0 1px 2px rgba(0,0,0,0.07)'
+            marginBottom: '16px',
+            backgroundColor: '#f0f9ff',
+            border: '1px solid #91d5ff'
           }}
-          loading={loadingSections}
         >
-          <Alert
-            message="Pricing por filas activado"
-            description="Esta ubicación tiene un mapa de asientos con secciones y filas definidas. Configure el precio por defecto y los precios específicos por fila para cada sección."
-            type="info"
-            showIcon
-            style={{ marginBottom: '16px' }}
-          />
-          
-          <Card 
-            size="small" 
-            style={{ 
-              marginBottom: '16px',
-              backgroundColor: '#f0f9ff',
-              border: '1px solid #91d5ff'
-            }}
-          >
-            <Space direction="vertical" size="small" style={{ width: '100%' }}>
-              <Text strong style={{ color: '#1890ff' }}>
-                <InfoCircleOutlined style={{ marginRight: '8px' }} />
-                ¿Cómo funciona el sistema de precios por filas?
-              </Text>
-              <div style={{ fontSize: '13px', lineHeight: '1.5' }}>
-                <p><strong>1. Precio por defecto:</strong> Establece un precio base para todas las filas de la sección.</p>
-                <p><strong>2. Precios específicos por fila:</strong> Añade filas individuales con precios personalizados. Las filas que no configures mantendrán el precio por defecto.</p>
-                <p><strong>3. Ejemplo:</strong> Si tienes 10 filas con precio por defecto de €25, y configuras la Fila 1 a €50, entonces: Fila 1 = €50, Filas 2-10 = €25.</p>
-                <p><strong>4. Ventaja:</strong> Puedes crear precios premium para las mejores ubicaciones sin configurar todas las filas.</p>
-              </div>
-            </Space>
-          </Card>
-          
-          <Row gutter={[16, 16]}>
-            {sectionPricing.map((section, index) => {
-              const locationSection = locationSections.find(ls => ls.sectionId === section.sectionId);
-              const isNumberedSeats = section.hasNumberedSeats !== false;
-              
-              return (
-                <Col xs={24} lg={12} key={section.sectionId}>
-                  <Card 
-                    size="small"
-                    style={{
-                      borderLeft: `4px solid ${locationSection?.color || '#1890ff'}`,
-                      height: '100%'
-                    }}
-                  >
-                    <Space direction="vertical" style={{ width: '100%' }} size="small">
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Text strong style={{ fontSize: '16px' }}>
-                          {section.sectionName}
-                        </Text>
-                        <Tag color={isNumberedSeats ? "blue" : "orange"} style={{ fontSize: '11px' }}>
-                          {isNumberedSeats ? 
-                            `${section.rows} filas × ${section.seatsPerRow} asientos` : 
-                            'Entrada general'
-                          }
-                        </Tag>
-                      </div>
-                      
-                      <Text type="secondary" style={{ fontSize: '12px' }}>
-                        Capacidad total: {section.capacity} {isNumberedSeats ? 'asientos' : 'personas'}
+          <Space direction="vertical" size="small" style={{ width: '100%' }}>
+            <Text strong style={{ color: '#1890ff' }}>
+              <InfoCircleOutlined style={{ marginRight: '8px' }} />
+              ¿Cómo funciona el sistema de precios por filas?
+            </Text>
+            <div style={{ fontSize: '13px', lineHeight: '1.5' }}>
+              <p><strong>1. Precio por defecto:</strong> Establece un precio base para todas las filas de la sección.</p>
+              <p><strong>2. Precios específicos por fila:</strong> Añade filas individuales con precios personalizados. Las filas que no configures mantendrán el precio por defecto.</p>
+              <p><strong>3. Ejemplo:</strong> Si tienes 10 filas con precio por defecto de €25, y configuras la Fila 1 a €50, entonces: Fila 1 = €50, Filas 2-10 = €25.</p>
+              <p><strong>4. Ventaja:</strong> Puedes crear precios premium para las mejores ubicaciones sin configurar todas las filas.</p>
+            </div>
+          </Space>
+        </Card>
+        
+        <Row gutter={[16, 16]}>
+          {sectionPricing.map((section, index) => {
+            const locationSection = locationSections.find(ls => ls.sectionId === section.sectionId);
+            const isNumberedSeats = section.hasNumberedSeats !== false;
+            
+            return (
+              <Col xs={24} lg={12} key={section.sectionId}>
+                <Card 
+                  size="small"
+                  style={{
+                    borderLeft: `4px solid ${locationSection?.color || '#1890ff'}`,
+                    height: '100%'
+                  }}
+                >
+                  <Space direction="vertical" style={{ width: '100%' }} size="small">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Text strong style={{ fontSize: '16px' }}>
+                        {section.sectionName}
                       </Text>
-                      
-                      <Divider style={{ margin: '8px 0' }} />
-                      
+                      <Tag color={isNumberedSeats ? "blue" : "orange"} style={{ fontSize: '11px' }}>
+                        {isNumberedSeats ? 
+                          `${section.rows} filas × ${section.seatsPerRow} asientos` : 
+                          'Entrada general'
+                        }
+                      </Tag>
+                    </div>
+                    
+                    <Text type="secondary" style={{ fontSize: '12px' }}>
+                      Capacidad total: {section.capacity} {isNumberedSeats ? 'asientos' : 'personas'}
+                    </Text>
+                    
+                    <Divider style={{ margin: '8px 0' }} />
+                    
+                    <Form.Item
+                      label={isNumberedSeats ? "Precio por defecto (filas no configuradas)" : "Precio único"}
+                      style={{ margin: 0 }}
+                      required
+                      validateStatus={
+                        section.defaultPrice === '' || 
+                        isNaN(parseFloat(section.defaultPrice)) || 
+                        parseFloat(section.defaultPrice) < 0 
+                          ? 'error' 
+                          : 'success'
+                      }
+                      help={
+                        section.defaultPrice === '' ? 'El precio por defecto es obligatorio' :
+                        isNaN(parseFloat(section.defaultPrice)) || parseFloat(section.defaultPrice) < 0 ? 'Debe ser un precio mayor o igual a 0' :
+                        null
+                      }
+                    >
+                      <Input
+                        type="number"
+                        value={section.defaultPrice || 0}
+                        onChange={(e) => handleSectionDefaultPrice(section.sectionId, e.target.value)}
+                        prefix={<EuroOutlined />}
+                        placeholder="Ej: 25"
+                        min={0}
+                        step={0.01}
+                        style={{ width: '100%' }}
+                      />
+                    </Form.Item>
+
+                    {isNumberedSeats && (
+                      <>
+                        <RowPricingTable 
+                          section={section} 
+                          updateRowPrice={updateRowPrice}
+                          removeRowPrice={removeRowPrice}
+                          addRowPrice={addRowPrice}
+                        />
+                      </>
+                    )}
+
+                    {!isNumberedSeats && type === 'concert' && (
                       <Form.Item
-                        label={isNumberedSeats ? "Precio por defecto (filas no configuradas)" : "Precio único"}
+                        label={`Capacidad de la pista (máx: ${section.maxCapacity || 'sin límite'})`}
                         style={{ margin: 0 }}
                         required
                         validateStatus={
-                          section.defaultPrice === '' || 
-                          isNaN(parseFloat(section.defaultPrice)) || 
-                          parseFloat(section.defaultPrice) < 0 
+                          section.customCapacity === '' || 
+                          isNaN(parseInt(section.customCapacity)) || 
+                          parseInt(section.customCapacity) <= 0 ||
+                          (section.maxCapacity && parseInt(section.customCapacity) > section.maxCapacity)
                             ? 'error' 
                             : 'success'
                         }
                         help={
-                          section.defaultPrice === '' ? 'El precio por defecto es obligatorio' :
-                          isNaN(parseFloat(section.defaultPrice)) || parseFloat(section.defaultPrice) < 0 ? 'Debe ser un precio mayor o igual a 0' :
+                          section.customCapacity === '' ? 'La capacidad es obligatoria' :
+                          isNaN(parseInt(section.customCapacity)) || parseInt(section.customCapacity) <= 0 ? 'Debe ser un número mayor que 0' :
+                          (section.maxCapacity && parseInt(section.customCapacity) > section.maxCapacity) ? `No puede exceder ${section.maxCapacity}` :
                           null
                         }
                       >
                         <Input
                           type="number"
-                          value={section.defaultPrice || 0}
-                          onChange={(e) => handleSectionDefaultPrice(section.sectionId, e.target.value)}
-                          prefix={<EuroOutlined />}
-                          placeholder="Ej: 25"
-                          min={0}
-                          step={0.01}
+                          value={section.customCapacity}
+                          onChange={(e) => handleSectionCapacity(section.sectionId, e.target.value)}
+                          placeholder={`Máx: ${section.maxCapacity || 'sin límite'}`}
+                          min={1}
+                          max={section.maxCapacity || undefined}
                           style={{ width: '100%' }}
+                          suffix="personas"
                         />
                       </Form.Item>
-
-                      {isNumberedSeats && (
-                        <>
-                          <RowPricingTable section={section} />
-                        </>
+                    )}
+                    
+                    <div style={{ 
+                      marginTop: '8px', 
+                      padding: '8px', 
+                      backgroundColor: '#fafafa', 
+                      borderRadius: '4px',
+                      fontSize: '12px'
+                    }}>
+                      <Text strong>
+                        {isNumberedSeats ? 'Rango de precios: ' : 'Precio: '}
+                      </Text>
+                      <Text type="success">{calculatePriceRange(section)}</Text>
+                      {isNumberedSeats && section.rowPricing && section.rowPricing.length > 0 && (
+                        <div style={{ marginTop: '4px' }}>
+                          <Text type="secondary">
+                            Filas configuradas: {section.rowPricing.length} de {section.rows} | 
+                            Precio por defecto: €{(section.defaultPrice || 0).toFixed(2)}
+                          </Text>
+                        </div>
                       )}
+                    </div>
+                  </Space>
+                </Card>
+              </Col>
+            );
+          })}
+        </Row>
+        
+        {sectionPricing.length > 0 && (
+          <Card 
+            size="small" 
+            style={{ 
+              marginTop: '16px',
+              backgroundColor: '#f6ffed',
+              border: '1px solid #b7eb8f'
+            }}
+          >
+            <Row gutter={16}>
+              <Col span={12}>
+                <p><strong>Capacidad total:</strong> {getTotalCapacity()} asientos</p>
+                <p><strong>Rango de precios:</strong> {getOverallPriceRange()}</p>
+              </Col>
+              <Col span={12}>
+                <p><strong>Número de secciones:</strong> {sectionPricing.length}</p>
+                <p><strong>Secciones con precios por fila:</strong> {sectionPricing.filter(s => s.rowPricing && s.rowPricing.length > 0).length}</p>
+              </Col>
+            </Row>
+          </Card>
+        )}
+      </Card>
+    );
+  };
 
-                      {!isNumberedSeats && type === 'concert' && (
-                        <Form.Item
-                          label={`Capacidad de la pista (máx: ${section.maxCapacity || 'sin límite'})`}
-                          style={{ margin: 0 }}
-                          required
-                          validateStatus={
-                            section.customCapacity === '' || 
-                            isNaN(parseInt(section.customCapacity)) || 
-                            parseInt(section.customCapacity) <= 0 ||
-                            (section.maxCapacity && parseInt(section.customCapacity) > section.maxCapacity)
-                              ? 'error' 
-                              : 'success'
-                          }
-                          help={
-                            section.customCapacity === '' ? 'La capacidad es obligatoria' :
-                            isNaN(parseInt(section.customCapacity)) || parseInt(section.customCapacity) <= 0 ? 'Debe ser un número mayor que 0' :
-                            (section.maxCapacity && parseInt(section.customCapacity) > section.maxCapacity) ? `No puede exceder ${section.maxCapacity}` :
-                            null
-                          }
-                        >
-                          <Input
-                            type="number"
-                            value={section.customCapacity}
-                            onChange={(e) => handleSectionCapacity(section.sectionId, e.target.value)}
-                            placeholder={`Máx: ${section.maxCapacity || 'sin límite'}`}
-                            min={1}
-                            max={section.maxCapacity || undefined}
-                            style={{ width: '100%' }}
-                            suffix="personas"
-                          />
-                        </Form.Item>
-                      )}
-                      
-                      <div style={{ 
-                        marginTop: '8px', 
-                        padding: '8px', 
-                        backgroundColor: '#fafafa', 
-                        borderRadius: '4px',
-                        fontSize: '12px'
-                      }}>
-                        <Text strong>
-                          {isNumberedSeats ? 'Rango de precios: ' : 'Precio: '}
-                        </Text>
-                        <Text type="success">{calculatePriceRange(section)}</Text>
-                        {isNumberedSeats && section.rowPricing && section.rowPricing.length > 0 && (
-                          <div style={{ marginTop: '4px' }}>
-                            <Text type="secondary">
-                              Filas configuradas: {section.rowPricing.length} de {section.rows} | 
-                              Precio por defecto: €{(section.defaultPrice || 0).toFixed(2)}
-                            </Text>
-                          </div>
-                        )}
-                      </div>
-                    </Space>
-                  </Card>
-                </Col>
-              );
-            })}
-          </Row>
-          
-          {sectionPricing.length > 0 && (
-            <Card 
-              size="small" 
-              style={{ 
-                marginTop: '16px',
-                backgroundColor: '#f6ffed',
-                border: '1px solid #b7eb8f'
-              }}
-            >
-              <Row gutter={16}>
-                <Col span={12}>
-                  <p><strong>Capacidad total:</strong> {getTotalCapacity()} asientos</p>
-                  <p><strong>Rango de precios:</strong> {getOverallPriceRange()}</p>
-                </Col>
-                <Col span={12}>
-                  <p><strong>Número de secciones:</strong> {sectionPricing.length}</p>
-                  <p><strong>Secciones con precios por fila:</strong> {sectionPricing.filter(s => s.rowPricing && s.rowPricing.length > 0).length}</p>
-                </Col>
-              </Row>
-            </Card>
-          )}
-        </Card>
-      );
-    };
-
-    const ImagePreviewComponent = () => {
-      if (!imagePreview) return null;
-      
-      return (
-        <Card 
-          title={
-            <Space>
-              <UploadOutlined style={{ color: COLORS?.primary?.main || '#1890ff' }} />
-              Vista previa de la imagen
-            </Space>
-          }
-          style={{ 
-            marginBottom: '24px',
-            borderRadius: '8px',
-            boxShadow: '0 1px 2px rgba(0,0,0,0.07)'
-          }}
-        >
-          <div style={{ textAlign: 'center' }}>
-            <img 
-              src={imagePreview} 
-              alt="Preview" 
-              style={{ 
-                maxWidth: '100%', 
-                maxHeight: '200px', 
-                borderRadius: '8px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-              }} 
-            />
-            <div style={{ marginTop: '8px' }}>
-              <Text type="secondary">
-                {imageFile?.name} ({(imageFile?.size / 1024 / 1024).toFixed(2)} MB)
-              </Text>
-            </div>
+  const renderImagePreview = () => {
+    if (!imagePreview) return null;
+    
+    return (
+      <Card 
+        title={
+          <Space>
+            <UploadOutlined style={{ color: COLORS?.primary?.main || '#1890ff' }} />
+            Vista previa de la imagen
+          </Space>
+        }
+        style={{ 
+          marginBottom: '24px',
+          borderRadius: '8px',
+          boxShadow: '0 1px 2px rgba(0,0,0,0.07)'
+        }}
+      >
+        <div style={{ textAlign: 'center' }}>
+          <img 
+            src={imagePreview} 
+            alt="Preview" 
+            style={{ 
+              maxWidth: '100%', 
+              maxHeight: '200px', 
+              borderRadius: '8px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            }} 
+          />
+          <div style={{ marginTop: '8px' }}>
+            <Text type="secondary">
+              {imageFile?.name} ({(imageFile?.size / 1024 / 1024).toFixed(2)} MB)
+            </Text>
           </div>
-        </Card>
-      );
-    };
+        </div>
+      </Card>
+    );
+  };
 
   return (
     <Layout style={{ minHeight: '100vh', backgroundColor: COLORS?.neutral?.white || '#ffffff' }}>
@@ -1368,7 +1381,7 @@ const EventCreation = () => {
               </Row>
 
               {/* Componente de pricing por secciones */}
-              <SectionPricingComponent />
+              {renderSectionPricing()}
 
               {/* Pricing tradicional - solo se muestra si no hay secciones */}
               {!usesSectionPricing && (
@@ -1442,7 +1455,7 @@ const EventCreation = () => {
                         {imageFile ? 'Cambiar imagen' : 'Seleccionar imagen'}
                       </Button>
                     </Upload>
-                    <ImagePreviewComponent />
+                    {renderImagePreview()}
                   </Form.Item>
                 </Col>
               </Row>

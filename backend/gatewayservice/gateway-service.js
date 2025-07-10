@@ -224,6 +224,16 @@ app.post("/events", largePayloadMiddleware ,async (req, res) => {
   }
 });
 
+app.put("/events/:eventId", largePayloadMiddleware, async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const eventResponse = await axios.put(`${eventServiceUrl}/events/${eventId}`, req.body);
+    res.json(eventResponse.data);
+  } catch (error) {
+    returnError(res, error);
+  }
+});
+
 app.patch("/events/:eventId/image", largePayloadMiddleware, async (req, res) => {
   try {
     const { eventId } = req.params;
