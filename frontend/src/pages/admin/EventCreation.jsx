@@ -435,7 +435,18 @@ const EventCreation = () => {
       
       if (error.response) {
         console.error('Server error:', error.response.data);
-        setErrorMessage(`Error del servidor: ${error.response.data.error || error.response.statusText}`);
+        if (
+          error.response.data &&
+          error.response.data.error &&
+          error.response.data.error.includes('menos de 24 horas')
+        ) {
+          setErrorMessage(
+            `No se puede crear el evento: ya existe otro evento en esta ubicación con menos de 24 horas de diferencia.\n` +
+            (error.response.data.conflictEvent ? `Conflicto con: "${error.response.data.conflictEvent.name}" el ${new Date(error.response.data.conflictEvent.date).toLocaleString('es-ES')}` : '')
+          );
+        } else {
+          setErrorMessage(`Error del servidor: ${error.response.data.error || error.response.statusText}`);
+        }
       } else if (error.request) {
         console.error('Network error:', error.request);
         setErrorMessage('Error de conexión. Verifica tu conexión a internet.');

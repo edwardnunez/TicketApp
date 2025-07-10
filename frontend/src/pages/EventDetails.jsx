@@ -228,7 +228,7 @@ const EventDetails = () => {
           {event.usesRowPricing && (
             <Alert
               message="Pricing variable por filas"
-              description="Los precios varían según la fila. Las filas más cercanas al escenario/campo tienen precios diferentes."
+              description="Los precios pueden variar según la fila y la sección."
               type="info"
               style={{ marginTop: '16px' }}
               showIcon

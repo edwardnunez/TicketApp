@@ -13,9 +13,3 @@ cambiar eliminar eventos por cancelar eventos
 
 añadir pasarela de pagos (paypal)
 
-cambiar precio para manejarlo por fila en vez de por seccion (va a haber que cambiar el esquema de bd)
-
-falta: 
-       modificar la vista o el backend de seleccionar entradas para mostrar ls precios
-       no se si algo mas, revisar mañana
-       eliminar el default Price de las locations, o ponerlo a 0 siempre hardcodeado para que no de problemas

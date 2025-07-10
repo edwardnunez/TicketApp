@@ -248,6 +248,24 @@ app.post("/event", largePayloadMiddleware, async (req, res) => {
       eventData.blockedSections = [];
     }
 
+    // Validación: no permitir eventos en la misma ubicación con menos de 24h de diferencia
+    const eventDateStart = new Date(eventDate.getTime() - 12 * 60 * 60 * 1000); // 12h antes
+    const eventDateEnd = new Date(eventDate.getTime() + 12 * 60 * 60 * 1000); // 12h después
+    const conflictEvent = await EventModel.findOne({
+      location: eventData.location,
+      date: { $gte: eventDateStart, $lte: eventDateEnd }
+    });
+    if (conflictEvent) {
+      return res.status(400).json({
+        error: "Ya existe un evento en esta ubicación con menos de 24 horas de diferencia.",
+        conflictEvent: {
+          id: conflictEvent._id,
+          name: conflictEvent.name,
+          date: conflictEvent.date
+        }
+      });
+    }
+
     const newEvent = new EventModel(eventData);
     await newEvent.save();
     
