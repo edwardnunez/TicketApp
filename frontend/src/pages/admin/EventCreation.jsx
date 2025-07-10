@@ -80,6 +80,7 @@ const EventCreation = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [eventDataToSave, setEventDataToSave] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState(null);
 
   const navigate = useNavigate();
   
@@ -159,6 +160,18 @@ const EventCreation = () => {
       setLocationOptions(locations);
     }
   }, [type, locations]);
+
+  // Obtener el ID del usuario actual
+  const username = localStorage.getItem('username');
+  useEffect(() => {
+    if (!username) return;
+    axios.get(`${gatewayUrl}/users/search?username=${username}`)
+      .then(res => {
+        console.log('User data from search:', res.data);
+        setCurrentUserId(res.data._id);
+      })
+      .catch(() => setCurrentUserId(null));
+  }, [username, gatewayUrl]);
 
   const getAutoState = (date) => {
     if (!date) return 'proximo';
@@ -593,6 +606,8 @@ const EventCreation = () => {
         eventData.capacity = parseInt(values.capacity);
         eventData.price = parseFloat(values.price);
       }
+
+      eventData.createdBy = currentUserId || 'Anonymous admin';
 
       console.log('Event data prepared:', eventData);
 
