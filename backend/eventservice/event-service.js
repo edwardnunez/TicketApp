@@ -167,7 +167,8 @@ app.post("/event", largePayloadMiddleware, async (req, res) => {
       location: location._id? location._id : location,
       type,
       description: eventDescription,
-      state: initialState
+      state: initialState,
+      createdBy: req.body.createdBy // ID del admin creador
     };
 
     if (imageData) {
@@ -702,37 +703,68 @@ app.put("/events/:eventId/seat-blocks", async (req, res) => {
   }
 });
 
-// Ruta para eliminar un evento
-app.delete("/events/:eventId", async (req, res) => {
+// Ruta para cancelar un evento (solo el admin creador)
+app.delete("/events/:eventId/cancel", async (req, res) => {
   try {
     const { eventId } = req.params;
-
+    const { adminId } = req.body;
     // Verificar que el evento existe
     const event = await EventModel.findById(eventId);
     if (!event) {
       return res.status(404).json({ error: "Evento no encontrado" });
     }
-
+    // Solo el admin creador puede cancelar
+    if (!adminId || event.createdBy !== adminId) {
+      return res.status(403).json({ error: "No tienes permisos para cancelar este evento" });
+    }
     try {
       await axios.delete(`${ticketServiceUrl}/tickets/event/${eventId}`);
       console.log(`Tickets eliminados para el evento ${eventId}`);
     } catch (ticketError) {
       console.warn(`Error eliminando tickets para evento ${eventId}:`, ticketError.message);
-      // Continuamos con la eliminación del evento aunque falle la eliminación de tickets
     }
-
-    // Eliminar el evento
-    await EventModel.findByIdAndDelete(eventId);
-
-    console.log(`Evento ${eventId} eliminado correctamente`);
-
+    // Cambiar el estado del evento a cancelado
+    event.state = 'cancelado';
+    await event.save();
+    console.log(`Evento ${eventId} cancelado correctamente`);
     res.status(200).json({
       success: true,
-      message: "Evento y tickets asociados eliminados correctamente",
+      message: "Evento cancelado y tickets asociados eliminados correctamente",
       eventId: eventId,
       eventName: event.name
     });
+  } catch (error) {
+    console.error("Error cancelando evento:", error);
+    res.status(500).json({ 
+      error: "Error interno del servidor", 
+      details: error.message 
+    });
+  }
+});
 
+// Ruta para eliminar un evento (cualquier admin)
+app.delete("/events/:eventId", async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    // Verificar que el evento existe
+    const event = await EventModel.findById(eventId);
+    if (!event) {
+      return res.status(404).json({ error: "Evento no encontrado" });
+    }
+    try {
+      await axios.delete(`${ticketServiceUrl}/tickets/event/${eventId}`);
+      console.log(`Tickets eliminados para el evento ${eventId}`);
+    } catch (ticketError) {
+      console.warn(`Error eliminando tickets para evento ${eventId}:`, ticketError.message);
+    }
+    await EventModel.findByIdAndDelete(eventId);
+    console.log(`Evento ${eventId} eliminado de la base de datos`);
+    res.status(200).json({
+      success: true,
+      message: "Evento y tickets asociados eliminados de la base de datos",
+      eventId: eventId,
+      eventName: event.name
+    });
   } catch (error) {
     console.error("Error eliminando evento:", error);
     res.status(500).json({ 

@@ -102,7 +102,8 @@ const eventSchema = new mongoose.Schema({
     size: Number, // Tamaño en bytes
     uploadedAt: { type: Date, default: Date.now }
   },
-  hasCustomImage: { type: Boolean, default: false } 
+  hasCustomImage: { type: Boolean, default: false },
+  createdBy: { type: String, required: true }, // ID del admin creador
   
 }, { timestamps: true });
 

@@ -222,14 +222,26 @@ const AdminDashboard = () => {
            filters.dateRange !== null;
   };
 
-  const deleteEvent = async (eventId, eventName) => {
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const username = localStorage.getItem('username');
+  useEffect(() => {
+    if (!username) return;
+    axios.get(`${gatewayUrl}/users/search?username=${username}`)
+      .then(res => {
+        console.log('User data from search:', res.data);
+        setCurrentUserId(res.data._id);
+      })
+      .catch(() => setCurrentUserId(null));
+  }, [username, gatewayUrl]);
+
+  const cancelEvent = async (eventId, eventName) => {
     modal.confirm({
-      title: '¿Estás seguro de eliminar este evento?',
+      title: '¿Estás seguro de cancelar este evento?',
       icon: <ExclamationCircleOutlined style={{ color: COLORS?.status?.error || "#ff4d4f" }} />,
       content: (
         <div style={{ marginTop: '16px' }}>
           <p style={{ marginBottom: '12px' }}>
-            Se eliminará el evento: <strong style={{ color: COLORS?.neutral?.darker || "#262626" }}>{eventName}</strong>
+            Se cancelará el evento: <strong style={{ color: COLORS?.neutral?.darker || "#262626" }}>{eventName}</strong>
           </p>
           <div style={{ 
             padding: '12px', 
@@ -249,9 +261,9 @@ const AdminDashboard = () => {
           </div>
         </div>
       ),
-      okText: 'Sí, eliminar',
+      okText: 'Sí, cancelar',
       okType: 'danger',
-      cancelText: 'Cancelar',
+      cancelText: 'No',
       okButtonProps: {
         style: {
           backgroundColor: COLORS?.status?.error || "#ff4d4f",
@@ -267,20 +279,84 @@ const AdminDashboard = () => {
       onOk: async () => {
         try {
           setLoading(true);
-          await axios.delete(`${gatewayUrl}/events/${eventId}`);
-          
-          // Actualizar la lista de eventos localmente
-          setEvents(prevEvents => prevEvents.filter(event => event._id !== eventId));
-          
-          // Mostrar mensaje de éxito usando notification
+          await axios.delete(`${gatewayUrl}/events/${eventId}/cancel`, { data: { adminId: currentUserId } });
+          setEvents(prevEvents => prevEvents.map(event => event._id === eventId ? { ...event, state: 'cancelado' } : event));
           api.success({
-            message: 'Evento eliminado',
-            description: 'El evento y todos sus tickets asociados han sido eliminados correctamente.',
+            message: 'Evento cancelado',
+            description: 'El evento ha sido cancelado y todos sus tickets eliminados.',
             placement: 'top',
             duration: 4
           });
         } catch (error) {
-          console.error("Error deleting event:", error);
+          console.error("Error cancelando evento:", error);
+          api.error({
+            message: 'Error al cancelar',
+            description: 'No se pudo cancelar el evento. Por favor, inténtalo de nuevo.',
+            placement: 'top',
+            duration: 4
+          });
+        } finally {
+          setLoading(false);
+        }
+      },
+    });
+  };
+
+  const deleteEvent = async (eventId, eventName) => {
+    modal.confirm({
+      title: '¿Estás seguro de eliminar este evento de la base de datos?',
+      icon: <ExclamationCircleOutlined style={{ color: COLORS?.status?.error || "#ff4d4f" }} />,
+      content: (
+        <div style={{ marginTop: '16px' }}>
+          <p style={{ marginBottom: '12px' }}>
+            Se eliminará completamente el evento: <strong style={{ color: COLORS?.neutral?.darker || "#262626" }}>{eventName}</strong>
+          </p>
+          <div style={{ 
+            padding: '12px', 
+            backgroundColor: '#fff2f0', 
+            border: '1px solid #ffccc7',
+            borderRadius: '6px',
+            marginTop: '12px'
+          }}>
+            <p style={{ 
+              color: COLORS?.status?.error || "#ff4d4f", 
+              margin: 0,
+              fontSize: '14px',
+              fontWeight: '500'
+            }}>
+              ⚠️ Esta acción eliminará el evento y todos sus tickets asociados de la base de datos. No se puede deshacer.
+            </p>
+          </div>
+        </div>
+      ),
+      okText: 'Sí, eliminar',
+      okType: 'danger',
+      cancelText: 'No',
+      okButtonProps: {
+        style: {
+          backgroundColor: COLORS?.status?.error || "#ff4d4f",
+          borderColor: COLORS?.status?.error || "#ff4d4f",
+          color: "#ffffff"
+        }
+      },
+      cancelButtonProps: {
+        style: {
+          borderColor: COLORS?.neutral?.grey3 || "#d9d9d9"
+        }
+      },
+      onOk: async () => {
+        try {
+          setLoading(true);
+          await axios.delete(`${gatewayUrl}/events/${eventId}?forceDelete=true`);
+          setEvents(prevEvents => prevEvents.filter(event => event._id !== eventId));
+          api.success({
+            message: 'Evento eliminado',
+            description: 'El evento y todos sus tickets han sido eliminados de la base de datos.',
+            placement: 'top',
+            duration: 4
+          });
+        } catch (error) {
+          console.error("Error eliminando evento:", error);
           api.error({
             message: 'Error al eliminar',
             description: 'No se pudo eliminar el evento. Por favor, inténtalo de nuevo.',
@@ -293,6 +369,27 @@ const AdminDashboard = () => {
       },
     });
   };
+
+  const [usernamesById, setUsernamesById] = useState({});
+
+  useEffect(() => {
+    if (events.length === 0) return;
+    // Obtener ids únicos de creadores
+    const creatorIds = Array.from(new Set(events.map(e => e.createdBy)));
+    // Solo buscar los que no tengamos ya
+    const idsToFetch = creatorIds.filter(id => id && !usernamesById[id]);
+    if (idsToFetch.length === 0) return;
+    Promise.all(idsToFetch.map(id =>
+      axios.get(`${gatewayUrl}/users/search?userId=${id}`)
+        .then(res => ({ id, username: res.data.username }))
+        .catch(() => ({ id, username: id }))
+    )).then(results => {
+      const newMap = { ...usernamesById };
+      results.forEach(({ id, username }) => { newMap[id] = username; });
+      setUsernamesById(newMap);
+    });
+  // eslint-disable-next-line
+  }, [events]);
 
   const columns = [
     {
@@ -365,41 +462,69 @@ const AdminDashboard = () => {
       ),
     },
     {
+      title: 'Creado por',
+      dataIndex: 'createdBy',
+      key: 'createdBy',
+      render: (createdBy) => (
+        <span>{usernamesById[createdBy] || createdBy}</span>
+      ),
+    },
+    {
       title: 'Acciones',
       key: 'actions',
-      render: (text, record) => (
-        <Space>
-          <Tooltip title="Ver detalles">
-            <Link to={`/event/${record._id}`}>
+      render: (text, record) => {
+        console.log('Record createdBy:', record.createdBy, 'CurrentUserId:', currentUserId, 'Comparison:', String(record.createdBy) === String(currentUserId));
+        return (
+          <Space>
+            <Tooltip title="Ver detalles">
+              <Link to={`/event/${record._id}`}>
+                <Button 
+                  type="primary" 
+                  icon={<EyeOutlined />} 
+                  size="small"
+                  style={{ 
+                    backgroundColor: COLORS?.primary?.main || "#1890ff",
+                    borderColor: COLORS?.primary?.main || "#1890ff"
+                  }}
+                >
+                  Ver
+                </Button>
+              </Link>
+            </Tooltip>
+            {String(record.createdBy) === String(currentUserId) && record.state !== 'cancelado' && (
+              <Tooltip title="Cancelar evento">
+                <Button 
+                  danger
+                  icon={<DeleteOutlined />}
+                  size="small"
+                  onClick={() => cancelEvent(record._id, record.name)}
+                  style={{ 
+                    borderColor: COLORS?.status?.error || "#ff4d4f",
+                    color: COLORS?.status?.error || "#ff4d4f"
+                  }}
+                >
+                  Cancelar
+                </Button>
+              </Tooltip>
+            )}
+            <Tooltip title="Eliminar evento de la base de datos">
               <Button 
-                type="primary" 
-                icon={<EyeOutlined />} 
+                danger
+                icon={<DeleteOutlined />}
                 size="small"
+                onClick={() => deleteEvent(record._id, record.name)}
                 style={{ 
-                  backgroundColor: COLORS?.primary?.main || "#1890ff",
-                  borderColor: COLORS?.primary?.main || "#1890ff"
+                  borderColor: COLORS?.status?.error || "#ff4d4f",
+                  color: COLORS?.status?.error || "#ff4d4f",
+                  backgroundColor: '#fff0f0'
                 }}
               >
-                Ver
+                Eliminar
               </Button>
-            </Link>
-          </Tooltip>
-          <Tooltip title="Eliminar evento">
-            <Button 
-              danger
-              icon={<DeleteOutlined />}
-              size="small"
-              onClick={() => deleteEvent(record._id, record.name)}
-              style={{ 
-                borderColor: COLORS?.status?.error || "#ff4d4f",
-                color: COLORS?.status?.error || "#ff4d4f"
-              }}
-            >
-              Eliminar
-            </Button>
-          </Tooltip>
-        </Space>
-      ),
+            </Tooltip>
+          </Space>
+        );
+      },
     },
   ];
 

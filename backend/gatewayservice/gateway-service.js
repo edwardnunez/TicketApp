@@ -305,6 +305,19 @@ app.delete("/events/:eventId", async (req, res) => {
   }
 });
 
+// Nuevo endpoint para cancelar un evento (solo el admin creador)
+app.delete("/events/:eventId/cancel", async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const eventResponse = await axios.delete(`${eventServiceUrl}/events/${eventId}/cancel`, {
+      data: req.body
+    });
+    res.json(eventResponse.data);
+  } catch (error) {
+    returnError(res, error);
+  }
+});
+
 // **Location Routes**
 app.post("/location", async (req, res) => {
   try {
