@@ -1,6 +1,17 @@
 import mongoose from 'mongoose';
 
-// Schema para el pricing por sección con pricing por filas
+const rowPricingSchema = new mongoose.Schema({
+  row: { 
+    type: Number, 
+    required: true 
+  },
+  price: { 
+    type: Number, 
+    required: true, 
+    min: 0 
+  }
+});
+
 const sectionPricingSchema = new mongoose.Schema({
   sectionId: { 
     type: String, 
@@ -10,36 +21,21 @@ const sectionPricingSchema = new mongoose.Schema({
     type: String, 
     required: true 
   },
-  // Precio base de la sección (fila más alejada)
-  basePrice: { 
-    type: Number, 
-    required: true, 
-    min: 0 
-  },
-  // Precio variable que se suma por cada fila hacia adelante
-  variablePrice: { 
+  
+  rowPricing: [rowPricingSchema],
+  
+  // Precio por defecto para filas no configuradas
+  defaultPrice: { 
     type: Number, 
     required: true, 
     min: 0,
     default: 0
   },
-  capacity: { 
-    type: Number, 
-    required: true 
-  },
-  rows: { 
-    type: Number, 
-    required: true 
-  },
-  seatsPerRow: { 
-    type: Number, 
-    required: true 
-  },
-  // Dirección de numeración de filas (true = fila 1 es la más cara, false = fila 1 es la más barata)
-  frontRowFirst: { 
-    type: Boolean, 
-    default: true 
-  }
+  
+  capacity: { type: Number, required: true },
+  rows: { type: Number, required: true },
+  seatsPerRow: { type: Number, required: true },
+  
 });
 
 const seatMapConfigurationSchema = new mongoose.Schema({
@@ -106,7 +102,8 @@ const eventSchema = new mongoose.Schema({
     size: Number, // Tamaño en bytes
     uploadedAt: { type: Date, default: Date.now }
   },
-  hasCustomImage: { type: Boolean, default: false } 
+  hasCustomImage: { type: Boolean, default: false },
+  createdBy: { type: String, required: true }, // ID del admin creador
   
 }, { timestamps: true });
 
@@ -135,7 +132,7 @@ eventSchema.methods.hasImage = function() {
 
 // Método para calcular el precio de un asiento específico
 eventSchema.methods.getSeatPrice = function(sectionId, row, seat) {
-  if (!this.usesSectionPricing || !this.usesRowPricing) {
+  if (!this.usesSectionPricing) {
     return this.price;
   }
   
@@ -144,71 +141,57 @@ eventSchema.methods.getSeatPrice = function(sectionId, row, seat) {
     return this.price;
   }
   
-  // Si no usa pricing por filas, devolver precio base de la sección
-  if (!section.variablePrice || section.variablePrice === 0) {
-    return section.basePrice || section.price || this.price;
+  // Buscar precio específico para la fila
+  const rowPricing = section.rowPricing?.find(rp => rp.row === row);
+  if (rowPricing) {
+    return rowPricing.price;
   }
   
-  // Calcular precio basado en la fila
-  let rowMultiplier;
-  if (section.frontRowFirst) {
-    // Fila 1 es la más cara (más cerca del campo/escenario)
-    rowMultiplier = section.rows - row + 1;
-  } else {
-    // Fila 1 es la más barata (más lejos del campo/escenario)
-    rowMultiplier = row;
-  }
-  
-  return section.basePrice + (section.variablePrice * (rowMultiplier - 1));
+  // Si no hay precio específico, usar defaultPrice de la sección
+  return section.defaultPrice || this.price;
 };
 
-// Método para obtener el precio mínimo del evento (considerando todas las filas)
 eventSchema.methods.getMinPrice = function() {
   if (!this.usesSectionPricing || !this.sectionPricing || this.sectionPricing.length === 0) {
     return this.price;
   }
   
-  if (!this.usesRowPricing) {
-    // Lógica anterior para compatibilidad
-    return Math.min(...this.sectionPricing.map(section => section.price || section.basePrice || this.price));
-  }
-  
   let minPrice = Infinity;
   
   this.sectionPricing.forEach(section => {
-    if (!section.variablePrice || section.variablePrice === 0) {
-      // Sección sin pricing por filas
-      minPrice = Math.min(minPrice, section.basePrice || section.price || this.price);
-    } else {
-      // Sección con pricing por filas - el mínimo es el precio base
-      minPrice = Math.min(minPrice, section.basePrice);
+    // Precio mínimo entre rowPricing y defaultPrice
+    if (section.rowPricing && section.rowPricing.length > 0) {
+      const sectionMinPrice = Math.min(...section.rowPricing.map(rp => rp.price));
+      minPrice = Math.min(minPrice, sectionMinPrice);
+    }
+    
+    // Considerar también defaultPrice
+    if (section.defaultPrice !== undefined && section.defaultPrice !== null) {
+      minPrice = Math.min(minPrice, section.defaultPrice);
     }
   });
   
   return minPrice === Infinity ? this.price : minPrice;
 };
 
-// Método para obtener el precio máximo del evento (considerando todas las filas)
+// Método para obtener el precio máximo del evento
 eventSchema.methods.getMaxPrice = function() {
   if (!this.usesSectionPricing || !this.sectionPricing || this.sectionPricing.length === 0) {
     return this.price;
   }
   
-  if (!this.usesRowPricing) {
-    // Lógica anterior para compatibilidad
-    return Math.max(...this.sectionPricing.map(section => section.price || section.basePrice || this.price));
-  }
-  
   let maxPrice = 0;
   
   this.sectionPricing.forEach(section => {
-    if (!section.variablePrice || section.variablePrice === 0) {
-      // Sección sin pricing por filas
-      maxPrice = Math.max(maxPrice, section.basePrice || section.price || this.price);
-    } else {
-      // Sección con pricing por filas - el máximo es basePrice + (variablePrice * (rows - 1))
-      const sectionMaxPrice = section.basePrice + (section.variablePrice * (section.rows - 1));
+    // Precio máximo entre rowPricing y defaultPrice
+    if (section.rowPricing && section.rowPricing.length > 0) {
+      const sectionMaxPrice = Math.max(...section.rowPricing.map(rp => rp.price));
       maxPrice = Math.max(maxPrice, sectionMaxPrice);
+    }
+    
+    // Considerar también defaultPrice
+    if (section.defaultPrice !== undefined && section.defaultPrice !== null) {
+      maxPrice = Math.max(maxPrice, section.defaultPrice);
     }
   });
   
@@ -243,24 +226,29 @@ eventSchema.methods.getSectionPricingInfo = function() {
       sectionName: section.sectionName,
       capacity: section.capacity,
       rows: section.rows,
-      seatsPerRow: section.seatsPerRow
+      seatsPerRow: section.seatsPerRow,
+      defaultPrice: section.defaultPrice,
+      pricingType: 'row-individual'
     };
     
-    if (this.usesRowPricing && section.variablePrice && section.variablePrice > 0) {
-      // Pricing por filas
-      info.pricingType = 'row';
-      info.basePrice = section.basePrice;
-      info.variablePrice = section.variablePrice;
-      info.minPrice = section.basePrice;
-      info.maxPrice = section.basePrice + (section.variablePrice * (section.rows - 1));
-      info.frontRowFirst = section.frontRowFirst;
-      info.priceRange = `€${info.minPrice} - €${info.maxPrice}`;
+    // Agregar información de precios por fila
+    if (section.rowPricing && section.rowPricing.length > 0) {
+      info.rowPricing = section.rowPricing.map(rp => ({
+        row: rp.row,
+        price: rp.price
+      }));
+      
+      const prices = section.rowPricing.map(rp => rp.price);
+      info.minPrice = Math.min(...prices, section.defaultPrice);
+      info.maxPrice = Math.max(...prices, section.defaultPrice);
     } else {
-      // Pricing fijo por sección
-      info.pricingType = 'section';
-      info.price = section.basePrice || section.price || this.price;
-      info.priceRange = `€${info.price}`;
+      info.minPrice = section.defaultPrice;
+      info.maxPrice = section.defaultPrice;
     }
+    
+    info.priceRange = info.minPrice === info.maxPrice 
+      ? `€${info.minPrice}` 
+      : `€${info.minPrice} - €${info.maxPrice}`;
     
     return info;
   });

@@ -129,10 +129,10 @@ const LocationCreation = () => {
       description: 'Configuración para estadios deportivos',
       availablePositions: ['north', 'east', 'west', 'south', 'vip'],
       defaultSections: [
-        { name: 'Tribuna norte', position: 'north', color: '#4CAF50', rows: 8, seatsPerRow: 15, price: 50000 },
-        { name: 'Tribuna este', position: 'east', color: '#2196F3', rows: 6, seatsPerRow: 14, price: 75000 },
-        { name: 'Tribuna oeste', position: 'west', color: '#2196F3', rows: 6, seatsPerRow: 14, price: 75000 },
-        { name: 'Tribuna sur', position: 'south', color: '#4CAF50', rows: 8, seatsPerRow: 15, price: 50000 }
+        { name: 'Tribuna norte', position: 'north', color: '#4CAF50', rows: 8, seatsPerRow: 15, defaultPrice:0 },
+        { name: 'Tribuna este', position: 'east', color: '#2196F3', rows: 6, seatsPerRow: 14, defaultPrice:0},
+        { name: 'Tribuna oeste', position: 'west', color: '#2196F3', rows: 6, seatsPerRow: 14, defaultPrice:0},
+        { name: 'Tribuna sur', position: 'south', color: '#4CAF50', rows: 8, seatsPerRow: 15, defaultPrice:0}
       ],
       limits: {
         north: { maxRows: 15, maxSeatsPerRow: 25 },
@@ -147,9 +147,9 @@ const LocationCreation = () => {
       description: 'Configuración para salas de cine',
       availablePositions: ['front', 'middle', 'back', 'premium'],
       defaultSections: [
-        { name: 'Delanteras', position: 'front', color: '#4CAF50', rows: 3, seatsPerRow: 16, price: 8000 },
-        { name: 'Centrales', position: 'middle', color: '#2196F3', rows: 5, seatsPerRow: 16, price: 12000 },
-        { name: 'Traseras', position: 'back', color: '#FF9800', rows: 4, seatsPerRow: 16, price: 10000 }
+        { name: 'Delanteras', position: 'front', color: '#4CAF50', rows: 3, seatsPerRow: 16, defaultPrice:0},
+        { name: 'Centrales', position: 'middle', color: '#2196F3', rows: 5, seatsPerRow: 16, defaultPrice:0},
+        { name: 'Traseras', position: 'back', color: '#FF9800', rows: 4, seatsPerRow: 16, defaultPrice:0}
       ],
       limits: {
         front: { maxRows: 5, maxSeatsPerRow: 20 },
@@ -163,9 +163,9 @@ const LocationCreation = () => {
       description: 'Configuración para teatros y auditorios',
       availablePositions: ['orchestra', 'mezzanine', 'balcony', 'boxes'],
       defaultSections: [
-        { name: 'Platea', position: 'orchestra', color: '#4CAF50', rows: 15, seatsPerRow: 20, price: 45000 },
-        { name: 'Entresuelo', position: 'mezzanine', color: '#2196F3', rows: 8, seatsPerRow: 18, price: 35000 },
-        { name: 'Balcón', position: 'balcony', color: '#FF9800', rows: 6, seatsPerRow: 16, price: 25000 }
+        { name: 'Platea', position: 'orchestra', color: '#4CAF50', rows: 15, seatsPerRow: 20, defaultPrice:0},
+        { name: 'Entresuelo', position: 'mezzanine', color: '#2196F3', rows: 8, seatsPerRow: 18, defaultPrice:0},
+        { name: 'Balcón', position: 'balcony', color: '#FF9800', rows: 6, seatsPerRow: 16, defaultPrice:0}
       ],
       limits: {
         orchestra: { maxRows: 20, maxSeatsPerRow: 30 },
@@ -179,10 +179,10 @@ const LocationCreation = () => {
       description: 'Configuración para venues de conciertos y espectáculos musicales',
       availablePositions: ['pista', 'grada-baja', 'grada-media', 'grada-alta', 'palcos-vip', 'lateral-este', 'lateral-oeste', 'fondo-norte', 'fondo-sur', 'general'],
       defaultSections: [
-        { name: 'Pista', position: 'pista', color: '#FF5722', rows: 1, seatsPerRow: 1, price: 50000, hasNumberedSeats: false, totalCapacity: 300 },
-        { name: 'Grada Baja', position: 'grada-baja', color: '#4CAF50', rows: 7, seatsPerRow: 10, price: 60000 },
-        { name: 'Grada Media', position: 'grada-media', color: '#2196F3', rows: 5, seatsPerRow: 8, price: 45000 },
-        { name: 'Grada Alta', position: 'grada-alta', color: '#FF9800', rows: 6, seatsPerRow: 11, price: 30000 }
+        { name: 'Pista', position: 'pista', color: '#FF5722', rows: 1, seatsPerRow: 1, hasNumberedSeats: false, totalCapacity: 300 },
+        { name: 'Grada Baja', position: 'grada-baja', color: '#4CAF50', rows: 7, seatsPerRow: 10, defaultPrice:0},
+        { name: 'Grada Media', position: 'grada-media', color: '#2196F3', rows: 5, seatsPerRow: 8, defaultPrice:0},
+        { name: 'Grada Alta', position: 'grada-alta', color: '#FF9800', rows: 6, seatsPerRow: 11, defaultPrice:0}
       ],
       limits: {
         pista: { maxRows: 1, maxSeatsPerRow: 1 }, // Para entrada general
@@ -343,8 +343,8 @@ const LocationCreation = () => {
       position: newPosition,
       rows: 5,
       seatsPerRow: 10,
-      price: 10000,
       color: '#1890ff',
+      defaultPrice: 0,
       order: sections.length + 1
     };
     setSections([...sections, newSection]);
@@ -617,20 +617,6 @@ const LocationCreation = () => {
             placeholder="Capacidad"
           />
         ) : null
-      )
-    },
-    {
-      title: 'Precio por defecto (€)',
-      dataIndex: 'price',
-      render: (text, record) => (
-        <InputNumber 
-          value={text} 
-          onChange={(value) => updateSection(record.key, 'price', value)}
-          min={0}
-          step={1000}
-          formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-          parser={value => value.replace(/\$\s?|(,*)/g, '')}
-        />
       )
     },
     {
