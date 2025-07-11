@@ -80,9 +80,10 @@ const Home = () => {
           category: mapEventTypeToCategory(event.type),
           state: event.state || 'proximo'
         }));
-
-        setAllEvents(events);
-        setFilteredEvents(events);
+        // Filtrar eventos cancelados
+        const notCancelled = events.filter(event => event.state !== 'cancelado');
+        setAllEvents(notCancelled);
+        setFilteredEvents(notCancelled);
         setLoading(false);
       })
       .catch((err) => {

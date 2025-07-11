@@ -40,23 +40,20 @@ const SeatRenderer = ({
       const sectionPricing = event.sectionPricing.find(sp => sp.sectionId === sectionId);
       
       if (sectionPricing) {
-        // Si no usa pricing por filas, devolver precio base
-        if (!event.usesRowPricing || !sectionPricing.variablePrice) {
-          return sectionPricing.basePrice || sectionPricing.price || price || event.price;
-        }
-
-        // Calcular precio por fila
-        const rowNumber = row + 1;
-        let rowMultiplier;
-        
-        if (sectionPricing.frontRowFirst) {
-          rowMultiplier = sectionPricing.rows - rowNumber + 1;
-        } else {
-          rowMultiplier = rowNumber;
+        // Si usa pricing por filas, buscar precio específico para la fila
+        if (event.usesRowPricing && sectionPricing.rowPricing && sectionPricing.rowPricing.length > 0) {
+          const rowNumber = row + 1;
+          const rowPrice = sectionPricing.rowPricing.find(rp => rp.row === rowNumber);
+          if (rowPrice) {
+            console.log(`SeatRenderer - Row pricing found: ${sectionId}-${rowNumber}-${seat + 1} = €${rowPrice.price}`);
+            return rowPrice.price;
+          }
         }
         
-        const finalPrice = sectionPricing.basePrice + (sectionPricing.variablePrice * (rowMultiplier - 1));
-        return Math.max(finalPrice, 0);
+        // Si no hay precio específico por fila, usar defaultPrice
+        const defaultPrice = sectionPricing.defaultPrice || price || event.price;
+        console.log(`SeatRenderer - Default pricing: ${sectionId}-${row + 1}-${seat + 1} = €${defaultPrice}`);
+        return defaultPrice;
       }
     }
     
@@ -66,7 +63,9 @@ const SeatRenderer = ({
     }
     
     // Fallback al precio de la sección del seatMap
-    return price || 0;
+    const fallbackPrice = price || 0;
+    console.log(`SeatRenderer - Fallback pricing: ${sectionId}-${row + 1}-${seat + 1} = €${fallbackPrice}`);
+    return fallbackPrice;
   };
 
   const handleSeatClick = (row, seat) => {

@@ -54,16 +54,21 @@ const EventSeatMapEditor = () => {
 
   // Verificar si tenemos datos del evento
   useEffect(() => {
+    
     if (!eventData) {
       message.error('No se encontraron datos del evento');
       navigate('/admin');
     }
-  }, [eventData, navigate]);
+  }, [eventData, navigate, location.state, selectedLocation]);
 
   const requiresSeatMap = useCallback(() => {
+    
     if (!eventData?.type) return false;
-    const seatMapTypes = ['cinema', 'theater', 'theatre', 'football', 'soccer', 'sports', 'stadium', 'concert'];
-    return seatMapTypes.includes(eventData.type.toLowerCase());
+    // Solo usar los tipos que realmente existen en el sistema
+    const seatMapTypes = ['football', 'cinema', 'concert', 'theater'];
+    const requires = seatMapTypes.includes(eventData.type.toLowerCase());
+    console.log('Debug - requiresSeatMap - result:', requires);
+    return requires;
   }, [eventData?.type]);
 
   // Cargar datos de la ubicación si no los tenemos
@@ -226,9 +231,17 @@ const EventSeatMapEditor = () => {
         }
       };
 
-      await axios.post(`${gatewayUrl}/event`, eventPayload);
+      // Si el evento ya existe (tiene _id), actualizarlo; si no, crearlo
+      if (eventData._id) {
+        console.log('Actualizando evento existente:', eventData._id);
+        await axios.put(`${gatewayUrl}/events/${eventData._id}`, eventPayload);
+        message.success('Evento actualizado exitosamente');
+      } else {
+        console.log('Creando nuevo evento');
+        await axios.post(`${gatewayUrl}/events`, eventPayload);
+        message.success('Evento creado exitosamente');
+      }
       
-      message.success('Evento creado exitosamente');
       navigate('/admin');
     } catch (err) {
       console.error('Error saving event:', err);
@@ -404,49 +417,6 @@ const EventSeatMapEditor = () => {
             </Card>
           </Col>
         </Row>
-      )}
-
-      {/* Controles de secciones */}
-      {!previewMode && seatMapData && (
-        <Card style={{ marginBottom: '24px' }}>
-          <Title level={4}>Control de secciones</Title>
-          <Text style={{ color: COLORS?.neutral?.grey4, marginBottom: '16px', display: 'block' }}>
-            {isConcertVenue() 
-              ? 'Bloquea secciones completas para eventos especiales o control de aforo'
-              : 'Bloquea secciones completas para eventos especiales o mantenimiento'
-            }
-          </Text>
-          <Space wrap>
-            {seatMapData.sections.map(section => {
-              const isBlocked = blockedSections.includes(section.id);
-              const sectionInfo = section.hasNumberedSeats 
-                ? `${section.rows}x${section.seatsPerRow} asientos`
-                : `Capacidad: ${generalAdmissionCapacities[section.id] || section.totalCapacity}`;
-              
-              return (
-                <Tooltip 
-                  key={section.id}
-                  title={`${section.name} - ${sectionInfo}`}
-                >
-                  <Tag
-                    color={isBlocked ? 'red' : section.color}
-                    style={{ 
-                      cursor: 'pointer',
-                      padding: '4px 8px',
-                      fontSize: '14px'
-                    }}
-                    onClick={() => handleSectionToggle(section.id)}
-                    icon={isBlocked ? <LockOutlined /> : <UnlockOutlined />}
-                  >
-                    {section.name}
-                    {!section.hasNumberedSeats && <UserOutlined style={{ marginLeft: '4px' }} />}
-                    {isBlocked && ' (Bloqueada)'}
-                  </Tag>
-                </Tooltip>
-              );
-            })}
-          </Space>
-        </Card>
       )}
 
       {/* Instrucciones */}

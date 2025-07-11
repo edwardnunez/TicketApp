@@ -5,6 +5,7 @@ import Ticket from './ticket-model.js';
 import crypto from 'crypto';
 import QRCode from 'qrcode';
 import axios from 'axios';
+import nodemailer from 'nodemailer';
 
 const app = express();
 const port = 8002;
@@ -16,6 +17,36 @@ const EVENT_SERVICE_URL = process.env.EVENT_SERVICE_URL || "http://localhost:800
 
 const mongoUri = process.env.MONGODB_URI || "mongodb://localhost:27017/ticketdb";
 mongoose.connect(mongoUri, { useNewUrlParser: true, useUnifiedTopology: true });
+
+// Configuración de nodemailer (usar variables de entorno en producción)
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || 'smtp.gmail.com',
+  port: process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT) : 587,
+  secure: false, // true para 465, false para otros puertos
+  auth: {
+    user: process.env.SMTP_USER || 'tu_email@gmail.com',
+    pass: process.env.SMTP_PASS || 'tu_contraseña',
+  },
+  tls: {
+    rejectUnauthorized: false // Permitir certificados autofirmados (solo pruebas)
+  }
+});
+
+// Función para enviar email de confirmación de compra
+async function enviarEmailConfirmacionCompra({ to, subject, html }) {
+  const mailOptions = {
+    from: process.env.SMTP_FROM || 'TicketApp <no-reply@ticketapp.com>',
+    to,
+    subject,
+    html,
+  };
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log('Email de confirmación enviado a', to);
+  } catch (err) {
+    console.error('Error enviando email de confirmación:', err);
+  }
+}
 
 // Función para generar número de ticket único
 const generateTicketNumber = () => {
@@ -231,6 +262,52 @@ app.post('/tickets/purchase', async (req, res) => {
 
     // Generar ID de compra para mostrar al usuario
     const purchaseId = `TKT-${savedTicket._id.toString().slice(-8).toUpperCase()}`;
+
+    // === ENVÍO DE EMAIL DE CONFIRMACIÓN ===
+    // Obtener email del comprador
+    let emailDestino = savedTicket.customerInfo?.email;
+    if (!emailDestino && savedTicket.userId) {
+      // Buscar email del usuario en el servicio de usuarios
+      try {
+        const userRes = await axios.get(`${process.env.USER_SERVICE_URL || 'http://localhost:8001'}/users/search?userId=${savedTicket.userId}`);
+        emailDestino = userRes.data.email;
+      } catch (err) {
+        console.warn('No se pudo obtener el email del usuario:', err.message);
+      }
+    }
+    if (emailDestino) {
+      // Obtener detalles del evento para el email
+      let evento = null;
+      try {
+        evento = await getEventDetails(savedTicket.eventId);
+      } catch (err) {
+        console.warn('No se pudo obtener detalles del evento:', err.message);
+      }
+      // Construir HTML del email
+      const html = `
+        <h2>¡Gracias por tu compra en TicketApp!</h2>
+        <p>Has comprado <b>${savedTicket.quantity}</b> entrada(s) para el evento <b>${evento?.name || 'Evento'}</b>.</p>
+        <ul>
+          <li><b>Fecha:</b> ${evento?.date ? new Date(evento.date).toLocaleString() : 'Sin fecha'}</li>
+          <li><b>Ubicación:</b> ${evento?.location?.name || 'Sin ubicación'}</li>
+          <li><b>Tipo de entrada:</b> ${savedTicket.ticketType}</li>
+          <li><b>Número de ticket:</b> ${savedTicket.ticketNumber}</li>
+        </ul>
+        <p>Adjunto encontrarás el código QR de tu entrada:</p>
+        <img src="${qrCodeString}" alt="QR de tu entrada" style="width:200px;" />
+        <p>Guarda este email y presenta el QR en la entrada del evento.</p>
+        <hr/>
+        <p>Si tienes dudas, responde a este correo o contacta con soporte.</p>
+      `;
+      await enviarEmailConfirmacionCompra({
+        to: emailDestino,
+        subject: `Confirmación de compra - ${evento?.name || 'Evento'}`,
+        html,
+      });
+    } else {
+      console.warn('No se pudo enviar email de confirmación: email no disponible');
+    }
+    // === FIN EMAIL ===
 
     res.status(201).json({
       success: true,
