@@ -10,8 +10,32 @@ import EventStateService from './event-state-service.js';
 const app = express();
 const port = 8003;
 
-app.use(express.json());
-app.use(cors());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
+
+app.use('/event', express.json({ limit: '10mb' }));
+app.use('/events/*/image', express.json({ limit: '10mb' }));
+
+// Límites aumentados solo para rutas con imágenes o payloads grandes
+const largePayloadMiddleware = express.json({ limit: '10mb' });
+const largeUrlEncodedMiddleware = express.urlencoded({ limit: '10mb', extended: true });
+
+const storage = multer.memoryStorage();
+
+const upload = multer({ 
+  storage: storage,
+  fileFilter: (req, file, cb) => {
+    // Solo permitir imágenes
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Solo se permiten archivos de imagen'), false);
+    }
+  },
+  limits: {
+    fileSize: 5 * 1024 * 1024 // Límite de 5MB
+  }
+});
 
 const mongoUriEvents = process.env.MONGODB_URI || "mongodb://localhost:27017/eventdb";
 const locationServiceUrl = process.env.LOCATION_SERVICE_URL || "http://localhost:8004";
@@ -31,29 +55,6 @@ const EventModel = eventDbConnection.model('Event', Event.schema);
 
 const stateService = new EventStateService();
 stateService.setEventModel(EventModel);
-
-app.use(express.json({ limit: '1mb' }));
-app.use(express.urlencoded({ limit: '1mb', extended: true }));
-
-// Límites aumentados solo para rutas con imágenes
-const largePayloadMiddleware = express.json({ limit: '50mb' });
-
-const storage = multer.memoryStorage();
-
-const upload = multer({ 
-  storage: storage,
-  fileFilter: (req, file, cb) => {
-    // Solo permitir imágenes
-    if (file.mimetype.startsWith('image/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Solo se permiten archivos de imagen'), false);
-    }
-  },
-  limits: {
-    fileSize: 5 * 1024 * 1024 // Límite de 5MB
-  }
-});
 
 // Función auxiliar para obtener información del seatmap
 const getSeatMapInfo = async (seatMapId) => {
@@ -118,7 +119,7 @@ const createSectionPricing = (seatMapInfo, pricingData) => {
 };
 
 // Ruta para crear un evento
-app.post("/event", largePayloadMiddleware, async (req, res) => {
+app.post("/event", largePayloadMiddleware, largeUrlEncodedMiddleware, async (req, res) => {
   const requestId = Math.random().toString(36).substr(2, 9);
   console.log(`=== INICIO CREACIÓN DE EVENTO [${requestId}] ===`);
   console.log('Timestamp:', new Date().toISOString());
@@ -318,7 +319,7 @@ app.post("/event", largePayloadMiddleware, async (req, res) => {
   }
 });
 
-app.patch("/events/:eventId/image", largePayloadMiddleware, upload.single('image'), async (req, res) => {
+app.patch("/events/:eventId/image", largePayloadMiddleware, largeUrlEncodedMiddleware, upload.single('image'), async (req, res) => {
   try {
     const { eventId } = req.params;
     

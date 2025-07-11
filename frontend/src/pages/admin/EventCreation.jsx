@@ -479,9 +479,21 @@ const EventCreation = () => {
     
     if (fileList.length > 0) {
       const file = fileList[0].originFileObj;
+      
+      // Validaciones adicionales
+      if (!file.type.startsWith('image/')) {
+        message.error('Solo se permiten archivos de imagen');
+        return;
+      }
+      
+      if (file.size > 5 * 1024 * 1024) { // 5MB
+        message.error('La imagen no puede ser mayor a 5MB');
+        return;
+      }
+      
       setImageFile(file);
       
-      // Crear preview de la imagen
+      // Crear preview
       const reader = new FileReader();
       reader.onload = (e) => {
         setImagePreview(e.target.result);
@@ -493,21 +505,70 @@ const EventCreation = () => {
     }
   };
 
-  const convertFileToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const base64String = reader.result.split(',')[1]; // Remover el prefijo data:...;base64,
-        resolve({
-          data: base64String,
-          contentType: file.type,
-          filename: file.name,
-          size: file.size
-        });
+  const resizeImage = (file, maxWidth = 800, maxHeight = 600, quality = 0.8) => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        // Calcular nuevas dimensiones manteniendo proporción
+        let { width, height } = img;
+        
+        if (width > height) {
+          if (width > maxWidth) {
+            height = (height * maxWidth) / width;
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = (width * maxHeight) / height;
+            height = maxHeight;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        // Dibujar imagen redimensionada
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // Convertir a blob
+        canvas.toBlob(resolve, file.type, quality);
       };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
+      
+      img.src = URL.createObjectURL(file);
     });
+  };
+
+  const convertFileToBase64 = async (file) => {
+    try {
+      // Redimensionar imagen si es muy grande
+      let processedFile = file;
+      
+      if (file.size > 200 * 1024) { // Si es mayor a 200KB
+        console.log('Redimensionando imagen...');
+        processedFile = await resizeImage(file, 800, 600, 0.8);
+      }
+      
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const base64String = reader.result.split(',')[1];
+          resolve({
+            data: base64String,
+            contentType: processedFile.type || file.type,
+            filename: file.name,
+            size: processedFile.size || file.size
+          });
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(processedFile);
+      });
+    } catch (error) {
+      console.error('Error processing image:', error);
+      throw error;
+    }
   };
 
   const handleConfirmSaveEvent = async () => {
@@ -700,11 +761,12 @@ const EventCreation = () => {
 
       if (imageFile) {
         try {
+          console.log('Procesando imagen...');
           const imageData = await convertFileToBase64(imageFile);
           eventData.imageData = imageData;
-          console.log('Image converted to base64, size:', imageData.size);
+          console.log('Imagen procesada, tamaño final:', imageData.size);
         } catch (error) {
-          console.error('Error converting image to base64:', error);
+          console.error('Error al procesar imagen:', error);
           message.warning('Error al procesar la imagen, el evento se creará sin imagen');
         }
       }
@@ -732,18 +794,15 @@ const EventCreation = () => {
             } 
           });
         } catch (error) {
-          console.error("Error creando el evento:", error);
+          console.error('Error creando evento:', error);
           
-          if (error.response) {
-            console.error('Server error:', error.response.data);
-            setErrorMessage(`Error del servidor: ${error.response.data.error || error.response.statusText}`);
-          } else if (error.request) {
-            console.error('Network error:', error.request);
-            setErrorMessage('Error de conexión. Verifica tu conexión a internet.');
+          if (error.response?.status === 413) {
+            message.error('La imagen es demasiado grande. Intenta con una imagen más pequeña.');
           } else {
-            console.error('Error:', error.message);
-            setErrorMessage('Hubo un error al crear el evento');
+            message.error('Error al crear el evento');
           }
+        } finally {
+          setLoading(false);
         }
       } else {
         // Si no tiene seatmap, mostrar modal de confirmación
@@ -780,18 +839,21 @@ const EventCreation = () => {
 
   const uploadProps = {
     beforeUpload: (file) => {
-      // Validar tipo de archivo
       const isImage = file.type.startsWith('image/');
       if (!isImage) {
         message.error('Solo puedes subir archivos de imagen!');
         return false;
       }
       
-      // Validar tamaño (máximo 5MB)
       const isLt5M = file.size / 1024 / 1024 < 5;
       if (!isLt5M) {
         message.error('La imagen debe ser menor a 5MB!');
         return false;
+      }
+      
+      // Advertir si la imagen es muy grande
+      if (file.size > 500 * 1024) {
+        message.info('Imagen grande detectada, se optimizará automáticamente');
       }
       
       return false; // Prevenir subida automática
