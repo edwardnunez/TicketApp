@@ -6,6 +6,7 @@ import axios from 'axios';
 import multer from 'multer';
 import path from 'path';
 import EventStateService from './event-state-service.js';
+import nodemailer from 'nodemailer';
 
 const app = express();
 const port = 8003;
@@ -55,6 +56,36 @@ const EventModel = eventDbConnection.model('Event', Event.schema);
 
 const stateService = new EventStateService();
 stateService.setEventModel(EventModel);
+
+// Configuración de nodemailer (usar variables de entorno en producción)
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || 'smtp.gmail.com',
+  port: process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT) : 587,
+  secure: false, // true para 465, false para otros puertos
+  auth: {
+    user: process.env.SMTP_USER || 'tu_email@gmail.com',
+    pass: process.env.SMTP_PASS || 'tu_contraseña',
+  },
+  tls: {
+    rejectUnauthorized: false // Permitir certificados autofirmados (solo pruebas)
+  }
+});
+
+// Función para enviar email de cancelación
+async function enviarEmailCancelacion({ to, subject, html }) {
+  const mailOptions = {
+    from: process.env.SMTP_FROM || 'TicketApp <no-reply@ticketapp.com>',
+    to,
+    subject,
+    html,
+  };
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log('Email de cancelación enviado a', to);
+  } catch (err) {
+    console.error('Error enviando email de cancelación:', err);
+  }
+}
 
 // Función auxiliar para obtener información del seatmap
 const getSeatMapInfo = async (seatMapId) => {
@@ -682,7 +713,6 @@ app.patch("/events/:eventId/state", async (req, res) => {
       event: {
         id: event._id,
         name: event.name,
-        state: event.state,
         date: event.date
       }
     });
@@ -861,6 +891,53 @@ app.delete("/events/:eventId/cancel", async (req, res) => {
     if (!adminId || event.createdBy !== adminId) {
       return res.status(403).json({ error: "No tienes permisos para cancelar este evento" });
     }
+
+    // === ENVÍO DE EMAILS DE CANCELACIÓN ===
+    try {
+      // Obtener todos los tickets del evento antes de eliminarlos
+      const ticketServiceUrl = process.env.TICKET_SERVICE_URL || 'http://localhost:8002';
+      const ticketsRes = await axios.get(`${ticketServiceUrl}/tickets/event/${eventId}`);
+      const tickets = ticketsRes.data.tickets || [];
+      
+      // Usar un Set para evitar emails duplicados
+      const emailsEnviados = new Set();
+      for (const ticket of tickets) {
+        let emailDestino = ticket.customerInfo?.email;
+        if (!emailDestino && ticket.userId) {
+          // Buscar email del usuario en el servicio de usuarios
+          try {
+            const userServiceUrl = process.env.USER_SERVICE_URL || 'http://localhost:8001';
+            const userRes = await axios.get(`${userServiceUrl}/users/search?userId=${ticket.userId}`);
+            emailDestino = userRes.data.email;
+          } catch (err) {
+            console.warn('No se pudo obtener el email del usuario:', err.message);
+          }
+        }
+        if (emailDestino && !emailsEnviados.has(emailDestino)) {
+          // Construir HTML del email
+          const html = `
+            <h2>Lamentamos informarte que el evento <b>${event.name}</b> ha sido cancelado.</h2>
+            <p>Recibirás el reembolso de tus entradas en los próximos días.</p>
+            <ul>
+              <li><b>Evento:</b> ${event.name}</li>
+              <li><b>Fecha:</b> ${event.date ? new Date(event.date).toLocaleString() : 'Sin fecha'}</li>
+            </ul>
+            <p>Si tienes dudas, responde a este correo o contacta con soporte.</p>
+          `;
+          await enviarEmailCancelacion({
+            to: emailDestino,
+            subject: `Cancelación de evento - ${event.name}`,
+            html,
+          });
+          emailsEnviados.add(emailDestino);
+        }
+      }
+      console.log(`Emails de cancelación enviados a ${emailsEnviados.size} compradores`);
+    } catch (err) {
+      console.error('Error al enviar emails de cancelación:', err);
+    }
+    // === FIN EMAILS ===
+
     try {
       await axios.delete(`${ticketServiceUrl}/tickets/event/${eventId}`);
       console.log(`Tickets eliminados para el evento ${eventId}`);

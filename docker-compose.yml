@@ -55,6 +55,13 @@ services:
       - MONGODB_URI=mongodb://mongo:27017/eventdb
       - TICKET_SERVICE_URL=http://ticketservice:8002
       - LOCATION_SERVICE_URL=http://locationservice:8004
+      - SMTP_HOST=smtp.gmail.com
+      - SMTP_PORT=587
+      - SMTP_USER=iyan.fdez.riol@gmail.com
+      - SMTP_PASS=kiub kyqf bznf gtft
+      - SMTP_FROM=TicketApp <no-reply@ticketapp.com>
+      - USER_SERVICE_URL=http://userservice:8001
+      - NODE_TLS_REJECT_UNAUTHORIZED=0
     depends_on:
       - mongo
       - ticketservice
