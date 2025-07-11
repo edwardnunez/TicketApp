@@ -186,6 +186,10 @@ app.get("/users/search", async (req, res) => {
     if (username) {
       currentUser = await User.findOne({ username: username });
     } else if (userId) {
+      // Validar que userId es un ObjectId válido
+      if (!mongoose.Types.ObjectId.isValid(userId)) {
+        return res.status(400).json({ error: "Invalid userId format" });
+      }
       currentUser = await User.findById(userId);
     } else {
       return res.status(400).json({ error: "Username or userId is required" });
@@ -201,6 +205,7 @@ app.get("/users/search", async (req, res) => {
     const { password, ...userWithoutPassword } = currentUser.toObject();
     res.status(200).json(userWithoutPassword);
   } catch (error) {
+    console.error("Error in /users/search:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });

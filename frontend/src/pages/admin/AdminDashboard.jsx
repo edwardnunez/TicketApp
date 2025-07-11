@@ -380,7 +380,7 @@ const AdminDashboard = () => {
     const idsToFetch = creatorIds.filter(id => id && !usernamesById[id]);
     if (idsToFetch.length === 0) return;
     Promise.all(idsToFetch.map(id =>
-      axios.get(`${gatewayUrl}/users/search?userId=${id}`)
+      axios.get(`${gatewayUrl}/users/search?username=${id}`)
         .then(res => ({ id, username: res.data.username }))
         .catch(() => ({ id, username: id }))
     )).then(results => {
