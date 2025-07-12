@@ -403,6 +403,129 @@ const TicketPurchase = () => {
     return eventDate.isAfter(now);
   };
 
+  const handlePayPalSuccess = async (paypalDetails, paypalData) => {
+    try {
+      setProcessing(true);
+      
+      const formData = form.getFieldsValue();
+      const username = localStorage.getItem("username");
+      
+      let userId = null;
+      if (username) {
+        try {
+          const userResponse = await axios.get(`${gatewayUrl}/users/search`, {
+            params: { username }
+          });
+          userId = userResponse.data._id;
+        } catch (error) {
+          console.error("Error obteniendo datos del usuario:", error);
+        }
+      }
+
+      const usesSpecificSeats = requiresSeatMap() && selectedSeats.length > 0;
+      
+      const finalQuantity = usesSpecificSeats ? selectedSeats.length : quantity;
+      const totalPrice = getTotalPrice();
+      const unitPrice = totalPrice / finalQuantity;
+
+      // Preparar selectedSeats - siempre se envía
+      let validSelectedSeats = [];
+      
+      if (usesSpecificSeats && selectedSeats.length > 0) {
+        validSelectedSeats = selectedSeats.map(seat => {
+          if (seat.seat !== undefined && seat.row !== undefined && 
+              seat.seat !== null && seat.row !== null) {
+            return seat;
+          } else {
+            return {
+              ...seat,
+              row: null,
+              seat: null
+            };
+          }
+        });
+      }
+
+      const ticketData = {
+        userId: userId,
+        eventId: id,
+        ticketType: selectedTicketType,
+        quantity: finalQuantity,
+        price: unitPrice,
+        totalPrice: totalPrice,
+        selectedSeats: validSelectedSeats,
+        usesSpecificSeats: usesSpecificSeats,
+        customerInfo: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone
+        },
+        // Información de PayPal para referencia
+        paymentInfo: {
+          paypalOrderId: paypalData.orderID,
+          paypalPayerId: paypalDetails.payer.payer_id,
+          paypalTransactionId: paypalDetails.purchase_units[0].payments.captures[0].id,
+          paymentMethod: 'paypal',
+          paymentStatus: 'completed'
+        }
+      };
+
+      console.log('Enviando datos del ticket con PayPal:', ticketData);
+
+      const response = await axios.post(`${gatewayUrl}/tickets/purchase`, ticketData);
+      
+      if (response.data.success) {
+        const ticketTypeInfo = getTicketTypeInfo(selectedTicketType);
+        
+        setTicketInfo({
+          id: response.data.ticketId,
+          ticketId: response.data.ticketId,
+          ticket: response.data.ticket,
+          eventName: event.name,
+          type: selectedTicketType,
+          typeName: ticketTypeInfo?.label || selectedTicketType,
+          quantity: finalQuantity,
+          unitPrice: unitPrice,
+          totalPrice: totalPrice,
+          purchaseDate: new Date(),
+          qrCode: response.data.ticket.qrCode,
+          selectedSeats: validSelectedSeats,
+          usesSpecificSeats: usesSpecificSeats,
+          paymentInfo: ticketData.paymentInfo
+        });
+        
+        setPurchaseComplete(true);
+        setCurrentStep(3);
+        
+        api.success({
+          message: 'Compra exitosa',
+          description: '¡Tus tickets han sido comprados exitosamente con PayPal!',
+          placement: 'top',
+        });
+      }
+      
+    } catch (error) {
+      console.error('Error purchasing tickets:', error);
+      
+      let errorMessage = 'Hubo un problema al procesar tu compra. Por favor intenta nuevamente.';
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.data?.details) {
+        errorMessage = error.response.data.details;
+      }
+      
+      api.error({
+        message: 'Error en la compra',
+        description: errorMessage,
+        placement: 'top',
+      });
+    } finally {
+      setProcessing(false);
+    }
+  };
+
   if (loading) {
     return (
       <Layout style={{ backgroundColor: COLORS.neutral.white, minHeight: "100vh" }}>
@@ -505,6 +628,7 @@ const TicketPurchase = () => {
             getCorrectPrice={getCorrectPrice}
             selectedSeats={selectedSeats}
             requiresSeatMap={requiresSeatMap}
+            onPaymentSuccess={handlePayPalSuccess} 
           />
         );
       case 3:
@@ -650,21 +774,6 @@ const TicketPurchase = () => {
                   </Button>
                 )}
                 
-                {currentStep === 2 && (
-                  <Button 
-                    type="primary" 
-                    size="large"
-                    loading={processing}
-                    onClick={handlePurchase}
-                    icon={<ShoppingCartOutlined />}
-                    style={{
-                      backgroundColor: COLORS.primary.main,
-                      borderColor: COLORS.primary.main
-                    }}
-                  >
-                    {processing ? 'Procesando...' : 'Procesar pago'}
-                  </Button>
-                )}
               </Space>
             </div>
           )}
