@@ -1397,15 +1397,6 @@ const EventCreation = () => {
                                 {location.name}
                               </span>
                               <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
-                                {location.capacity && location.capacity > 0 && (
-                                  <Tag 
-                                    color="green" 
-                                    size="small" 
-                                    style={{ fontSize: '10px', margin: 0 }}
-                                  >
-                                    Cap: {location.capacity}
-                                  </Tag>
-                                )}
                                 {!location.seatMapId && type === 'concert' && (
                                   <Tag 
                                     color="orange" 
