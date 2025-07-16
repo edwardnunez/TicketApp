@@ -1,5 +1,6 @@
 import { Typography, Card, Row, Col, Statistic, Space, Button, Divider, Image, Alert } from "antd";
 import { CheckCircleOutlined, QrcodeOutlined, DownloadOutlined } from "@ant-design/icons";
+import { useState, useEffect } from "react";
 const { Title, Paragraph, Text} = Typography;
 
 export default function Confirmation({ 
@@ -16,6 +17,15 @@ export default function Confirmation({
   getTotalPrice,
   getCorrectPrice
 }) {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Calcular la cantidad de tickets correctamente
   const getTicketQuantity = () => {
@@ -36,23 +46,23 @@ export default function Confirmation({
   };
 
   return (
-    <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+    <div style={{ textAlign: 'center', padding: isMobile ? '18px 4px' : '40px 20px' }}>
       <CheckCircleOutlined style={{ 
-        fontSize: '72px', 
+        fontSize: isMobile ? '48px' : '72px', 
         color: COLORS.status.success,
-        marginBottom: '24px'
+        marginBottom: isMobile ? '12px' : '24px'
       }} />
       
-      <Title level={2} style={{ color: COLORS.neutral.darker, marginBottom: '16px' }}>
+      <Title level={isMobile ? 3 : 2} style={{ color: COLORS.neutral.darker, marginBottom: isMobile ? '8px' : '16px' }}>
         ¡Compra exitosa!
       </Title>
       
       <Paragraph style={{ 
-        fontSize: '16px', 
+        fontSize: isMobile ? '13px' : '16px', 
         color: COLORS.neutral.grey4,
-        marginBottom: '32px',
-        maxWidth: '500px',
-        margin: '0 auto 32px'
+        marginBottom: isMobile ? '16px' : '32px',
+        maxWidth: isMobile ? '100%' : '500px',
+        margin: isMobile ? '0 auto 16px' : '0 auto 32px'
       }}>
         Tus tickets han sido comprados exitosamente. Guarda o descarga el código QR de tu entrada, 
         lo necesitarás para ingresar al evento.

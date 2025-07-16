@@ -667,11 +667,21 @@ const LocationCreation = () => {
   const requiresSeatMap = selectedCategory && categoryInfo[selectedCategory].requiresSeatMap;
   const allowsOptionalSeatMap = selectedCategory && categoryInfo[selectedCategory].allowOptionalSeatMap;
 
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
 
   return (
-    <Layout style={{ minHeight: '100vh', backgroundColor: COLORS?.neutral?.white || '#ffffff' }}>
-      <Content style={{ padding: '40px' }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+    <Layout style={{ backgroundColor: COLORS.neutral.grey1, minHeight: "100vh" }}>
+      <Content style={{ padding: isMobile ? "18px 4px" : "40px 20px" }}>
+        <div style={{ maxWidth: isMobile ? "100%" : "1200px", margin: "0 auto" }}>
           {/* Header with breadcrumb */}
           <Row style={{ marginBottom: '24px' }}>
             <Col span={24}>

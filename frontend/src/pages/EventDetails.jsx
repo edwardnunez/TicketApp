@@ -56,6 +56,16 @@ const EventDetails = () => {
   const [api, contextHolder] = notification.useNotification();
   
   const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     if (!id) {
@@ -341,28 +351,28 @@ const EventDetails = () => {
     <Layout style={{ backgroundColor: COLORS.neutral.white, minHeight: "100vh" }}>
       {contextHolder}
       
-      <Content>
-        {/* Breadcrumb y botón de regreso */}
-        <div style={{ 
-          backgroundColor: COLORS.neutral.grey1, 
-          padding: '16px 0',
-          borderBottom: `1px solid ${COLORS.neutral.grey2}`
-        }}>
-          <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
-            <Link to="/">
-              <Button 
-                type="text" 
-                icon={<ArrowLeftOutlined />}
-                style={{ color: COLORS.primary.main }}
-              >
-                Volver a eventos
-              </Button>
-            </Link>
+      <Content style={{ padding: isMobile ? "18px 4px" : "40px 20px" }}>
+        <div style={{ maxWidth: isMobile ? "100%" : "1000px", margin: "0 auto" }}>
+          {/* Breadcrumb y botón de regreso */}
+          <div style={{ 
+            backgroundColor: COLORS.neutral.grey1, 
+            padding: '16px 0',
+            borderBottom: `1px solid ${COLORS.neutral.grey2}`
+          }}>
+            <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
+              <Link to="/">
+                <Button 
+                  type="text" 
+                  icon={<ArrowLeftOutlined />}
+                  style={{ color: COLORS.primary.main }}
+                >
+                  Volver a eventos
+                </Button>
+              </Link>
+            </div>
           </div>
-        </div>
 
-        {/* Sección principal del evento */}
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
+          {/* Sección principal del evento */}
           <Row gutter={[32, 32]}>
             {/* Imagen del evento */}
             <Col xs={24} lg={12}>

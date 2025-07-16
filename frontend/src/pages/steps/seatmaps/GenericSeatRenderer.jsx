@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import SeatRenderer from './SeatRenderer';
 import { COLORS } from '../../../components/colorscheme';
 import { Typography, notification, Card } from 'antd';
@@ -17,6 +17,16 @@ const GenericSeatMapRenderer = ({
   event,
   calculateSeatPrice
 }) => {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   if (!seatMapData) return null;
 
   const { sections, config, type, name } = seatMapData;
@@ -143,7 +153,7 @@ const GenericSeatMapRenderer = ({
         flexDirection: 'column', 
         alignItems: 'center', 
         gap: 30, 
-        minWidth: 1000,
+        minWidth: isMobile ? 700 : 1000,
         minHeight: 700,
         padding: '30px',
         backgroundColor: COLORS.neutral.grey1,
@@ -358,7 +368,7 @@ const GenericSeatMapRenderer = ({
         flexDirection: 'column', 
         alignItems: 'center', 
         gap: 30, 
-        minWidth: 1200,
+        minWidth: isMobile ? 700 : 1200,
         minHeight: 800,
         padding: '30px',
         backgroundColor: COLORS.neutral.grey1,
@@ -642,7 +652,7 @@ const GenericSeatMapRenderer = ({
         flexDirection: 'column', 
         alignItems: 'center', 
         gap: 20, 
-        minWidth: 800,
+        minWidth: isMobile ? 700 : 800,
         minHeight: 600,
         padding: '30px',
         backgroundColor: COLORS.neutral.grey1,
@@ -742,7 +752,7 @@ const GenericSeatMapRenderer = ({
         flexDirection: 'column', 
         alignItems: 'center', 
         gap: 10,
-        minWidth: 400,
+        minWidth: isMobile ? 700 : 400,
         padding: '20px',
         backgroundColor: COLORS.neutral.grey1,
         borderRadius: '12px'
@@ -798,7 +808,7 @@ const GenericSeatMapRenderer = ({
         flexDirection: 'column', 
         alignItems: 'center', 
         gap: 15,
-        minWidth: 400,
+        minWidth: isMobile ? 700 : 400,
         padding: '20px',
         backgroundColor: COLORS.neutral.grey1,
         borderRadius: '12px'

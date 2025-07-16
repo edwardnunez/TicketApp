@@ -51,6 +51,16 @@ const EventSeatMapEditor = () => {
   const [generalAdmissionCapacities, setGeneralAdmissionCapacities] = useState({});
   const [previewMode, setPreviewMode] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Verificar si tenemos datos del evento
   useEffect(() => {
@@ -329,234 +339,236 @@ const EventSeatMapEditor = () => {
   }
 
   return (
-    <div style={{ padding: '24px' }}>
-      {/* Header */}
-      <Card style={{ marginBottom: '24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <Title level={2} style={{ margin: 0, color: COLORS?.neutral?.darker }}>
-              {isConcertVenue() ? 'Configurar Concierto' : 'Configurar Mapa de Asientos'}
-            </Title>
-            <Text style={{ color: COLORS?.neutral?.grey4 }}>
-              Evento: {eventData.name}
-              {isConcertVenue() && (
-                <Tag color="purple" style={{ marginLeft: '8px' }}>
-                  <TeamOutlined /> Concierto
-                </Tag>
+    <div style={{ backgroundColor: COLORS.neutral.grey1, minHeight: "100vh", padding: isMobile ? "18px 4px" : "40px 20px" }}>
+      <div style={{ maxWidth: isMobile ? "100%" : "1200px", margin: "0 auto" }}>
+        {/* Header */}
+        <Card style={{ marginBottom: '24px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <Title level={2} style={{ margin: 0, color: COLORS?.neutral?.darker }}>
+                {isConcertVenue() ? 'Configurar Concierto' : 'Configurar Mapa de Asientos'}
+              </Title>
+              <Text style={{ color: COLORS?.neutral?.grey4 }}>
+                Evento: {eventData.name}
+                {isConcertVenue() && (
+                  <Tag color="purple" style={{ marginLeft: '8px' }}>
+                    <TeamOutlined /> Concierto
+                  </Tag>
+                )}
+              </Text>
+              {locationData && (
+                <div style={{ marginTop: '4px' }}>
+                  <Text style={{ color: COLORS?.neutral?.grey4, fontSize: '12px' }}>
+                    Ubicación: {locationData.name} | SeatMapID: {locationData.seatMapId || 'No definido'}
+                  </Text>
+                </div>
               )}
-            </Text>
-            {locationData && (
-              <div style={{ marginTop: '4px' }}>
-                <Text style={{ color: COLORS?.neutral?.grey4, fontSize: '12px' }}>
-                  Ubicación: {locationData.name} | SeatMapID: {locationData.seatMapId || 'No definido'}
-                </Text>
-              </div>
-            )}
-          </div>
-          <Space>
-            <Button 
-              icon={<ArrowLeftOutlined />} 
-              onClick={() => navigate(-1)}
-            >
-              Volver
-            </Button>
-            <Switch
-              checkedChildren={<EyeOutlined />}
-              unCheckedChildren="Editar"
-              checked={previewMode}
-              onChange={setPreviewMode}
-            />
-            <Button
-              type="primary"
-              icon={<SaveOutlined />}
-              loading={saving}
-              onClick={() => setShowConfirmModal(true)}
-              disabled={!seatMapData && requiresSeatMap()}
-              style={{ 
-                backgroundColor: COLORS?.primary?.main || "#1890ff",
-                borderColor: COLORS?.primary?.main || "#1890ff"
-              }}
-            >
-              Crear evento
-            </Button>
-          </Space>
-        </div>
-      </Card>
-
-      {/* Estadísticas */}
-      {seatMapData && (
-        <Row gutter={16} style={{ marginBottom: '24px' }}>
-          <Col span={8}>
-            <Card>
-              <div style={{ textAlign: 'center' }}>
-                <Title level={3} style={{ color: COLORS?.primary?.main, margin: 0 }}>
-                  {getTotalSeats()}
-                </Title>
-                <Text>{isConcertVenue() ? 'Capacidad total' : 'Total de asientos'}</Text>
-              </div>
-            </Card>
-          </Col>
-          <Col span={8}>
-            <Card>
-              <div style={{ textAlign: 'center' }}>
-                <Title level={3} style={{ color: '#52c41a', margin: 0 }}>
-                  {getAvailableSeatsCount()}
-                </Title>
-                <Text>{isConcertVenue() ? 'Entradas disponibles' : 'Asientos disponibles'}</Text>
-              </div>
-            </Card>
-          </Col>
-          <Col span={8}>
-            <Card>
-              <div style={{ textAlign: 'center' }}>
-                <Title level={3} style={{ color: '#ff4d4f', margin: 0 }}>
-                  {getBlockedSeatsCount()}
-                </Title>
-                <Text>{isConcertVenue() ? 'Entradas bloqueadas' : 'Asientos bloqueados'}</Text>
-              </div>
-            </Card>
-          </Col>
-        </Row>
-      )}
-
-      {/* Instrucciones */}
-      {!previewMode && seatMapData && (
-        <Alert
-          message={isConcertVenue() ? "Modo de edición activo - Concierto" : "Modo de edición activo"}
-          description={
-            isConcertVenue() 
-              ? "Ajusta las capacidades de entrada general, bloquea secciones completas, o haz clic en asientos numerados para bloquearlos individualmente."
-              : "Haz clic en los asientos para bloquearlos/desbloquearlos individualmente, o usa los controles de sección arriba para bloquear secciones completas."
-          }
-          type="info"
-          showIcon
-          style={{ marginBottom: '24px' }}
-        />
-      )}
-
-      {/* Mapa de asientos */}
-      <Card>
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: '40px' }}>
-            <Spin size="large" />
-            <div style={{ marginTop: '16px' }}>
-              <Text>Cargando datos...</Text>
             </div>
-          </div>
-        ) : error ? (
-          <Alert
-            message="Error al cargar el mapa de asientos"
-            description={error}
-            type="error"
-            showIcon
-          />
-        ) : requiresSeatMap() && !locationData?.seatMapId ? (
-          <Alert
-            message="Mapa de asientos no configurado"
-            description="Esta ubicación no tiene un mapa de asientos configurado. Por favor, configura uno primero en la sección de ubicaciones."
-            type="warning"
-            showIcon
-          />
-        ) : seatMapData ? (
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            {previewMode ? (
-              <GenericSeatMapRenderer
-                seatMapData={seatMapData}
-                selectedSeats={[]}
-                onSeatSelect={() => {}}
-                maxSeats={0}
-                occupiedSeats={blockedSeats}
-                generalAdmissionCapacities={generalAdmissionCapacities}
-                formatPrice={(price) => `$${price}`}
+            <Space>
+              <Button 
+                icon={<ArrowLeftOutlined />} 
+                onClick={() => navigate(-1)}
+              >
+                Volver
+              </Button>
+              <Switch
+                checkedChildren={<EyeOutlined />}
+                unCheckedChildren="Editar"
+                checked={previewMode}
+                onChange={setPreviewMode}
               />
-            ) : (
-              <EditableSeatRenderer
-                seatMapData={seatMapData}
-                blockedSeats={blockedSeats}
-                blockedSections={blockedSections}
-                generalAdmissionCapacities={generalAdmissionCapacities}
-                onSeatToggle={handleSeatToggle}
-                onSectionToggle={handleSectionToggle}
-                onCapacityChange={handleCapacityChange}
-              />
-            )}
+              <Button
+                type="primary"
+                icon={<SaveOutlined />}
+                loading={saving}
+                onClick={() => setShowConfirmModal(true)}
+                disabled={!seatMapData && requiresSeatMap()}
+                style={{ 
+                  backgroundColor: COLORS?.primary?.main || "#1890ff",
+                  borderColor: COLORS?.primary?.main || "#1890ff"
+                }}
+              >
+                Crear evento
+              </Button>
+            </Space>
           </div>
-        ) : requiresSeatMap() ? (
-          <div style={{ textAlign: 'center', padding: '40px' }}>
-            <Spin size="large" />
-            <div style={{ marginTop: '16px' }}>
-              <Text>Preparando mapa de asientos...</Text>
-            </div>
-          </div>
-        ) : null}
-      </Card>
+        </Card>
 
-      {/* Modal de confirmación */}
-      <Modal
-        title="Confirmar Creación del Evento"
-        open={showConfirmModal}
-        onOk={handleSaveEvent}
-        onCancel={() => setShowConfirmModal(false)}
-        confirmLoading={saving}
-        okText="Crear Evento"
-        cancelText="Cancelar"
-        okButtonProps={{
-          style: {
-            backgroundColor: COLORS?.primary?.main || "#1890ff",
-            borderColor: COLORS?.primary?.main || "#1890ff"
-          }
-        }}
-      >
-        <div>
-          <Text>¿Estás seguro de que quieres crear el evento con la siguiente configuración?</Text>
-          <Divider />
-          <div style={{ marginBottom: '12px' }}>
-            <Text strong>Evento:</Text> {eventData.name}
-          </div>
-          <div style={{ marginBottom: '12px' }}>
-            <Text strong>Fecha:</Text> {new Date(eventData.date).toLocaleDateString()}
-          </div>
-          <div style={{ marginBottom: '12px' }}>
-            <Text strong>Tipo:</Text> {isConcertVenue() ? 'Concierto' : eventData.type}
-          </div>
-          <div style={{ marginBottom: '12px' }}>
-            <Text strong>Capacidad total:</Text> {getTotalSeats()}
-          </div>
-          <div style={{ marginBottom: '12px' }}>
-            <Text strong>{isConcertVenue() ? 'Entradas bloqueadas:' : 'Asientos bloqueados:'}</Text> {getBlockedSeatsCount()}
-          </div>
-          <div style={{ marginBottom: '12px' }}>
-            <Text strong>Secciones bloqueadas:</Text> {blockedSections.length}
-          </div>
-          {hasGeneralAdmissionSections() && (
-            <div style={{ marginBottom: '12px' }}>
-              <Text strong>Secciones de entrada general:</Text>
-              <div style={{ marginTop: '4px' }}>
-                {seatMapData.sections
-                  .filter(section => !section.hasNumberedSeats)
-                  .map(section => (
-                    <Tag key={section.id} style={{ margin: '2px' }}>
-                      {section.name}: {generalAdmissionCapacities[section.id] || section.totalCapacity}
-                    </Tag>
-                  ))}
+        {/* Estadísticas */}
+        {seatMapData && (
+          <Row gutter={16} style={{ marginBottom: '24px' }}>
+            <Col span={8}>
+              <Card>
+                <div style={{ textAlign: 'center' }}>
+                  <Title level={3} style={{ color: COLORS?.primary?.main, margin: 0 }}>
+                    {getTotalSeats()}
+                  </Title>
+                  <Text>{isConcertVenue() ? 'Capacidad total' : 'Total de asientos'}</Text>
+                </div>
+              </Card>
+            </Col>
+            <Col span={8}>
+              <Card>
+                <div style={{ textAlign: 'center' }}>
+                  <Title level={3} style={{ color: '#52c41a', margin: 0 }}>
+                    {getAvailableSeatsCount()}
+                  </Title>
+                  <Text>{isConcertVenue() ? 'Entradas disponibles' : 'Asientos disponibles'}</Text>
+                </div>
+              </Card>
+            </Col>
+            <Col span={8}>
+              <Card>
+                <div style={{ textAlign: 'center' }}>
+                  <Title level={3} style={{ color: '#ff4d4f', margin: 0 }}>
+                    {getBlockedSeatsCount()}
+                  </Title>
+                  <Text>{isConcertVenue() ? 'Entradas bloqueadas' : 'Asientos bloqueados'}</Text>
+                </div>
+              </Card>
+            </Col>
+          </Row>
+        )}
+
+        {/* Instrucciones */}
+        {!previewMode && seatMapData && (
+          <Alert
+            message={isConcertVenue() ? "Modo de edición activo - Concierto" : "Modo de edición activo"}
+            description={
+              isConcertVenue() 
+                ? "Ajusta las capacidades de entrada general, bloquea secciones completas, o haz clic en asientos numerados para bloquearlos individualmente."
+                : "Haz clic en los asientos para bloquearlos/desbloquearlos individualmente, o usa los controles de sección arriba para bloquear secciones completas."
+            }
+            type="info"
+            showIcon
+            style={{ marginBottom: '24px' }}
+          />
+        )}
+
+        {/* Mapa de asientos */}
+        <Card>
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <Spin size="large" />
+              <div style={{ marginTop: '16px' }}>
+                <Text>Cargando datos...</Text>
               </div>
             </div>
-          )}
-          {(getBlockedSeatsCount() > 0 || blockedSections.length > 0) && (
+          ) : error ? (
             <Alert
-              message="Configuración de bloqueos aplicada"
-              description={
-                isConcertVenue() 
-                  ? "Las secciones y entradas bloqueadas no estarán disponibles para la venta"
-                  : "Los asientos y secciones bloqueados no estarán disponibles para la venta"
-              }
+              message="Error al cargar el mapa de asientos"
+              description={error}
+              type="error"
+              showIcon
+            />
+          ) : requiresSeatMap() && !locationData?.seatMapId ? (
+            <Alert
+              message="Mapa de asientos no configurado"
+              description="Esta ubicación no tiene un mapa de asientos configurado. Por favor, configura uno primero en la sección de ubicaciones."
               type="warning"
               showIcon
-              style={{ marginTop: '12px' }}
             />
-          )}
-        </div>
-      </Modal>
+          ) : seatMapData ? (
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              {previewMode ? (
+                <GenericSeatMapRenderer
+                  seatMapData={seatMapData}
+                  selectedSeats={[]}
+                  onSeatSelect={() => {}}
+                  maxSeats={0}
+                  occupiedSeats={blockedSeats}
+                  generalAdmissionCapacities={generalAdmissionCapacities}
+                  formatPrice={(price) => `$${price}`}
+                />
+              ) : (
+                <EditableSeatRenderer
+                  seatMapData={seatMapData}
+                  blockedSeats={blockedSeats}
+                  blockedSections={blockedSections}
+                  generalAdmissionCapacities={generalAdmissionCapacities}
+                  onSeatToggle={handleSeatToggle}
+                  onSectionToggle={handleSectionToggle}
+                  onCapacityChange={handleCapacityChange}
+                />
+              )}
+            </div>
+          ) : requiresSeatMap() ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <Spin size="large" />
+              <div style={{ marginTop: '16px' }}>
+                <Text>Preparando mapa de asientos...</Text>
+              </div>
+            </div>
+          ) : null}
+        </Card>
+
+        {/* Modal de confirmación */}
+        <Modal
+          title="Confirmar Creación del Evento"
+          open={showConfirmModal}
+          onOk={handleSaveEvent}
+          onCancel={() => setShowConfirmModal(false)}
+          confirmLoading={saving}
+          okText="Crear Evento"
+          cancelText="Cancelar"
+          okButtonProps={{
+            style: {
+              backgroundColor: COLORS?.primary?.main || "#1890ff",
+              borderColor: COLORS?.primary?.main || "#1890ff"
+            }
+          }}
+        >
+          <div>
+            <Text>¿Estás seguro de que quieres crear el evento con la siguiente configuración?</Text>
+            <Divider />
+            <div style={{ marginBottom: '12px' }}>
+              <Text strong>Evento:</Text> {eventData.name}
+            </div>
+            <div style={{ marginBottom: '12px' }}>
+              <Text strong>Fecha:</Text> {new Date(eventData.date).toLocaleDateString()}
+            </div>
+            <div style={{ marginBottom: '12px' }}>
+              <Text strong>Tipo:</Text> {isConcertVenue() ? 'Concierto' : eventData.type}
+            </div>
+            <div style={{ marginBottom: '12px' }}>
+              <Text strong>Capacidad total:</Text> {getTotalSeats()}
+            </div>
+            <div style={{ marginBottom: '12px' }}>
+              <Text strong>{isConcertVenue() ? 'Entradas bloqueadas:' : 'Asientos bloqueados:'}</Text> {getBlockedSeatsCount()}
+            </div>
+            <div style={{ marginBottom: '12px' }}>
+              <Text strong>Secciones bloqueadas:</Text> {blockedSections.length}
+            </div>
+            {hasGeneralAdmissionSections() && (
+              <div style={{ marginBottom: '12px' }}>
+                <Text strong>Secciones de entrada general:</Text>
+                <div style={{ marginTop: '4px' }}>
+                  {seatMapData.sections
+                    .filter(section => !section.hasNumberedSeats)
+                    .map(section => (
+                      <Tag key={section.id} style={{ margin: '2px' }}>
+                        {section.name}: {generalAdmissionCapacities[section.id] || section.totalCapacity}
+                      </Tag>
+                    ))}
+                </div>
+              </div>
+            )}
+            {(getBlockedSeatsCount() > 0 || blockedSections.length > 0) && (
+              <Alert
+                message="Configuración de bloqueos aplicada"
+                description={
+                  isConcertVenue() 
+                    ? "Las secciones y entradas bloqueadas no estarán disponibles para la venta"
+                    : "Los asientos y secciones bloqueados no estarán disponibles para la venta"
+                }
+                type="warning"
+                showIcon
+                style={{ marginTop: '12px' }}
+              />
+            )}
+          </div>
+        </Modal>
+      </div>
     </div>
   );
 };

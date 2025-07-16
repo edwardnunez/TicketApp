@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Typography, Card, Button, Space, Divider } from 'antd';
 import { LockOutlined, UnlockOutlined } from '@ant-design/icons';
 import EditableSeatGrid from './EditableSeatGrid';
@@ -13,6 +13,16 @@ const EditableSeatRenderer = ({
   onSeatToggle,
   onSectionToggle
 }) => {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   if (!seatMapData) return null;
 
   const { sections, config, type, name } = seatMapData;
@@ -159,7 +169,7 @@ const EditableSeatRenderer = ({
         flexDirection: 'column', 
         alignItems: 'center', 
         gap: 30, 
-        minWidth: 1000,
+        minWidth: isMobile ? 700 : 1000,
         minHeight: 700,
         padding: '30px'
       }}>

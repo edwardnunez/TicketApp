@@ -163,6 +163,7 @@ const EventCreation = () => {
   const [eventDataToSave, setEventDataToSave] = useState(null);
   const [saving, setSaving] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   const navigate = useNavigate();
   
@@ -242,6 +243,15 @@ const EventCreation = () => {
       setLocationOptions(locations);
     }
   }, [type, locations]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Obtener el ID del usuario actual
   const username = localStorage.getItem('username');
@@ -1194,9 +1204,14 @@ const EventCreation = () => {
   };
 
   return (
-    <Layout style={{ minHeight: '100vh', backgroundColor: COLORS?.neutral?.white || '#ffffff' }}>
-      <Content style={{ padding: '40px' }}>
-        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+    <Layout style={{ backgroundColor: COLORS.neutral.grey1, minHeight: "100vh" }}>
+      <Content style={{ padding: isMobile ? "18px 4px" : "40px 20px" }}>
+        <div style={{
+          maxWidth: isMobile ? "100%" : "1200px",
+          margin: "0 auto",
+          overflowX: isMobile ? "auto" : undefined,
+          WebkitOverflowScrolling: isMobile ? "touch" : undefined
+        }}>
           {/* Header with breadcrumb */}
           <Row style={{ marginBottom: '24px' }}>
             <Col span={24}>

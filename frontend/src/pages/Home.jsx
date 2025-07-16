@@ -17,7 +17,9 @@ import {
   Tooltip,
   notification,
   Select,
-  Pagination
+  Pagination,
+  Drawer,
+  Flex
 } from "antd";
 import { 
   CalendarOutlined, 
@@ -30,7 +32,8 @@ import {
   PictureOutlined,
   SortAscendingOutlined,
   SortDescendingOutlined,
-  FilterOutlined
+  FilterOutlined,
+  MenuOutlined
 } from "@ant-design/icons";
 import axios from "axios";
 import dayjs from "dayjs";
@@ -58,6 +61,8 @@ const Home = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(12);
   const [api, contextHolder] = notification.useNotification();
+  const [filtersDrawerVisible, setFiltersDrawerVisible] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   
   const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
 
@@ -68,6 +73,17 @@ const Home = () => {
     { name: "Festivales", color: COLORS.categories.festivales },
     { name: "Cine", color: COLORS.categories.cine }
   ];
+
+  // Detectar si es mobile
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -171,6 +187,9 @@ const Home = () => {
 
   const handleCategoryFilter = (category) => {
     setActiveCategory(category);
+    if (isMobile) {
+      setFiltersDrawerVisible(false);
+    }
   };
 
   const clearAllFilters = () => {
@@ -179,6 +198,9 @@ const Home = () => {
     setDateRange(null);
     setSortBy('date');
     setSortOrder('asc');
+    if (isMobile) {
+      setFiltersDrawerVisible(false);
+    }
   };
 
   const getCategoryColor = (categoryName) => {
@@ -218,7 +240,7 @@ const Home = () => {
       hoverable
       className="event-card"
       cover={
-        <div style={{ position: 'relative', height: '180px', overflow: 'hidden' }}>
+        <div style={{ position: 'relative', height: isMobile ? '140px' : '180px', overflow: 'hidden' }}>
           {event.image ? (
             <img 
               alt={event.name} 
@@ -238,41 +260,46 @@ const Home = () => {
               height: '100%',
               backgroundColor: COLORS.neutral.grey1
             }}>
-              <PictureOutlined style={{ fontSize: '48px', color: COLORS.neutral.grey3 }} />
+              <PictureOutlined style={{ fontSize: isMobile ? '32px' : '48px', color: COLORS.neutral.grey3 }} />
             </div>
           )}
           {featured && (
             <Tag color={COLORS.status.warning} style={{ 
               position: 'absolute', 
-              top: '10px', 
-              right: '10px',
-              padding: '0 8px'
+              top: '8px', 
+              right: '8px',
+              padding: '0 6px',
+              fontSize: isMobile ? '10px' : '12px'
             }}>
-              <FireOutlined /> Destacado
+              <FireOutlined /> {isMobile ? '' : 'Destacado'}
             </Tag>
           )}
           <Tag color={getCategoryColor(event.category)} style={{ 
             position: 'absolute', 
-            top: '10px', 
-            left: '10px' 
+            top: '8px', 
+            left: '8px',
+            fontSize: isMobile ? '10px' : '12px'
           }}>
             {event.category}
           </Tag>
           <Tag color={getStateColor(event.state)} style={{ 
             position: 'absolute', 
-            bottom: '10px', 
-            left: '10px' 
+            bottom: '8px', 
+            left: '8px',
+            fontSize: isMobile ? '10px' : '12px'
           }}>
             {getStateLabel(event.state)}
           </Tag>
         </div>
       }
       actions={[
-        <Link to={`/event/${event._id}`}>
-          <Button type="text" icon={<ArrowRightOutlined />}>Ver detalles</Button>
+        <Link to={`/event/${event._id}`} key="details">
+          <Button type="text" icon={<ArrowRightOutlined />} size={isMobile ? "small" : "default"}>
+            {isMobile ? "Ver" : "Ver detalles"}
+          </Button>
         </Link>
       ]}
-      bodyStyle={{ padding: '16px' }}
+      bodyStyle={{ padding: isMobile ? '12px' : '16px' }}
       style={{ 
         height: '100%', 
         display: 'flex', 
@@ -290,7 +317,7 @@ const Home = () => {
               whiteSpace: 'nowrap', 
               overflow: 'hidden', 
               textOverflow: 'ellipsis',
-              fontSize: '16px',
+              fontSize: isMobile ? '14px' : '16px',
               fontWeight: '600',
               color: COLORS.neutral.darker
             }}>
@@ -301,19 +328,29 @@ const Home = () => {
         description={
           <Space direction="vertical" size={2} style={{ width: '100%' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text style={{ display: 'flex', alignItems: 'center', color: COLORS.neutral.grey4 }}>
-                <CalendarOutlined style={{ marginRight: '5px', color: COLORS.neutral.grey4 }} /> 
-                {dayjs(event.date).format("DD MMM YYYY")}
+              <Text style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                color: COLORS.neutral.grey4,
+                fontSize: isMobile ? '12px' : '14px'
+              }}>
+                <CalendarOutlined style={{ marginRight: '4px', color: COLORS.neutral.grey4 }} /> 
+                {dayjs(event.date).format(isMobile ? "DD MMM" : "DD MMM YYYY")}
               </Text>
             </div>
-            <Text style={{ display: 'flex', alignItems: 'center', color: COLORS.neutral.grey4 }}>
-              <EnvironmentOutlined style={{ marginRight: '5px', color: COLORS.neutral.grey4 }} /> 
+            <Text style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              color: COLORS.neutral.grey4,
+              fontSize: isMobile ? '12px' : '14px'
+            }}>
+              <EnvironmentOutlined style={{ marginRight: '4px', color: COLORS.neutral.grey4 }} /> 
               <Tooltip title={event.location.name}>
                 <span style={{ 
                   whiteSpace: 'nowrap', 
                   overflow: 'hidden', 
                   textOverflow: 'ellipsis',
-                  maxWidth: '180px',
+                  maxWidth: isMobile ? '120px' : '180px',
                   display: 'inline-block'
                 }}>
                   {event.location.name}
@@ -326,6 +363,49 @@ const Home = () => {
     </Card>
   );
 
+  // Componente para filtros de categorías
+  const CategoryFilters = () => (
+    <div>
+      <Title level={isMobile ? 5 : 4} style={{ 
+        marginBottom: '16px', 
+        display: 'flex', 
+        alignItems: 'center', 
+        color: COLORS.neutral.dark 
+      }}>
+        <TagOutlined style={{ marginRight: '8px', color: COLORS.primary.main }} />
+        Categorías {!isMobile && "Destacadas"}
+      </Title>
+      <Flex wrap="wrap" gap="small">
+        <Button 
+          type={activeCategory === null ? 'primary' : 'default'}
+          onClick={() => handleCategoryFilter(null)}
+          size={isMobile ? 'small' : 'default'}
+          style={{
+            backgroundColor: activeCategory === null ? COLORS.primary.main : '',
+            borderColor: activeCategory === null ? COLORS.primary.main : ''
+          }}
+        >
+          Todos
+        </Button>
+        {FEATURED_CATEGORIES.map(category => (
+          <Button
+            key={category.name}
+            type={activeCategory === category.name ? 'primary' : 'default'}
+            size={isMobile ? 'small' : 'default'}
+            style={{ 
+              borderColor: category.color,
+              color: activeCategory === category.name ? COLORS.neutral.white : category.color,
+              backgroundColor: activeCategory === category.name ? category.color : 'transparent'
+            }}
+            onClick={() => handleCategoryFilter(category.name)}
+          >
+            {category.name}
+          </Button>
+        ))}
+      </Flex>
+    </div>
+  );
+
   return (
     <Layout style={{ backgroundColor: COLORS.neutral.white, minHeight: "100vh" }}>
       {contextHolder} {/* Para las notificaciones */}
@@ -334,18 +414,22 @@ const Home = () => {
         {/* Hero Section - usando el gradiente principal */}
         <div style={{ 
           background: COLORS.gradients.primary,
-          padding: '60px 20px',
+          padding: isMobile ? '40px 16px' : '60px 20px',
           textAlign: 'center',
           color: COLORS.neutral.white
         }}>
           <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-            <Title level={1} style={{ color: COLORS.neutral.white, marginBottom: '16px' }}>
+            <Title level={isMobile ? 2 : 1} style={{ 
+              color: COLORS.neutral.white, 
+              marginBottom: '16px',
+              fontSize: isMobile ? '24px' : undefined
+            }}>
               Descubre eventos increíbles
             </Title>
             <Paragraph style={{ 
-              fontSize: '18px', 
+              fontSize: isMobile ? '16px' : '18px', 
               maxWidth: '700px', 
-              margin: '0 auto 32px',
+              margin: isMobile ? '0 auto 24px' : '0 auto 32px',
               color: 'rgba(255, 255, 255, 0.85)'
             }}>
               Encuentra y reserva entradas para los mejores conciertos, obras de teatro, 
@@ -355,93 +439,96 @@ const Home = () => {
             <div style={{ 
               background: COLORS.neutral.white, 
               borderRadius: '8px', 
-              padding: '24px',
+              padding: isMobile ? '16px' : '24px',
               maxWidth: '900px',
               margin: '0 auto',
               boxShadow: '0 8px 16px rgba(0,0,0,0.1)'
             }}>
-              <Row gutter={16} align="middle">
-                <Col xs={24} sm={12} md={10}>
-                  <Input
-                    size="large"
-                    placeholder="Buscar eventos..."
-                    prefix={<SearchOutlined style={{ color: COLORS.neutral.grey4 }} />}
-                    value={searchText}
-                    onChange={handleSearch}
-                    style={{ width: '100%' }}
-                  />
-                </Col>
-                <Col xs={24} sm={12} md={8}>
-                  <RangePicker 
-                    size="large"
-                    value={dateRange}
-                    onChange={handleDateFilter}
-                    style={{ width: '100%' }}
-                    placeholder={['Desde', 'Hasta']}
-                  />
-                </Col>
-                <Col xs={24} sm={12} md={6}>
-                  <Button 
-                    size="large"
-                    onClick={clearAllFilters}
-                    style={{ width: '100%' }}
-                    icon={<FilterOutlined />}
-                  >
-                    Limpiar filtros
-                  </Button>
-                </Col>
-              </Row>
+              <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                <Input
+                  size="large"
+                  placeholder="Buscar eventos..."
+                  prefix={<SearchOutlined style={{ color: COLORS.neutral.grey4 }} />}
+                  value={searchText}
+                  onChange={handleSearch}
+                  style={{ width: '100%' }}
+                />
+                
+                {!isMobile ? (
+                  <Row gutter={16} align="middle">
+                    <Col xs={24} sm={12} md={14}>
+                      <RangePicker 
+                        size="large"
+                        value={dateRange}
+                        onChange={handleDateFilter}
+                        style={{ width: '100%' }}
+                        placeholder={['Desde', 'Hasta']}
+                      />
+                    </Col>
+                    <Col xs={24} sm={12} md={10}>
+                      <Button 
+                        size="large"
+                        onClick={clearAllFilters}
+                        style={{ width: '100%' }}
+                        icon={<FilterOutlined />}
+                      >
+                        Limpiar filtros
+                      </Button>
+                    </Col>
+                  </Row>
+                ) : (
+                  <Row gutter={8}>
+                    <Col span={18}>
+                      <RangePicker 
+                        size="large"
+                        value={dateRange}
+                        onChange={handleDateFilter}
+                        style={{ width: '100%' }}
+                        placeholder={['Desde', 'Hasta']}
+                      />
+                    </Col>
+                    <Col span={6}>
+                      <Button 
+                        size="large"
+                        onClick={() => setFiltersDrawerVisible(true)}
+                        style={{ width: '100%' }}
+                        icon={<MenuOutlined />}
+                      />
+                    </Col>
+                  </Row>
+                )}
+              </Space>
             </div>
           </div>
         </div>
 
         {/* Contenido principal */}
-        <div style={{ maxWidth: '1200px', margin: '40px auto 20px', padding: '0 20px' }}>
+        <div style={{ 
+          maxWidth: '1200px', 
+          margin: '40px auto 20px', 
+          padding: isMobile ? '0 16px' : '0 20px' 
+        }}>
           <Space direction="vertical" size={24} style={{ width: '100%' }}>
-            {/* Categorías destacadas */}
-            <div>
-              <Title level={4} style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', color: COLORS.neutral.dark }}>
-                <TagOutlined style={{ marginRight: '8px', color: COLORS.primary.main }} />
-                Categorías Destacadas
-              </Title>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                <Button 
-                  type={activeCategory === null ? 'primary' : 'default'}
-                  onClick={() => handleCategoryFilter(null)}
-                  style={{
-                    backgroundColor: activeCategory === null ? COLORS.primary.main : '',
-                    borderColor: activeCategory === null ? COLORS.primary.main : ''
-                  }}
-                >
-                  Todos
-                </Button>
-                {FEATURED_CATEGORIES.map(category => (
-                  <Button
-                    key={category.name}
-                    type={activeCategory === category.name ? 'primary' : 'default'}
-                    style={{ 
-                      borderColor: category.color,
-                      color: activeCategory === category.name ? COLORS.neutral.white : category.color,
-                      backgroundColor: activeCategory === category.name ? category.color : 'transparent'
-                    }}
-                    onClick={() => handleCategoryFilter(category.name)}
-                  >
-                    {category.name}
-                  </Button>
-                ))}
-              </div>
-            </div>
+            {/* Categorías destacadas - Solo en desktop */}
+            {!isMobile && <CategoryFilters />}
 
             {/* Controles de ordenación */}
-            <Card style={{ borderRadius: '8px', boxShadow: '0 1px 2px rgba(0,0,0,0.07)' }}>
-              <Row gutter={16} justify="space-between" align="middle">
+            <Card style={{ 
+              borderRadius: '8px', 
+              boxShadow: '0 1px 2px rgba(0,0,0,0.07)',
+              padding: isMobile ? '8px' : undefined
+            }}>
+              <Row gutter={[16, 12]} justify="space-between" align="middle">
                 <Col xs={24} md={12}>
-                  <Space>
-                    <Text strong>Ordenar por:</Text>
+                  <Space size={isMobile ? 'small' : 'middle'} wrap>
+                    <Text strong style={{ fontSize: isMobile ? '14px' : '16px' }}>
+                      Ordenar por:
+                    </Text>
                     <Select
                       value={sortBy}
                       onChange={setSortBy}
-                      style={{ width: 120 }}
+                      style={{ width: isMobile ? 100 : 120 }}
+                      size={isMobile ? 'small' : 'default'}
                     >
                       <Option value="date">
                         <CalendarOutlined /> Fecha
@@ -452,13 +539,17 @@ const Home = () => {
                     <Button
                       icon={sortOrder === 'asc' ? <SortAscendingOutlined /> : <SortDescendingOutlined />}
                       onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                      size={isMobile ? 'small' : 'default'}
                     >
-                      {sortOrder === 'asc' ? 'Ascendente' : 'Descendente'}
+                      {isMobile ? '' : (sortOrder === 'asc' ? 'Ascendente' : 'Descendente')}
                     </Button>
                   </Space>
                 </Col>
-                <Col xs={24} md={12} style={{ textAlign: 'right' }}>
-                  <Text type="secondary">
+                <Col xs={24} md={12} style={{ 
+                  textAlign: isMobile ? 'center' : 'right',
+                  marginTop: isMobile ? '8px' : '0'
+                }}>
+                  <Text type="secondary" style={{ fontSize: isMobile ? '12px' : '14px' }}>
                     Mostrando {displayedEvents.length} de {filteredEvents.length} eventos
                   </Text>
                 </Col>
@@ -477,7 +568,7 @@ const Home = () => {
             >
               <TabPane 
                 tab={
-                  <span>
+                  <span style={{ fontSize: isMobile ? '12px' : '14px' }}>
                     <StarOutlined style={{ color: COLORS.primary.main }} />
                     Eventos ({filteredEvents.length})
                   </span>
@@ -485,8 +576,8 @@ const Home = () => {
                 key="1"
               >
                 {loading ? (
-                  <Row gutter={[24, 24]}>
-                    {[...Array(12)].map((_, i) => (
+                  <Row gutter={[16, 16]}>
+                    {[...Array(isMobile ? 4 : 12)].map((_, i) => (
                       <Col xs={24} sm={12} md={8} lg={6} key={i}>
                         <Card>
                           <Skeleton active avatar paragraph={{ rows: 2 }} />
@@ -498,9 +589,9 @@ const Home = () => {
                   <>
                     {displayedEvents.length > 0 ? (
                       <>
-                        <Row gutter={[24, 24]}>
+                        <Row gutter={[16, 16]}>
                           {displayedEvents.map((event) => (
-                            <Col xs={24} sm={12} md={8} lg={6} key={event._id}>
+                            <Col xs={24} sm={12} lg={8} xl={6} key={event._id}>
                               <EventCard event={event} />
                             </Col>
                           ))}
@@ -512,9 +603,10 @@ const Home = () => {
                             current={currentPage}
                             total={filteredEvents.length}
                             pageSize={pageSize}
-                            showSizeChanger
-                            showQuickJumper
-                            showTotal={(total, range) => `${range[0]}-${range[1]} de ${total} eventos`}
+                            showSizeChanger={!isMobile}
+                            showQuickJumper={!isMobile}
+                            simple={isMobile}
+                            showTotal={!isMobile ? (total, range) => `${range[0]}-${range[1]} de ${total} eventos` : undefined}
                             onChange={(page, size) => {
                               setCurrentPage(page);
                               setPageSize(size);
@@ -524,6 +616,7 @@ const Home = () => {
                               setPageSize(size);
                             }}
                             pageSizeOptions={['8', '12', '16', '24']}
+                            size={isMobile ? 'small' : 'default'}
                             style={{
                               marginTop: '24px'
                             }}
@@ -558,6 +651,31 @@ const Home = () => {
           </Space>
         </div>
       </Content>
+
+      {/* Drawer para filtros en móvil */}
+      <Drawer
+        title="Filtros"
+        placement="right"
+        onClose={() => setFiltersDrawerVisible(false)}
+        open={filtersDrawerVisible}
+        width={280}
+      >
+        <Space direction="vertical" size={24} style={{ width: '100%' }}>
+          <CategoryFilters />
+          <Button 
+            type="primary" 
+            onClick={clearAllFilters}
+            style={{
+              backgroundColor: COLORS.primary.main,
+              borderColor: COLORS.primary.main,
+              width: '100%'
+            }}
+            icon={<FilterOutlined />}
+          >
+            Limpiar filtros
+          </Button>
+        </Space>
+      </Drawer>
     </Layout>
   );
 };

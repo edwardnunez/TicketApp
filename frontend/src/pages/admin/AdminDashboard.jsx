@@ -556,14 +556,24 @@ const AdminDashboard = () => {
     }
   ];
 
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
-    <Layout style={{ minHeight: '100vh', backgroundColor: COLORS?.neutral?.white || "#ffffff" }}>
+    <Layout style={{ backgroundColor: COLORS.neutral.grey1, minHeight: "100vh" }}>
       {/* Agregamos los context holders para que funcionen las notificaciones y modales */}
       {contextHolder}
       {modalContextHolder}
       
-      <Content style={{ padding: '40px' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+      <Content style={{ padding: isMobile ? "18px 4px" : "40px 20px" }}>
+        <div style={{ maxWidth: isMobile ? "100%" : "1200px", margin: "0 auto" }}>
           {/* Header with breadcrumb */}
           <Row justify="space-between" align="middle" style={{ marginBottom: '24px' }}>
             <Col>
