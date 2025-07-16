@@ -3,7 +3,6 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import EventDetails from "./pages/EventDetails";
-import Checkout from "./pages/Checkout";
 import Profile from "./pages/Profile";
 import EditProfile from "./pages/EditProfile";
 import ErrorPage from "./pages/ErrorPage";
@@ -31,7 +30,6 @@ function App() {
 
         <Route path="/" element={<ProtectedRoute element={<Home />} />} />
         <Route path="/event/:id" element={<ProtectedRoute element={<EventDetails />} />} />
-        <Route path="/checkout" element={<ProtectedRoute element={<Checkout />} />} />
         <Route path="/about-us" element={<ProtectedRoute element={<AboutUs />} />} />
         <Route path="/profile" element={<ProtectedRoute element={<Profile />} />} />
         <Route path="/edit-profile" element={<ProtectedRoute element={<EditProfile />} />} />

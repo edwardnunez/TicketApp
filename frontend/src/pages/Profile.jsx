@@ -46,6 +46,16 @@ const Profile = () => {
   const token = localStorage.getItem("token");
   const username = localStorage.getItem("username");
   const gatewayUrl = process.env.REACT_API_ENDPOINT || "http://localhost:8000";
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -538,220 +548,222 @@ const Profile = () => {
 
   return (
     <Layout style={{ backgroundColor: COLORS.neutral.grey1, minHeight: "100vh" }}>
-      <Content style={{ maxWidth: "900px", margin: "40px auto", padding: "0 20px" }}>
-        {loading ? (
-          <Card 
-            style={{ 
-              borderRadius: "12px", 
-              boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-              border: "none"
-            }}
-          >
-            <Skeleton active avatar={{ size: 100, shape: "circle" }} paragraph={{ rows: 4 }} />
-          </Card>
-        ) : user ? (
-          <Space direction="vertical" size={24} style={{ width: "100%" }}>
-            {/* Profile Header Card */}
-            <Card
-              style={{
-                borderRadius: "12px",
-                overflow: "hidden",
-                border: "none",
+      <Content style={{ padding: isMobile ? "18px 4px" : "40px 20px" }}>
+        <div style={{ maxWidth: isMobile ? "100%" : "900px", margin: "0 auto" }}>
+          {loading ? (
+            <Card 
+              style={{ 
+                borderRadius: "12px", 
                 boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                border: "none"
               }}
             >
-              {/* Hero Banner */}
-              <div
+              <Skeleton active avatar={{ size: 100, shape: "circle" }} paragraph={{ rows: 4 }} />
+            </Card>
+          ) : user ? (
+            <Space direction="vertical" size={24} style={{ width: "100%" }}>
+              {/* Profile Header Card */}
+              <Card
                 style={{
-                  height: "120px",
-                  background: COLORS.gradients?.primary || `linear-gradient(135deg, ${COLORS.primary.main} 0%, ${COLORS.primary.dark} 100%)`,
-                  margin: "-24px -24px 0",
-                }}
-              />
-              
-              {/* Profile Info */}
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  marginTop: "-60px",
-                  textAlign: "center",
+                  borderRadius: "12px",
+                  overflow: "hidden",
+                  border: "none",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
                 }}
               >
-                <Avatar
-                  size={120}
-                  src={user.avatar || "/avatars/avatar1.png"}
-                  icon={<UserOutlined />}
+                {/* Hero Banner */}
+                <div
                   style={{
-                    border: `4px solid ${COLORS.neutral.white}`,
-                    boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+                    height: "120px",
+                    background: COLORS.gradients?.primary || `linear-gradient(135deg, ${COLORS.primary.main} 0%, ${COLORS.primary.dark} 100%)`,
+                    margin: "-24px -24px 0",
                   }}
                 />
                 
-                <Title level={2} style={{ marginTop: "16px", marginBottom: "4px", color: COLORS.neutral.darker }}>
-                  {getFullName(user)}
-                </Title>
-                
-                <Text style={{ color: COLORS.neutral.grey4, display: "flex", alignItems: "center", marginBottom: "4px" }}>
-                  <UserOutlined style={{ marginRight: "6px" }} /> @{user.username}
-                </Text>
-                
-                <Text style={{ color: COLORS.neutral.grey4, display: "flex", alignItems: "center" }}>
-                  <MailOutlined style={{ marginRight: "6px" }} /> {user.email}
-                </Text>
-                
-                <Text style={{ color: COLORS.neutral.grey4, display: "flex", alignItems: "center", marginTop: "4px" }}>
-                  <ClockCircleOutlined style={{ marginRight: "6px" }} /> 
-                  Miembro desde {dayjs(user.createdAt).format("MMMM [de] YYYY")}
-                </Text>
-                
-                <div style={{ display: 'flex', gap: '16px', marginTop: '16px' }}>
-                  <div style={{ textAlign: 'center' }}>
-                    <Text strong style={{ display: 'block', fontSize: '20px', color: COLORS.primary.main }}>
-                      {tickets.filter(t => t.status === 'paid').length}
-                    </Text>
-                    <Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
-                      Entradas activas
-                    </Text>
-                  </div>
-                  <div style={{ textAlign: 'center' }}>
-                    <Text strong style={{ display: 'block', fontSize: '20px', color: COLORS.primary.main }}>
-                      {tickets.filter(t => t.status === 'paid').reduce((sum, t) => sum + (t.price * t.quantity), 0).toFixed(0)}€
-                    </Text>
-                    <Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
-                      Total gastado
-                    </Text>
-                  </div>
-                </div>
-                
-                <Divider style={{ margin: "24px 0 16px" }} />
-                
-                {/* Edit Profile Button */}
-                <Link to="/edit-profile">
-                  <Button
-                    type="primary"
-                    icon={<EditOutlined />}
+                {/* Profile Info */}
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    marginTop: "-60px",
+                    textAlign: "center",
+                  }}
+                >
+                  <Avatar
+                    size={120}
+                    src={user.avatar || "/avatars/avatar1.png"}
+                    icon={<UserOutlined />}
                     style={{
-                      backgroundColor: COLORS.primary.main,
-                      borderColor: COLORS.primary.main,
-                      borderRadius: "6px",
-                      boxShadow: "0 2px 0 rgba(0, 0, 0, 0.045)",
+                      border: `4px solid ${COLORS.neutral.white}`,
+                      boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
                     }}
-                  >
-                    Editar perfil
-                  </Button>
-                </Link>
-              </div>
-            </Card>
-
-            {/* Tickets Section */}
-            <Card
-              title={
-                <div style={{ display: "flex", alignItems: "center" }}>
-                  <TagOutlined style={{ color: COLORS.primary.main, marginRight: "8px" }} />
-                  <span style={{ color: COLORS.neutral.darker }}>Mis Entradas</span>
-                </div>
-              }
-              style={{
-                borderRadius: "12px",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-                border: "none",
-              }}
-              bodyStyle={{ padding: "24px" }}
-            >
-              {renderTicketsSection()}
-            </Card>
-          </Space>
-        ) : (
-          <Card style={{ textAlign: "center", borderRadius: "12px" }}>
-            <Empty
-              description={
-                <div>
-                  <Text style={{ color: COLORS.neutral.grey4, display: "block", marginBottom: "16px" }}>
-                    {error || "No se pudo cargar el perfil del usuario"}
+                  />
+                  
+                  <Title level={2} style={{ marginTop: "16px", marginBottom: "4px", color: COLORS.neutral.darker }}>
+                    {getFullName(user)}
+                  </Title>
+                  
+                  <Text style={{ color: COLORS.neutral.grey4, display: "flex", alignItems: "center", marginBottom: "4px" }}>
+                    <UserOutlined style={{ marginRight: "6px" }} /> @{user.username}
                   </Text>
-                  <Link to="/login">
-                    <Button type="primary">
-                      Iniciar sesión
+                  
+                  <Text style={{ color: COLORS.neutral.grey4, display: "flex", alignItems: "center" }}>
+                    <MailOutlined style={{ marginRight: "6px" }} /> {user.email}
+                  </Text>
+                  
+                  <Text style={{ color: COLORS.neutral.grey4, display: "flex", alignItems: "center", marginTop: "4px" }}>
+                    <ClockCircleOutlined style={{ marginRight: "6px" }} /> 
+                    Miembro desde {dayjs(user.createdAt).format("MMMM [de] YYYY")}
+                  </Text>
+                  
+                  <div style={{ display: 'flex', gap: '16px', marginTop: '16px' }}>
+                    <div style={{ textAlign: 'center' }}>
+                      <Text strong style={{ display: 'block', fontSize: '20px', color: COLORS.primary.main }}>
+                        {tickets.filter(t => t.status === 'paid').length}
+                      </Text>
+                      <Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
+                        Entradas activas
+                      </Text>
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <Text strong style={{ display: 'block', fontSize: '20px', color: COLORS.primary.main }}>
+                        {tickets.filter(t => t.status === 'paid').reduce((sum, t) => sum + (t.price * t.quantity), 0).toFixed(0)}€
+                      </Text>
+                      <Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
+                        Total gastado
+                      </Text>
+                    </div>
+                  </div>
+                  
+                  <Divider style={{ margin: "24px 0 16px" }} />
+                  
+                  {/* Edit Profile Button */}
+                  <Link to="/edit-profile">
+                    <Button
+                      type="primary"
+                      icon={<EditOutlined />}
+                      style={{
+                        backgroundColor: COLORS.primary.main,
+                        borderColor: COLORS.primary.main,
+                        borderRadius: "6px",
+                        boxShadow: "0 2px 0 rgba(0, 0, 0, 0.045)",
+                      }}
+                    >
+                      Editar perfil
                     </Button>
                   </Link>
                 </div>
-              }
-            />
-          </Card>
-        )}
+              </Card>
 
-        {/* Modal QR Code */}
-        <Modal
-          title={
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <QrcodeOutlined style={{ color: COLORS.primary.main }} />
-              <span>Código QR de la entrada</span>
-            </div>
-          }
-          open={showQRModal}
-          onCancel={() => setShowQRModal(false)}
-          footer={[
-            <Button key="close" onClick={() => setShowQRModal(false)}>
-              Cerrar
-            </Button>
-          ]}
-          width={400}
-          centered
-        >
-          {selectedTicket && (
-            <div style={{ textAlign: 'center', padding: '20px' }}>
-              {/* Información del ticket */}
-              <div style={{ marginBottom: '24px' }}>
-                <Text strong style={{ display: 'block', fontSize: '16px', marginBottom: '8px' }}>
-                  {formatTicketId(selectedTicket._id)}
-                </Text>
-                <Text style={{ color: COLORS.neutral.grey4, display: 'block', marginBottom: '4px' }}>
-                  {events[selectedTicket.eventId]?.name || "Evento"}
-                </Text>
-                <Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
-                  {selectedTicket.ticketType} • {selectedTicket.quantity} entrada{selectedTicket.quantity > 1 ? 's' : ''}
-                </Text>
-              </div>
-
-              <Divider />
-              {/* QR Code */}
-              <div style={{ 
-                display: 'flex', 
-                justifyContent: 'center', 
-                marginBottom: '16px',
-                padding: '20px',
-                backgroundColor: COLORS.neutral.white,
-                borderRadius: '8px',
-                border: `1px solid ${COLORS.neutral.grey2}`
-              }}>
-                <Image
-                    src={selectedTicket.qrCode}
-                    alt="Código QR del ticket"
-                    width={200}
-                    height={200}
-                    style={{ 
-                      border: 'none',
-                      borderRadius: '8px'
-                    }}
-                    preview={{
-                      mask: 'Ver código QR completo'
-                    }}
-                  />
-              </div>
-
-              {/* Instrucciones */}
-              <Alert
-                message="Instrucciones de uso"
-                description="Presenta este código QR en la entrada del evento para acceder. Asegúrate de que la pantalla esté limpia y con buen brillo."
-                type="info"
-                showIcon
-                style={{ textAlign: 'left' }}
+              {/* Tickets Section */}
+              <Card
+                title={
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    <TagOutlined style={{ color: COLORS.primary.main, marginRight: "8px" }} />
+                    <span style={{ color: COLORS.neutral.darker }}>Mis Entradas</span>
+                  </div>
+                }
+                style={{
+                  borderRadius: "12px",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                  border: "none",
+                }}
+                bodyStyle={{ padding: "24px" }}
+              >
+                {renderTicketsSection()}
+              </Card>
+            </Space>
+          ) : (
+            <Card style={{ textAlign: "center", borderRadius: "12px" }}>
+              <Empty
+                description={
+                  <div>
+                    <Text style={{ color: COLORS.neutral.grey4, display: "block", marginBottom: "16px" }}>
+                      {error || "No se pudo cargar el perfil del usuario"}
+                    </Text>
+                    <Link to="/login">
+                      <Button type="primary">
+                        Iniciar sesión
+                      </Button>
+                    </Link>
+                  </div>
+                }
               />
-            </div>
+            </Card>
           )}
-        </Modal>
+
+          {/* Modal QR Code */}
+          <Modal
+            title={
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <QrcodeOutlined style={{ color: COLORS.primary.main }} />
+                <span>Código QR de la entrada</span>
+              </div>
+            }
+            open={showQRModal}
+            onCancel={() => setShowQRModal(false)}
+            footer={[
+              <Button key="close" onClick={() => setShowQRModal(false)}>
+                Cerrar
+              </Button>
+            ]}
+            width={400}
+            centered
+          >
+            {selectedTicket && (
+              <div style={{ textAlign: 'center', padding: '20px' }}>
+                {/* Información del ticket */}
+                <div style={{ marginBottom: '24px' }}>
+                  <Text strong style={{ display: 'block', fontSize: '16px', marginBottom: '8px' }}>
+                    {formatTicketId(selectedTicket._id)}
+                  </Text>
+                  <Text style={{ color: COLORS.neutral.grey4, display: 'block', marginBottom: '4px' }}>
+                    {events[selectedTicket.eventId]?.name || "Evento"}
+                  </Text>
+                  <Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
+                    {selectedTicket.ticketType} • {selectedTicket.quantity} entrada{selectedTicket.quantity > 1 ? 's' : ''}
+                  </Text>
+                </div>
+
+                <Divider />
+                {/* QR Code */}
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'center', 
+                  marginBottom: '16px',
+                  padding: '20px',
+                  backgroundColor: COLORS.neutral.white,
+                  borderRadius: '8px',
+                  border: `1px solid ${COLORS.neutral.grey2}`
+                }}>
+                  <Image
+                      src={selectedTicket.qrCode}
+                      alt="Código QR del ticket"
+                      width={200}
+                      height={200}
+                      style={{ 
+                        border: 'none',
+                        borderRadius: '8px'
+                      }}
+                      preview={{
+                        mask: 'Ver código QR completo'
+                      }}
+                    />
+                </div>
+
+                {/* Instrucciones */}
+                <Alert
+                  message="Instrucciones de uso"
+                  description="Presenta este código QR en la entrada del evento para acceder. Asegúrate de que la pantalla esté limpia y con buen brillo."
+                  type="info"
+                  showIcon
+                  style={{ textAlign: 'left' }}
+                />
+              </div>
+            )}
+          </Modal>
+        </div>
       </Content>
     </Layout>
   );

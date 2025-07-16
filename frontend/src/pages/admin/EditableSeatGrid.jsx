@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tooltip } from 'antd';
 import { LockOutlined, UnlockOutlined } from '@ant-design/icons';
 import { COLORS } from '../../components/colorscheme';
@@ -15,6 +15,15 @@ const EditableSeatGrid = ({
   hasNumberedSeats
 }) => {
   const [hoveredSeat, setHoveredSeat] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const getSeatId = (row, seat) => `${sectionId}-${row}-${seat}`;
   const isSeatBlocked = (seatId) => blockedSeats?.includes(seatId) || false;
@@ -152,12 +161,7 @@ const EditableSeatGrid = ({
   }
 
   return (
-    <div style={{ 
-      padding: '8px',
-      backgroundColor: sectionBlocked ? '#fff2f0' : 'transparent',
-      borderRadius: '4px',
-      border: sectionBlocked ? '1px dashed #ff4d4f' : 'none'
-    }}>
+    <div style={{ padding: isMobile ? '4px' : '12px' }}>
       {/* Leyenda específica para la sección si está bloqueada */}
       {sectionBlocked && (
         <div style={{ 

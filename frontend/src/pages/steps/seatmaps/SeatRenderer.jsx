@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tooltip } from 'antd';
 import { CheckOutlined, CloseOutlined, StopOutlined } from '@ant-design/icons';
 import { COLORS } from '../../../components/colorscheme';
@@ -22,6 +22,15 @@ const SeatRenderer = ({
   sectionPricing // Nuevo: configuración de precios de la sección
 }) => {
   const [hoveredSeat, setHoveredSeat] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const getSeatId = (row, seat) => `${sectionId}-${row + 1}-${seat + 1}`;
   
@@ -179,10 +188,7 @@ const SeatRenderer = ({
   );
 
   return (
-    <div style={{ 
-      position: 'relative',
-      opacity: sectionBlocked ? 0.5 : 1
-    }}>
+    <div style={{ position: 'relative', opacity: sectionBlocked ? 0.5 : 1, padding: isMobile ? '4px' : undefined, overflowX: isMobile ? 'auto' : undefined, WebkitOverflowScrolling: isMobile ? 'touch' : undefined }}>
       {Array.from({ length: rows }).map((_, row) => renderRow(row))}
     </div>
   );

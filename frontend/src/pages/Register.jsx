@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Layout, Typography, Form, Input, Button, Space, Alert, message } from "antd";
 import { UserOutlined, MailOutlined, LockOutlined, UserAddOutlined } from "@ant-design/icons";
 import axios from "axios";
@@ -15,6 +15,16 @@ const Register = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Validadores frontend personalizados
 
@@ -109,18 +119,18 @@ const Register = () => {
       <div
         style={{
           background: COLORS.gradients.primary,
-          padding: "40px 20px",
+          padding: isMobile ? "24px 8px" : "40px 20px",
           textAlign: "center",
           color: COLORS.neutral.white,
         }}
       >
         <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-          <Title level={1} style={{ color: COLORS.neutral.white, marginBottom: "16px" }}>
+          <Title level={isMobile ? 2 : 1} style={{ color: COLORS.neutral.white, marginBottom: isMobile ? "10px" : "16px", fontSize: isMobile ? "1.5rem" : undefined }}>
             Crea tu cuenta
           </Title>
           <Text
             style={{
-              fontSize: "18px",
+              fontSize: isMobile ? "15px" : "18px",
               maxWidth: "700px",
               margin: "0 auto 16px",
               color: "rgba(255, 255, 255, 0.85)",
@@ -131,24 +141,24 @@ const Register = () => {
         </div>
       </div>
 
-      <Content style={{ padding: "40px 20px" }}>
+      <Content style={{ padding: isMobile ? "24px 8px" : "40px 20px" }}>
         <div
           style={{
-            maxWidth: "500px",
+            maxWidth: isMobile ? "100%" : "500px",
             margin: "0 auto",
             backgroundColor: COLORS.neutral.white,
-            padding: "30px",
+            padding: isMobile ? "18px 8px" : "30px",
             borderRadius: "8px",
             boxShadow: "0 8px 16px rgba(0,0,0,0.1)",
           }}
         >
-          <Space direction="vertical" size={24} style={{ width: "100%" }}>
+          <Space direction="vertical" size={isMobile ? 16 : 24} style={{ width: "100%" }}>
             <div style={{ textAlign: "center" }}>
-              <UserAddOutlined style={{ fontSize: "32px", color: COLORS.primary.main, marginBottom: "8px" }} />
-              <Title level={3} style={{ margin: "0 0 8px 0", color: COLORS.neutral.dark }}>
+              <UserAddOutlined style={{ fontSize: isMobile ? "24px" : "32px", color: COLORS.primary.main, marginBottom: "8px" }} />
+              <Title level={isMobile ? 4 : 3} style={{ margin: "0 0 8px 0", color: COLORS.neutral.dark, fontSize: isMobile ? "1.1rem" : undefined }}>
                 Registro de usuario
               </Title>
-              <Text style={{ color: COLORS.neutral.grey4 }}>Crea tu cuenta para acceder a todos los beneficios</Text>
+              <Text style={{ color: COLORS.neutral.grey4, fontSize: isMobile ? "13px" : undefined }}>Crea tu cuenta para acceder a todos los beneficios</Text>
             </div>
 
             <Form

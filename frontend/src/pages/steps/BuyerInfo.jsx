@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Card, Typography, Radio, Form, Input, Row, Col, Space, Divider } from "antd";
 import { UserOutlined, MailOutlined, PhoneOutlined } from "@ant-design/icons";
 import { COLORS } from "../../components/colorscheme";
@@ -17,6 +18,15 @@ export default function BuyerInfo({
   getCorrectPrice,
   requiresSeatMap
 }) {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const validatePhoneNumber = (_, value) => {
     if (!value) return Promise.resolve();
@@ -28,9 +38,9 @@ export default function BuyerInfo({
   };
 
   return (
-    <Row gutter={[24, 24]}>
+    <Row gutter={[isMobile ? 8 : 24, isMobile ? 8 : 24]}>
       <Col xs={24} lg={16}>
-        <Card>
+        <Card style={{ padding: isMobile ? '12px 4px' : undefined }}>
           <Title level={4} style={{ color: COLORS.neutral.darker, marginBottom: '16px' }}>
             Información del comprador
           </Title>

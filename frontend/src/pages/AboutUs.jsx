@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { 
   Table, 
   Layout, 
@@ -31,6 +31,15 @@ const { Content } = Layout;
 
 const AboutUs = () => {
   const navigate = useNavigate();
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const teamMembers = [
     {
@@ -121,18 +130,18 @@ const AboutUs = () => {
         {/* Hero Section con gradiente como en Home */}
         <div style={{ 
           background: COLORS?.gradients?.primary || "linear-gradient(135deg, #1890ff 0%, #722ed1 100%)",
-          padding: "60px 20px",
+          padding: isMobile ? "32px 8px" : "60px 20px",
           textAlign: "center",
           color: "#fff"
         }}>
           <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-            <Title level={1} style={{ color: "#fff", marginBottom: "16px" }}>
+            <Title level={isMobile ? 2 : 1} style={{ color: "#fff", marginBottom: isMobile ? "8px" : "16px" }}>
               Nuestro Equipo
             </Title>
             <Paragraph style={{ 
-              fontSize: "18px", 
+              fontSize: isMobile ? "15px" : "18px", 
               maxWidth: "700px", 
-              margin: "0 auto 32px",
+              margin: isMobile ? "0 auto 16px" : "0 auto 32px",
               color: "rgba(255, 255, 255, 0.85)"
             }}>
               Conozca a las personas detrás del desarrollo de esta plataforma de eventos.
@@ -141,7 +150,7 @@ const AboutUs = () => {
         </div>
 
         {/* Contenido principal */}
-        <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "40px 20px" }}>
+        <div style={{ maxWidth: "1200px", margin: "0 auto", padding: isMobile ? "18px 4px" : "40px 20px" }}>
           {/* Sección de información del equipo */}
           <Card 
             className="team-card"

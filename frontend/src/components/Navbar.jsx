@@ -9,11 +9,21 @@ const { Title } = Typography;
 const Navbar = () => {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     setIsLoggedIn(!!token);
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const handleLogout = () => {
@@ -38,28 +48,28 @@ const Navbar = () => {
     <header
       style={{
         background: COLORS.gradients.header,
-        padding: "0 24px",
+        padding: isMobile ? "0 8px" : "0 24px",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        height: 64,
+        height: isMobile ? 52 : 64,
         boxShadow: "0 2px 8px #f0f1f2",
       }}
     >
       <Link to="/" style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <TagOutlined
-          style={{ fontSize: 24, color: COLORS.primary.main, transform: "rotate(-20deg)" }}
+          style={{ fontSize: isMobile ? 18 : 24, color: COLORS.primary.main, transform: "rotate(-20deg)" }}
         />
-        <Title level={4} style={{ margin: 0, color: COLORS.neutral.white, letterSpacing: "0.5px" }}>
+        <Title level={isMobile ? 5 : 4} style={{ margin: 0, color: COLORS.neutral.white, letterSpacing: "0.5px", fontSize: isMobile ? "1.1rem" : undefined }}>
           TicketApp
         </Title>
       </Link>
 
-      <nav style={{ display: "flex", alignItems: "center", gap: 24 }}>
-        <Link to="/" style={{ color: COLORS.neutral.white, fontWeight: "500" }}>
+      <nav style={{ display: "flex", alignItems: "center", gap: isMobile ? 12 : 24 }}>
+        <Link to="/" style={{ color: COLORS.neutral.white, fontWeight: "500", fontSize: isMobile ? 13 : undefined }}>
           Eventos
         </Link>
-        <Link to="/admin" style={{ color: COLORS.neutral.white, fontWeight: "500" }}>
+        <Link to="/admin" style={{ color: COLORS.neutral.white, fontWeight: "500", fontSize: isMobile ? 13 : undefined }}>
           Panel de administrador
         </Link>
 
@@ -67,7 +77,7 @@ const Navbar = () => {
           <Dropdown overlay={menu} placement="bottomRight" trigger={["click"]}>
             <Avatar
               icon={<UserOutlined />}
-              style={{ backgroundColor: COLORS.primary.main, verticalAlign: "middle", cursor: "pointer" }}
+              style={{ backgroundColor: COLORS.primary.main, verticalAlign: "middle", cursor: "pointer", width: isMobile ? 28 : 32, height: isMobile ? 28 : 32, fontSize: isMobile ? 16 : 20 }}
             />
           </Dropdown>
         )}

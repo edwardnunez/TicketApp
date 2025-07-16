@@ -18,6 +18,15 @@ export default function SelectTickets({
   const [seatMapData, setSeatMapData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   
   const gatewayUrl = process.env.REACT_API_ENDPOINT || "http://localhost:8000";
 

@@ -74,6 +74,16 @@ const EditProfile = () => {
   
   const username = localStorage.getItem("username");
   const token = localStorage.getItem("token");
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Validar formato de email
   const validateEmailFormat = (email) => {
@@ -301,408 +311,410 @@ const EditProfile = () => {
 
   return (
     <Layout style={{ backgroundColor: COLORS.neutral.grey1, minHeight: "100vh" }}>
-      <Content style={{ maxWidth: "800px", margin: "40px auto", padding: "0 20px" }}>
-        {loading ? (
-          <Card 
-            style={{ 
-              borderRadius: "12px", 
-              boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-              border: "none"
-            }}
-          >
-            <Skeleton active avatar={{ size: 100, shape: "circle" }} paragraph={{ rows: 4 }} />
-          </Card>
-        ) : (
-          <Space direction="vertical" size={24} style={{ width: "100%" }}>
-            {/* Card principal del perfil */}
-            <Card
-              title={
-                <div style={{ display: "flex", alignItems: "center" }}>
-                  <Tooltip title="Volver al Perfil">
-                    <Link to="/profile" style={{ color: COLORS.neutral.darker, marginRight: "12px" }}>
-                      <ArrowLeftOutlined />
-                    </Link>
-                  </Tooltip>
-                  <span style={{ color: COLORS.neutral.darker }}>Editar Perfil</span>
-                </div>
-              }
-              style={{
-                borderRadius: "12px",
+      <Content style={{ padding: isMobile ? "18px 4px" : "40px 20px" }}>
+        <div style={{ maxWidth: isMobile ? "100%" : "700px", margin: "0 auto" }}>
+          {loading ? (
+            <Card 
+              style={{ 
+                borderRadius: "12px", 
                 boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-                border: "none",
+                border: "none"
               }}
             >
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                {/* Sección de Avatar */}
-                <div style={{ textAlign: "center", marginBottom: "24px" }}>
-                  <Avatar 
-                    size={100} 
-                    src={selectedAvatar} 
-                    style={{
-                      border: `2px solid ${COLORS.primary.light}`,
-                      boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
-                    }}
-                  />
-                  <br />
-                  <Button 
-                    type="link" 
-                    onClick={() => setShowAvatarSelection(!showAvatarSelection)}
-                    style={{ color: COLORS.primary.main, marginTop: "8px" }}
-                  >
-                    {showAvatarSelection ? "Ocultar Avatares" : "Elegir un Avatar"}
-                  </Button>
-                </div>
-
-                {/* Selección de Avatar */}
-                {showAvatarSelection && (
-                  <div style={{ textAlign: "center", marginBottom: "24px" }}>
-                    <Radio.Group value={selectedAvatar} onChange={handleAvatarChange}>
-                      <Space size={12}>
-                        {avatars.map((avatar, index) => (
-                          <Radio key={index} value={avatar} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                            <Avatar 
-                              size={60} 
-                              src={avatar} 
-                              style={{
-                                border: selectedAvatar === avatar ? `2px solid ${COLORS.primary.main}` : "none",
-                                boxShadow: selectedAvatar === avatar ? `0 0 0 2px ${COLORS.primary.light}` : "none",
-                                transition: "all 0.2s ease"
-                              }} 
-                            />
-                          </Radio>
-                        ))}
-                      </Space>
-                    </Radio.Group>
+              <Skeleton active avatar={{ size: 100, shape: "circle" }} paragraph={{ rows: 4 }} />
+            </Card>
+          ) : (
+            <Space direction="vertical" size={24} style={{ width: "100%" }}>
+              {/* Card principal del perfil */}
+              <Card
+                title={
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    <Tooltip title="Volver al Perfil">
+                      <Link to="/profile" style={{ color: COLORS.neutral.darker, marginRight: "12px" }}>
+                        <ArrowLeftOutlined />
+                      </Link>
+                    </Tooltip>
+                    <span style={{ color: COLORS.neutral.darker }}>Editar Perfil</span>
                   </div>
-                )}
-                
-                <Divider style={{ margin: "0 0 24px" }} />
+                }
+                style={{
+                  borderRadius: "12px",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                  border: "none",
+                }}
+              >
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                  {/* Sección de Avatar */}
+                  <div style={{ textAlign: "center", marginBottom: "24px" }}>
+                    <Avatar 
+                      size={100} 
+                      src={selectedAvatar} 
+                      style={{
+                        border: `2px solid ${COLORS.primary.light}`,
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
+                      }}
+                    />
+                    <br />
+                    <Button 
+                      type="link" 
+                      onClick={() => setShowAvatarSelection(!showAvatarSelection)}
+                      style={{ color: COLORS.primary.main, marginTop: "8px" }}
+                    >
+                      {showAvatarSelection ? "Ocultar Avatares" : "Elegir un Avatar"}
+                    </Button>
+                  </div>
 
-                {/* Formulario de edición de perfil */}
+                  {/* Selección de Avatar */}
+                  {showAvatarSelection && (
+                    <div style={{ textAlign: "center", marginBottom: "24px" }}>
+                      <Radio.Group value={selectedAvatar} onChange={handleAvatarChange}>
+                        <Space size={12}>
+                          {avatars.map((avatar, index) => (
+                            <Radio key={index} value={avatar} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                              <Avatar 
+                                size={60} 
+                                src={avatar} 
+                                style={{
+                                  border: selectedAvatar === avatar ? `2px solid ${COLORS.primary.main}` : "none",
+                                  boxShadow: selectedAvatar === avatar ? `0 0 0 2px ${COLORS.primary.light}` : "none",
+                                  transition: "all 0.2s ease"
+                                }} 
+                              />
+                            </Radio>
+                          ))}
+                        </Space>
+                      </Radio.Group>
+                    </div>
+                  )}
+                  
+                  <Divider style={{ margin: "0 0 24px" }} />
+
+                  {/* Formulario de edición de perfil */}
+                  <Form 
+                    layout="vertical" 
+                    form={form} 
+                    onFinish={handleProfileSubmit} 
+                    initialValues={userData}
+                    style={{ width: "100%", maxWidth: "400px" }}
+                  >
+                    <Form.Item
+                      name="username"
+                      label={<Text style={{ color: COLORS.neutral.dark }}>Nombre de usuario</Text>}
+                      initialValue={userData.username}
+                      rules={[{ required: true, message: "¡Por favor, introduce tu nombre de usuario!" }]}
+                      validateStatus={profileError.field === "username" ? "error" : ""}
+                      help={profileError.field === "username" ? profileError.message : ""}
+                    >
+                      <Input 
+                        prefix={<UserOutlined style={{ color: COLORS.neutral.grey4 }} />} 
+                        placeholder={userData.username}
+                        style={{ borderRadius: "6px" }}
+                      />
+                    </Form.Item>
+
+                    <Form.Item
+                      name="name"
+                      label={<Text style={{ color: COLORS.neutral.dark }}>Nombre</Text>}
+                      initialValue={userData.name}
+                      rules={[{ required: true, message: "¡Por favor, introduce tu nombre!" }]}
+                    >
+                      <Input 
+                        prefix={<UserOutlined style={{ color: COLORS.neutral.grey4 }} />} 
+                        placeholder={userData.name} 
+                        style={{ borderRadius: "6px" }}
+                      />
+                    </Form.Item>
+
+                    {/* NUEVO CAMPO: Apellido */}
+                    <Form.Item
+                      name="surname"
+                      label={<Text style={{ color: COLORS.neutral.dark }}>Apellido</Text>}
+                      initialValue={userData.surname}
+                      rules={[{ required: false }]}
+                    >
+                      <Input 
+                        prefix={<UserOutlined style={{ color: COLORS.neutral.grey4 }} />} 
+                        placeholder={userData.surname || "Introduce tu apellido"} 
+                        style={{ borderRadius: "6px" }}
+                      />
+                    </Form.Item>
+
+                    <Form.Item
+                      name="email"
+                      label={<Text style={{ color: COLORS.neutral.dark }}>Correo electrónico</Text>}
+                      initialValue={userData.email}
+                      rules={[
+                        { required: true, message: "Por favor ingresa tu email" },
+                        {
+                          validator: (_, value) => {
+                            if (!value || validateEmailFormat(value)) {
+                              return Promise.resolve();
+                            }
+                            return Promise.reject(new Error('Por favor ingresa un email válido'));
+                          },
+                        }
+                      ]}
+                      validateStatus={profileError.field === "email" ? "error" : ""}
+                      help={profileError.field === "email" ? profileError.message : ""}
+                    >
+                      <Input 
+                        prefix={<MailOutlined style={{ color: COLORS.neutral.grey4 }} />} 
+                        placeholder={userData.email} 
+                        style={{ borderRadius: "6px" }}
+                      />
+                    </Form.Item>
+
+                    {profileError.field === "general" && (
+                      <Alert
+                        message="Error"
+                        description={profileError.message}
+                        type="error"
+                        showIcon
+                        style={{ marginBottom: "16px" }}
+                      />
+                    )}
+
+                    <Form.Item style={{ marginTop: "24px" }}>
+                      <Space>
+                        <Link to="/profile">
+                          <Button 
+                            style={{ 
+                              borderRadius: "6px",
+                              boxShadow: "0 2px 0 rgba(0, 0, 0, 0.045)"
+                            }}
+                          >
+                            Cancelar
+                          </Button>
+                        </Link>
+                        <Button 
+                          type="primary" 
+                          htmlType="submit" 
+                          icon={<SaveOutlined />}
+                          style={{ 
+                            backgroundColor: COLORS.primary.main,
+                            borderColor: COLORS.primary.main,
+                            borderRadius: "6px",
+                            boxShadow: "0 2px 0 rgba(0, 0, 0, 0.045)"
+                          }}
+                        >
+                          Guardar cambios
+                        </Button>
+                      </Space>
+                    </Form.Item>
+                  </Form>
+                </div>
+              </Card>
+
+              <Card
+                title={
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    <SecurityScanOutlined style={{ color: COLORS.status.warning, marginRight: "8px" }} />
+                    <span style={{ color: COLORS.neutral.darker }}>Cambiar contraseña</span>
+                  </div>
+                }
+                style={{
+                  borderRadius: "12px",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                  border: "none",
+                }}
+              >
+                <Alert
+                  message="Seguridad de la contraseña"
+                  description="Tu contraseña debe tener al menos 8 caracteres, incluir al menos una letra mayúscula y un número."
+                  type="info"
+                  showIcon
+                  style={{ marginBottom: "24px" }}
+                />
+
                 <Form 
                   layout="vertical" 
-                  form={form} 
-                  onFinish={handleProfileSubmit} 
-                  initialValues={userData}
-                  style={{ width: "100%", maxWidth: "400px" }}
+                  form={passwordForm} 
+                  onFinish={handlePasswordSubmit}
+                  style={{ maxWidth: "400px", margin: "0 auto" }}
                 >
                   <Form.Item
-                    name="username"
-                    label={<Text style={{ color: COLORS.neutral.dark }}>Nombre de usuario</Text>}
-                    initialValue={userData.username}
-                    rules={[{ required: true, message: "¡Por favor, introduce tu nombre de usuario!" }]}
-                    validateStatus={profileError.field === "username" ? "error" : ""}
-                    help={profileError.field === "username" ? profileError.message : ""}
+                    name="currentPassword"
+                    label={<Text style={{ color: COLORS.neutral.dark }}>Contraseña actual</Text>}
+                    rules={[{ required: true, message: "¡Introduce tu contraseña actual!" }]}
+                    validateStatus={passwordError.field === "currentPassword" ? "error" : ""}
+                    help={passwordError.field === "currentPassword" ? passwordError.message : ""}
                   >
-                    <Input 
-                      prefix={<UserOutlined style={{ color: COLORS.neutral.grey4 }} />} 
-                      placeholder={userData.username}
+                    <Input.Password 
+                      prefix={<LockOutlined style={{ color: COLORS.neutral.grey4 }} />} 
+                      placeholder="Contraseña actual" 
                       style={{ borderRadius: "6px" }}
+                      iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
                     />
                   </Form.Item>
 
                   <Form.Item
-                    name="name"
-                    label={<Text style={{ color: COLORS.neutral.dark }}>Nombre</Text>}
-                    initialValue={userData.name}
-                    rules={[{ required: true, message: "¡Por favor, introduce tu nombre!" }]}
-                  >
-                    <Input 
-                      prefix={<UserOutlined style={{ color: COLORS.neutral.grey4 }} />} 
-                      placeholder={userData.name} 
-                      style={{ borderRadius: "6px" }}
-                    />
-                  </Form.Item>
-
-                  {/* NUEVO CAMPO: Apellido */}
-                  <Form.Item
-                    name="surname"
-                    label={<Text style={{ color: COLORS.neutral.dark }}>Apellido</Text>}
-                    initialValue={userData.surname}
-                    rules={[{ required: false }]}
-                  >
-                    <Input 
-                      prefix={<UserOutlined style={{ color: COLORS.neutral.grey4 }} />} 
-                      placeholder={userData.surname || "Introduce tu apellido"} 
-                      style={{ borderRadius: "6px" }}
-                    />
-                  </Form.Item>
-
-                  <Form.Item
-                    name="email"
-                    label={<Text style={{ color: COLORS.neutral.dark }}>Correo electrónico</Text>}
-                    initialValue={userData.email}
+                    name="newPassword"
+                    label={<Text style={{ color: COLORS.neutral.dark }}>Nueva contraseña</Text>}
                     rules={[
-                      { required: true, message: "Por favor ingresa tu email" },
+                      { required: true, message: "¡Introduce la nueva contraseña!" },
                       {
-                        validator: (_, value) => {
-                          if (!value || validateEmailFormat(value)) {
-                            return Promise.resolve();
-                          }
-                          return Promise.reject(new Error('Por favor ingresa un email válido'));
-                        },
+                        pattern: /^(?=.*[A-Z])(?=.*\d).{8,}$/,
+                        message: "La contraseña debe tener al menos 8 caracteres, una letra mayúscula y un número",
                       }
                     ]}
-                    validateStatus={profileError.field === "email" ? "error" : ""}
-                    help={profileError.field === "email" ? profileError.message : ""}
+                    validateStatus={passwordError.field === "password" ? "error" : ""}
+                    help={passwordError.field === "password" ? passwordError.message : ""}
                   >
-                    <Input 
-                      prefix={<MailOutlined style={{ color: COLORS.neutral.grey4 }} />} 
-                      placeholder={userData.email} 
+                    <Input.Password 
+                      prefix={<LockOutlined style={{ color: COLORS.neutral.grey4 }} />} 
+                      placeholder="Nueva contraseña" 
                       style={{ borderRadius: "6px" }}
+                      iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
                     />
                   </Form.Item>
 
-                  {profileError.field === "general" && (
+                  <Form.Item
+                    name="confirmNewPassword"
+                    label={<Text style={{ color: COLORS.neutral.dark }}>Confirmar nueva contraseña</Text>}
+                    dependencies={['newPassword']}
+                    rules={[
+                      { required: true, message: "¡Confirma la nueva contraseña!" },
+                      ({ getFieldValue }) => ({
+                        validator(_, value) {
+                          if (!value || getFieldValue('newPassword') === value) {
+                            return Promise.resolve();
+                          }
+                          return Promise.reject(new Error('Las contraseñas no coinciden'));
+                        },
+                      }),
+                    ]}
+                  >
+                    <Input.Password 
+                      prefix={<LockOutlined style={{ color: COLORS.neutral.grey4 }} />} 
+                      placeholder="Confirmar nueva contraseña" 
+                      style={{ borderRadius: "6px" }}
+                      iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
+                    />
+                  </Form.Item>
+
+                  {passwordError.field === "general" && (
                     <Alert
                       message="Error"
-                      description={profileError.message}
+                      description={passwordError.message}
                       type="error"
                       showIcon
                       style={{ marginBottom: "16px" }}
                     />
                   )}
 
-                  <Form.Item style={{ marginTop: "24px" }}>
-                    <Space>
-                      <Link to="/profile">
-                        <Button 
-                          style={{ 
-                            borderRadius: "6px",
-                            boxShadow: "0 2px 0 rgba(0, 0, 0, 0.045)"
-                          }}
-                        >
-                          Cancelar
-                        </Button>
-                      </Link>
-                      <Button 
-                        type="primary" 
-                        htmlType="submit" 
-                        icon={<SaveOutlined />}
-                        style={{ 
-                          backgroundColor: COLORS.primary.main,
-                          borderColor: COLORS.primary.main,
-                          borderRadius: "6px",
-                          boxShadow: "0 2px 0 rgba(0, 0, 0, 0.045)"
-                        }}
-                      >
-                        Guardar cambios
-                      </Button>
-                    </Space>
+                  <Form.Item>
+                    <Button 
+                      type="primary" 
+                      htmlType="submit" 
+                      loading={passwordLoading}
+                      icon={<LockOutlined />}
+                      block
+                      style={{ 
+                        backgroundColor: COLORS.status.warning,
+                        borderColor: COLORS.status.warning,
+                        borderRadius: "6px",
+                        height: "44px"
+                      }}
+                    >
+                      Cambiar contraseña
+                    </Button>
                   </Form.Item>
                 </Form>
+              </Card>
+            </Space>
+          )}
+
+          {/* Modal de confirmación de cambios de perfil */}
+          <Modal
+            title={
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <CheckCircleOutlined style={{ color: COLORS.primary.main }} />
+                <span>¿Confirmar los cambios en tu perfil?</span>
               </div>
-            </Card>
-
-            <Card
-              title={
-                <div style={{ display: "flex", alignItems: "center" }}>
-                  <SecurityScanOutlined style={{ color: COLORS.status.warning, marginRight: "8px" }} />
-                  <span style={{ color: COLORS.neutral.darker }}>Cambiar contraseña</span>
-                </div>
+            }
+            open={showProfileModal}
+            onOk={handleConfirmProfileUpdate}
+            onCancel={handleCancelProfileUpdate}
+            okText="Sí, guardar cambios"
+            cancelText="Cancelar"
+            okType="primary"
+            okButtonProps={{
+              style: {
+                backgroundColor: COLORS.primary.main,
+                borderColor: COLORS.primary.main,
               }
-              style={{
-                borderRadius: "12px",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-                border: "none",
-              }}
-            >
-              <Alert
-                message="Seguridad de la contraseña"
-                description="Tu contraseña debe tener al menos 8 caracteres, incluir al menos una letra mayúscula y un número."
-                type="info"
-                showIcon
-                style={{ marginBottom: "24px" }}
-              />
-
-              <Form 
-                layout="vertical" 
-                form={passwordForm} 
-                onFinish={handlePasswordSubmit}
-                style={{ maxWidth: "400px", margin: "0 auto" }}
-              >
-                <Form.Item
-                  name="currentPassword"
-                  label={<Text style={{ color: COLORS.neutral.dark }}>Contraseña actual</Text>}
-                  rules={[{ required: true, message: "¡Introduce tu contraseña actual!" }]}
-                  validateStatus={passwordError.field === "currentPassword" ? "error" : ""}
-                  help={passwordError.field === "currentPassword" ? passwordError.message : ""}
-                >
-                  <Input.Password 
-                    prefix={<LockOutlined style={{ color: COLORS.neutral.grey4 }} />} 
-                    placeholder="Contraseña actual" 
-                    style={{ borderRadius: "6px" }}
-                    iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
-                  />
-                </Form.Item>
-
-                <Form.Item
-                  name="newPassword"
-                  label={<Text style={{ color: COLORS.neutral.dark }}>Nueva contraseña</Text>}
-                  rules={[
-                    { required: true, message: "¡Introduce la nueva contraseña!" },
-                    {
-                      pattern: /^(?=.*[A-Z])(?=.*\d).{8,}$/,
-                      message: "La contraseña debe tener al menos 8 caracteres, una letra mayúscula y un número",
-                    }
-                  ]}
-                  validateStatus={passwordError.field === "password" ? "error" : ""}
-                  help={passwordError.field === "password" ? passwordError.message : ""}
-                >
-                  <Input.Password 
-                    prefix={<LockOutlined style={{ color: COLORS.neutral.grey4 }} />} 
-                    placeholder="Nueva contraseña" 
-                    style={{ borderRadius: "6px" }}
-                    iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
-                  />
-                </Form.Item>
-
-                <Form.Item
-                  name="confirmNewPassword"
-                  label={<Text style={{ color: COLORS.neutral.dark }}>Confirmar nueva contraseña</Text>}
-                  dependencies={['newPassword']}
-                  rules={[
-                    { required: true, message: "¡Confirma la nueva contraseña!" },
-                    ({ getFieldValue }) => ({
-                      validator(_, value) {
-                        if (!value || getFieldValue('newPassword') === value) {
-                          return Promise.resolve();
-                        }
-                        return Promise.reject(new Error('Las contraseñas no coinciden'));
-                      },
-                    }),
-                  ]}
-                >
-                  <Input.Password 
-                    prefix={<LockOutlined style={{ color: COLORS.neutral.grey4 }} />} 
-                    placeholder="Confirmar nueva contraseña" 
-                    style={{ borderRadius: "6px" }}
-                    iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
-                  />
-                </Form.Item>
-
-                {passwordError.field === "general" && (
-                  <Alert
-                    message="Error"
-                    description={passwordError.message}
-                    type="error"
-                    showIcon
-                    style={{ marginBottom: "16px" }}
-                  />
+            }}
+            cancelButtonProps={{
+              style: {
+                borderColor: COLORS.neutral.grey3,
+                color: COLORS.neutral.dark,
+              }
+            }}
+            centered
+            maskClosable={false}
+            width={480}
+          >
+            <div style={{ marginTop: '16px' }}>
+              <Text style={{ color: COLORS.neutral.dark }}>
+                {updatedFieldsList.length > 0 ? (
+                  <>
+                    Se actualizarán los siguientes campos: <strong>{updatedFieldsList.join(', ')}</strong>.
+                  </>
+                ) : (
+                  'Se guardará la información de tu perfil.'
                 )}
-
-                <Form.Item>
-                  <Button 
-                    type="primary" 
-                    htmlType="submit" 
-                    loading={passwordLoading}
-                    icon={<LockOutlined />}
-                    block
-                    style={{ 
-                      backgroundColor: COLORS.status.warning,
-                      borderColor: COLORS.status.warning,
-                      borderRadius: "6px",
-                      height: "44px"
-                    }}
-                  >
-                    Cambiar contraseña
-                  </Button>
-                </Form.Item>
-              </Form>
-            </Card>
-          </Space>
-        )}
-
-        {/* Modal de confirmación de cambios de perfil */}
-        <Modal
-          title={
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <CheckCircleOutlined style={{ color: COLORS.primary.main }} />
-              <span>¿Confirmar los cambios en tu perfil?</span>
+              </Text>
+              <br />
+              <br />
+              <Text style={{ color: COLORS.neutral.grey4, fontSize: '14px' }}>
+                Una vez confirmado, serás redirigido a tu perfil para ver los cambios.
+              </Text>
             </div>
-          }
-          open={showProfileModal}
-          onOk={handleConfirmProfileUpdate}
-          onCancel={handleCancelProfileUpdate}
-          okText="Sí, guardar cambios"
-          cancelText="Cancelar"
-          okType="primary"
-          okButtonProps={{
-            style: {
-              backgroundColor: COLORS.primary.main,
-              borderColor: COLORS.primary.main,
-            }
-          }}
-          cancelButtonProps={{
-            style: {
-              borderColor: COLORS.neutral.grey3,
-              color: COLORS.neutral.dark,
-            }
-          }}
-          centered
-          maskClosable={false}
-          width={480}
-        >
-          <div style={{ marginTop: '16px' }}>
-            <Text style={{ color: COLORS.neutral.dark }}>
-              {updatedFieldsList.length > 0 ? (
-                <>
-                  Se actualizarán los siguientes campos: <strong>{updatedFieldsList.join(', ')}</strong>.
-                </>
-              ) : (
-                'Se guardará la información de tu perfil.'
-              )}
-            </Text>
-            <br />
-            <br />
-            <Text style={{ color: COLORS.neutral.grey4, fontSize: '14px' }}>
-              Una vez confirmado, serás redirigido a tu perfil para ver los cambios.
-            </Text>
-          </div>
-        </Modal>
+          </Modal>
 
-        {/* Modal de confirmación de cambio de contraseña */}
-        <Modal
-          title={
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <ExclamationCircleOutlined style={{ color: COLORS.status.warning }} />
-              <span>¿Estás seguro de que quieres cambiar tu contraseña?</span>
+          {/* Modal de confirmación de cambio de contraseña */}
+          <Modal
+            title={
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <ExclamationCircleOutlined style={{ color: COLORS.status.warning }} />
+                <span>¿Estás seguro de que quieres cambiar tu contraseña?</span>
+              </div>
+            }
+            open={showPasswordModal}
+            onOk={handleConfirmPasswordChange}
+            onCancel={handleCancelPasswordChange}
+            okText="Sí, cambiar contraseña"
+            cancelText="Cancelar"
+            okType="primary"
+            confirmLoading={passwordLoading}
+            okButtonProps={{
+              style: {
+                backgroundColor: COLORS.status.warning,
+                borderColor: COLORS.status.warning,
+              }
+            }}
+            cancelButtonProps={{
+              style: {
+                borderColor: COLORS.neutral.grey3,
+                color: COLORS.neutral.dark,
+              }
+            }}
+            centered
+            maskClosable={false}
+            width={480}
+          >
+            <div style={{ marginTop: '16px' }}>
+              <Text style={{ color: COLORS.neutral.dark }}>
+                Esta acción cambiará tu contraseña actual. Asegúrate de recordar la nueva contraseña.
+              </Text>
+              <br />
+              <br />
+              <Text style={{ color: COLORS.neutral.grey4, fontSize: '14px' }}>
+                Se cerrará tu sesión automáticamente en otros dispositivos por seguridad.
+              </Text>
             </div>
-          }
-          open={showPasswordModal}
-          onOk={handleConfirmPasswordChange}
-          onCancel={handleCancelPasswordChange}
-          okText="Sí, cambiar contraseña"
-          cancelText="Cancelar"
-          okType="primary"
-          confirmLoading={passwordLoading}
-          okButtonProps={{
-            style: {
-              backgroundColor: COLORS.status.warning,
-              borderColor: COLORS.status.warning,
-            }
-          }}
-          cancelButtonProps={{
-            style: {
-              borderColor: COLORS.neutral.grey3,
-              color: COLORS.neutral.dark,
-            }
-          }}
-          centered
-          maskClosable={false}
-          width={480}
-        >
-          <div style={{ marginTop: '16px' }}>
-            <Text style={{ color: COLORS.neutral.dark }}>
-              Esta acción cambiará tu contraseña actual. Asegúrate de recordar la nueva contraseña.
-            </Text>
-            <br />
-            <br />
-            <Text style={{ color: COLORS.neutral.grey4, fontSize: '14px' }}>
-              Se cerrará tu sesión automáticamente en otros dispositivos por seguridad.
-            </Text>
-          </div>
-        </Modal>
+          </Modal>
+        </div>
       </Content>
     </Layout>
   );

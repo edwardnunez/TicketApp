@@ -526,6 +526,17 @@ const TicketPurchase = () => {
     }
   };
 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   if (loading) {
     return (
       <Layout style={{ backgroundColor: COLORS.neutral.white, minHeight: "100vh" }}>
@@ -655,60 +666,54 @@ const TicketPurchase = () => {
   };
 
   return (
-    <Layout style={{ backgroundColor: COLORS.neutral.white, minHeight: "100vh" }}>
+    <Layout style={{ backgroundColor: COLORS.neutral.grey1, minHeight: "100vh" }}>
       {contextHolder}
       
-      <Content>
-        <div style={{ 
-          backgroundColor: COLORS.neutral.grey1, 
-          padding: '24px 0',
-          borderBottom: `1px solid ${COLORS.neutral.grey2}`
-        }}>
-          <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
-            <Link to={`/event/${id}`}>
-              <Button 
-                type="text" 
-                icon={<ArrowLeftOutlined />}
-                style={{ color: COLORS.primary.main, marginBottom: '16px' }}
-              >
-                Volver al evento
-              </Button>
-            </Link>
-            
-            <Row gutter={[16, 16]} align="middle">
-              <Col xs={24} sm={4}>
-                <Image 
-                  src={event.image}
-                  alt={event.name}
-                  style={{ 
-                    width: '80px', 
-                    height: '80px', 
-                    objectFit: 'cover',
-                    borderRadius: '8px'
-                  }}
-                  preview={false}
-                />
-              </Col>
-              <Col xs={24} sm={20}>
-                <Title level={3} style={{ 
-                  color: COLORS.neutral.darker, 
-                  marginBottom: '4px' 
-                }}>
-                  {event.name}
-                </Title>
-                <Space split={<Divider type="vertical" />}>
-                  <Text style={{ color: COLORS.neutral.grey4 }}>
-                    <CalendarOutlined style={{ marginRight: '4px' }} />
-                    {dayjs(event.date).format("DD/MM/YYYY HH:mm")}
-                  </Text>
-                  <Text style={{ color: COLORS.neutral.grey4 }}>
-                    <EnvironmentOutlined style={{ marginRight: '4px' }} />
-                    {typeof event.location === 'string' ? event.location : event.location?.name || 'Ubicación no especificada'}
-                  </Text>
-                </Space>
-              </Col>
-            </Row>
-          </div>
+      <Content style={{ padding: isMobile ? "18px 4px" : "40px 20px" }}>
+        <div style={{ maxWidth: isMobile ? "100%" : "1000px", margin: "0 auto" }}>
+          <Link to={`/event/${id}`}>
+            <Button 
+              type="text" 
+              icon={<ArrowLeftOutlined />}
+              style={{ color: COLORS.primary.main, marginBottom: '16px' }}
+            >
+              Volver al evento
+            </Button>
+          </Link>
+          
+          <Row gutter={[16, 16]} align="middle">
+            <Col xs={24} sm={4}>
+              <Image 
+                src={event.image}
+                alt={event.name}
+                style={{ 
+                  width: '80px', 
+                  height: '80px', 
+                  objectFit: 'cover',
+                  borderRadius: '8px'
+                }}
+                preview={false}
+              />
+            </Col>
+            <Col xs={24} sm={20}>
+              <Title level={3} style={{ 
+                color: COLORS.neutral.darker, 
+                marginBottom: '4px' 
+              }}>
+                {event.name}
+              </Title>
+              <Space split={<Divider type="vertical" />}>
+                <Text style={{ color: COLORS.neutral.grey4 }}>
+                  <CalendarOutlined style={{ marginRight: '4px' }} />
+                  {dayjs(event.date).format("DD/MM/YYYY HH:mm")}
+                </Text>
+                <Text style={{ color: COLORS.neutral.grey4 }}>
+                  <EnvironmentOutlined style={{ marginRight: '4px' }} />
+                  {typeof event.location === 'string' ? event.location : event.location?.name || 'Ubicación no especificada'}
+                </Text>
+              </Space>
+            </Col>
+          </Row>
         </div>
 
         {/* Steps */}
