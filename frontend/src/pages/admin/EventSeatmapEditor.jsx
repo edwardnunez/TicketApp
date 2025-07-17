@@ -58,7 +58,6 @@ const EventSeatMapEditor = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Verificar si tenemos datos del evento
   useEffect(() => {
     
     if (!eventData) {
@@ -70,14 +69,11 @@ const EventSeatMapEditor = () => {
   const requiresSeatMap = useCallback(() => {
     
     if (!eventData?.type) return false;
-    // Solo usar los tipos que realmente existen en el sistema
     const seatMapTypes = ['football', 'cinema', 'concert', 'theater'];
     const requires = seatMapTypes.includes(eventData.type.toLowerCase());
-    console.log('Debug - requiresSeatMap - result:', requires);
     return requires;
   }, [eventData?.type]);
 
-  // Cargar datos de la ubicación si no los tenemos
   useEffect(() => {
     const loadLocationData = async () => {
       if (locationData || !eventData?.location) return;
@@ -100,7 +96,6 @@ const EventSeatMapEditor = () => {
     loadLocationData();
   }, [eventData, locationData]);
 
-  // Cargar datos del mapa de asientos
   useEffect(() => {
     const loadSeatMapData = async () => {
       if (!requiresSeatMap() || !locationData?.seatMapId) {
@@ -120,7 +115,6 @@ const EventSeatMapEditor = () => {
         console.log('Seatmap data loaded:', response.data);
         setSeatMapData(response.data);
         
-        // Inicializar capacidades para secciones de entrada general
         const initialCapacities = {};
         response.data.sections.forEach(section => {
           if (!section.hasNumberedSeats && section.totalCapacity) {
@@ -140,7 +134,6 @@ const EventSeatMapEditor = () => {
     loadSeatMapData();
   }, [locationData, requiresSeatMap]);
 
-  // Manejar bloqueo/desbloqueo de asientos individuales
   const handleSeatToggle = useCallback((seatId) => {
     setBlockedSeats(prev => {
       if (prev.includes(seatId)) {
@@ -151,7 +144,6 @@ const EventSeatMapEditor = () => {
     });
   }, []);
 
-  // Manejar cambio de capacidad para secciones de entrada general
   const handleCapacityChange = useCallback((sectionId, newCapacity) => {
     setGeneralAdmissionCapacities(prev => ({
       ...prev,
@@ -159,22 +151,18 @@ const EventSeatMapEditor = () => {
     }));
   }, []);
 
-  // Manejar bloqueo/desbloqueo de secciones completas
   const handleSectionToggle = useCallback((sectionId) => {
     const section = seatMapData?.sections.find(s => s.id === sectionId);
     if (!section) return;
 
     setBlockedSections(prev => {
       if (prev.includes(sectionId)) {
-        // Desbloquear sección
         if (section.hasNumberedSeats) {
-          // Si tiene asientos numerados, desbloquear todos sus asientos
           const sectionSeats = getAllSeatsInSection(sectionId);
           setBlockedSeats(currentBlocked => 
             currentBlocked.filter(seatId => !sectionSeats.includes(seatId))
           );
         } else {
-          // Si es entrada general, restaurar capacidad original
           setGeneralAdmissionCapacities(current => ({
             ...current,
             [sectionId]: section.totalCapacity
@@ -182,15 +170,12 @@ const EventSeatMapEditor = () => {
         }
         return prev.filter(id => id !== sectionId);
       } else {
-        // Bloquear sección
         if (section.hasNumberedSeats) {
-          // Si tiene asientos numerados, bloquear todos sus asientos
           const sectionSeats = getAllSeatsInSection(sectionId);
           setBlockedSeats(currentBlocked => 
             [...new Set([...currentBlocked, ...sectionSeats])]
           );
         } else {
-          // Si es entrada general, poner capacidad a 0
           setGeneralAdmissionCapacities(current => ({
             ...current,
             [sectionId]: 0
@@ -201,7 +186,6 @@ const EventSeatMapEditor = () => {
     });
   }, [seatMapData, getAllSeatsInSection]);
 
-  // Obtener todos los asientos de una sección
   const getAllSeatsInSection = useCallback((sectionId) => {
     if (!seatMapData) return [];
     
@@ -217,13 +201,11 @@ const EventSeatMapEditor = () => {
     return seats;
   }, [seatMapData]);
 
-  // Guardar evento con configuración de asientos bloqueados
   const handleSaveEvent = async () => {
     setSaving(true);
     try {
       const eventPayload = {
         ...eventData,
-        // Asegurarnos de que location tenga los datos completos
         location: locationData || eventData.location,
         blockedSeats: blockedSeats,
         blockedSections: blockedSections,
@@ -237,7 +219,6 @@ const EventSeatMapEditor = () => {
         }
       };
 
-      // Si el evento ya existe (tiene _id), actualizarlo; si no, crearlo
       if (eventData._id) {
         console.log('Actualizando evento existente:', eventData._id);
         await axios.put(`${gatewayUrl}/events/${eventData._id}`, eventPayload);
@@ -258,14 +239,12 @@ const EventSeatMapEditor = () => {
     }
   };
 
-  // Funciones de utilidad
   const getTotalSeats = () => {
     if (!seatMapData) return 0;
     return seatMapData.sections.reduce((total, section) => {
       if (section.hasNumberedSeats) {
         return total + (section.rows * section.seatsPerRow);
       } else {
-        // Para entrada general, usar la capacidad configurada
         return total + (generalAdmissionCapacities[section.id] || section.totalCapacity || 0);
       }
     }, 0);
@@ -274,7 +253,6 @@ const EventSeatMapEditor = () => {
   const getBlockedSeatsCount = () => {
     let blockedCount = blockedSeats.length;
     
-    // Añadir asientos bloqueados de secciones de entrada general
     seatMapData?.sections.forEach(section => {
       if (!section.hasNumberedSeats && blockedSections.includes(section.id)) {
         blockedCount += (section.totalCapacity || 0);
@@ -299,7 +277,6 @@ const EventSeatMapEditor = () => {
   }
 
   if (!requiresSeatMap()) {
-    // Si el evento no requiere mapa de asientos, crear directamente
     return (
       <div style={{ padding: '24px' }}>
         <Card>

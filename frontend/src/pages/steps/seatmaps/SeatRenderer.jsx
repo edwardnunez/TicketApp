@@ -54,14 +54,12 @@ const SeatRenderer = ({
           const rowNumber = row + 1;
           const rowPrice = sectionPricing.rowPricing.find(rp => rp.row === rowNumber);
           if (rowPrice) {
-            console.log(`SeatRenderer - Row pricing found: ${sectionId}-${rowNumber}-${seat + 1} = €${rowPrice.price}`);
             return rowPrice.price;
           }
         }
         
         // Si no hay precio específico por fila, usar defaultPrice
         const defaultPrice = sectionPricing.defaultPrice || price || event.price;
-        console.log(`SeatRenderer - Default pricing: ${sectionId}-${row + 1}-${seat + 1} = €${defaultPrice}`);
         return defaultPrice;
       }
     }
@@ -73,7 +71,6 @@ const SeatRenderer = ({
     
     // Fallback al precio de la sección del seatMap
     const fallbackPrice = price || 0;
-    console.log(`SeatRenderer - Fallback pricing: ${sectionId}-${row + 1}-${seat + 1} = €${fallbackPrice}`);
     return fallbackPrice;
   };
 

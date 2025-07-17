@@ -23,7 +23,6 @@ import {
   IdcardOutlined
 } from "@ant-design/icons";
 
-// Importamos el esquema de colores
 import { COLORS } from "../components/colorscheme";
 
 const { Title, Paragraph, Text } = Typography;
@@ -71,7 +70,6 @@ const AboutUs = () => {
     }
   ];
 
-  // Columnas para la tabla móvil
   const columns = [
     {
       title: "Nombre",
@@ -127,7 +125,6 @@ const AboutUs = () => {
   return (
     <Layout style={{ backgroundColor: COLORS?.neutral?.white || "#fff", minHeight: "100vh" }}>
       <Content>
-        {/* Hero Section con gradiente como en Home */}
         <div style={{ 
           background: COLORS?.gradients?.primary || "linear-gradient(135deg, #1890ff 0%, #722ed1 100%)",
           padding: isMobile ? "32px 8px" : "60px 20px",
@@ -149,9 +146,7 @@ const AboutUs = () => {
           </div>
         </div>
 
-        {/* Contenido principal */}
         <div style={{ maxWidth: "1200px", margin: "0 auto", padding: isMobile ? "18px 4px" : "40px 20px" }}>
-          {/* Sección de información del equipo */}
           <Card 
             className="team-card"
             style={{ 
@@ -186,7 +181,6 @@ const AboutUs = () => {
 
               <Divider style={{ margin: "24px 0" }} />
 
-              {/* Versión móvil: tarjeta para cada miembro */}
               <div className="mobile-cards" style={{ display: "block", marginBottom: "24px" }}>
                 <Row gutter={[24, 24]}>
                   {teamMembers.map(member => (
@@ -246,7 +240,6 @@ const AboutUs = () => {
                 </Row>
               </div>
 
-              {/* Versión desktop: tabla */}
               <div className="desktop-table" style={{ overflowX: "auto" }}>
                 <Table 
                   dataSource={teamMembers} 
@@ -260,7 +253,6 @@ const AboutUs = () => {
             </Space>
           </Card>
 
-          {/* Botón para volver */}
           <div style={{ textAlign: "center", marginTop: "24px" }}>
             <Button 
               type="primary" 
