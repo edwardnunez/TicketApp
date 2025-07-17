@@ -286,7 +286,6 @@ const seedSeatMaps = async (dbConnection) => {
       ]
     },
 
-    // Palau Sant Jordi - Capacidad: 24,000 (aproximada)
     {
       id: 'concert2',
       name: 'Palau Sant Jordi',
