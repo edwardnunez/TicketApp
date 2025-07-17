@@ -100,7 +100,7 @@ const LocationCreation = () => {
       label: 'Concierto',
       description: 'Venue para conciertos y espectáculos musicales',
       icon: '🎵',
-      seatMapTypes: ['concert', 'football'],
+      seatMapTypes: ['concert-tiered', 'concert-arenas'],
       requiresCapacity: true,
       requiresSeatMap: false,
       allowOptionalSeatMap: true
@@ -174,27 +174,44 @@ const LocationCreation = () => {
         boxes: { maxRows: 4, maxSeatsPerRow: 8 }
       }
     },
-    concert: {
-      label: 'Venue de conciertos',
-      description: 'Configuración para venues de conciertos y espectáculos musicales',
-      availablePositions: ['pista', 'grada-baja', 'grada-media', 'grada-alta', 'palcos-vip', 'lateral-este', 'lateral-oeste', 'fondo-norte', 'fondo-sur', 'general'],
+    'concert-tiered': {
+      label: 'Concierto (gradas)',
+      description: 'Pista, grada baja, grada media, grada alta y VIP',
+      availablePositions: ['pista', 'grada-baja', 'grada-media', 'grada-alta', 'vip'],
       defaultSections: [
         { name: 'Pista', position: 'pista', color: '#FF5722', rows: 1, seatsPerRow: 1, hasNumberedSeats: false, totalCapacity: 300 },
         { name: 'Grada Baja', position: 'grada-baja', color: '#4CAF50', rows: 7, seatsPerRow: 10, defaultPrice:0},
         { name: 'Grada Media', position: 'grada-media', color: '#2196F3', rows: 5, seatsPerRow: 8, defaultPrice:0},
-        { name: 'Grada Alta', position: 'grada-alta', color: '#FF9800', rows: 6, seatsPerRow: 11, defaultPrice:0}
+        { name: 'Grada Alta', position: 'grada-alta', color: '#FF9800', rows: 6, seatsPerRow: 11, defaultPrice:0},
+        { name: 'VIP', position: 'vip', color: '#9C27B0', rows: 2, seatsPerRow: 8, defaultPrice:0}
       ],
       limits: {
-        pista: { maxRows: 1, maxSeatsPerRow: 1 }, // Para entrada general
+        pista: { maxRows: 1, maxSeatsPerRow: 1 },
         'grada-baja': { maxRows: 10, maxSeatsPerRow: 15 },
         'grada-media': { maxRows: 8, maxSeatsPerRow: 12 },
         'grada-alta': { maxRows: 10, maxSeatsPerRow: 15 },
-        'palcos-vip': { maxRows: 3, maxSeatsPerRow: 10 },
+        vip: { maxRows: 3, maxSeatsPerRow: 10 }
+      }
+    },
+    'concert-arenas': {
+      label: 'Concierto (arenas)',
+      description: 'Pista, laterales este y oeste, fondos norte y sur y VIP',
+      availablePositions: ['pista', 'lateral-este', 'lateral-oeste', 'fondo-norte', 'fondo-sur', 'vip'],
+      defaultSections: [
+        { name: 'Pista', position: 'pista', color: '#FF5722', rows: 1, seatsPerRow: 1, hasNumberedSeats: false, totalCapacity: 300 },
+        { name: 'Lateral Este', position: 'lateral-este', color: '#2196F3', rows: 6, seatsPerRow: 14, defaultPrice:0},
+        { name: 'Lateral Oeste', position: 'lateral-oeste', color: '#2196F3', rows: 6, seatsPerRow: 14, defaultPrice:0},
+        { name: 'Fondo Norte', position: 'fondo-norte', color: '#4CAF50', rows: 8, seatsPerRow: 15, defaultPrice:0},
+        { name: 'Fondo Sur', position: 'fondo-sur', color: '#4CAF50', rows: 8, seatsPerRow: 15, defaultPrice:0},
+        { name: 'VIP', position: 'vip', color: '#9C27B0', rows: 2, seatsPerRow: 8, defaultPrice:0}
+      ],
+      limits: {
+        pista: { maxRows: 1, maxSeatsPerRow: 1 },
         'lateral-este': { maxRows: 12, maxSeatsPerRow: 20 },
         'lateral-oeste': { maxRows: 12, maxSeatsPerRow: 20 },
         'fondo-norte': { maxRows: 10, maxSeatsPerRow: 15 },
         'fondo-sur': { maxRows: 10, maxSeatsPerRow: 15 },
-        general: { maxRows: 1, maxSeatsPerRow: 1 } // Para entrada general
+        vip: { maxRows: 3, maxSeatsPerRow: 10 }
       }
     }
   };
@@ -426,12 +443,18 @@ const LocationCreation = () => {
             theaterName: values.name,
             stageWidth: 250
           }),
-          ...(values.type === 'concert' && {
-          venueName: values.name,
-          stagePosition: 'center',
-          stageDimensions: { width: 80, height: 50 },
-          allowsGeneralAdmission: true
-        })
+          ...(values.type === 'concert-tiered' && {
+            venueName: values.name,
+            stagePosition: 'center',
+            stageDimensions: { width: 80, height: 50 },
+            allowsGeneralAdmission: true
+          }),
+          ...(values.type === 'concert-arenas' && {
+            venueName: values.name,
+            stagePosition: 'center',
+            stageDimensions: { width: 80, height: 50 },
+            allowsGeneralAdmission: true
+          })
         },
         isActive: true
       };
@@ -499,10 +522,12 @@ const LocationCreation = () => {
     setSuccessMessage(null);
     };
 
+  // Modificar la definición de sectionColumns para la tabla de secciones
   const sectionColumns = [
     {
       title: 'Nombre',
       dataIndex: 'name',
+      width: 200,
       render: (text, record) => (
         <Input 
           value={text} 
@@ -514,20 +539,18 @@ const LocationCreation = () => {
     {
       title: 'Posición',
       dataIndex: 'position',
+      width: 140,
       render: (text, record) => {
         const currentType = seatMapForm.getFieldValue('type');
         const availablePositions = currentType ? seatMapTypeInfo[currentType]?.availablePositions || [] : [];
-        
         // Obtener posiciones ya usadas por otras secciones (excluyendo la actual)
         const usedPositions = sections
           .filter(section => section.key !== record.key)
           .map(section => section.position);
-        
         // Filtrar solo las posiciones disponibles
-        const selectablePositions = availablePositions.filter(pos => 
+        const selectablePositions = availablePositions.filter(pos =>
           !usedPositions.includes(pos) || pos === text
         );
-        
         return (
           <Select 
             value={text} 
@@ -547,38 +570,30 @@ const LocationCreation = () => {
     {
       title: 'Filas',
       dataIndex: 'rows',
-      render: (text, record) => {
-        const currentType = seatMapForm.getFieldValue('type');
-        const limits = getSectionLimits(currentType, record.position);
-        
-        return (
-          <InputNumber 
-            value={text} 
-            onChange={(value) => updateSection(record.key, 'rows', value)}
-            min={1}
-            max={limits.maxRows}
-            placeholder={`Máx: ${limits.maxRows}`}
-          />
-        );
-      }
+      width: 60,
+      render: (text, record) => (
+        <InputNumber 
+          min={1} 
+          max={getSectionLimits(seatMapForm.getFieldValue('type'), record.position).maxRows}
+          value={text}
+          onChange={(value) => updateSection(record.key, 'rows', value)}
+          style={{ width: '100%' }}
+        />
+      )
     },
     {
-      title: 'Asientos/Fila',
+      title: 'Asientos/fila',
       dataIndex: 'seatsPerRow',
-      render: (text, record) => {
-        const currentType = seatMapForm.getFieldValue('type');
-        const limits = getSectionLimits(currentType, record.position);
-        
-        return (
-          <InputNumber 
-            value={text} 
-            onChange={(value) => updateSection(record.key, 'seatsPerRow', value)}
-            min={1}
-            max={limits.maxSeatsPerRow}
-            placeholder={`Máx: ${limits.maxSeatsPerRow}`}
-          />
-        );
-      }
+      width: 80,
+      render: (text, record) => (
+        <InputNumber 
+          min={1} 
+          max={getSectionLimits(seatMapForm.getFieldValue('type'), record.position).maxSeatsPerRow}
+          value={text}
+          onChange={(value) => updateSection(record.key, 'seatsPerRow', value)}
+          style={{ width: '100%' }}
+        />
+      )
     },
     {
       title: 'Tipo',
@@ -1079,7 +1094,7 @@ const LocationCreation = () => {
                   pagination={false}
                   size="small"
                   bordered
-                  scroll={{ x: 800 }}
+                  scroll={{ x: 1000 }}
                   style={{ marginBottom: '16px' }}
                 />
 
