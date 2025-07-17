@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, Typography, Alert, Divider, Space, message } from "antd";
-import { CreditCardOutlined, SafetyOutlined } from "@ant-design/icons";
+import { CreditCardOutlined } from "@ant-design/icons";
 import { COLORS } from "../../components/colorscheme";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 const { Title, Text } = Typography;

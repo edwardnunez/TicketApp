@@ -15,8 +15,11 @@ import {
   Divider,
   Image,
   Table,
-  Tooltip,
-  Badge
+  PictureOutlined,
+  EuroOutlined,
+  TableOutlined,
+  StopOutlined,
+  CheckCircleOutlined
 } from "antd";
 import { 
   CalendarOutlined, 
@@ -26,13 +29,7 @@ import {
   ArrowLeftOutlined,
   ShoppingCartOutlined,
   InfoCircleOutlined,
-  TagOutlined,
-  FireOutlined,
-  PictureOutlined,
-  EuroOutlined,
-  TableOutlined,
-  StopOutlined,
-  CheckCircleOutlined
+  TagOutlined
 } from "@ant-design/icons";
 import axios from "axios";
 import dayjs from "dayjs";

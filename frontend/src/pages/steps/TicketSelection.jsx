@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Card, Radio, Space, Tag, InputNumber, Typography, Alert, Spin, Button } from "antd";
+import { Card, Radio, Space, InputNumber, Typography, Alert, Spin, Button } from "antd";
 import { COLORS } from "../../components/colorscheme";
 import GenericSeatMapRenderer from "./seatmaps/GenericSeatRenderer";
 import axios from 'axios';
@@ -18,27 +18,19 @@ export default function SelectTickets({
   const [seatMapData, setSeatMapData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [isMobile, setIsMobile] = useState(false);
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  const memoizedEvent = useMemo(() => event, [event]);
   
   const gatewayUrl = process.env.REACT_API_ENDPOINT || "http://localhost:8000";
 
   // Calcular entradas disponibles
   const availableTickets = useMemo(() => {
-    if (!event) return 0;
+    if (!memoizedEvent) return 0;
     
-    const capacity = event.capacity || 0;
-    const soldTickets = event.soldTickets || 0;
+    const capacity = memoizedEvent.capacity || 0;
+    const soldTickets = memoizedEvent.soldTickets || 0;
     
     return Math.max(0, capacity - soldTickets);
-  }, [event?.capacity, event?.soldTickets]);
+  }, [memoizedEvent?.capacity, memoizedEvent?.soldTickets]);
 
   // Verificar si el evento está agotado
   const isSoldOut = useMemo(() => {
@@ -51,14 +43,14 @@ export default function SelectTickets({
   }, [availableTickets]);
 
   const requiresSeatMap = useCallback(() => {
-    if (!event?.type) return false;
+    if (!memoizedEvent?.type) return false;
     
     // Si el evento tiene seatMapId configurado, requiere mapa
-    if (event?.location?.seatMapId) return true;
+    if (memoizedEvent?.location?.seatMapId) return true;
     
     // Los conciertos pueden tener o no mapa según la configuración
-    if (event.type.toLowerCase() === 'concert' || event.type.toLowerCase() === 'concierto') {
-      return !!event?.location?.seatMapId;
+    if (memoizedEvent.type.toLowerCase() === 'concert' || memoizedEvent.type.toLowerCase() === 'concierto') {
+      return !!memoizedEvent?.location?.seatMapId;
     }
     
     // Otros tipos que siempre requieren mapa
@@ -72,8 +64,8 @@ export default function SelectTickets({
       'stadium': 'football'
     };
     
-    return Object.keys(eventToSeatMapType).includes(event.type.toLowerCase());
-  }, [event?.type, event?.location?.seatMapId]);
+    return Object.keys(eventToSeatMapType).includes(memoizedEvent.type.toLowerCase());
+  }, [memoizedEvent?.type, memoizedEvent?.location?.seatMapId]);
 
   const validateSeatMapCompatibility = useCallback((seatMapData, eventType) => {
     if (!seatMapData || !eventType) {
@@ -117,12 +109,12 @@ export default function SelectTickets({
 
   // Extraer asientos y secciones bloqueados del evento
   const blockedSeats = useMemo(() => {
-    return event?.seatMapConfiguration?.blockedSeats || [];
-  }, [event?.seatMapConfiguration?.blockedSeats]);
+    return memoizedEvent?.seatMapConfiguration?.blockedSeats || [];
+  }, [memoizedEvent?.seatMapConfiguration?.blockedSeats]);
 
   const blockedSections = useMemo(() => {
-    return event?.seatMapConfiguration?.blockedSections || [];
-  }, [event?.seatMapConfiguration?.blockedSections]);
+    return memoizedEvent?.seatMapConfiguration?.blockedSections || [];
+  }, [memoizedEvent?.seatMapConfiguration?.blockedSections]);
 
   // Memoize the total calculation
   const totalFromSeats = useMemo(() => {
@@ -152,7 +144,7 @@ export default function SelectTickets({
   useEffect(() => {
     const loadSeatMapData = async () => {
       const needsSeatMap = requiresSeatMap();
-      const seatMapId = event?.location?.seatMapId;
+      const seatMapId = memoizedEvent?.location?.seatMapId;
       
       if (!needsSeatMap || !seatMapId) {
         setSeatMapData(null);
@@ -167,8 +159,8 @@ export default function SelectTickets({
         const seatMapData = response.data;
         
         // Validar compatibilidad
-        if (!validateSeatMapCompatibility(seatMapData, event.type)) {
-          setError(`El mapa de asientos tipo "${seatMapData.type}" no es compatible con eventos de tipo "${event.type}"`);
+        if (!validateSeatMapCompatibility(seatMapData, memoizedEvent.type)) {
+          setError(`El mapa de asientos tipo "${seatMapData.type}" no es compatible con eventos de tipo "${memoizedEvent.type}"`);
           setSeatMapData(null);
           return;
         }
@@ -176,9 +168,9 @@ export default function SelectTickets({
         // Aplicar precios del evento si están disponibles
         let updatedSeatMapData = { ...seatMapData };
         
-        if (event.usesSectionPricing && event.sectionPricing?.length > 0) {
+        if (memoizedEvent.usesSectionPricing && memoizedEvent.sectionPricing?.length > 0) {
           updatedSeatMapData.sections = seatMapData.sections.map(section => {
-            const eventSectionPricing = event.sectionPricing.find(sp => sp.sectionId === section.id);
+            const eventSectionPricing = memoizedEvent.sectionPricing.find(sp => sp.sectionId === section.id);
             
             if (eventSectionPricing) {
               // Usar el precio por defecto de la sección
@@ -200,10 +192,10 @@ export default function SelectTickets({
         
         // Log para depuración
         console.log('TicketSelection - Event pricing debug:', {
-          eventId: event._id,
-          usesSectionPricing: event.usesSectionPricing,
-          usesRowPricing: event.usesRowPricing,
-          sectionPricing: event.sectionPricing,
+          eventId: memoizedEvent._id,
+          usesSectionPricing: memoizedEvent.usesSectionPricing,
+          usesRowPricing: memoizedEvent.usesRowPricing,
+          sectionPricing: memoizedEvent.sectionPricing,
           updatedSeatMapData: updatedSeatMapData
         });
       } catch (err) {
@@ -222,7 +214,7 @@ export default function SelectTickets({
     };
 
     loadSeatMapData();
-  }, [event?.location?.seatMapId, event?.type, event?.usesSectionPricing, event?.sectionPricing, requiresSeatMap, validateSeatMapCompatibility]);
+  }, [memoizedEvent?.location?.seatMapId, memoizedEvent?.type, memoizedEvent?.usesSectionPricing, memoizedEvent?.sectionPricing, requiresSeatMap, validateSeatMapCompatibility, gatewayUrl]);
 
   useEffect(() => {
     // Limpiar asientos seleccionados cuando cambia el evento
@@ -230,7 +222,7 @@ export default function SelectTickets({
       onSeatSelect([]);
       setQuantity(0);
     }
-  }, [event?.id]); // Solo cuando cambia el ID del evento
+  }, [onSeatSelect, selectedSeats.length, setQuantity]);
 
   useEffect(() => {
     const needsMap = requiresSeatMap();
@@ -344,10 +336,10 @@ export default function SelectTickets({
         blockedSeats={blockedSeats}
         blockedSections={blockedSections}
         formatPrice={formatPrice}
-        event={event} // Pasar el evento para el cálculo de precios
+        event={memoizedEvent} // Pasar el evento para el cálculo de precios
       />
     );
-  }, [loading, error, seatMapData, selectedSeats, handleSeatSelection, occupiedSeats, blockedSeats, blockedSections, formatPrice, event, maxSelectableTickets]);
+  }, [loading, error, seatMapData, selectedSeats, handleSeatSelection, occupiedSeats, blockedSeats, blockedSections, formatPrice, memoizedEvent, maxSelectableTickets]);
 
   // Memoize the selected ticket type data
   const selectedTicketData = useMemo(() => {
