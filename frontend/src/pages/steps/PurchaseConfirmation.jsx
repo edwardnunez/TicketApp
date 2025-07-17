@@ -27,7 +27,6 @@ export default function Confirmation({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Calcular la cantidad de tickets correctamente
   const getTicketQuantity = () => {
     if (requiresSeatMap() && selectedSeats && selectedSeats.length > 0) {
       return selectedSeats.length;
@@ -35,7 +34,6 @@ export default function Confirmation({
     return quantity;
   };
 
-  // Función para descargar el QR
   const downloadQR = (qrCode, ticketNumber) => {
     const link = document.createElement('a');
     link.download = `ticket-qr-${ticketNumber}.png`;

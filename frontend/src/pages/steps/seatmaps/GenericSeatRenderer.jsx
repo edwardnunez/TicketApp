@@ -49,8 +49,6 @@ const GenericSeatMapRenderer = ({
   const getSectionCapacityFromPricing = (sectionId) => {
     if (!event?.sectionPricing) return null;
     const pricing = event.sectionPricing.find(p => p.sectionId === sectionId);
-    console.log(`Section ${sectionId} pricing:`, pricing);
-    console.log(`Capacity for section ${sectionId}:`, pricing ? pricing.capacity : null);
     return pricing ? pricing.capacity : null;
   };
 
@@ -356,7 +354,7 @@ const GenericSeatMapRenderer = ({
       s.name.toLowerCase().includes('premium') || s.name.toLowerCase().includes('palco')
     );
 
-    // Buscar gradas
+    // Buscar gradas para layout de concierto
     const gradaBaja = sections.find(s => s.name.toLowerCase().includes('grada baja') || s.position?.toLowerCase().includes('grada-baja'));
     const gradaMedia = sections.find(s => s.name.toLowerCase().includes('grada media') || s.position?.toLowerCase().includes('grada-media'));
     const gradaAlta = sections.find(s => s.name.toLowerCase().includes('grada alta') || s.position?.toLowerCase().includes('grada-alta'));
@@ -521,8 +519,8 @@ const GenericSeatMapRenderer = ({
                   
                   {/* Contenedor de la pista MÁS GRANDE */}
                   <div style={{
-                    width: (config?.stageWidth || 300) + 120, // CAMBIADO: de +80 a +120
-                    height: (config?.stageHeight || 80) + 120, // CAMBIADO: de +80 a +120
+                    width: (config?.stageWidth || 300) + 120,
+                    height: (config?.stageHeight || 80) + 120,
                     position: 'relative',
                     margin: '0 auto'
                   }}>

@@ -26,7 +26,6 @@ const Login = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Validador personalizado para username
   const validateUsername = (_, value) => {
     if (!value) {
       return Promise.reject(new Error("Por favor ingresa tu nombre de usuario"));
@@ -34,7 +33,6 @@ const Login = () => {
     return Promise.resolve();
   };
 
-  // Validador personalizado para password
   const validatePassword = (_, value) => {
     if (!value) {
       return Promise.reject(new Error("Por favor ingresa tu contraseña"));
