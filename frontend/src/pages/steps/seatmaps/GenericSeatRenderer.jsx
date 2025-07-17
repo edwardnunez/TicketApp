@@ -356,6 +356,11 @@ const GenericSeatMapRenderer = ({
       s.name.toLowerCase().includes('premium') || s.name.toLowerCase().includes('palco')
     );
 
+    // Buscar gradas
+    const gradaBaja = sections.find(s => s.name.toLowerCase().includes('grada baja') || s.position?.toLowerCase().includes('grada-baja'));
+    const gradaMedia = sections.find(s => s.name.toLowerCase().includes('grada media') || s.position?.toLowerCase().includes('grada-media'));
+    const gradaAlta = sections.find(s => s.name.toLowerCase().includes('grada alta') || s.position?.toLowerCase().includes('grada-alta'));
+
     // Resto de secciones que no coincidan con las anteriores
     const otherSections = sections.filter(s => 
       s !== sectionNorth && s !== sectionEast && s !== sectionWest && 
@@ -383,6 +388,30 @@ const GenericSeatMapRenderer = ({
           <div style={{ textAlign: 'center' }}>
             {renderSectionHeader(sectionNorth)}
             {renderSectionCard(sectionNorth)}
+          </div>
+        )}
+
+        {/* Gradas apiladas verticalmente */}
+        {(gradaAlta || gradaMedia || gradaBaja) && (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, margin: '24px 0' }}>
+            {gradaAlta && (
+              <div style={{ textAlign: 'center' }}>
+                {renderSectionHeader(gradaAlta)}
+                {renderSectionCard(gradaAlta)}
+              </div>
+            )}
+            {gradaMedia && (
+              <div style={{ textAlign: 'center' }}>
+                {renderSectionHeader(gradaMedia)}
+                {renderSectionCard(gradaMedia)}
+              </div>
+            )}
+            {gradaBaja && (
+              <div style={{ textAlign: 'center' }}>
+                {renderSectionHeader(gradaBaja)}
+                {renderSectionCard(gradaBaja)}
+              </div>
+            )}
           </div>
         )}
 

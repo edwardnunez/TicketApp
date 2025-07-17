@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Layout, 
   Form, 
@@ -32,7 +32,6 @@ import {
   InfoCircleOutlined,
   AppstoreOutlined,
   FormOutlined,
-  CheckCircleOutlined,
   CloseCircleOutlined,
   PlayCircleOutlined,
   ClockCircleOutlined,
@@ -145,7 +144,6 @@ const EventCreation = () => {
   const [locationOptions, setLocationOptions] = useState([]);
   const [seatMaps, setSeatMaps] = useState([]);
   const [errorMessage, setErrorMessage] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(dayjs().add(2, 'day'));
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [isCapacityLocked, setIsCapacityLocked] = useState(false);
   const [form] = Form.useForm();
@@ -278,7 +276,7 @@ const EventCreation = () => {
     }
   };
 
-  const handleSectionCapacity = useCallback((sectionId, newCapacity) => {
+  const handleSectionCapacity = (sectionId, newCapacity) => {
     setSectionPricing(prevPricing => 
       prevPricing.map(section => 
         section.sectionId === sectionId 
@@ -290,9 +288,9 @@ const EventCreation = () => {
           : section
       )
     );
-  }, []);
+  };
 
-  const handleSectionDefaultPrice = useCallback((sectionId, newPrice) => {
+  const handleSectionDefaultPrice = (sectionId, newPrice) => {
     setSectionPricing(prevPricing => 
       prevPricing.map(section => 
         section.sectionId === sectionId 
@@ -303,22 +301,9 @@ const EventCreation = () => {
           : section
       )
     );
-  }, []);
+  };
 
-  const handleRowPricingChange = useCallback((sectionId, rowPricing) => {
-    setSectionPricing(prevPricing => 
-      prevPricing.map(section => 
-        section.sectionId === sectionId 
-          ? { 
-              ...section, 
-              rowPricing: rowPricing
-            }
-          : section
-      )
-    );
-  }, []);
-
-  const addRowPrice = useCallback((sectionId) => {
+  const addRowPrice = (sectionId) => {
     setSectionPricing(prevPricing => 
       prevPricing.map(section => 
         section.sectionId === sectionId 
@@ -332,9 +317,9 @@ const EventCreation = () => {
           : section
       )
     );
-  }, []);
+  };
 
-  const removeRowPrice = useCallback((sectionId, index) => {
+  const removeRowPrice = (sectionId, index) => {
     setSectionPricing(prevPricing => 
       prevPricing.map(section => 
         section.sectionId === sectionId 
@@ -345,9 +330,9 @@ const EventCreation = () => {
           : section
       )
     );
-  }, []);
+  };
 
-  const updateRowPrice = useCallback((sectionId, index, field, value) => {
+  const updateRowPrice = (sectionId, index, field, value) => {
     setSectionPricing(prevPricing => 
       prevPricing.map(section => 
         section.sectionId === sectionId 
@@ -362,20 +347,7 @@ const EventCreation = () => {
           : section
       )
     );
-  }, []);
-
-  const handleFrontRowFirstChange = useCallback((sectionId, frontRowFirst) => {
-    setSectionPricing(prevPricing => 
-      prevPricing.map(section => 
-        section.sectionId === sectionId 
-          ? { 
-              ...section, 
-              frontRowFirst: frontRowFirst
-            }
-          : section
-      )
-    );
-  }, []);
+  };
 
   const getCapacityFromSeatMap = async (seatMapId) => {
     try {
@@ -840,7 +812,6 @@ const EventCreation = () => {
   };
 
   const handleDateChange = (date) => {
-    setSelectedDate(date);
     if (date) {
       const autoState = getAutoState(date);
       form.setFieldsValue({ state: autoState });

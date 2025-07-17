@@ -20,11 +20,7 @@ import {
 import { 
   SaveOutlined, 
   ArrowLeftOutlined, 
-  LockOutlined, 
-  UnlockOutlined,
   EyeOutlined,
-  WarningOutlined,
-  UserOutlined,
   TeamOutlined
 } from '@ant-design/icons';
 import { COLORS } from '../../components/colorscheme';
@@ -203,7 +199,7 @@ const EventSeatMapEditor = () => {
         return [...prev, sectionId];
       }
     });
-  }, [seatMapData]);
+  }, [seatMapData, getAllSeatsInSection]);
 
   // Obtener todos los asientos de una sección
   const getAllSeatsInSection = useCallback((sectionId) => {

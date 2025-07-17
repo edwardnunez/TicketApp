@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Tooltip } from 'antd';
-import { LockOutlined, UnlockOutlined } from '@ant-design/icons';
+import { LockOutlined } from '@ant-design/icons';
 import { COLORS } from '../../components/colorscheme';
 
 const EditableSeatGrid = ({

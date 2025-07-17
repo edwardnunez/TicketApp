@@ -19,7 +19,6 @@ import {
   CalendarOutlined, 
   EnvironmentOutlined, 
   ArrowLeftOutlined,
-  ShoppingCartOutlined,
   CreditCardOutlined,
   CheckCircleOutlined,
   UserOutlined,
