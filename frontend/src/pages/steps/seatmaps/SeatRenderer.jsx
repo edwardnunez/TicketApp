@@ -12,17 +12,19 @@ const SeatRenderer = ({
   name: sectionName,
   selectedSeats,
   occupiedSeats,
-  blockedSeats = [], // Asientos bloqueados individualmente
-  sectionBlocked = false, // Si toda la sección está bloqueada
+  blockedSeats = [],
+  sectionBlocked = false,
   maxSeats,
   onSeatSelect,
   formatPrice,
-  event, // Nuevo: objeto del evento
-  calculateSeatPrice, // Nuevo: función para calcular precio por asiento
-  sectionPricing // Nuevo: configuración de precios de la sección
+  event,
+  calculateSeatPrice,
+  compactMode = false,
+  responsiveMode = false, // Nueva prop para modo responsive
 }) => {
   const [hoveredSeat, setHoveredSeat] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
+  
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
@@ -121,6 +123,60 @@ const SeatRenderer = ({
     return `${sectionName} - Fila ${row + 1}, Asiento ${seat + 1} - ${formattedPrice}`;
   };
 
+  // Calcular tamaños dinámicamente basado en el modo
+  const getSeatSize = () => {
+    if (responsiveMode) {
+      // En modo responsive, hacer los asientos más pequeños
+      if (isMobile) {
+        return {
+          width: 16,
+          height: 16,
+          margin: 0.5,
+          fontSize: 6,
+          borderRadius: 2
+        };
+      } else {
+        return {
+          width: 20,
+          height: 20,
+          margin: 0.5,
+          fontSize: 8,
+          borderRadius: 3
+        };
+      }
+    } else if (compactMode) {
+      return {
+        width: 20,
+        height: 20,
+        margin: 1,
+        fontSize: 8,
+        borderRadius: 3
+      };
+    } else {
+      // Tamaño normal
+      return {
+        width: 24,
+        height: 24,
+        margin: 1,
+        fontSize: 10,
+        borderRadius: 4
+      };
+    }
+  };
+
+  const getRowLabelWidth = () => {
+    if (responsiveMode && isMobile) {
+      return 20;
+    } else if (responsiveMode || compactMode) {
+      return 25;
+    } else {
+      return 30;
+    }
+  };
+
+  const seatSize = getSeatSize();
+  const rowLabelWidth = getRowLabelWidth();
+
   const renderSeat = (row, seat) => {
     const seatId = getSeatId(row, seat);
     const occupied = isSeatOccupied(seatId);
@@ -136,11 +192,11 @@ const SeatRenderer = ({
       >
         <button
           style={{
-            width: 24,
-            height: 24,
-            margin: 1,
+            width: seatSize.width,
+            height: seatSize.height,
+            margin: seatSize.margin,
             border: 'none',
-            borderRadius: 4,
+            borderRadius: seatSize.borderRadius,
             backgroundColor: getSeatColor(seatId),
             cursor: isInteractable ? 'pointer' : 'not-allowed',
             opacity: occupied ? 0.3 : (blocked || sectionBlocked) ? 0.4 : hovered ? 0.8 : 1,
@@ -149,7 +205,7 @@ const SeatRenderer = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: 10,
+            fontSize: seatSize.fontSize,
             color: 'white',
             position: 'relative',
           }}
@@ -158,23 +214,23 @@ const SeatRenderer = ({
           onMouseLeave={() => setHoveredSeat(null)}
           disabled={!isInteractable}
         >
-          {selected && <CheckOutlined style={{ fontSize: 8 }} />}
-          {occupied && <CloseOutlined style={{ fontSize: 8 }} />}
-          {(blocked || sectionBlocked) && !occupied && <StopOutlined style={{ fontSize: 8 }} />}
+          {selected && <CheckOutlined style={{ fontSize: seatSize.fontSize }} />}
+          {occupied && <CloseOutlined style={{ fontSize: seatSize.fontSize }} />}
+          {(blocked || sectionBlocked) && !occupied && <StopOutlined style={{ fontSize: seatSize.fontSize }} />}
         </button>
       </Tooltip>
     );
   };
 
   const renderRow = (row) => (
-    <div key={`row-${row}`} style={{ display: 'flex', marginBottom: 2 }}>
+    <div key={`row-${row}`} style={{ display: 'flex', marginBottom: responsiveMode && isMobile ? 1 : 2 }}>
       <div
         style={{
-          width: 30,
+          width: rowLabelWidth,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          fontSize: 12,
+          fontSize: responsiveMode && isMobile ? 10 : 12,
           color: sectionBlocked ? '#999' : (COLORS?.neutral?.grey4 || '#666'),
         }}
       >
@@ -184,8 +240,30 @@ const SeatRenderer = ({
     </div>
   );
 
+  // Calcular el ancho total del contenedor basado en el contenido
+  const getContainerWidth = () => {
+    if (responsiveMode) {
+      const seatTotalWidth = (seatSize.width + (seatSize.margin * 2)) * seatsPerRow;
+      const labelWidth = rowLabelWidth;
+      return seatTotalWidth + labelWidth;
+    }
+    return 'auto';
+  };
+
+  const containerWidth = getContainerWidth();
+
   return (
-    <div style={{ position: 'relative', opacity: sectionBlocked ? 0.5 : 1, padding: isMobile ? '4px' : undefined, overflowX: isMobile ? 'auto' : undefined, WebkitOverflowScrolling: isMobile ? 'touch' : undefined }}>
+    <div 
+      style={{ 
+        position: 'relative', 
+        opacity: sectionBlocked ? 0.5 : 1, 
+        padding: responsiveMode && isMobile ? '4px' : undefined,
+        overflowX: responsiveMode ? 'auto' : undefined,
+        WebkitOverflowScrolling: responsiveMode ? 'touch' : undefined,
+        width: responsiveMode ? containerWidth : 'auto',
+        minWidth: responsiveMode ? 'fit-content' : undefined
+      }}
+    >
       {Array.from({ length: rows }).map((_, row) => renderRow(row))}
     </div>
   );

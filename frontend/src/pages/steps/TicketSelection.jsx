@@ -1,8 +1,8 @@
-
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Card, Radio, Space, InputNumber, Typography, Alert, Spin, Button } from "antd";
 import { COLORS } from "../../components/colorscheme";
 import GenericSeatMapRenderer from "./seatmaps/GenericSeatRenderer";
+import ResponsiveSeatRenderer from "./seatmaps/ResponsiveSeatRenderer";
 import axios from 'axios';
 
 const { Title, Text } = Typography;
@@ -19,12 +19,25 @@ export default function SelectTickets({
   const [seatMapData, setSeatMapData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [isMobileOrTablet, setIsMobileOrTablet] = useState(false);
   const memoizedEvent = useMemo(() => event, [event]);
   
   // Ref para trackear el evento anterior y evitar limpiezas innecesarias
   const previousEventId = useRef(null);
   
   const gatewayUrl = process.env.REACT_API_ENDPOINT || "http://localhost:8000";
+
+  // Hook para detectar si es móvil o tablet
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobileOrTablet(window.innerWidth < 1024); // 1024px como breakpoint para tablet
+    };
+    
+    handleResize(); // Ejecutar al montar
+    window.addEventListener('resize', handleResize);
+    
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Calcular entradas disponibles
   const availableTickets = useMemo(() => {
@@ -339,9 +352,11 @@ export default function SelectTickets({
       );
     }
 
-    // Usar el GenericSeatMapRenderer pasando los asientos y secciones bloqueados
+    // Determinar qué renderer usar basado en el tamaño de pantalla
+    const SeatMapComponent = isMobileOrTablet ? ResponsiveSeatRenderer : GenericSeatMapRenderer;
+
     return (
-      <GenericSeatMapRenderer
+      <SeatMapComponent
         seatMapData={seatMapData}
         selectedSeats={selectedSeats}
         onSeatSelect={handleSeatSelection}
@@ -353,7 +368,7 @@ export default function SelectTickets({
         event={memoizedEvent} // Pasar el evento para el cálculo de precios
       />
     );
-  }, [loading, error, seatMapData, selectedSeats, handleSeatSelection, occupiedSeats, blockedSeats, blockedSections, formatPrice, memoizedEvent, maxSelectableTickets]);
+  }, [loading, error, seatMapData, selectedSeats, handleSeatSelection, occupiedSeats, blockedSeats, blockedSections, formatPrice, memoizedEvent, maxSelectableTickets, isMobileOrTablet]);
 
   // Memoize the selected ticket type data
   const selectedTicketData = useMemo(() => {
@@ -444,7 +459,8 @@ export default function SelectTickets({
 
           {renderSeatMap()}
 
-          {selectedSeats.length > 0 && (
+          {/* Mostrar resumen de asientos seleccionados solo en desktop cuando no usa ResponsiveSeatRenderer */}
+          {!isMobileOrTablet && selectedSeats.length > 0 && (
             <Card style={{ marginTop: '24px', backgroundColor: COLORS.neutral.grey1 }}>
               <Title level={4} style={{ color: COLORS.neutral.darker, marginBottom: '16px' }}>
                 Resumen de asientos seleccionados
