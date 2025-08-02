@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Card, Radio, Space, InputNumber, Typography, Alert, Spin, Button } from "antd";
 import { COLORS } from "../../components/colorscheme";
 import GenericSeatMapRenderer from "./seatmaps/GenericSeatRenderer";
@@ -19,6 +20,9 @@ export default function SelectTickets({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const memoizedEvent = useMemo(() => event, [event]);
+  
+  // Ref para trackear el evento anterior y evitar limpiezas innecesarias
+  const previousEventId = useRef(null);
   
   const gatewayUrl = process.env.REACT_API_ENDPOINT || "http://localhost:8000";
 
@@ -121,8 +125,10 @@ export default function SelectTickets({
     return selectedSeats.reduce((total, seat) => total + (seat.price || 0), 0);
   }, [selectedSeats]);
 
-  // Simplified handleSeatSelection - just pass through the seats with their prices
   const handleSeatSelection = useCallback((seats) => {
+    console.log('🎯 handleSeatSelection called with:', seats);
+    console.log('🎯 maxSelectableTickets:', maxSelectableTickets);
+    
     // Limitar la selección según disponibilidad
     const limitedSeats = seats.slice(0, maxSelectableTickets);
     
@@ -136,6 +142,7 @@ export default function SelectTickets({
         seat: seat.seat
       }));
       
+      console.log('🎯 Calling onSeatSelect with:', seatsWithFullInfo);
       onSeatSelect(seatsWithFullInfo);
       setQuantity(seatsWithFullInfo.length);
     }, [onSeatSelect, setQuantity, maxSelectableTickets]);
@@ -216,13 +223,20 @@ export default function SelectTickets({
     loadSeatMapData();
   }, [memoizedEvent?.location?.seatMapId, memoizedEvent?.type, memoizedEvent?.usesSectionPricing, memoizedEvent?.sectionPricing, requiresSeatMap, validateSeatMapCompatibility, gatewayUrl]);
 
+  // FIXED: Solo limpiar asientos cuando realmente cambia el evento, no cuando cambia la selección
   useEffect(() => {
-    // Limpiar asientos seleccionados cuando cambia el evento
-    if (selectedSeats.length > 0) {
-      onSeatSelect([]);
-      setQuantity(0);
+    const currentEventId = memoizedEvent?._id;
+    
+    // Solo limpiar si el evento realmente cambió
+    if (currentEventId && currentEventId !== previousEventId.current) {
+      console.log('🔄 Event changed, clearing selected seats');
+      if (selectedSeats.length > 0) {
+        onSeatSelect([]);
+        setQuantity(0);
+      }
+      previousEventId.current = currentEventId;
     }
-  }, [onSeatSelect, selectedSeats.length, setQuantity]);
+  }, [memoizedEvent?._id, onSeatSelect, setQuantity]); // Removido selectedSeats.length de las dependencias
 
   useEffect(() => {
     const needsMap = requiresSeatMap();

@@ -34,7 +34,6 @@ const sectionSchema = new mongoose.Schema({
     required: true, 
     min: 0 
   }, // Precio por defecto para filas no configuradas
-  rowPricing: [rowPricingSchema], // Precios específicos por fila
   color: { 
     type: String, 
     required: true 

@@ -14,8 +14,6 @@ import {
   Tag,
   Row,
   Col,
-  InputNumber,
-  Tooltip
 } from 'antd';
 import { 
   SaveOutlined, 
@@ -151,6 +149,22 @@ const EventSeatMapEditor = () => {
     }));
   }, []);
 
+  // Move getAllSeatsInSection BEFORE handleSectionToggle
+  const getAllSeatsInSection = useCallback((sectionId) => {
+    if (!seatMapData) return [];
+    
+    const section = seatMapData.sections.find(s => s.id === sectionId);
+    if (!section || !section.hasNumberedSeats) return [];
+
+    const seats = [];
+    for (let row = 0; row < section.rows; row++) {
+      for (let seat = 0; seat < section.seatsPerRow; seat++) {
+        seats.push(`${sectionId}-${row}-${seat}`);
+      }
+    }
+    return seats;
+  }, [seatMapData]);
+
   const handleSectionToggle = useCallback((sectionId) => {
     const section = seatMapData?.sections.find(s => s.id === sectionId);
     if (!section) return;
@@ -185,21 +199,6 @@ const EventSeatMapEditor = () => {
       }
     });
   }, [seatMapData, getAllSeatsInSection]);
-
-  const getAllSeatsInSection = useCallback((sectionId) => {
-    if (!seatMapData) return [];
-    
-    const section = seatMapData.sections.find(s => s.id === sectionId);
-    if (!section || !section.hasNumberedSeats) return [];
-
-    const seats = [];
-    for (let row = 0; row < section.rows; row++) {
-      for (let seat = 0; seat < section.seatsPerRow; seat++) {
-        seats.push(`${sectionId}-${row}-${seat}`);
-      }
-    }
-    return seats;
-  }, [seatMapData]);
 
   const handleSaveEvent = async () => {
     setSaving(true);
