@@ -83,8 +83,7 @@ const EventDetails = () => {
         const eventData = {
           ...res.data,
           date: res.data.date,
-          // Usar imageUrl si está disponible, sino usar image por compatibilidad
-          image: res.data.imageUrl || res.data.image || "/event-images/default.jpg",
+          image: res.data.imageUrl || "/event-images/default.jpg",
           // Mapear tipo de evento a categoría para consistencia con Home
           category: mapEventTypeToCategory(res.data.type)
         };
@@ -396,8 +395,9 @@ const EventDetails = () => {
                     style={{ 
                       width: '100%',
                       height: 'auto',
+                      minHeight: '300px',
                       maxHeight: '500px',
-                      objectFit: 'contain',
+                      objectFit: 'cover',
                       backgroundColor: COLORS.neutral.grey1,
                       display: 'block'
                     }}
