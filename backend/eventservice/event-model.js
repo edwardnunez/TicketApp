@@ -21,7 +21,6 @@ const sectionPricingSchema = new mongoose.Schema({
     type: String, 
     required: true 
   },
-  
   rowPricing: [rowPricingSchema],
   
   // Precio por defecto para filas no configuradas

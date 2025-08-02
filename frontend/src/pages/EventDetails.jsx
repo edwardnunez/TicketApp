@@ -9,18 +9,13 @@ import {
   Button, 
   Tag, 
   Space,
-  notification,
   Skeleton,
   Alert,
   Divider,
   Image,
-  Table,
-  PictureOutlined,
-  EuroOutlined,
-  TableOutlined,
-  StopOutlined,
-  CheckCircleOutlined
+  Table
 } from "antd";
+import { notification } from 'antd';
 import { 
   CalendarOutlined, 
   EnvironmentOutlined, 
@@ -29,7 +24,12 @@ import {
   ArrowLeftOutlined,
   ShoppingCartOutlined,
   InfoCircleOutlined,
-  TagOutlined
+  TagOutlined,
+  BarsOutlined,
+  PictureOutlined,
+  EuroOutlined,
+  StopOutlined,
+  CheckCircleOutlined
 } from "@ant-design/icons";
 import axios from "axios";
 import dayjs from "dayjs";
@@ -50,7 +50,13 @@ const EventDetails = () => {
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [api, contextHolder] = notification.useNotification();
+  const showNotification = (type, message, description) => {
+    notification[type]({
+      message,
+      description,
+      placement: 'top',
+    });
+  };
   
   const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
   const [isMobile, setIsMobile] = useState(false);
@@ -90,13 +96,9 @@ const EventDetails = () => {
         console.error("Error loading event details:", err);
         setError("No se pudo cargar la información del evento");
         setLoading(false);
-        api.error({
-          message: 'Error',
-          description: 'No se pudieron cargar los detalles del evento. Por favor, inténtalo de nuevo más tarde.',
-          placement: 'top',
-        });
+        showNotification('error', 'Error', 'No se pudieron cargar los detalles del evento. Por favor, inténtalo de nuevo más tarde.');
       });
-  }, [id, gatewayUrl, api]);
+      }, [id, gatewayUrl]);
 
   const mapEventTypeToCategory = (type) => {
     const typeMap = {
@@ -198,7 +200,7 @@ const EventDetails = () => {
           key: 'rows',
           render: (value) => (
             <span style={{ display: 'flex', alignItems: 'center' }}>
-              <TableOutlined style={{ marginRight: '4px', color: COLORS.neutral.grey4 }} />
+              <BarsOutlined style={{ marginRight: '4px', color: COLORS.neutral.grey4 }} />
               {value}
             </span>
           )
@@ -346,8 +348,6 @@ const EventDetails = () => {
 
   return (
     <Layout style={{ backgroundColor: COLORS.neutral.white, minHeight: "100vh" }}>
-      {contextHolder}
-      
       <Content style={{ padding: isMobile ? "18px 4px" : "40px 20px" }}>
         <div style={{ maxWidth: isMobile ? "100%" : "1000px", margin: "0 auto" }}>
           {/* Breadcrumb y botón de regreso */}
@@ -385,16 +385,20 @@ const EventDetails = () => {
                 <div style={{ 
                   position: 'relative',
                   width: '100%',
-                  height: '400px',
-                  overflow: 'hidden'
+                  minHeight: '300px',
+                  maxHeight: '500px',
+                  overflow: 'hidden',
+                  borderRadius: '12px'
                 }}>
                   <Image 
                     alt={event.name}
                     src={event.image}
-                    width="100%"
-                    height="100%"
                     style={{ 
-                      objectFit: 'cover',
+                      width: '100%',
+                      height: 'auto',
+                      maxHeight: '500px',
+                      objectFit: 'contain',
+                      backgroundColor: COLORS.neutral.grey1,
                       display: 'block'
                     }}
                     preview={{

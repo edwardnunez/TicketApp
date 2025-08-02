@@ -10,7 +10,7 @@ import {
   notification,
   Skeleton,
   Alert,
-  Divider,
+  Card,
   Image,
   Steps,
   Form
@@ -23,6 +23,7 @@ import {
   CheckCircleOutlined,
   UserOutlined,
   TagOutlined,
+  PictureOutlined
 } from "@ant-design/icons";
 import axios from "axios";
 import dayjs from "dayjs";
@@ -78,7 +79,7 @@ const TicketPurchase = () => {
         const eventData = {
           ...res.data,
           date: dayjs(res.data.date).format("YYYY-MM-DD"),
-          image: res.data.image || "/images/default.jpg"
+          image: res.data.imageUrl || res.data.image || "/event-images/default.jpg",
         };
         
         setEvent(eventData);
@@ -680,37 +681,30 @@ const TicketPurchase = () => {
             </Button>
           </Link>
           
-          <Row gutter={[16, 16]} align="middle">
-            <Col xs={24} sm={4}>
-              <Image 
-                src={event.image}
-                alt={event.name}
-                style={{ 
-                  width: '80px', 
-                  height: '80px', 
-                  objectFit: 'cover',
-                  borderRadius: '8px'
-                }}
-                preview={false}
-              />
-            </Col>
-            <Col xs={24} sm={20}>
-              <Title level={3} style={{ 
+          <Row gutter={[24, 24]} align="middle">
+            <Col xs={24} sm={18}>
+              <Title level={2} style={{ 
                 color: COLORS.neutral.darker, 
-                marginBottom: '4px' 
+                marginBottom: '8px',
+                fontSize: '28px',
+                lineHeight: '1.2'
               }}>
                 {event.name}
               </Title>
-              <Space split={<Divider type="vertical" />}>
-                <Text style={{ color: COLORS.neutral.grey4 }}>
-                  <CalendarOutlined style={{ marginRight: '4px' }} />
-                  {dayjs(event.date).format("DD/MM/YYYY HH:mm")}
-                </Text>
-                <Text style={{ color: COLORS.neutral.grey4 }}>
-                  <EnvironmentOutlined style={{ marginRight: '4px' }} />
-                  {typeof event.location === 'string' ? event.location : event.location?.name || 'Ubicación no especificada'}
-                </Text>
-              </Space>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <CalendarOutlined style={{ color: COLORS.primary.main }} />
+                  <Text style={{ color: COLORS.neutral.grey4 }}>
+                    {dayjs(event.date).format("dddd, DD [de] MMMM [de] YYYY")}
+                  </Text>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <EnvironmentOutlined style={{ color: COLORS.primary.main }} />
+                  <Text style={{ color: COLORS.neutral.grey4 }}>
+                    {typeof event.location === 'string' ? event.location : event.location?.name || 'Ubicación no especificada'}
+                  </Text>
+                </div>
+              </div>
             </Col>
           </Row>
         </div>
