@@ -353,7 +353,8 @@ const EventDetails = () => {
           <div style={{ 
             backgroundColor: COLORS.neutral.grey1, 
             padding: '16px 0',
-            borderBottom: `1px solid ${COLORS.neutral.grey2}`
+            borderBottom: `1px solid ${COLORS.neutral.grey2}`,
+            marginBottom: '32px'
           }}>
             <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
               <Link to="/">
