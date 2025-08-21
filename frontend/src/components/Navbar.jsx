@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Avatar, Typography, Menu, Dropdown } from "antd";
 import { UserOutlined, TagOutlined } from "@ant-design/icons";
 import { COLORS } from "./colorscheme";
+import { ensureAuthFreshness, scheduleAuthExpiryTimer, clearAuthSession } from "../utils/authSession";
 
 const { Title } = Typography;
 
@@ -13,8 +14,10 @@ const Navbar = () => {
 
 
   useEffect(() => {
+    ensureAuthFreshness();
     const token = localStorage.getItem("token");
     setIsLoggedIn(!!token);
+    scheduleAuthExpiryTimer();
   }, []);
 
   useEffect(() => {
@@ -27,9 +30,7 @@ const Navbar = () => {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("roleToken");
-    localStorage.removeItem("username");
+    clearAuthSession();
     navigate("/login");
   };
 

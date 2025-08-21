@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
+import { ensureAuthFreshness } from "../utils/authSession";
 import axios from "axios";
 
 const AdminRoute = ({ element }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
   const [loading, setLoading] = useState(true);
-  const roleToken = localStorage.getItem("roleToken");
+  const expired = ensureAuthFreshness();
+  const roleToken = !expired ? localStorage.getItem("roleToken") : null;
   
   const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
 

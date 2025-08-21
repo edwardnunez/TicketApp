@@ -3,6 +3,7 @@ import { Layout, Typography, Form, Input, Button, Space, Alert, message } from "
 import { UserOutlined, MailOutlined, LockOutlined, UserAddOutlined } from "@ant-design/icons";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
+import { setAuthSession, ensureAuthFreshness, scheduleAuthExpiryTimer } from "../utils/authSession";
 
 import { COLORS } from "../components/colorscheme";
 
@@ -18,6 +19,8 @@ const Register = () => {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    // Limpiar si está expirado al entrar en Register
+    ensureAuthFreshness();
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
     };
@@ -90,9 +93,13 @@ const Register = () => {
     setRegisterError({});
     try {
       const response = await axios.post(gatewayUrl + "/adduser", values);
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("roleToken", response.data.roleToken);
-      localStorage.setItem("username", response.data.username);
+      setAuthSession({
+        token: response.data.token,
+        roleToken: response.data.roleToken,
+        username: response.data.username,
+        expiryMs: 60 * 60 * 1000,
+      });
+      scheduleAuthExpiryTimer();
       message.success("¡Registro exitoso! Bienvenido.");
       navigate("/");
     } catch (error) {
