@@ -722,7 +722,7 @@ const Profile = () => {
                     {events[selectedTicket.eventId]?.name || "Evento"}
                   </Text>
                   <Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
-                    {selectedTicket.ticketType} • {selectedTicket.quantity} entrada{selectedTicket.quantity > 1 ? 's' : ''}
+                    {selectedTicket.quantity} entrada{selectedTicket.quantity > 1 ? 's' : ''}
                   </Text>
                 </div>
 

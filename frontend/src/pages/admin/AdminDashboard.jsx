@@ -380,12 +380,17 @@ const AdminDashboard = () => {
     const idsToFetch = creatorIds.filter(id => id && !usernamesById[id]);
     if (idsToFetch.length === 0) return;
     Promise.all(idsToFetch.map(id =>
-      axios.get(`${gatewayUrl}/users/search?username=${id}`)
-        .then(res => ({ id, username: res.data.username }))
+      axios.get(`${gatewayUrl}/users/search?userId=${id}`)
+        .then(res => ({ 
+          id, 
+          username: res.data.username
+        }))
         .catch(() => ({ id, username: id }))
     )).then(results => {
       const newMap = { ...usernamesById };
+      console.log('Fetched usernames:', results);
       results.forEach(({ id, username }) => { newMap[id] = username; });
+      console.log('Fetched newMap:', newMap);
       setUsernamesById(newMap);
     });
   // eslint-disable-next-line

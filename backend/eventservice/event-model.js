@@ -268,15 +268,7 @@ eventSchema.methods.isSeatBlocked = function(seatId) {
     return this.seatMapConfiguration.blockedSections.includes(sectionId);
   }
   
-  // Fallback a las propiedades legacy
-  if (this.blockedSeats && this.blockedSeats.includes(seatId)) {
-    return true;
-  }
-  
-  if (this.blockedSections && this.blockedSections.length > 0) {
-    const sectionId = seatId.split('-')[0];
-    return this.blockedSections.includes(sectionId);
-  }
+
   
   return false;
 };
