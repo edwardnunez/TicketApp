@@ -8,14 +8,11 @@ export default function BuyerInfo({
   form, 
   useAccountData, setUseAccountData, 
   userData, 
-  ticketTypes, 
-  selectedTicketType, 
   quantity, 
   formatPrice,
   selectedSeats,
   event,
   getTotalPrice,
-  getCorrectPrice,
   requiresSeatMap
 }) {
   const [isMobile, setIsMobile] = useState(false);
@@ -157,12 +154,12 @@ export default function BuyerInfo({
               <>
                 {/* Mostrar resumen por tipo de ticket cuando no hay mapa de asientos */}
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Text>Tickets {ticketTypes.find(t => t.key === selectedTicketType)?.label}:</Text>
+                  <Text>Tickets:</Text>
                   <Text strong>{quantity}</Text>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <Text>Precio unitario:</Text>
-                  <Text strong>{formatPrice(getCorrectPrice(selectedTicketType))}</Text>
+                  <Text strong>{formatPrice(event?.price || 0)}</Text>
                 </div>
                 <Divider style={{ margin: '12px 0' }} />
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>

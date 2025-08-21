@@ -279,11 +279,6 @@ app.post("/event", largePayloadMiddleware, largeUrlEncodedMiddleware, async (req
       };
 
       eventData.seatMapConfiguration = seatMapConfig;
-      eventData.blockedSeats = seatMapConfig.blockedSeats || [];
-      eventData.blockedSections = seatMapConfig.blockedSections || [];
-    } else {
-      eventData.blockedSeats = [];
-      eventData.blockedSections = [];
     }
 
     // Validación: no permitir eventos en la misma ubicación con menos de 24h de diferencia
@@ -539,8 +534,8 @@ app.get("/events/:eventId", stateService.updateStatesMiddleware.bind(stateServic
     }
 
     // Estadísticas de bloqueos
-    const blockedSeats = eventObj.seatMapConfiguration?.blockedSeats || eventObj.blockedSeats || [];
-    const blockedSections = eventObj.seatMapConfiguration?.blockedSections || eventObj.blockedSections || [];
+    const blockedSeats = eventObj.seatMapConfiguration?.blockedSeats || [];
+    const blockedSections = eventObj.seatMapConfiguration?.blockedSections || [];
     
     const blockingStats = {
       blockedSeats: blockedSeats.length,
@@ -795,8 +790,7 @@ app.put("/events/:eventId", async (req, res) => {
       usesSectionPricing: eventData.usesSectionPricing,
       usesRowPricing: eventData.usesRowPricing,
       sectionPricing: eventData.sectionPricing,
-      blockedSeats: eventData.blockedSeats || [],
-      blockedSections: eventData.blockedSections || [],
+
       generalAdmissionCapacities: eventData.generalAdmissionCapacities || {},
       seatMapConfiguration: eventData.seatMapConfiguration
     };
@@ -856,20 +850,19 @@ app.put("/events/:eventId/seat-blocks", async (req, res) => {
       };
     }
 
-    event.blockedSeats = blockedSeats || [];
-    event.blockedSections = blockedSections || [];
+
 
     await event.save();
 
     console.log(`Updated seat blocks for event ${eventId}:`, {
-      blockedSeats: event.blockedSeats.length,
-      blockedSections: event.blockedSections.length
+      blockedSeats: event.seatMapConfiguration?.blockedSeats?.length || 0,
+      blockedSections: event.seatMapConfiguration?.blockedSections?.length || 0
     });
 
     res.status(200).json({
       message: "Seat blocks updated successfully",
-      blockedSeats: event.blockedSeats.length,
-      blockedSections: event.blockedSections.length
+      blockedSeats: event.seatMapConfiguration?.blockedSeats?.length || 0,
+      blockedSections: event.seatMapConfiguration?.blockedSections?.length || 0
     });
   } catch (error) {
     console.error("Error updating seat blocks:", error);

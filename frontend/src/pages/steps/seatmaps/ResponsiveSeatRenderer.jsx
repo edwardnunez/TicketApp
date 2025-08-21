@@ -60,10 +60,10 @@ const ResponsiveStyleRenderer = ({
     if (event && event.usesSectionPricing && event.sectionPricing?.length > 0) {
       const eventSectionPricing = event.sectionPricing.find(sp => sp.sectionId === section.id);
       if (eventSectionPricing) {
-        return eventSectionPricing.defaultPrice || section.price;
+        return eventSectionPricing.defaultPrice || section.defaultPrice;
       }
     }
-    return section.price;
+    return section.defaultPrice;
   };
 
   const getSectionAvailability = (section) => {
@@ -424,11 +424,11 @@ const GeneralAdmissionRenderer = ({
     }
 
     // Obtener el precio correcto del evento si está disponible
-    let correctPrice = section.price;
+    let correctPrice = section.defaultPrice;
     if (event && event.usesSectionPricing && event.sectionPricing?.length > 0) {
       const eventSectionPricing = event.sectionPricing.find(sp => sp.sectionId === section.id);
       if (eventSectionPricing) {
-        correctPrice = eventSectionPricing.defaultPrice || section.price;
+        correctPrice = eventSectionPricing.defaultPrice || section.defaultPrice;
       }
     }
 
@@ -545,11 +545,11 @@ const GeneralAdmissionRenderer = ({
             fontWeight: 'bold'
           }}>
             {(() => {
-              let correctPrice = section.price;
+              let correctPrice = section.defaultPrice;
               if (event && event.usesSectionPricing && event.sectionPricing?.length > 0) {
                 const eventSectionPricing = event.sectionPricing.find(sp => sp.sectionId === section.id);
                 if (eventSectionPricing) {
-                  correctPrice = eventSectionPricing.defaultPrice || section.price;
+                  correctPrice = eventSectionPricing.defaultPrice || section.defaultPrice;
                 }
               }
               return formatPrice(correctPrice);

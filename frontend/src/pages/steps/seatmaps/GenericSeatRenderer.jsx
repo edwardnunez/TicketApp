@@ -89,7 +89,7 @@ const GenericSeatMapRenderer = ({
             sectionId={section.id}
             rows={section.rows}
             seatsPerRow={section.seatsPerRow}
-            price={section.price}
+                                  price={section.defaultPrice}
             color={section.color}
             name={section.name}
             selectedSeats={selectedSeats}
@@ -920,7 +920,7 @@ const GenericSeatMapRenderer = ({
                     <Typography.Text strong style={{ 
                       color: sectionBlocked ? '#999' : section.color 
                     }}>
-                      {formatPrice(section.price)}
+                      {formatPrice(section.defaultPrice)}
                     </Typography.Text>
                   </div>
                   <Typography.Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
@@ -963,7 +963,7 @@ const GenericSeatMapRenderer = ({
                       sectionId={section.id}
                       rows={section.rows}
                       seatsPerRow={section.seatsPerRow}
-                      price={section.price}
+                      price={section.defaultPrice}
                       color={section.color}
                       name={section.name}
                       selectedSeats={selectedSeats}
@@ -1059,11 +1059,11 @@ const GeneralAdmissionRenderer = ({
     }
 
     // Obtener el precio correcto del evento si está disponible
-    let correctPrice = section.price;
+    let correctPrice = section.defaultPrice;
     if (event && event.usesSectionPricing && event.sectionPricing?.length > 0) {
       const eventSectionPricing = event.sectionPricing.find(sp => sp.sectionId === section.id);
       if (eventSectionPricing) {
-        correctPrice = eventSectionPricing.defaultPrice || section.price;
+        correctPrice = eventSectionPricing.defaultPrice || section.defaultPrice;
       }
     }
 
@@ -1212,11 +1212,11 @@ const GeneralAdmissionRenderer = ({
           }}>
             {(() => {
               // Obtener el precio correcto del evento si está disponible
-              let correctPrice = section.price;
+              let correctPrice = section.defaultPrice;
               if (event && event.usesSectionPricing && event.sectionPricing?.length > 0) {
                 const eventSectionPricing = event.sectionPricing.find(sp => sp.sectionId === section.id);
                 if (eventSectionPricing) {
-                  correctPrice = eventSectionPricing.defaultPrice || section.price;
+                  correctPrice = eventSectionPricing.defaultPrice || section.defaultPrice;
                 }
               }
               return formatPrice(correctPrice);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { Card, Radio, Space, InputNumber, Typography, Alert, Spin, Button } from "antd";
+import { Card, InputNumber, Typography, Alert, Spin, Button } from "antd";
 import { COLORS } from "../../components/colorscheme";
 import GenericSeatMapRenderer from "./seatmaps/GenericSeatRenderer";
 import ResponsiveSeatRenderer from "./seatmaps/ResponsiveSeatRenderer";
@@ -8,9 +8,8 @@ import axios from 'axios';
 const { Title, Text } = Typography;
 
 export default function SelectTickets({ 
-  selectedTicketType, setSelectedTicketType, 
   quantity, setQuantity, 
-  ticketTypes, formatPrice,
+  formatPrice,
   event,
   selectedSeats = [],
   onSeatSelect,
@@ -194,7 +193,7 @@ export default function SelectTickets({
             
             if (eventSectionPricing) {
               // Usar el precio por defecto de la sección
-              const displayPrice = eventSectionPricing.defaultPrice || section.price;
+              const displayPrice = eventSectionPricing.defaultPrice || section.defaultPrice;
               
               return { 
                 ...section, 
@@ -251,13 +250,7 @@ export default function SelectTickets({
     }
   }, [memoizedEvent?._id, onSeatSelect, setQuantity]); // Removido selectedSeats.length de las dependencias
 
-  useEffect(() => {
-    const needsMap = requiresSeatMap();
-    
-    if (!needsMap && ticketTypes.length > 0 && !selectedTicketType) {
-      setSelectedTicketType(ticketTypes[0].key);
-    }
-  }, [requiresSeatMap, ticketTypes, selectedTicketType, setSelectedTicketType]);
+
 
   // Ajustar cantidad si excede las disponibles
   useEffect(() => {
@@ -370,10 +363,7 @@ export default function SelectTickets({
     );
   }, [loading, error, seatMapData, selectedSeats, handleSeatSelection, occupiedSeats, blockedSeats, blockedSections, formatPrice, memoizedEvent, maxSelectableTickets, isMobileOrTablet]);
 
-  // Memoize the selected ticket type data
-  const selectedTicketData = useMemo(() => {
-    return ticketTypes.find(t => t.key === selectedTicketType);
-  }, [ticketTypes, selectedTicketType]);
+
 
   // Check if seat map is required
   const needsSeatMap = requiresSeatMap();
@@ -400,51 +390,7 @@ export default function SelectTickets({
       {/* Mostrar información de disponibilidad */}
       {renderAvailabilityAlert()}
 
-      {/* Mostrar selección de tipo de ticket cuando NO hay mapa de asientos */}
-      {!needsSeatMap && (
-        <Card style={{ marginBottom: '24px' }}>
-          <Title level={4} style={{ color: COLORS.neutral.darker, marginBottom: '16px' }}>
-            Selecciona tu tipo de ticket
-          </Title>
-          <Radio.Group 
-            value={selectedTicketType} 
-            onChange={(e) => setSelectedTicketType(e.target.value)}
-            style={{ width: '100%' }}
-          >
-            <Space direction="vertical" size={16} style={{ width: '100%' }}>
-              {ticketTypes.map(ticket => (
-                <Radio key={ticket.key} value={ticket.key} style={{ width: '100%' }}>
-                  <Card 
-                    size="small"
-                    style={{ 
-                      marginLeft: '8px',
-                      border: selectedTicketType === ticket.key ? `2px solid ${COLORS.primary.main}` : `1px solid ${COLORS.neutral.grey2}`,
-                      backgroundColor: selectedTicketType === ticket.key ? `${COLORS.primary.light}10` : COLORS.neutral.white
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <div style={{ flex: 1 }}>
-                        <Title level={5} style={{ marginBottom: '4px', color: COLORS.neutral.darker }}>
-                          {ticket.label}
-                        </Title>
-                        <Text style={{ color: COLORS.neutral.grey4 }}>
-                          Entrada general
-                        </Text>
-                      </div>
-                      <div style={{ textAlign: 'right', marginLeft: '16px' }}>
-                        <Title level={4} style={{ color: COLORS.primary.main, marginBottom: '4px' }}>
-                          {formatPrice(ticket.price)}
-                        </Title>
-                        <Text style={{ color: COLORS.neutral.grey4 }}>por ticket</Text>
-                      </div>
-                    </div>
-                  </Card>
-                </Radio>
-              ))}
-            </Space>
-          </Radio.Group>
-        </Card>
-      )}
+
 
       {/* Mostrar mapa de asientos cuando se requiere */}
       {needsSeatMap ? (
@@ -543,24 +489,22 @@ export default function SelectTickets({
             </Text>
           </div>
 
-          {selectedTicketData && (
-            <div style={{ 
-              marginTop: '24px',
-              padding: '16px',
-              backgroundColor: COLORS.neutral.grey1,
-              borderRadius: '8px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center'
-            }}>
-              <div>
-                <Text>Subtotal ({quantity} ticket{quantity !== 1 ? 's' : ''}):</Text>
-              </div>
-              <Title level={4} style={{ color: COLORS.primary.main, margin: 0 }}>
-                {formatPrice(selectedTicketData.price * quantity || 0)}
-              </Title>
+          <div style={{ 
+            marginTop: '24px',
+            padding: '16px',
+            backgroundColor: COLORS.neutral.grey1,
+            borderRadius: '8px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
+            <div>
+              <Text>Subtotal ({quantity} ticket{quantity !== 1 ? 's' : ''}):</Text>
             </div>
-          )}
+            <Title level={4} style={{ color: COLORS.primary.main, margin: 0 }}>
+              {formatPrice(event?.price * quantity || 0)}
+            </Title>
+          </div>
         </Card>
       )}
     </>

@@ -71,7 +71,7 @@ const generateQRData = (ticket) => {
     purchaseDate: ticket.purchasedAt,
     status: ticket.status,
     quantity: ticket.quantity,
-    ticketType: ticket.ticketType,
+    
     seats: ticket.selectedSeats || []
   });
 };
@@ -228,7 +228,6 @@ app.post('/tickets/purchase', async (req, res) => {
     const newTicket = new Ticket({
       userId,
       eventId,
-      ticketType,
       price,
       quantity,
       selectedSeats: allSelectedSeats, // Usar el array combinado
@@ -290,7 +289,7 @@ app.post('/tickets/purchase', async (req, res) => {
         <ul>
           <li><b>Fecha:</b> ${evento?.date ? new Date(evento.date).toLocaleString() : 'Sin fecha'}</li>
           <li><b>Ubicación:</b> ${evento?.location?.name || 'Sin ubicación'}</li>
-          <li><b>Tipo de entrada:</b> ${savedTicket.ticketType}</li>
+
           <li><b>Número de ticket:</b> ${savedTicket.ticketNumber}</li>
         </ul>
         <p>Adjunto encontrarás el código QR de tu entrada:</p>
@@ -477,7 +476,7 @@ app.get('/tickets/user/:userId/details', validateObjectId, async (req, res) => {
       activeTickets: tickets.filter(t => t.status === 'paid').length,
       pendingTickets: tickets.filter(t => t.status === 'pending').length,
       cancelledTickets: tickets.filter(t => t.status === 'cancelled').length,
-      ticketTypes: [...new Set(tickets.map(t => t.ticketType))],
+      
     };
 
     res.json({
@@ -636,7 +635,7 @@ app.get('/tickets/user/:userId/events', validateObjectId, async (req, res) => {
           _id: '$eventId',
           totalTickets: { $sum: '$quantity' },
           totalSpent: { $sum: { $multiply: ['$price', '$quantity'] } },
-          ticketTypes: { $addToSet: '$ticketType' },
+  
           latestPurchase: { $max: '$purchasedAt' },
           tickets: { $push: '$$ROOT' }
         }

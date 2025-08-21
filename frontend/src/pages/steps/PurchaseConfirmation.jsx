@@ -11,11 +11,8 @@ export default function Confirmation({
   COLORS,
   selectedSeats,
   quantity,
-  selectedTicketType,
-  ticketTypes,
   requiresSeatMap,
-  getTotalPrice,
-  getCorrectPrice
+  getTotalPrice
 }) {
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -137,8 +134,8 @@ export default function Confirmation({
                   backgroundColor: COLORS.neutral.grey1,
                   borderRadius: '4px'
                 }}>
-                  <Text>{quantity} x {ticketTypes.find(t => t.key === selectedTicketType)?.label || selectedTicketType}</Text>
-                  <Text strong>{formatPrice(getCorrectPrice(selectedTicketType) * quantity)}</Text>
+                                      <Text>{quantity} x Ticket</Text>
+                    <Text strong>{formatPrice(event?.price * quantity || 0)}</Text>
                 </div>
               )}
             </div>

@@ -41,8 +41,7 @@ import {
   LockOutlined,
   EuroOutlined,
   PlusOutlined,
-  DeleteOutlined,
-  EditOutlined
+  DeleteOutlined
 } from '@ant-design/icons';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
@@ -162,6 +161,9 @@ const EventCreation = () => {
   const [saving, setSaving] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
+
+  const [showConflictModal, setShowConflictModal] = useState(false);
+  const [conflictEventInfo, setConflictEventInfo] = useState(null);
 
   const navigate = useNavigate();
   
@@ -554,15 +556,11 @@ const EventCreation = () => {
   };
 
   const handleConfirmSaveEvent = async () => {
-    console.log('=== HANDLE CONFIRM SAVE EVENT CALLED ===');
-    console.log('EventDataToSave:', eventDataToSave);
     setSaving(true);
     
     try {
-      console.log('Creating event without seatmap:', eventDataToSave);
-      
       // Crear el evento (solo para eventos sin seatmap)
-      const createEventResponse = await axios.post(`${gatewayUrl}/events`, eventDataToSave);
+      await axios.post(`${gatewayUrl}/events`, eventDataToSave);
       
       message.success('Evento creado correctamente');
       setShowConfirmModal(false);
@@ -571,20 +569,17 @@ const EventCreation = () => {
       navigate('/admin');
       
     } catch (error) {
-      console.error("Error creando el evento:", error);
       
       if (error.response) {
         console.error('Server error:', error.response.data);
-        if (
-          error.response.data &&
-          error.response.data.error &&
-          error.response.data.error.includes('menos de 24 horas')
-        ) {
-          setErrorMessage(
-            `No se puede crear el evento: ya existe otro evento en esta ubicación con menos de 24 horas de diferencia.\n` +
-            (error.response.data.conflictEvent ? `Conflicto con: "${error.response.data.conflictEvent.name}" el ${new Date(error.response.data.conflictEvent.date).toLocaleString('es-ES')}` : '')
-          );
-        } else {
+        if (error.response?.data?.error?.includes("Ya existe un evento en esta ubicación")) {
+          setConflictEventInfo(error.response.data.conflictEvent);
+          setShowConflictModal(true);
+          setShowConfirmModal(false);
+          setSaving(false);
+          return;
+        }
+        else {
           setErrorMessage(`Error del servidor: ${error.response.data.error || error.response.statusText}`);
         }
       } else if (error.request) {
@@ -777,12 +772,29 @@ const EventCreation = () => {
           });
         } catch (error) {
           console.error('Error creando evento:', error);
-          
-          if (error.response?.status === 413) {
-            message.error('La imagen es demasiado grande. Intenta con una imagen más pequeña.');
+
+          if (error.response) {
+            console.error('Server error:', error.response.data);
+            if (error.response?.data?.error?.includes("Ya existe un evento en esta ubicación")) {
+              setConflictEventInfo(error.response.data.conflictEvent);
+              setShowConflictModal(true);
+              setShowConfirmModal(false);
+              return;
+            }
+            else if (error.response?.status === 413) {
+              message.error('La imagen es demasiado grande. Intenta con una imagen más pequeña.');
+            }
+            else {
+              setErrorMessage(`Error del servidor: ${error.response.data.error || error.response.statusText}`);
+            }
+          } else if (error.request) {
+            console.error('Network error:', error.request);
+            setErrorMessage('Error de conexión. Verifica tu conexión a internet.');
           } else {
-            message.error('Error al crear el evento');
+            console.error('Error:', error.message);
+            setErrorMessage('Hubo un error al crear el evento');
           }
+          
         } finally {
           setLoading(false);
         }
@@ -1718,6 +1730,23 @@ const EventCreation = () => {
             />
           </div>
         )}
+      </Modal>
+
+      <Modal
+        title="Conflicto de horarios"
+        open={showConflictModal}
+        onOk={() => setShowConflictModal(false)}
+        onCancel={() => setShowConflictModal(false)}
+        okText="Entendido"
+        cancelButtonProps={{ style: { display: 'none' } }}
+        width={500}
+      >
+        <div>
+          <p>Ya existe un evento en esta ubicación con menos de 24 horas de diferencia.</p>
+          <p style={{ marginTop: '12px', color: '#666' }}>
+            Por favor, selecciona una fecha diferente o una ubicación distinta.
+          </p>
+        </div>
       </Modal>
     </Layout>
   );
