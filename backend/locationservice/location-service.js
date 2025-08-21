@@ -165,6 +165,45 @@ const mapSeatMapForApi = (seatMap) => {
   };
 };
 
+// ===== Normalización de entrada (aceptar formato legado y nuevo) =====
+const buildRows = (rowsCount, seatsPerRow) => {
+  const safeRows = Number.isFinite(rowsCount) && rowsCount > 0 ? rowsCount : 0;
+  const safeSeats = Number.isFinite(seatsPerRow) && seatsPerRow > 0 ? seatsPerRow : 0;
+  return Array.from({ length: safeRows }).map((_, rowIdx) => ({
+    index: rowIdx + 1,
+    label: String(rowIdx + 1),
+    seats: Array.from({ length: safeSeats }).map((_, seatIdx) => ({
+      number: seatIdx + 1,
+      label: String(seatIdx + 1)
+    }))
+  }));
+};
+
+const normalizeSection = (section) => {
+  const { rows, seatsPerRow, price, ...rest } = section || {};
+  const defaultPrice = section && section.defaultPrice !== undefined ? section.defaultPrice : 0;
+
+  if (section && section.hasNumberedSeats === false) {
+    return {
+      ...rest,
+      defaultPrice,
+      rows: [],
+      rowPricing: Array.isArray(section.rowPricing) ? section.rowPricing : [],
+      totalCapacity: section.totalCapacity || 0
+    };
+  }
+
+  // si ya viene como array de filas, respetarlo
+  const normalizedRows = Array.isArray(rows) ? rows : buildRows(rows, seatsPerRow);
+  return {
+    ...rest,
+    defaultPrice,
+    rows: normalizedRows,
+    rowPricing: Array.isArray(section?.rowPricing) ? section.rowPricing : [],
+    totalCapacity: undefined
+  };
+};
+
 app.get('/seatmaps', async (req, res) => {
   try {
     const { type, isActive } = req.query;
@@ -226,7 +265,14 @@ app.post('/seatmaps', async (req, res) => {
       });
     }
 
-    const newSeatMap = new SeatMapModel(seatMapData);
+    // Normalizar secciones para compatibilidad con esquema (rows como array de objetos)
+    const prepared = {
+      ...seatMapData,
+      sections: (seatMapData.sections || []).map(normalizeSection),
+      compatibleEventTypes: seatMapData.compatibleEventTypes || [seatMapData.type]
+    };
+
+    const newSeatMap = new SeatMapModel(prepared);
     await newSeatMap.save();
 
     res.status(201).json(mapSeatMapForApi(newSeatMap));
@@ -245,9 +291,14 @@ app.put('/seatmaps/:id', async (req, res) => {
     const { id } = req.params;
     const updateData = req.body;
     
+    const preparedUpdate = {
+      ...updateData,
+      ...(updateData.sections ? { sections: updateData.sections.map(normalizeSection) } : {})
+    };
+
     const seatMap = await SeatMapModel.findOneAndUpdate(
       { id }, 
-      updateData, 
+      preparedUpdate, 
       { new: true, runValidators: true }
     );
     
