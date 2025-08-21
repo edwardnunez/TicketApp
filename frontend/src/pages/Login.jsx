@@ -3,6 +3,7 @@ import { Layout, Typography, Form, Input, Button, message, Space, Alert } from "
 import { UserOutlined, LockOutlined, LoginOutlined } from "@ant-design/icons";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
+import { setAuthSession, ensureAuthFreshness, scheduleAuthExpiryTimer } from "../utils/authSession";
 
 import { COLORS } from "../components/colorscheme";
 
@@ -18,6 +19,8 @@ const Login = () => {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    // Limpiar si está expirado al entrar en Login
+    ensureAuthFreshness();
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
     };
@@ -45,9 +48,13 @@ const Login = () => {
     setLoginError({});
     try {
       const response = await axios.post(gatewayUrl + "/login", values);
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("roleToken", response.data.roleToken);
-      localStorage.setItem("username", response.data.username);
+      setAuthSession({
+        token: response.data.token,
+        roleToken: response.data.roleToken,
+        username: response.data.username,
+        expiryMs: 60 * 60 * 1000,
+      });
+      scheduleAuthExpiryTimer();
       message.success("Login successful!");
       navigate("/");
     } catch (error) {
