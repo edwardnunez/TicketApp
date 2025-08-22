@@ -37,6 +37,7 @@ import "dayjs/locale/es";
 
 // Importamos el esquema de colores
 import { COLORS } from "../components/colorscheme";
+import FramedImage from "../components/FramedImage";
 
 // Configurar dayjs en español
 dayjs.locale('es');
@@ -382,35 +383,15 @@ const EventDetails = () => {
                 }}
               >
               {event.image ? (
-                <div style={{ 
-                  position: 'relative',
-                  width: '100%',
-                  minHeight: '300px',
-                  maxHeight: '500px',
-                  overflow: 'hidden',
-                  borderRadius: '12px'
-                }}>
-                  <Image 
-                    alt={event.name}
-                    src={event.image}
-                    style={{ 
-                      width: '100%',
-                      height: 'auto',
-                      minHeight: '300px',
-                      maxHeight: '500px',
-                      objectFit: 'cover',
-                      backgroundColor: COLORS.neutral.grey1,
-                      display: 'block'
-                    }}
-                    preview={{
-                      mask: (
-                        <div style={{ color: COLORS.neutral.white }}>
-                          <PictureOutlined /> Ver imagen completa
-                        </div>
-                      )
-                    }}
-                  />
-                </div>
+                <FramedImage 
+                  src={event.image}
+                  alt={event.name}
+                  backgroundColor={COLORS.neutral.grey1}
+                  borderRadius={12}
+                  aspectRatio={isMobile ? 16/9 : 4/3}
+                  maxHeight={isMobile ? 320 : 500}
+                  objectFit="smart"
+                />
               ) : (
                   <div style={{ 
                     display: 'flex', 
