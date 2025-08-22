@@ -40,6 +40,7 @@ import dayjs from "dayjs";
 
 // Importamos el esquema de colores
 import { COLORS } from "../components/colorscheme";
+import FramedImage from "../components/FramedImage";
 
 const { Content } = Layout;
 const { Title, Text, Paragraph } = Typography;
@@ -240,25 +241,25 @@ const Home = () => {
       hoverable
       className="event-card"
       cover={
-        <div style={{ position: 'relative', height: isMobile ? '140px' : '180px', overflow: 'hidden' }}>
+        <div style={{ position: 'relative' }}>
           {event.image ? (
-            <img 
-              alt={event.name} 
-              src={event.image} 
-              style={{ 
-                width: '100%', 
-                height: '100%', 
-                objectFit: 'cover',
-                transition: 'transform 0.3s ease'
-              }} 
+            <FramedImage
+              src={event.image}
+              alt={event.name}
+              backgroundColor={COLORS.neutral.grey1}
+              borderRadius={8}
+              aspectRatio={isMobile ? 16/10 : 16/9}
+              style={{ transition: 'transform 0.3s ease' }}
             />
           ) : (
             <div style={{ 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center', 
-              height: '100%',
-              backgroundColor: COLORS.neutral.grey1
+              width: '100%',
+              aspectRatio: isMobile ? '16/10' : '16/9',
+              backgroundColor: COLORS.neutral.grey1,
+              borderRadius: 8
             }}>
               <PictureOutlined style={{ fontSize: isMobile ? '32px' : '48px', color: COLORS.neutral.grey3 }} />
             </div>

@@ -49,6 +49,8 @@ import dayjs from 'dayjs';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 
 import { COLORS } from "../../components/colorscheme";
+import ImageCropperModal from "../../components/ImageCropperModal";
+import FramedImage from "../../components/FramedImage";
 
 const { Content } = Layout;
 const { Option } = Select;
@@ -155,6 +157,8 @@ const EventCreation = () => {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [uploadLoading, setUploadLoading] = useState(false);
+  const [cropSrc, setCropSrc] = useState(null);
+  const [isCropOpen, setIsCropOpen] = useState(false);
 
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [eventDataToSave, setEventDataToSave] = useState(null);
@@ -475,12 +479,11 @@ const EventCreation = () => {
         return;
       }
       
-      setImageFile(file);
-      
-      // Crear preview
+      // Abrir recorte con preview
       const reader = new FileReader();
       reader.onload = (e) => {
-        setImagePreview(e.target.result);
+        setCropSrc(e.target.result);
+        setIsCropOpen(true);
       };
       reader.readAsDataURL(file);
     } else {
@@ -525,15 +528,46 @@ const EventCreation = () => {
     });
   };
 
+  // Transforma la imagen a un lienzo fijo (contain) para que se vea entera en un marco 16:9
+  const processImageToFixedCanvas = (file, targetWidth = 1280, targetHeight = 720, background = '#111', quality = 0.8) => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+
+      img.onload = () => {
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+
+        // Escalar modo contain
+        const scale = Math.min(targetWidth / img.width, targetHeight / img.height);
+        const drawWidth = Math.round(img.width * scale);
+        const drawHeight = Math.round(img.height * scale);
+        const offsetX = Math.floor((targetWidth - drawWidth) / 2);
+        const offsetY = Math.floor((targetHeight - drawHeight) / 2);
+
+        // Fondo del marco
+        ctx.fillStyle = background;
+        ctx.fillRect(0, 0, targetWidth, targetHeight);
+        // Imagen centrada y escalada
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+
+        // Mantener el tipo original si es posible
+        const mimeType = file.type && file.type.startsWith('image/') ? file.type : 'image/jpeg';
+        canvas.toBlob(resolve, mimeType, quality);
+      };
+
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
   const convertFileToBase64 = async (file) => {
     try {
-      // Redimensionar imagen si es muy grande
-      let processedFile = file;
-      
-      if (file.size > 200 * 1024) { // Si es mayor a 200KB
-        console.log('Redimensionando imagen...');
-        processedFile = await resizeImage(file, 800, 600, 0.8);
-      }
+      // Normalizar SIEMPRE la imagen a un marco fijo 16:9 para mantener dimensiones uniformes
+      // Elegimos 1280x720 para buena calidad; se puede ajustar si prefieres otro tamaño.
+      const processedFile = await processImageToFixedCanvas(file, 1280, 720, '#111', 0.8);
       
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -1166,16 +1200,16 @@ const EventCreation = () => {
         }}
       >
         <div style={{ textAlign: 'center' }}>
-          <img 
-            src={imagePreview} 
-            alt="Preview" 
-            style={{ 
-              maxWidth: '100%', 
-              maxHeight: '200px', 
-              borderRadius: '8px',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-            }} 
-          />
+          <div style={{ maxWidth: '100%', margin: '0 auto' }}>
+            <FramedImage 
+              src={imagePreview}
+              alt="Preview"
+              backgroundColor={COLORS.neutral.grey1}
+              borderRadius={8}
+              aspectRatio={16/9}
+              maxHeight={220}
+            />
+          </div>
           <div style={{ marginTop: '8px' }}>
             <Text type="secondary">
               {imageFile?.name} ({(imageFile?.size / 1024 / 1024).toFixed(2)} MB)
@@ -1184,6 +1218,17 @@ const EventCreation = () => {
         </div>
       </Card>
     );
+  };
+
+  const onCropComplete = async (blob) => {
+    // blob -> File para seguir flujo actual
+    const fileFromBlob = new File([blob], imageFile?.name || 'cropped.jpg', { type: blob.type || 'image/jpeg' });
+    setImageFile(fileFromBlob);
+    setIsCropOpen(false);
+    // Mostrar preview recortada
+    const reader = new FileReader();
+    reader.onload = (e) => setImagePreview(e.target.result);
+    reader.readAsDataURL(fileFromBlob);
   };
 
   return (
@@ -1507,6 +1552,13 @@ const EventCreation = () => {
                       </Button>
                     </Upload>
                     {renderImagePreview()}
+                    <ImageCropperModal
+                      open={isCropOpen}
+                      src={cropSrc}
+                      onCancel={() => setIsCropOpen(false)}
+                      onComplete={onCropComplete}
+                      aspect={16/9}
+                    />
                   </Form.Item>
                 </Col>
               </Row>
