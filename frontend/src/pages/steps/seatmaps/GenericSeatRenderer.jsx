@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import SeatRenderer from './SeatRenderer';
+import SeatMapLegend from './SeatMapLegend';
 import { COLORS } from '../../../components/colorscheme';
 import { Typography, notification, Card } from 'antd';
+import './SeatMapAnimations.css';
 
 const { Title, Text } = Typography;
 
@@ -89,7 +91,7 @@ const GenericSeatMapRenderer = ({
             sectionId={section.id}
             rows={section.rows}
             seatsPerRow={section.seatsPerRow}
-                                  price={section.defaultPrice}
+                                  price={section.defaultPrice || 0}
             color={section.color}
             name={section.name}
             selectedSeats={selectedSeats}
@@ -150,14 +152,41 @@ const GenericSeatMapRenderer = ({
         display: 'flex', 
         flexDirection: 'column', 
         alignItems: 'center', 
-        gap: 30, 
+        gap: 24, 
         minWidth: isMobile ? 700 : 1000,
         minHeight: 700,
-        padding: '30px',
-        backgroundColor: COLORS.neutral.grey1,
-        borderRadius: '12px'
+        padding: '32px 24px',
+        background: 'linear-gradient(135deg, #1a4d1a 0%, #2d5a2d 50%, #1a4d1a 100%)',
+        borderRadius: '16px',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+        border: '2px solid #4a7c59',
+        position: 'relative',
+        overflow: 'hidden'
       }}>
-        <Title level={4} style={{ margin: 0, color: COLORS.neutral.darker }}>
+        {/* Efecto de césped en el fondo */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: `
+            radial-gradient(circle at 20% 20%, rgba(76, 175, 80, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(76, 175, 80, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 40% 60%, rgba(76, 175, 80, 0.05) 0%, transparent 50%)
+          `,
+          zIndex: 0
+        }} />
+        
+        <Title level={3} style={{ 
+          margin: 0, 
+          color: 'white',
+          textShadow: '0 2px 4px rgba(0,0,0,0.7)',
+          fontSize: '24px',
+          fontWeight: '700',
+          zIndex: 2,
+          position: 'relative'
+        }}>
           {config?.stadiumName || config?.venueName || name}
         </Title>
 
@@ -209,55 +238,94 @@ const GenericSeatMapRenderer = ({
           </div>
         )}
 
-          {/* Campo o Escenario */}
+          {/* Campo de fútbol mejorado */}
           <div
             style={{
-              width: config?.fieldDimensions?.width || config?.stageDimensions?.width || 400,
-              height: config?.fieldDimensions?.height || config?.stageDimensions?.height || 260,
-              backgroundColor: event?.type === 'concert' ? '#8B4513' : '#4CAF50',
-              borderRadius: 8,
+              width: config?.fieldDimensions?.width || 400,
+              height: config?.fieldDimensions?.height || 260,
+              background: 'linear-gradient(135deg, #4CAF50 0%, #66BB6A 50%, #4CAF50 100%)',
+              borderRadius: 12,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               color: 'white',
-              fontSize: 24,
+              fontSize: 20,
               fontWeight: 'bold',
-              boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-              border: event?.type === 'concert' ? '3px solid #654321' : '3px solid #2E7D32',
+              boxShadow: '0 6px 20px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.1)',
+              border: '4px solid #2E7D32',
               position: 'relative',
               flexShrink: 0,
-              textShadow: '2px 2px 4px rgba(0,0,0,0.5)'
+              textShadow: '2px 2px 4px rgba(0,0,0,0.7)',
+              zIndex: 2
             }}
           >
-            {event?.type === 'concert' ? (
-              <>
-                <div style={{ 
-                  position: 'absolute', 
-                  top: '20%', 
-                  left: '50%', 
-                  transform: 'translateX(-50%)', 
-                  width: '80%', 
-                  height: 20, 
-                  backgroundColor: 'rgba(255, 255, 255, 0.3)', 
-                  borderRadius: '4px' 
-                }}></div>
-                ESCENARIO
-              </>
-            ) : (
-              <>
-                <div style={{ 
-                  position: 'absolute', 
-                  top: '50%', 
-                  left: '50%', 
-                  transform: 'translate(-50%, -50%)', 
-                  width: 80, 
-                  height: 80, 
-                  border: '2px solid white', 
-                  borderRadius: '50%' 
-                }}></div>
-                CAMPO
-              </>
-            )}
+            {/* Líneas del campo */}
+            <div style={{ 
+              position: 'absolute', 
+              top: '50%', 
+              left: '50%', 
+              transform: 'translate(-50%, -50%)', 
+              width: '90%', 
+              height: '80%', 
+              border: '3px solid white', 
+              borderRadius: '8px',
+              opacity: 0.8
+            }} />
+            
+            {/* Círculo central */}
+            <div style={{ 
+              position: 'absolute', 
+              top: '50%', 
+              left: '50%', 
+              transform: 'translate(-50%, -50%)', 
+              width: 60, 
+              height: 60, 
+              border: '3px solid white', 
+              borderRadius: '50%',
+              opacity: 0.8
+            }} />
+            
+            {/* Línea central */}
+            <div style={{ 
+              position: 'absolute', 
+              top: '50%', 
+              left: '0', 
+              right: '0', 
+              height: '3px', 
+              backgroundColor: 'white',
+              opacity: 0.8
+            }} />
+            
+            {/* Áreas de portería */}
+            <div style={{ 
+              position: 'absolute', 
+              top: '20%', 
+              left: '5%', 
+              width: '15%', 
+              height: '60%', 
+              border: '3px solid white', 
+              borderRadius: '8px',
+              opacity: 0.8
+            }} />
+            <div style={{ 
+              position: 'absolute', 
+              top: '20%', 
+              right: '5%', 
+              width: '15%', 
+              height: '60%', 
+              border: '3px solid white', 
+              borderRadius: '8px',
+              opacity: 0.8
+            }} />
+            
+            <span style={{ 
+              position: 'relative', 
+              zIndex: 3,
+              fontSize: '18px',
+              fontWeight: '700'
+            }}>
+              CAMPO
+            </span>
           </div>
 
           {/* Tribuna Este */}
@@ -311,6 +379,15 @@ const GenericSeatMapRenderer = ({
             })}
           </div>
         )}
+
+        {/* Leyenda de colores del estadio */}
+        <SeatMapLegend 
+          theme="stadium" 
+          showPremium={true}
+          showAccessible={false}
+          className="depth-3"
+          style={{ marginTop: '24px', zIndex: 2, position: 'relative' }}
+        />
       </div>
     );
   };
@@ -778,45 +855,128 @@ const GenericSeatMapRenderer = ({
         display: 'flex', 
         flexDirection: 'column', 
         alignItems: 'center', 
-        gap: 10,
-        minWidth: isMobile ? 700 : 400,
-        padding: '20px',
-        backgroundColor: COLORS.neutral.grey1,
-        borderRadius: '12px'
+        gap: 16,
+        minWidth: isMobile ? 700 : 500,
+        padding: '32px 24px',
+        background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
+        borderRadius: '16px',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+        border: '1px solid #404040',
+        position: 'relative',
+        overflow: 'hidden'
       }}>
-        <Title level={4} style={{ margin: 0, color: COLORS.neutral.darker }}>
+        {/* Efecto de luces del cine */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '2px',
+          background: 'linear-gradient(90deg, #ff6b35, #f7931e, #ffd23f, #f7931e, #ff6b35)',
+          animation: 'cinemaLights 3s ease-in-out infinite'
+        }} />
+        
+        <Title level={3} style={{ 
+          margin: 0, 
+          color: 'white',
+          textShadow: '0 2px 4px rgba(0,0,0,0.5)',
+          fontSize: '24px',
+          fontWeight: '700'
+        }}>
           {config?.cinemaName || name}
         </Title>
 
-        <div
-          style={{
-            width: config?.screenWidth || 300,
-            height: 20,
-            backgroundColor: '#333',
-            borderRadius: '10px 10px 0 0',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontSize: 12,
-            marginBottom: 20,
-            boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
-          }}
-        >
-          PANTALLA
+        {/* Pantalla mejorada con efectos */}
+        <div style={{ position: 'relative', marginBottom: '24px' }}>
+          <div
+            style={{
+              width: config?.screenWidth || 400,
+              height: 24,
+              background: 'linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #000000 100%)',
+              borderRadius: '12px 12px 0 0',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#ffd700',
+              fontSize: 14,
+              fontWeight: 'bold',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)',
+              border: '2px solid #333',
+              textShadow: '0 0 8px rgba(255,215,0,0.5)',
+              position: 'relative'
+            }}
+          >
+            PANTALLA
+            {/* Efecto de brillo en la pantalla */}
+            <div style={{
+              position: 'absolute',
+              top: '2px',
+              left: '10%',
+              right: '10%',
+              height: '1px',
+              background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
+              borderRadius: '1px'
+            }} />
+          </div>
+          
+          {/* Marco de la pantalla */}
+          <div style={{
+            position: 'absolute',
+            top: '-4px',
+            left: '-8px',
+            right: '-8px',
+            bottom: '4px',
+            border: '3px solid #666',
+            borderRadius: '16px',
+            background: 'linear-gradient(135deg, #444 0%, #222 100%)',
+            zIndex: -1,
+            boxShadow: '0 4px 16px rgba(0,0,0,0.4)'
+          }} />
         </div>
 
-        {sortedSections.map(section => (
-          <div key={section.id} style={{ textAlign: 'center', marginBottom: 15 }}>
-            {renderSectionHeader(section)}
-            {renderSectionCard(section, {
-              ...(section.id === 'premium' && !isSectionBlocked(section.id) && {
-                border: '2px solid #9C27B0',
-                backgroundColor: '#F3E5F5'
-              })
-            })}
-          </div>
-        ))}
+        {/* Secciones de asientos con mejor espaciado */}
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          gap: 12,
+          width: '100%',
+          maxWidth: '600px'
+        }}>
+          {sortedSections.map((section, index) => (
+            <div key={section.id} style={{ 
+              textAlign: 'center',
+              position: 'relative',
+              transform: `perspective(1000px) rotateX(${index * 2}deg)`,
+              transformOrigin: 'center bottom'
+            }}>
+              {renderSectionHeader(section)}
+              <div style={{
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
+                borderRadius: '12px',
+                padding: '8px',
+                border: '1px solid rgba(255,255,255,0.1)',
+                backdropFilter: 'blur(10px)'
+              }}>
+                {renderSectionCard(section, {
+                  ...(section.id === 'premium' && !isSectionBlocked(section.id) && {
+                    border: '2px solid #9C27B0',
+                    backgroundColor: 'rgba(156, 39, 176, 0.1)',
+                    boxShadow: '0 4px 16px rgba(156, 39, 176, 0.3)'
+                  })
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Leyenda de colores */}
+        <SeatMapLegend 
+          theme="cinema" 
+          showPremium={true}
+          showAccessible={false}
+          className="depth-2"
+          style={{ marginTop: '20px' }}
+        />
       </div>
     );
   };
@@ -834,46 +994,145 @@ const GenericSeatMapRenderer = ({
         display: 'flex', 
         flexDirection: 'column', 
         alignItems: 'center', 
-        gap: 15,
-        minWidth: isMobile ? 700 : 400,
-        padding: '20px',
-        backgroundColor: COLORS.neutral.grey1,
-        borderRadius: '12px'
+        gap: 20,
+        minWidth: isMobile ? 700 : 500,
+        padding: '32px 24px',
+        background: 'linear-gradient(135deg, #2c1810 0%, #3d2817 50%, #2c1810 100%)',
+        borderRadius: '16px',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+        border: '2px solid #8B4513',
+        position: 'relative',
+        overflow: 'hidden'
       }}>
-        <Title level={4} style={{ margin: 0, color: COLORS.neutral.darker }}>
+        {/* Efecto de cortinas laterales */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '60px',
+          height: '100%',
+          background: 'linear-gradient(90deg, #8B0000 0%, #A52A2A 50%, #8B0000 100%)',
+          clipPath: 'polygon(0 0, 100% 0, 80% 100%, 0 100%)',
+          zIndex: 1
+        }} />
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          width: '60px',
+          height: '100%',
+          background: 'linear-gradient(90deg, #8B0000 0%, #A52A2A 50%, #8B0000 100%)',
+          clipPath: 'polygon(20% 0, 100% 0, 100% 100%, 0 100%)',
+          zIndex: 1
+        }} />
+        
+        <Title level={3} style={{ 
+          margin: 0, 
+          color: '#FFD700',
+          textShadow: '0 2px 4px rgba(0,0,0,0.7)',
+          fontSize: '24px',
+          fontWeight: '700',
+          zIndex: 2,
+          position: 'relative'
+        }}>
           {config?.theaterName || name}
         </Title>
 
-        <div
-          style={{
-            width: config?.stageWidth || 250,
-            height: 30,
-            backgroundColor: '#8B4513',
-            borderRadius: 8,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontSize: 14,
-            marginBottom: 20,
-            boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
-            border: '2px solid #654321'
-          }}
-        >
-          ESCENARIO
+        {/* Escenario mejorado con efectos teatrales */}
+        <div style={{ position: 'relative', marginBottom: '32px', zIndex: 2 }}>
+          <div
+            style={{
+              width: config?.stageWidth || 350,
+              height: 40,
+              background: 'linear-gradient(135deg, #8B4513 0%, #A0522D 50%, #8B4513 100%)',
+              borderRadius: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#FFD700',
+              fontSize: 16,
+              fontWeight: 'bold',
+              boxShadow: '0 6px 20px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.1)',
+              border: '3px solid #654321',
+              textShadow: '0 0 8px rgba(255,215,0,0.5)',
+              position: 'relative'
+            }}
+          >
+            ESCENARIO
+            {/* Luces del escenario */}
+            <div style={{
+              position: 'absolute',
+              top: '-8px',
+              left: '20%',
+              right: '20%',
+              height: '4px',
+              background: 'linear-gradient(90deg, #FFD700, #FFA500, #FFD700)',
+              borderRadius: '2px',
+              boxShadow: '0 0 12px rgba(255, 215, 0, 0.8)'
+            }} />
+          </div>
+          
+          {/* Proscenio */}
+          <div style={{
+            position: 'absolute',
+            top: '-6px',
+            left: '-12px',
+            right: '-12px',
+            bottom: '6px',
+            border: '4px solid #654321',
+            borderRadius: '16px',
+            background: 'linear-gradient(135deg, #A0522D 0%, #8B4513 100%)',
+            zIndex: -1,
+            boxShadow: '0 6px 24px rgba(0,0,0,0.5)'
+          }} />
         </div>
 
-        {sortedSections.map(section => (
-          <div key={section.id} style={{ textAlign: 'center', marginBottom: 15 }}>
-            {renderSectionHeader(section)}
-            {renderSectionCard(section, {
-              ...(section.id === 'boxes' && !isSectionBlocked(section.id) && {
-                border: '2px solid #9C27B0',
-                backgroundColor: '#F3E5F5'
-              })
-            })}
-          </div>
-        ))}
+        {/* Secciones de asientos con perspectiva teatral */}
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          gap: 16,
+          width: '100%',
+          maxWidth: '600px',
+          zIndex: 2,
+          position: 'relative'
+        }}>
+          {sortedSections.map((section, index) => (
+            <div key={section.id} style={{ 
+              textAlign: 'center',
+              position: 'relative',
+              transform: `perspective(1200px) rotateX(${index * 1.5}deg)`,
+              transformOrigin: 'center bottom'
+            }}>
+              {renderSectionHeader(section)}
+              <div style={{
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)',
+                borderRadius: '12px',
+                padding: '12px',
+                border: '1px solid rgba(255,215,0,0.2)',
+                backdropFilter: 'blur(10px)',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.3)'
+              }}>
+                {renderSectionCard(section, {
+                  ...(section.id === 'boxes' && !isSectionBlocked(section.id) && {
+                    border: '2px solid #9C27B0',
+                    backgroundColor: 'rgba(156, 39, 176, 0.15)',
+                    boxShadow: '0 6px 20px rgba(156, 39, 176, 0.4)'
+                  })
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Leyenda de colores teatral */}
+        <SeatMapLegend 
+          theme="theater" 
+          showPremium={true}
+          showAccessible={false}
+          className="depth-3"
+          style={{ marginTop: '24px', zIndex: 2, position: 'relative' }}
+        />
       </div>
     );
   };
@@ -920,7 +1179,7 @@ const GenericSeatMapRenderer = ({
                     <Typography.Text strong style={{ 
                       color: sectionBlocked ? '#999' : section.color 
                     }}>
-                      {formatPrice(section.defaultPrice)}
+                      {formatPrice(section.defaultPrice || 0)}
                     </Typography.Text>
                   </div>
                   <Typography.Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
@@ -963,7 +1222,7 @@ const GenericSeatMapRenderer = ({
                       sectionId={section.id}
                       rows={section.rows}
                       seatsPerRow={section.seatsPerRow}
-                      price={section.defaultPrice}
+                      price={section.defaultPrice || 0}
                       color={section.color}
                       name={section.name}
                       selectedSeats={selectedSeats}
@@ -1059,11 +1318,11 @@ const GeneralAdmissionRenderer = ({
     }
 
     // Obtener el precio correcto del evento si está disponible
-    let correctPrice = section.defaultPrice;
+    let correctPrice = section.defaultPrice || 0;
     if (event && event.usesSectionPricing && event.sectionPricing?.length > 0) {
       const eventSectionPricing = event.sectionPricing.find(sp => sp.sectionId === section.id);
       if (eventSectionPricing) {
-        correctPrice = eventSectionPricing.defaultPrice || section.defaultPrice;
+        correctPrice = eventSectionPricing.defaultPrice || section.defaultPrice || 0;
       }
     }
 
@@ -1212,11 +1471,11 @@ const GeneralAdmissionRenderer = ({
           }}>
             {(() => {
               // Obtener el precio correcto del evento si está disponible
-              let correctPrice = section.defaultPrice;
+              let correctPrice = section.defaultPrice || 0;
               if (event && event.usesSectionPricing && event.sectionPricing?.length > 0) {
                 const eventSectionPricing = event.sectionPricing.find(sp => sp.sectionId === section.id);
                 if (eventSectionPricing) {
-                  correctPrice = eventSectionPricing.defaultPrice || section.defaultPrice;
+                  correctPrice = eventSectionPricing.defaultPrice || section.defaultPrice || 0;
                 }
               }
               return formatPrice(correctPrice);

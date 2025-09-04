@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Cropper from 'react-easy-crop';
 import { Modal, Slider } from 'antd';
 

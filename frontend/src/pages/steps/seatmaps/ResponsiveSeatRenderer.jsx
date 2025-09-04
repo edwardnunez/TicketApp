@@ -1,13 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, Typography, Space, Collapse, Badge, Tooltip, notification } from 'antd';
-import { DownOutlined, UpOutlined, CheckOutlined, CloseOutlined, StopOutlined } from '@ant-design/icons';
+import { Card, Button, Typography, Collapse, Badge, notification, Switch } from 'antd';
+import {
+  DownOutlined,
+  UpOutlined,
+  AppstoreOutlined,
+  UnorderedListOutlined
+} from '@ant-design/icons';
 import { COLORS } from '../../../components/colorscheme';
 import SeatRenderer from './SeatRenderer';
+import SeatMapLegend from './SeatMapLegend';
+import MobileSeatList from './MobileSeatList';
+import SmartSeatFilters from '../../../components/SmartSeatFilters';
+import OptimizedSeatNavigation from '../../../components/OptimizedSeatNavigation';
+import PersistentViewSwitcher from '../../../components/PersistentViewSwitcher';
+import useDeviceDetection from '../../../hooks/useDeviceDetection';
+import './SeatMapAnimations.css';
 
 const { Title, Text } = Typography;
-const { Panel } = Collapse;
 
-const ResponsiveStyleRenderer = ({
+const ResponsiveSeatRenderer = ({
   seatMapData,
   selectedSeats,
   onSeatSelect,
@@ -19,22 +30,16 @@ const ResponsiveStyleRenderer = ({
   event,
   calculateSeatPrice
 }) => {
-  const [isMobile, setIsMobile] = useState(false);
+  const deviceInfo = useDeviceDetection();
   const [expandedSections, setExpandedSections] = useState(new Set());
   const [hoveredSection, setHoveredSection] = useState(null);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  const [currentView, setCurrentView] = useState(deviceInfo.isMobile ? 'navigation' : 'map');
+  const [previousView, setPreviousView] = useState(null);
+  const [filters, setFilters] = useState({});
 
   if (!seatMapData) return null;
 
-  const { sections, config, type, name } = seatMapData;
+  const { sections, config, name } = seatMapData;
 
   const filterOccupiedBySection = (sectionId) => {
     if (!occupiedSeats || !occupiedSeats.length) return [];
@@ -50,51 +55,59 @@ const ResponsiveStyleRenderer = ({
     return blockedSections && blockedSections.includes(sectionId);
   };
 
-  const getSectionCapacityFromPricing = (sectionId) => {
-    if (!event?.sectionPricing) return null;
-    const pricing = event.sectionPricing.find(p => p.sectionId === sectionId);
-    return pricing ? pricing.capacity : null;
-  };
-
   const getSectionPrice = (section) => {
     if (event && event.usesSectionPricing && event.sectionPricing?.length > 0) {
       const eventSectionPricing = event.sectionPricing.find(sp => sp.sectionId === section.id);
       if (eventSectionPricing) {
-        return eventSectionPricing.defaultPrice || section.defaultPrice;
+        return eventSectionPricing.defaultPrice || section.defaultPrice || 0;
       }
     }
-    return section.defaultPrice;
+    return section.defaultPrice || 0;
   };
 
   const getSectionAvailability = (section) => {
-    const sectionOccupiedSeats = filterOccupiedBySection(section.id);
-    const pricingCapacity = getSectionCapacityFromPricing(section.id);
-    const totalCapacity = pricingCapacity || (section.hasNumberedSeats ? section.rows * section.seatsPerRow : section.totalCapacity) || 0;
-    const occupiedCount = sectionOccupiedSeats.length;
-    const remainingCapacity = Math.max(totalCapacity - occupiedCount, 0);
-    const capacityPercentage = totalCapacity > 0 ? ((totalCapacity - remainingCapacity) / totalCapacity) * 100 : 0;
-
-    return {
-      totalCapacity,
-      occupiedCount,
-      remainingCapacity,
-      capacityPercentage,
-      isFullyBooked: isSectionBlocked(section.id) || remainingCapacity <= 0,
-      isNearCapacity: capacityPercentage > 80
-    };
+    if (section.hasNumberedSeats) {
+      const totalSeats = section.rows * section.seatsPerRow;
+      const occupiedCount = filterOccupiedBySection(section.id).length;
+      const blockedCount = filterBlockedBySection(section.id).length;
+      const availableSeats = Math.max(0, totalSeats - occupiedCount - blockedCount);
+      
+      return {
+        totalSeats,
+        occupiedSeats: occupiedCount,
+        blockedSeats: blockedCount,
+        availableSeats,
+        isFullyBooked: availableSeats === 0 || isSectionBlocked(section.id),
+        occupancyRate: totalSeats > 0 ? ((occupiedCount + blockedCount) / totalSeats) * 100 : 0
+      };
+    } else {
+      // Entrada general
+      const totalCapacity = section.totalCapacity || 0;
+      const occupiedCount = filterOccupiedBySection(section.id).length;
+      const availableSeats = Math.max(0, totalCapacity - occupiedCount);
+      
+      return {
+        totalSeats: totalCapacity,
+        occupiedSeats: occupiedCount,
+        blockedSeats: 0,
+        availableSeats,
+        isFullyBooked: availableSeats === 0 || isSectionBlocked(section.id),
+        occupancyRate: totalCapacity > 0 ? (occupiedCount / totalCapacity) * 100 : 0
+      };
+    }
   };
 
   const handleSectionToggle = (sectionId) => {
-    const newExpandedSections = new Set(expandedSections);
-    if (newExpandedSections.has(sectionId)) {
-      newExpandedSections.delete(sectionId);
+    const newExpanded = new Set(expandedSections);
+    if (newExpanded.has(sectionId)) {
+      newExpanded.delete(sectionId);
     } else {
-      newExpandedSections.add(sectionId);
+      newExpanded.add(sectionId);
     }
-    setExpandedSections(newExpandedSections);
+    setExpandedSections(newExpanded);
   };
 
-  const renderSectionButton = (section) => {
+  const renderSectionCard = (section) => {
     const availability = getSectionAvailability(section);
     const sectionPrice = getSectionPrice(section);
     const isExpanded = expandedSections.has(section.id);
@@ -155,111 +168,50 @@ const ResponsiveStyleRenderer = ({
               <Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
                 {section.hasNumberedSeats 
                   ? `${section.rows} filas × ${section.seatsPerRow} asientos`
-                  : `Capacidad: ${availability.totalCapacity} personas`
+                  : `Capacidad: ${section.totalCapacity} personas`
                 }
               </Text>
               
-              <Text style={{ 
-                color: availability.isNearCapacity ? '#ff4d4f' : COLORS.neutral.grey4, 
-                fontSize: '12px' 
-              }}>
-                {availability.remainingCapacity} disponibles
-                {availability.isNearCapacity && !availability.isFullyBooked && ' (¡Pocas quedan!)'}
+              <Text strong style={{ color: COLORS.primary.main }}>
+                {formatPrice(sectionPrice)}
               </Text>
-            </div>
-
-            {/* Barra de disponibilidad */}
-            <div style={{
-              width: '100%',
-              height: '4px',
-              backgroundColor: COLORS.neutral.grey2,
-              borderRadius: '2px',
-              marginTop: '8px',
-              overflow: 'hidden'
-            }}>
-              <div style={{
-                height: '100%',
-                width: `${availability.capacityPercentage}%`,
-                backgroundColor: availability.isNearCapacity ? '#ff4d4f' : COLORS.primary.main,
-                borderRadius: '2px',
-                transition: 'width 0.3s ease'
-              }}></div>
+              
+              <Text style={{ 
+                color: availability.isFullyBooked ? '#ff4d4f' : '#52c41a',
+                fontSize: '12px',
+                fontWeight: '500'
+              }}>
+                {availability.availableSeats} disponibles
+              </Text>
             </div>
           </div>
 
-          <div style={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            alignItems: 'flex-end', 
-            gap: '8px',
-            marginLeft: '16px'
-          }}>
-            <Title level={4} style={{ 
-              margin: 0, 
-              color: COLORS.primary.main,
-              fontSize: '18px'
-            }}>
-              {formatPrice(sectionPrice)}
-            </Title>
-            
-            <Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
-              por {section.hasNumberedSeats ? 'asiento' : 'entrada'}
-            </Text>
-
-            <Button
-              type="text"
-              icon={isExpanded ? <UpOutlined /> : <DownOutlined />}
-              size="small"
-              style={{
-                color: COLORS.neutral.grey4,
-                padding: '4px 8px',
-                height: 'auto',
-                minHeight: 'auto'
-              }}
-            />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {isExpanded ? <UpOutlined /> : <DownOutlined />}
           </div>
         </div>
 
-        {/* Contenido expandible */}
         {isExpanded && !availability.isFullyBooked && (
-          <div style={{ 
-            marginTop: '16px', 
-            paddingTop: '16px', 
-            borderTop: `1px solid ${COLORS.neutral.grey2}` 
-          }}>
+          <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #f0f0f0' }}>
             {section.hasNumberedSeats ? (
-              <div style={{ 
-                maxHeight: '300px', 
-                overflowY: 'auto',
-                overflowX: 'auto',
-                padding: '8px',
-                backgroundColor: COLORS.neutral.grey1,
-                borderRadius: '8px',
-                // Hacer que el contenedor se ajuste al contenido
-                width: 'fit-content',
-                minWidth: '100%'
-              }}>
-                <SeatRenderer
-                  sectionId={section.id}
-                  rows={section.rows}
-                  seatsPerRow={section.seatsPerRow}
-                  price={sectionPrice}
-                  color={section.color}
-                  name={section.name}
-                  selectedSeats={selectedSeats}
-                  occupiedSeats={filterOccupiedBySection(section.id)}
-                  blockedSeats={filterBlockedBySection(section.id)}
-                  sectionBlocked={isSectionBlocked(section.id)}
-                  maxSeats={maxSeats}
-                  onSeatSelect={onSeatSelect}
-                  formatPrice={formatPrice}
-                  event={event}
-                  calculateSeatPrice={calculateSeatPrice}
-                  sectionPricing={section.sectionPricing}
-                  compactMode={true} // Modo compacto para móviles
-                  responsiveMode={true} // Nuevo prop para indicar que está en modo responsive
-                />
-              </div>
+              <SeatRenderer
+                sectionId={section.id}
+                rows={section.rows}
+                seatsPerRow={section.seatsPerRow}
+                price={sectionPrice}
+                color={section.color}
+                name={section.name}
+                selectedSeats={selectedSeats}
+                occupiedSeats={filterOccupiedBySection(section.id)}
+                blockedSeats={filterBlockedBySection(section.id)}
+                sectionBlocked={isSectionBlocked(section.id)}
+                maxSeats={maxSeats}
+                onSeatSelect={onSeatSelect}
+                formatPrice={formatPrice}
+                event={event}
+                calculateSeatPrice={calculateSeatPrice}
+                responsiveMode={true}
+              />
             ) : (
               <GeneralAdmissionRenderer
                 section={section}
@@ -270,7 +222,6 @@ const ResponsiveStyleRenderer = ({
                 onSeatSelect={onSeatSelect}
                 maxSeats={maxSeats}
                 event={event}
-                sectionCapacityFromPricing={getSectionCapacityFromPricing(section.id)}
               />
             )}
           </div>
@@ -282,6 +233,66 @@ const ResponsiveStyleRenderer = ({
   const renderLayout = () => {
     const sortedSections = [...sections].sort((a, b) => (a.order || 0) - (b.order || 0));
 
+    // Vista de navegación optimizada (móvil y tablet)
+    if (currentView === 'navigation') {
+      return (
+        <OptimizedSeatNavigation
+          sections={sortedSections}
+          selectedSeats={selectedSeats}
+          onSeatSelect={onSeatSelect}
+          formatPrice={formatPrice}
+          maxSeats={maxSeats}
+          event={event}
+        />
+      );
+    }
+
+    // Vista de filtros inteligentes
+    if (currentView === 'filters') {
+      return (
+        <div>
+          <SmartSeatFilters
+            sections={sortedSections}
+            selectedSeats={selectedSeats}
+            onFilterChange={setFilters}
+            onSmartSelect={(mode, filteredSections) => {
+              // Implementar selección inteligente
+              console.log('Smart select:', mode, filteredSections);
+            }}
+            formatPrice={formatPrice}
+            event={event}
+          />
+          <OptimizedSeatNavigation
+            sections={sortedSections}
+            selectedSeats={selectedSeats}
+            onSeatSelect={onSeatSelect}
+            formatPrice={formatPrice}
+            maxSeats={maxSeats}
+            event={event}
+          />
+        </div>
+      );
+    }
+
+    // Vista de lista tradicional (fallback)
+    if (currentView === 'list') {
+      return (
+        <MobileSeatList
+          seatMapData={seatMapData}
+          selectedSeats={selectedSeats}
+          onSeatSelect={onSeatSelect}
+          maxSeats={maxSeats}
+          occupiedSeats={occupiedSeats}
+          blockedSeats={blockedSeats}
+          blockedSections={blockedSections}
+          formatPrice={formatPrice}
+          event={event}
+          calculateSeatPrice={calculateSeatPrice}
+        />
+      );
+    }
+
+    // Vista de mapa (por defecto)
     return (
       <div style={{ 
         display: 'flex', 
@@ -292,95 +303,73 @@ const ResponsiveStyleRenderer = ({
         borderRadius: '12px',
         minHeight: '400px'
       }}>
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: deviceInfo.isMobile ? '1fr' : 'repeat(auto-fit, minmax(300px, 1fr))',
+          gap: '16px'
+        }}>
+          {sortedSections.map(section => renderSectionCard(section))}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div>
+      {/* Conmutador persistente */}
+      <PersistentViewSwitcher
+        currentView={currentView}
+        onViewChange={(newView) => {
+          if (newView !== currentView) {
+            setPreviousView(currentView);
+            setCurrentView(newView);
+          }
+        }}
+        previousView={previousView}
+        availableViews={deviceInfo.isMobile ? ['navigation', 'filters'] : ['map', 'navigation', 'filters']}
+        showCounts={true}
+        mapCount={sections.length}
+        listCount={sections.reduce((total, section) => total + (section.rows * section.seatsPerRow), 0)}
+      />
+
+      {/* Contenido principal */}
+      <div style={{ 
+        padding: '20px',
+        backgroundColor: COLORS.neutral.grey1,
+        minHeight: '400px'
+      }}>
+        {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
           <Title level={3} style={{ margin: 0, color: COLORS.neutral.darker }}>
             {config?.venueName || name}
           </Title>
           <Text style={{ color: COLORS.neutral.grey4 }}>
-            Selecciona una sección para ver los asientos disponibles
+            {currentView === 'map' ? 'Selecciona una sección para ver los asientos disponibles' :
+             currentView === 'navigation' ? 'Navega por las secciones y selecciona tus asientos' :
+             currentView === 'filters' ? 'Usa los filtros para encontrar los mejores asientos' :
+             'Selecciona tus asientos preferidos'}
           </Text>
         </div>
 
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(300px, 1fr))',
-          gap: '16px'
-        }}>
-          {sortedSections.map(section => renderSectionButton(section))}
-        </div>
-
-        {selectedSeats.length > 0 && (
-          <Card style={{ 
-            marginTop: '24px', 
-            backgroundColor: COLORS.neutral.white,
-            border: `2px solid ${COLORS.primary.main}`
-          }}>
-            <Title level={4} style={{ color: COLORS.neutral.darker, marginBottom: '16px' }}>
-              Resumen de selección ({selectedSeats.length} asiento{selectedSeats.length !== 1 ? 's' : ''})
-            </Title>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '12px' }}>
-              {selectedSeats.map(seat => (
-                <div key={seat.id} style={{
-                  padding: '12px',
-                  backgroundColor: COLORS.neutral.grey1,
-                  borderRadius: '8px',
-                  border: `1px solid ${COLORS.neutral.grey2}`
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <Text strong>{seat.section}</Text><br />
-                      <Text style={{ color: COLORS.neutral.grey4 }}>
-                        {seat.row != null && seat.seat != null
-                          ? `Fila ${seat.row}, Asiento ${seat.seat}`
-                          : `Entrada general`}
-                      </Text>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <Text strong style={{ color: COLORS.primary.main }}>
-                        {formatPrice(seat.price || 0)}
-                      </Text><br />
-                      <Button 
-                        size="small" 
-                        type="link" 
-                        danger 
-                        onClick={() => {
-                          const newSeats = selectedSeats.filter(s => s.id !== seat.id);
-                          onSeatSelect(newSeats);
-                        }}
-                      >
-                        Quitar
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div style={{ 
-              marginTop: '16px', 
-              padding: '16px', 
-              backgroundColor: COLORS.primary.light + '20',
-              borderRadius: '8px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center'
-            }}>
-              <Title level={4} style={{ color: COLORS.neutral.darker, margin: 0 }}>
-                Total:
-              </Title>
-              <Title level={3} style={{ color: COLORS.primary.main, margin: 0 }}>
-                {formatPrice(selectedSeats.reduce((total, seat) => total + (seat.price || 0), 0))}
-              </Title>
-            </div>
-          </Card>
+        {/* Leyenda (solo para vista de mapa) */}
+        {currentView === 'map' && (
+          <SeatMapLegend 
+            theme={seatMapData.type || 'generic'}
+            showPremium={true}
+            showAccessible={true}
+            className="depth-2"
+            style={{ marginBottom: '16px' }}
+          />
         )}
-      </div>
-    );
-  };
 
-  return renderLayout();
+        {/* Contenido según la vista seleccionada */}
+        {renderLayout()}
+      </div>
+    </div>
+  );
 };
 
-// Componente para entrada general (reducido en tamaño)
+// Componente para entrada general
 const GeneralAdmissionRenderer = ({ 
   section, 
   sectionBlocked, 
@@ -389,16 +378,14 @@ const GeneralAdmissionRenderer = ({
   occupiedSeats = [],
   onSeatSelect, 
   maxSeats,
-  event,
-  sectionCapacityFromPricing
+  event
 }) => {
   const sameSectionSelected = selectedSeats.filter(s => s.sectionId === section.id);
   const isSelected = sameSectionSelected.length > 0;
 
   // Capacidad
-  const pricingCapacity = sectionCapacityFromPricing;
   const occupiedCount = occupiedSeats.filter(seatId => seatId.startsWith(section.id)).length;
-  const totalCapacity = pricingCapacity || section.totalCapacity || 0;
+  const totalCapacity = section.totalCapacity || 0;
   const remainingCapacity = Math.max(totalCapacity - occupiedCount, 0);
   const capacityPercentage = totalCapacity > 0 ? ((totalCapacity - remainingCapacity) / totalCapacity) * 100 : 0;
 
@@ -424,11 +411,11 @@ const GeneralAdmissionRenderer = ({
     }
 
     // Obtener el precio correcto del evento si está disponible
-    let correctPrice = section.defaultPrice;
+    let correctPrice = section.defaultPrice || 0;
     if (event && event.usesSectionPricing && event.sectionPricing?.length > 0) {
       const eventSectionPricing = event.sectionPricing.find(sp => sp.sectionId === section.id);
       if (eventSectionPricing) {
-        correctPrice = eventSectionPricing.defaultPrice || section.defaultPrice;
+        correctPrice = eventSectionPricing.defaultPrice || section.defaultPrice || 0;
       }
     }
 
@@ -557,11 +544,12 @@ const GeneralAdmissionRenderer = ({
           </Text>
         </div>
 
+        {/* Indicador de selección múltiple */}
         {sameSectionSelected.length > 1 && (
           <div style={{
             position: 'absolute',
-            top: '-6px',
-            right: '-6px',
+            top: '-8px',
+            right: '-8px',
             width: '20px',
             height: '20px',
             backgroundColor: section.color,
@@ -582,4 +570,4 @@ const GeneralAdmissionRenderer = ({
   );
 };
 
-export default ResponsiveStyleRenderer;
+export default ResponsiveSeatRenderer;

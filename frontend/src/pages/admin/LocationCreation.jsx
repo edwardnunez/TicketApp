@@ -100,7 +100,7 @@ const LocationCreation = () => {
       label: 'Concierto',
       description: 'Venue para conciertos y espectáculos musicales',
       icon: '🎵',
-      seatMapTypes: ['concert-tiered', 'concert-arenas'],
+      seatMapTypes: ['concert', 'arena'],
       requiresCapacity: true,
       requiresSeatMap: false,
       allowOptionalSeatMap: true
@@ -174,7 +174,7 @@ const LocationCreation = () => {
         boxes: { maxRows: 4, maxSeatsPerRow: 8 }
       }
     },
-    'concert-tiered': {
+    'concert': {
       label: 'Concierto (gradas)',
       description: 'Pista, grada baja, grada media, grada alta y VIP',
       availablePositions: ['pista', 'grada-baja', 'grada-media', 'grada-alta', 'vip'],
@@ -193,7 +193,7 @@ const LocationCreation = () => {
         vip: { maxRows: 3, maxSeatsPerRow: 10 }
       }
     },
-    'concert-arenas': {
+    'arena': {
       label: 'Concierto (arenas)',
       description: 'Pista, laterales este y oeste, fondos norte y sur y VIP',
       availablePositions: ['pista', 'lateral-este', 'lateral-oeste', 'fondo-norte', 'fondo-sur', 'vip'],
@@ -326,7 +326,9 @@ const LocationCreation = () => {
         ...section,
         id: section.position,
         order: index + 1,
-        key: `section_${index}`
+        key: `section_${index}`,
+        // Asegurar que hasNumberedSeats esté definido correctamente
+        hasNumberedSeats: section.hasNumberedSeats !== undefined ? section.hasNumberedSeats : true
       }));
       setSections(defaultSections);
     }
@@ -362,7 +364,8 @@ const LocationCreation = () => {
       seatsPerRow: 10,
       color: '#1890ff',
       defaultPrice: 0,
-      order: sections.length + 1
+      order: sections.length + 1,
+      hasNumberedSeats: true // Inicializar como asientos numerados por defecto
     };
     setSections([...sections, newSection]);
   };
@@ -443,13 +446,13 @@ const LocationCreation = () => {
             theaterName: values.name,
             stageWidth: 250
           }),
-          ...(values.type === 'concert-tiered' && {
+          ...(values.type === 'concert' && {
             venueName: values.name,
             stagePosition: 'center',
             stageDimensions: { width: 80, height: 50 },
             allowsGeneralAdmission: true
           }),
-          ...(values.type === 'concert-arenas' && {
+          ...(values.type === 'arena' && {
             venueName: values.name,
             stagePosition: 'center',
             stageDimensions: { width: 80, height: 50 },
@@ -597,28 +600,33 @@ const LocationCreation = () => {
     },
     {
       title: 'Tipo',
-      render: (_, record) => (
-        <Select
-          value={record.hasNumberedSeats !== false ? 'numbered' : 'general'}
-          onChange={(value) => {
-            const isNumbered = value === 'numbered';
-            updateSection(record.key, 'hasNumberedSeats', isNumbered);
-            if (!isNumbered) {
-              // Para entrada general, establecer valores por defecto
-              updateSection(record.key, 'rows', 1);
-              updateSection(record.key, 'seatsPerRow', 1);
-              updateSection(record.key, 'totalCapacity', record.totalCapacity || 100);
-            } else {
-              // Para asientos numerados, limpiar totalCapacity
-              updateSection(record.key, 'totalCapacity', undefined);
-            }
-          }}
-          style={{ width: '100%' }}
-        >
-          <Option value="numbered">Asientos numerados</Option>
-          <Option value="general">Entrada general</Option>
-        </Select>
-      )
+      render: (_, record) => {
+        // Determinar el valor actual del selector
+        const currentValue = record.hasNumberedSeats === false ? 'general' : 'numbered';
+        
+        return (
+          <Select
+            value={currentValue}
+            onChange={(value) => {
+              const isNumbered = value === 'numbered';
+              updateSection(record.key, 'hasNumberedSeats', isNumbered);
+              if (!isNumbered) {
+                // Para entrada general, establecer valores por defecto
+                updateSection(record.key, 'rows', 1);
+                updateSection(record.key, 'seatsPerRow', 1);
+                updateSection(record.key, 'totalCapacity', record.totalCapacity || 100);
+              } else {
+                // Para asientos numerados, limpiar totalCapacity
+                updateSection(record.key, 'totalCapacity', undefined);
+              }
+            }}
+            style={{ width: '100%' }}
+          >
+            <Option value="numbered">Asientos numerados</Option>
+            <Option value="general">Entrada general</Option>
+          </Select>
+        );
+      }
     },
     {
       title: 'Capacidad (si entrada general)',
