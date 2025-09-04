@@ -4,8 +4,8 @@ quitar console logs
 
 hacer responsive los seatmaps y event creation
 
-borrar token de usuario y username despus de una hora, como el de rol - creo que ya esta
+corregir la renderizacion de los mapas de conciertos, se renderizan muy raro - revisar los filtros y los demas tipos de mapa de asientos
 
-corregir la renderizacion de los mapas de conciertos, se renderizan muy raro
+corregir vista previa de imagen en eventcreation
 
-corregir la renderizacion de fotos
+al crear ubicacion - el select de entrada general/asientos numerados no funciona
