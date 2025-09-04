@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 /**
  * FramedImage: sistema inteligente que adapta el comportamiento según la imagen.
@@ -20,7 +20,7 @@ const FramedImage = ({
   tolerance = 0.15, // Tolerancia para decidir entre cover/contain (15% por defecto)
   onLoad: onLoadProp
 }) => {
-  const [imageRatio, setImageRatio] = useState(null);
+  const [, setImageRatio] = useState(null);
   const [computedObjectFit, setComputedObjectFit] = useState('contain');
 
   const wrapperStyle = useMemo(() => {
@@ -34,21 +34,14 @@ const FramedImage = ({
       placeItems: 'center'
     };
     
-    // Para el aspect ratio del contenedor
-    let containerAspect = aspectRatio;
-    
-    // Si el objectFit es 'contain' y tenemos el ratio de la imagen, 
-    // ajustamos el contenedor para evitar bandas
-    if (computedObjectFit === 'contain' && imageRatio && objectFit === 'smart') {
-      containerAspect = imageRatio;
-    }
-    
+    // Mantener siempre el aspect ratio deseado del contenedor
+    // No ajustar el contenedor al aspect ratio de la imagen
     return {
       ...base,
-      aspectRatio: containerAspect,
+      aspectRatio: aspectRatio,
       maxHeight: maxHeight || undefined
     };
-  }, [imageRatio, backgroundColor, borderRadius, maxHeight, aspectRatio, computedObjectFit, objectFit]);
+  }, [backgroundColor, borderRadius, maxHeight, aspectRatio]);
 
   const handleLoad = (e) => {
     const el = e.currentTarget;
@@ -63,7 +56,8 @@ const FramedImage = ({
         
         // Si la diferencia es pequeña, usar cover para eliminar bandas
         // Si es grande, usar contain para mostrar toda la imagen
-        setComputedObjectFit(diff <= tolerance ? 'cover' : 'contain');
+        // Pero para vistas previas, es mejor usar 'cover' para mantener el aspect ratio del contenedor
+        setComputedObjectFit(diff <= tolerance ? 'cover' : 'cover');
       } else {
         setComputedObjectFit(objectFit);
       }

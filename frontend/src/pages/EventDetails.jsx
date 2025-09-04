@@ -12,7 +12,6 @@ import {
   Skeleton,
   Alert,
   Divider,
-  Image,
   Table
 } from "antd";
 import { notification } from 'antd';

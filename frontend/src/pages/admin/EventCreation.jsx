@@ -156,7 +156,7 @@ const EventCreation = () => {
 
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
-  const [uploadLoading, setUploadLoading] = useState(false);
+  const [uploadLoading] = useState(false);
   const [cropSrc, setCropSrc] = useState(null);
   const [isCropOpen, setIsCropOpen] = useState(false);
 
@@ -167,7 +167,7 @@ const EventCreation = () => {
   const [isMobile, setIsMobile] = useState(false);
 
   const [showConflictModal, setShowConflictModal] = useState(false);
-  const [conflictEventInfo, setConflictEventInfo] = useState(null);
+  const [, setConflictEventInfo] = useState(null);
 
   const navigate = useNavigate();
   
@@ -492,41 +492,42 @@ const EventCreation = () => {
     }
   };
 
-  const resizeImage = (file, maxWidth = 800, maxHeight = 600, quality = 0.8) => {
-    return new Promise((resolve) => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      const img = new Image();
+  // Función no utilizada - comentada para evitar warnings de linting
+  // const resizeImage = (file, maxWidth = 800, maxHeight = 600, quality = 0.8) => {
+  //   return new Promise((resolve) => {
+  //     const canvas = document.createElement('canvas');
+  //     const ctx = canvas.getContext('2d');
+  //     const img = new Image();
       
-      img.onload = () => {
-        // Calcular nuevas dimensiones manteniendo proporción
-        let { width, height } = img;
+  //     img.onload = () => {
+  //       // Calcular nuevas dimensiones manteniendo proporción
+  //       let { width, height } = img;
         
-        if (width > height) {
-          if (width > maxWidth) {
-            height = (height * maxWidth) / width;
-            width = maxWidth;
-          }
-        } else {
-          if (height > maxHeight) {
-            width = (width * maxHeight) / height;
-            height = maxHeight;
-          }
-        }
+  //       if (width > height) {
+  //         if (width > maxWidth) {
+  //           height = (height * maxWidth) / width;
+  //           width = maxWidth;
+  //         }
+  //       } else {
+  //         if (height > maxHeight) {
+  //           width = (width * maxHeight) / height;
+  //           height = maxHeight;
+  //         }
+  //       }
         
-        canvas.width = width;
-        canvas.height = height;
+  //       canvas.width = width;
+  //       canvas.height = height;
         
-        // Dibujar imagen redimensionada
-        ctx.drawImage(img, 0, 0, width, height);
+  //       // Dibujar imagen redimensionada
+  //       ctx.drawImage(img, 0, 0, width, height);
         
-        // Convertir a blob
-        canvas.toBlob(resolve, file.type, quality);
-      };
+  //       // Convertir a blob
+  //       canvas.toBlob(resolve, file.type, quality);
+  //     };
       
-      img.src = URL.createObjectURL(file);
-    });
-  };
+  //     img.src = URL.createObjectURL(file);
+  //   });
+  // };
 
   // Transforma la imagen a un lienzo fijo (contain) para que se vea entera en un marco 16:9
   const processImageToFixedCanvas = (file, targetWidth = 1280, targetHeight = 720, background = '#111', quality = 0.8) => {
