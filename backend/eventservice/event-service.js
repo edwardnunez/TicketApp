@@ -559,7 +559,7 @@ app.get("/events/:eventId/seat-price/:sectionId/:row/:seat", async (req, res) =>
     const event = await EventModel.findById(eventId);
     if (!event) return res.status(404).json({ error: "Event not found" });
 
-    const seatId = `${sectionId}-${row}-${seat}`;
+    const seatId = `${sectionId}-${parseInt(row) + 1}-${parseInt(seat) + 1}`;
     const price = event.getSeatPrice(sectionId, parseInt(row), parseInt(seat));
     const isBlocked = event.isSeatBlocked(seatId);
 
@@ -594,7 +594,7 @@ app.post("/events/:eventId/seats-pricing", async (req, res) => {
 
     const seatsPricing = seats.map(seatInfo => {
       const { sectionId, row, seat } = seatInfo;
-      const seatId = `${sectionId}-${row}-${seat}`;
+      const seatId = `${sectionId}-${parseInt(row) + 1}-${parseInt(seat) + 1}`;
       const price = event.getSeatPrice(sectionId, parseInt(row), parseInt(seat));
       const isBlocked = event.isSeatBlocked(seatId);
 

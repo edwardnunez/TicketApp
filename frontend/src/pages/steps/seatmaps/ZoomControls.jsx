@@ -52,7 +52,7 @@ const ZoomControls = ({
       className="zoom-controls"
       style={{
         position: 'absolute',
-        top: '80px', /* Mover más abajo para evitar superposición con header */
+        top: '120px', /* Mover más abajo para evitar superposición con header */
         right: '16px',
         zIndex: 1000,
         display: 'flex',

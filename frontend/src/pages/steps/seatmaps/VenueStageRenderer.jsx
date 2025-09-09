@@ -6,8 +6,8 @@ const VenueStageRenderer = ({ type, config, venueColors }) => {
     <div 
       className="football-field"
       style={{
-        width: config?.fieldDimensions?.width || 400,
-        height: config?.fieldDimensions?.height || 260,
+        width: config?.fieldDimensions?.width || 600,
+        height: config?.fieldDimensions?.height || 400,
         background: COLORS.gradients.field,
         borderRadius: '12px',
         display: 'flex',
@@ -66,18 +66,6 @@ const VenueStageRenderer = ({ type, config, venueColors }) => {
         zIndex: 2
       }} />
       
-      {/* Línea central */}
-      <div style={{ 
-        position: 'absolute', 
-        top: '50%', 
-        left: '0', 
-        right: '0', 
-        height: '3px', 
-        backgroundColor: 'white',
-        opacity: 0.8,
-        zIndex: 2
-      }} />
-      
       {/* Áreas de portería */}
       <div style={{ 
         position: 'absolute', 
@@ -117,8 +105,8 @@ const VenueStageRenderer = ({ type, config, venueColors }) => {
     <div
       className="concert-stage"
       style={{
-        width: config?.stageWidth || 400,
-        height: config?.stageHeight || 100,
+        width: config?.stageWidth || 600,
+        height: config?.stageHeight || 150,
         background: COLORS.gradients.stage,
         borderRadius: '20px 20px 8px 8px',
         display: 'flex',
@@ -214,8 +202,8 @@ const VenueStageRenderer = ({ type, config, venueColors }) => {
       <div
         className="cinema-screen"
         style={{
-          width: config?.screenWidth || 400,
-          height: 24,
+          width: config?.screenWidth || 600,
+          height: 36,
           background: 'linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #000000 100%)',
           borderRadius: '12px 12px 0 0',
           display: 'flex',
@@ -264,8 +252,8 @@ const VenueStageRenderer = ({ type, config, venueColors }) => {
       <div
         className="theater-stage"
         style={{
-          width: config?.stageWidth || 350,
-          height: 40,
+          width: config?.stageWidth || 500,
+          height: 60,
           background: 'linear-gradient(135deg, #8B4513 0%, #A0522D 50%, #8B4513 100%)',
           borderRadius: '12px',
           display: 'flex',
@@ -314,8 +302,8 @@ const VenueStageRenderer = ({ type, config, venueColors }) => {
     <div
       className="arena-stage"
       style={{
-        width: config?.stageDimensions?.width || 300,
-        height: config?.stageDimensions?.height || 40,
+        width: config?.stageDimensions?.width || 450,
+        height: config?.stageDimensions?.height || 60,
         backgroundColor: '#374151',
         borderRadius: 8,
         display: 'flex',

@@ -37,12 +37,12 @@ const GenericSeatMapRenderer = ({
 
   const filterOccupiedBySection = (sectionId) => {
     if (!occupiedSeats || !occupiedSeats.length) return [];
-    return occupiedSeats.filter(seatId => seatId.startsWith(sectionId));
+    return occupiedSeats.filter(seatId => seatId && typeof seatId === 'string' && seatId.startsWith(sectionId));
   };
 
   const filterBlockedBySection = (sectionId) => {
     if (!blockedSeats || !blockedSeats.length) return [];
-    return blockedSeats.filter(seatId => seatId.startsWith(sectionId));
+    return blockedSeats.filter(seatId => seatId && typeof seatId === 'string' && seatId.startsWith(sectionId));
   };
 
   const isSectionBlocked = (sectionId) => {
@@ -335,6 +335,7 @@ const GeneralAdmissionRenderer = ({
 
 export default GenericSeatMapRenderer;
 export { GeneralAdmissionRenderer };
+
 
 
 

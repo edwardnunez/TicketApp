@@ -5,12 +5,13 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   width: 100%;
   margin: 0 auto;
   padding: 20px 40px; /* Aumentar padding horizontal para evitar cortes */
   box-sizing: border-box;
-  overflow: hidden; /* Evitar desbordamiento */
+  overflow: visible; /* Permitir que el contenido sea visible */
+  min-height: 150vh; /* Usar altura de viewport más grande */
 }
 
 /* Contenido del mapa de asientos */
@@ -19,9 +20,9 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  height: 100%;
+  min-height: 120vh; /* Altura mínima más grande */
   overflow: visible; /* Permitir que el contenido sea visible */
-  padding: 0; /* Remover padding horizontal para que el header ocupe todo el ancho */
+  padding: 40px 0; /* Aumentar padding vertical */
   box-sizing: border-box; /* Incluir cualquier padding en el cálculo del ancho */
 }
 
@@ -31,7 +32,8 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  height: 100%;
+  min-height: 100%;
+  overflow: visible; /* Permitir que el contenido sea visible */
 }
 
 /* Contenedor del renderizador responsivo */
@@ -58,14 +60,14 @@
   grid-template-rows: auto 2fr auto auto;
   gap: 20px;
   padding: 20px 40px; /* Aumentar padding horizontal */
-  min-height: 700px;
+  min-height: 130vh; /* Usar altura de viewport más grande */
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
   background: linear-gradient(135deg, #1a4d1a 0%, #2d5a2d 50%, #1a4d1a 100%);
   border-radius: 16px;
   position: relative;
-  overflow: hidden;
+  overflow: visible; /* Permitir que el contenido sea visible */
 }
 
 .football-stadium-layout::before {
@@ -160,14 +162,14 @@
   grid-template-rows: auto 2fr auto auto auto;
   gap: 20px;
   padding: 20px 40px; /* Aumentar padding horizontal */
-  min-height: 700px;
+  min-height: 130vh; /* Usar altura de viewport más grande */
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
   background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
   border-radius: 16px;
   position: relative;
-  overflow: hidden;
+  overflow: visible; /* Permitir que el contenido sea visible */
 }
 
 /* Layout de venue de concierto tipo teatro */
@@ -177,11 +179,11 @@
   align-items: center;
   gap: 30px;
   padding: 30px;
-  min-height: 800px;
+  min-height: 150vh; /* Usar altura de viewport más grande */
   background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
   border-radius: 16px;
   position: relative;
-  overflow: hidden;
+  overflow: visible; /* Permitir que el contenido sea visible */
 }
 
 .concert-venue-layout::before {
@@ -304,11 +306,11 @@
   align-items: center;
   gap: 20px;
   padding: 30px;
-  min-height: 600px;
+  min-height: 120vh; /* Usar altura de viewport más grande */
   background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
   border-radius: 16px;
   position: relative;
-  overflow: hidden;
+  overflow: visible; /* Permitir que el contenido sea visible */
 }
 
 .cinema-layout::before {
@@ -381,11 +383,11 @@
   align-items: center;
   gap: 20px;
   padding: 30px;
-  min-height: 600px;
+  min-height: 120vh; /* Usar altura de viewport más grande */
   background: linear-gradient(135deg, #2c1810 0%, #3d2817 50%, #2c1810 100%);
   border-radius: 16px;
   position: relative;
-  overflow: hidden;
+  overflow: visible; /* Permitir que el contenido sea visible */
 }
 
 /* Secciones específicas de teatro */
@@ -452,11 +454,11 @@
   align-items: center;
   gap: 20px;
   padding: 30px;
-  min-height: 600px;
+  min-height: 120vh; /* Usar altura de viewport más grande */
   background: linear-gradient(135deg, #374151 0%, #4B5563 100%);
   border-radius: 16px;
   position: relative;
-  overflow: hidden;
+  overflow: visible; /* Permitir que el contenido sea visible */
 }
 
 .vip-container {
@@ -496,8 +498,8 @@
 
 /* Estilos para entrada general */
 .general-admission {
-  min-width: 200px;
-  padding: 20px;
+  min-width: 300px;
+  padding: 30px;
   background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%);
   border: 2px solid #D1D5DB;
   border-radius: 16px;
@@ -525,7 +527,7 @@
 }
 
 .general-admission-blocked {
-  padding: 20px;
+  padding: 30px;
   text-align: center;
   color: #9CA3AF;
   font-size: 14px;
@@ -709,10 +711,11 @@
 @media (max-width: 1024px) {
   .professional-seatmap-container {
     padding: 16px 30px; /* Ajustar padding horizontal para tablet */
+    min-height: 150vh; /* Usar altura más grande en tablet */
   }
   
   .seatmap-content {
-    min-height: 500px;
+    min-height: 120vh; /* Usar altura más grande en tablet */
   }
   
   .responsive-seatmap-container {
@@ -761,10 +764,11 @@
 @media (max-width: 768px) {
   .professional-seatmap-container {
     padding: 12px 20px; /* Ajustar padding horizontal para móvil */
+    min-height: 150vh; /* Usar altura más grande en móvil */
   }
   
   .seatmap-content {
-    min-height: 400px;
+    min-height: 120vh; /* Usar altura más grande en móvil */
   }
   
   .responsive-seatmap-container {
@@ -850,10 +854,11 @@
 @media (max-width: 480px) {
   .professional-seatmap-container {
     padding: 8px 15px; /* Ajustar padding horizontal para móvil pequeño */
+    min-height: 100vh; /* Usar altura completa en móvil pequeño */
   }
   
   .seatmap-content {
-    min-height: 350px;
+    min-height: 80vh; /* Usar altura de viewport en móvil pequeño */
   }
   
   .responsive-seatmap-container {

@@ -30,3 +30,6 @@ nuevos problemas:
  - los asientos no se bloquean correctamente al crear un evento
 
  hay que hacer limpieza de archivos
+
+
+ nota: comprobar nuevos mapas a ver como estan, sino echar todo pa atras y volver a hacer la pista grande

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ProfessionalSeatMapRenderer from './ProfessionalSeatMapRenderer';
+import EnhancedSeatMapContainer from './EnhancedSeatMapContainer';
 import { COLORS } from '../../../components/colorscheme';
 import { Typography, notification, Card } from 'antd';
 import './SeatMapAnimations.css';
@@ -20,9 +21,9 @@ const GenericSeatMapRenderer = ({
 }) => {
   if (!seatMapData) return null;
 
-  // Usar el nuevo renderizador profesional
+  // Usar el nuevo contenedor mejorado
   return (
-    <ProfessionalSeatMapRenderer
+    <EnhancedSeatMapContainer
       seatMapData={seatMapData}
       selectedSeats={selectedSeats}
       onSeatSelect={onSeatSelect}
