@@ -38,7 +38,63 @@ const SeatRenderer = ({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const getSeatId = (row, seat) => `${sectionId}-${row + 1}-${seat + 1}`;
+  // Función para obtener el número de fila correcto según la posición de la sección
+  const getRowNumber = (rowIndex) => {
+    // Determinar la posición de la sección basada en el nombre
+    const sectionNameLower = sectionName.toLowerCase();
+    
+    if (sectionNameLower.includes('norte') || sectionNameLower.includes('north')) {
+      // Norte: numeración de abajo hacia arriba (1, 2, 3, 4, 5...)
+      return rowIndex + 1;
+    } else if (sectionNameLower.includes('sur') || sectionNameLower.includes('south')) {
+      // Sur: numeración de arriba hacia abajo (5, 4, 3, 2, 1...)
+      return rows - rowIndex;
+    } else {
+      // Este, Oeste, VIP, Gradas: numeración normal (1, 2, 3, 4, 5...)
+      return rowIndex + 1;
+    }
+  };
+
+  // Función para determinar si es una sección lateral (este u oeste)
+  const isLateralSection = () => {
+    const sectionNameLower = sectionName.toLowerCase();
+    return sectionNameLower.includes('este') || 
+           sectionNameLower.includes('east') ||
+           sectionNameLower.includes('oeste') || 
+           sectionNameLower.includes('west') ||
+           sectionNameLower.includes('tribuna este') ||
+           sectionNameLower.includes('tribuna oeste');
+  };
+
+  // Función para obtener las dimensiones correctas según el tipo de sección
+  const getSectionDimensions = () => {
+    if (isLateralSection()) {
+      // Para secciones laterales: invertir filas y columnas
+      return {
+        displayRows: seatsPerRow,    // Las columnas se convierten en filas
+        displaySeatsPerRow: rows,    // Las filas se convierten en columnas
+        isInverted: true
+      };
+    } else {
+      // Para secciones normales: mantener filas y columnas originales
+      return {
+        displayRows: rows,
+        displaySeatsPerRow: seatsPerRow,
+        isInverted: false
+      };
+    }
+  };
+
+  const getSeatId = (row, seat) => {
+    const dimensions = getSectionDimensions();
+    if (dimensions.isInverted) {
+      // Para secciones laterales: el asiento real está en la posición invertida
+      return `${sectionId}-${getRowNumber(seat)}-${row + 1}`;
+    } else {
+      // Para secciones normales: mantener la lógica original
+      return `${sectionId}-${getRowNumber(row)}-${seat + 1}`;
+    }
+  };
   
   const isSeatOccupied = (seatId) => occupiedSeats?.includes(seatId) || false;
   const isSeatSelected = (seatId) => selectedSeats?.some(s => s.id === seatId) || false;
@@ -50,6 +106,19 @@ const SeatRenderer = ({
   };
 
   const getSeatPrice = (row, seat) => {
+    const dimensions = getSectionDimensions();
+    let actualRow, actualSeat;
+    
+    if (dimensions.isInverted) {
+      // Para secciones laterales: usar las coordenadas invertidas
+      actualRow = seat;
+      actualSeat = row;
+    } else {
+      // Para secciones normales: usar las coordenadas originales
+      actualRow = row;
+      actualSeat = seat;
+    }
+
     // Si el evento usa pricing por secciones, calcular dinámicamente
     if (event && event.usesSectionPricing && event.sectionPricing?.length > 0) {
       const sectionPricing = event.sectionPricing.find(sp => sp.sectionId === sectionId);
@@ -57,7 +126,7 @@ const SeatRenderer = ({
       if (sectionPricing) {
         // Si usa pricing por filas, buscar precio específico para la fila
         if (event.usesRowPricing && sectionPricing.rowPricing && sectionPricing.rowPricing.length > 0) {
-          const rowNumber = row + 1;
+          const rowNumber = getRowNumber(actualRow);
           const rowPrice = sectionPricing.rowPricing.find(rp => rp.row === rowNumber);
           if (rowPrice) {
             return rowPrice.price;
@@ -72,7 +141,7 @@ const SeatRenderer = ({
     
     // Si tiene función de cálculo externa, usarla
     if (calculateSeatPrice && event) {
-      return calculateSeatPrice(sectionId, row, { sections: [{ id: sectionId, price }] }, event);
+      return calculateSeatPrice(sectionId, actualRow, { sections: [{ id: sectionId, price }] }, event);
     }
     
     // Fallback al precio de la sección del seatMap
@@ -86,13 +155,26 @@ const SeatRenderer = ({
     // No permitir interacción si el asiento está ocupado, bloqueado, o la sección está bloqueada
     if (isSeatOccupied(seatId) || isSeatBlocked(seatId) || sectionBlocked) return;
 
+    const dimensions = getSectionDimensions();
+    let actualRow, actualSeat;
+    
+    if (dimensions.isInverted) {
+      // Para secciones laterales: usar las coordenadas invertidas
+      actualRow = seat;
+      actualSeat = row;
+    } else {
+      // Para secciones normales: usar las coordenadas originales
+      actualRow = row;
+      actualSeat = seat;
+    }
+
     const seatPrice = getSeatPrice(row, seat);
     const seatData = {
       id: seatId,
       section: sectionName,
       sectionId,
-      row: row + 1,
-      seat: seat + 1,
+      row: getRowNumber(actualRow),
+      seat: actualSeat + 1,
       price: seatPrice
     };
 
@@ -165,7 +247,7 @@ const SeatRenderer = ({
     if (isSeatOccupied(seatId)) {
       return {
         title: 'Asiento Ocupado',
-        content: `${sectionName} - Fila ${row + 1}, Asiento ${seat + 1}`,
+        content: `${sectionName} - Fila ${getRowNumber(row)}, Asiento ${seat + 1}`,
         color: '#9CA3AF'
       };
     }
@@ -181,13 +263,13 @@ const SeatRenderer = ({
     if (isSeatBlocked(seatId)) {
       return {
         title: 'Asiento Bloqueado',
-        content: `${sectionName} - Fila ${row + 1}, Asiento ${seat + 1}`,
+        content: `${sectionName} - Fila ${getRowNumber(row)}, Asiento ${seat + 1}`,
         color: '#DC2626'
       };
     }
     
     return {
-      title: `${sectionName} - Fila ${row + 1}, Asiento ${seat + 1}`,
+      title: `${sectionName} - Fila ${getRowNumber(row)}, Asiento ${seat + 1}`,
       content: `Precio: ${formattedPrice}`,
       color: color || COLORS.primary.main
     };
@@ -256,22 +338,23 @@ const SeatRenderer = ({
     const seatStyle = getSeatStyle(seatId);
     const tooltipInfo = getSeatTooltip(row, seat, seatId);
     const seatPrice = getSeatPrice(row, seat);
+    const currentSeatSize = adaptiveSeatSize;
 
     // Determinar el icono a mostrar
     const getSeatIcon = () => {
       if (selected) {
-        return <CheckOutlined style={{ fontSize: seatSize.fontSize, fontWeight: 'bold' }} />;
+        return <CheckOutlined style={{ fontSize: currentSeatSize.fontSize, fontWeight: 'bold' }} />;
       }
       if (occupied) {
-        return <UserOutlined style={{ fontSize: seatSize.fontSize * 0.8 }} />;
+        return <UserOutlined style={{ fontSize: currentSeatSize.fontSize * 0.8 }} />;
       }
       if (blocked || sectionBlocked) {
-        return <LockOutlined style={{ fontSize: seatSize.fontSize * 0.8 }} />;
+        return <LockOutlined style={{ fontSize: currentSeatSize.fontSize * 0.8 }} />;
       }
       // Asiento disponible - mostrar número del asiento
       return (
         <span style={{ 
-          fontSize: seatSize.fontSize * 0.7, 
+          fontSize: currentSeatSize.fontSize * 0.7, 
           fontWeight: '600',
           lineHeight: 1
         }}>
@@ -305,11 +388,11 @@ const SeatRenderer = ({
       >
         <button
           style={{
-            width: seatSize.width,
-            height: seatSize.height,
-            margin: seatSize.margin,
+            width: currentSeatSize.width,
+            height: currentSeatSize.height,
+            margin: currentSeatSize.margin,
             border: `2px solid ${seatStyle.borderColor}`,
-            borderRadius: seatSize.borderRadius,
+            borderRadius: currentSeatSize.borderRadius,
             backgroundColor: seatStyle.backgroundColor,
             cursor: seatStyle.cursor,
             opacity: seatStyle.opacity,
@@ -318,7 +401,7 @@ const SeatRenderer = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: seatSize.fontSize,
+            fontSize: currentSeatSize.fontSize,
             color: seatStyle.color,
             position: 'relative',
             boxShadow: seatStyle.boxShadow,
@@ -346,7 +429,7 @@ const SeatRenderer = ({
           {getSeatIcon()}
           
           {/* Indicador de premium/VIP si aplica */}
-          {!occupied && !blocked && !sectionBlocked && seatPrice > (price * 1.5) && (
+          {!occupied && !blocked && !sectionBlocked && (sectionName.toLowerCase().includes('premium') || sectionName.toLowerCase().includes('vip')) && (
             <div style={{
               position: 'absolute',
               top: '-2px',
@@ -393,7 +476,7 @@ const SeatRenderer = ({
           transition: 'all 0.2s ease'
         }}
       >
-        {row + 1}
+        {getRowNumber(row)}
       </div>
       
       {/* Contenedor de asientos con separación visual */}
@@ -401,9 +484,21 @@ const SeatRenderer = ({
         display: 'flex', 
         alignItems: 'center',
         gap: '1px',
-        position: 'relative'
+        position: 'relative',
+        overflowX: 'auto',
+        maxWidth: '100%'
       }}>
-        {Array.from({ length: seatsPerRow }).map((_, seat) => renderSeat(row, seat))}
+        {Array.from({ length: Math.min(dimensions.displaySeatsPerRow, 25) }).map((_, seat) => renderSeat(row, seat))}
+        {dimensions.displaySeatsPerRow > 25 && (
+          <div style={{
+            padding: '0 8px',
+            fontSize: '10px',
+            color: '#6B7280',
+            fontStyle: 'italic'
+          }}>
+            +{dimensions.displaySeatsPerRow - 25} más
+          </div>
+        )}
       </div>
       
       {/* Línea de separación sutil entre filas */}
@@ -431,7 +526,35 @@ const SeatRenderer = ({
     return 'auto';
   };
 
+  // Calcular el ancho máximo permitido para evitar overflow
+  const getMaxWidth = () => {
+    const maxSeatsPerRow = Math.min(seatsPerRow, 25); // Límite máximo de 25 asientos por fila
+    const seatTotalWidth = (seatSize.width + (seatSize.margin * 2)) * maxSeatsPerRow;
+    const labelWidth = rowLabelWidth;
+    return seatTotalWidth + labelWidth + 32; // 32px de padding extra
+  };
+
+  // Función para calcular el tamaño de asiento adaptativo para gradas
+  const getAdaptiveSeatSize = () => {
+    const baseSize = getSeatSize();
+    
+    // Para gradas, hacer los asientos más pequeños si hay muchas filas
+    if (rows > 15) {
+      return {
+        ...baseSize,
+        width: Math.max(baseSize.width * 0.8, 16),
+        height: Math.max(baseSize.height * 0.8, 16),
+        fontSize: Math.max(baseSize.fontSize * 0.8, 8)
+      };
+    }
+    
+    return baseSize;
+  };
+
   const containerWidth = getContainerWidth();
+  const maxWidth = getMaxWidth();
+  const adaptiveSeatSize = getAdaptiveSeatSize();
+  const dimensions = getSectionDimensions();
 
   return (
     <div 
@@ -439,9 +562,10 @@ const SeatRenderer = ({
         position: 'relative', 
         opacity: sectionBlocked ? 0.6 : 1, 
         padding: responsiveMode && isMobile ? '8px' : '12px',
-        overflowX: responsiveMode ? 'auto' : undefined,
+        overflowX: responsiveMode ? 'auto' : 'hidden',
         WebkitOverflowScrolling: responsiveMode ? 'touch' : undefined,
         width: responsiveMode ? containerWidth : 'auto',
+        maxWidth: maxWidth,
         minWidth: responsiveMode ? 'fit-content' : undefined,
         backgroundColor: sectionBlocked ? '#F9FAFB' : 'white',
         borderRadius: '8px',
@@ -500,7 +624,7 @@ const SeatRenderer = ({
         position: 'relative',
         padding: '8px 0'
       }}>
-        {Array.from({ length: rows }).map((_, row) => renderRow(row))}
+        {Array.from({ length: dimensions.displayRows }).map((_, row) => renderRow(row))}
       </div>
 
       {/* Indicador de estado de la sección */}

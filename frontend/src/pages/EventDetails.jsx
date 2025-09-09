@@ -112,11 +112,11 @@ const EventDetails = () => {
 
   const getStateColor = (state) => {
     switch(state) {
-      case 'activo': return COLORS.status.success;
-      case 'proximo': return COLORS.status.warning;
-      case 'finalizado': return COLORS.neutral.grey4;
-      case 'cancelado': return COLORS.status.error;
-      default: return COLORS.neutral.grey4;
+      case 'activo': return COLORS.accent.green;
+      case 'proximo': return COLORS.accent.gold;
+      case 'finalizado': return COLORS.neutral.grey400;
+      case 'cancelado': return COLORS.secondary.main;
+      default: return COLORS.neutral.grey400;
     }
   };
 
@@ -132,11 +132,11 @@ const EventDetails = () => {
 
   const getCategoryColor = (categoryName) => {
     switch(categoryName) {
-      case "Conciertos": return COLORS.categories.conciertos;
-      case "Teatro": return COLORS.categories.teatro;
-      case "Deportes": return COLORS.categories.deportes;
-      case "Festivales": return COLORS.categories.festivales;
-      case "Cine": return COLORS.categories.cine;
+      case "Conciertos": return COLORS.accent.purple;
+      case "Teatro": return COLORS.accent.gold;
+      case "Deportes": return COLORS.accent.green;
+      case "Festivales": return COLORS.secondary.main;
+      case "Cine": return COLORS.primary.main;
       default: return COLORS.primary.main;
     }
   };
@@ -278,17 +278,17 @@ const EventDetails = () => {
         borderRadius: '12px',
         boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
         marginTop: '24px',
-        borderLeft: `4px solid ${COLORS.status.warning}`
+        borderLeft: `4px solid ${COLORS.accent.gold}`
       }}>
         <Title level={5} style={{ 
-          color: COLORS.neutral.darker,
+          color: COLORS.neutral.grey800,
           marginBottom: '12px',
           display: 'flex',
           alignItems: 'center'
         }}>
           <StopOutlined style={{ 
             marginRight: '8px', 
-            color: COLORS.status.warning 
+            color: COLORS.accent.gold 
           }} />
           Restricciones de disponibilidad
         </Title>
