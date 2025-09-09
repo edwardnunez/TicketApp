@@ -127,12 +127,12 @@ const ProfessionalSeatMapRenderer = ({
   // Filtrar asientos ocupados y bloqueados por sección
   const filterOccupiedBySection = (sectionId) => {
     if (!occupiedSeats || !occupiedSeats.length) return [];
-    return occupiedSeats.filter(seatId => seatId.startsWith(sectionId));
+    return occupiedSeats.filter(seatId => seatId && typeof seatId === 'string' && seatId.startsWith(sectionId));
   };
 
   const filterBlockedBySection = (sectionId) => {
     if (!blockedSeats || !blockedSeats.length) return [];
-    return blockedSeats.filter(seatId => seatId.startsWith(sectionId));
+    return blockedSeats.filter(seatId => seatId && typeof seatId === 'string' && seatId.startsWith(sectionId));
   };
 
   const isSectionBlocked = (sectionId) => {
@@ -674,42 +674,14 @@ const ProfessionalSeatMapRenderer = ({
           position: 'relative',
           width: '100%',
           height: isFullscreen ? '100vh' : 'auto',
-          minHeight: isMobile ? '400px' : '600px',
+          minHeight: isMobile ? '150vh' : '150vh',
           backgroundColor: COLORS.neutral.grey50,
           borderRadius: isFullscreen ? '0' : '16px',
-          overflow: 'hidden',
+          overflow: 'visible',
           boxShadow: isFullscreen ? 'none' : COLORS.shadows.xl
         }}
       >
-      {/* Header del mapa */}
-      <div className="seatmap-header">
-        <div className="header-content">
-          <Title level={3} className="venue-title">
-            {config?.venueName || config?.stadiumName || config?.cinemaName || config?.theaterName || name}
-          </Title>
-          <Text className="venue-type">
-            {type.charAt(0).toUpperCase() + type.slice(1)} Venue
-          </Text>
-        </div>
-        
-        <div className="header-controls">
-          <Space>
-            <Button
-              icon={<InfoCircleOutlined />}
-              onClick={() => setShowLegend(!showLegend)}
-              type={showLegend ? 'primary' : 'default'}
-              size="small"
-            >
-              Leyenda
-            </Button>
-            <Button
-              icon={isFullscreen ? <CompressOutlined /> : <FullscreenOutlined />}
-              onClick={toggleFullscreen}
-              size="small"
-            />
-          </Space>
-        </div>
-      </div>
+      {/* Header del mapa - ELIMINADO */}
 
       {/* Controles de zoom */}
       <ZoomControls
@@ -727,8 +699,8 @@ const ProfessionalSeatMapRenderer = ({
         style={{
           position: 'relative',
           width: '100%',
-          height: 'calc(100% - 80px)',
-          overflow: 'hidden',
+          minHeight: '120vh',
+          overflow: 'visible',
           cursor: isDragging ? 'grabbing' : 'grab'
         }}
         onWheel={handleWheel}

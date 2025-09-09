@@ -24,6 +24,7 @@ import {
 import { COLORS } from '../../components/colorscheme';
 import GenericSeatMapRenderer from '../steps/seatmaps/GenericSeatRenderer';
 import EditableSeatRenderer from './EditableSeatRenderer';
+import ProfessionalAdminSeatMapRenderer from './ProfessionalAdminSeatMapRenderer';
 import axios from 'axios';
 
 const { Title, Text } = Typography;
@@ -63,6 +64,16 @@ const EventSeatMapEditor = () => {
       navigate('/admin');
     }
   }, [eventData, navigate, location.state, selectedLocation]);
+
+  // Cargar asientos bloqueados iniciales del evento existente
+  useEffect(() => {
+    if (eventData?.seatMapConfiguration) {
+      console.log('Loading initial blocked seats from event:', eventData.seatMapConfiguration);
+      setBlockedSeats(eventData.seatMapConfiguration.blockedSeats || []);
+      setBlockedSections(eventData.seatMapConfiguration.blockedSections || []);
+      setGeneralAdmissionCapacities(eventData.seatMapConfiguration.generalAdmissionCapacities || {});
+    }
+  }, [eventData?.seatMapConfiguration]);
 
   const requiresSeatMap = useCallback(() => {
     
@@ -159,7 +170,7 @@ const EventSeatMapEditor = () => {
     const seats = [];
     for (let row = 0; row < section.rows; row++) {
       for (let seat = 0; seat < section.seatsPerRow; seat++) {
-        seats.push(`${sectionId}-${row}-${seat}`);
+        seats.push(`${sectionId}-${row + 1}-${seat + 1}`);
       }
     }
     return seats;
@@ -453,7 +464,7 @@ const EventSeatMapEditor = () => {
                   formatPrice={(price) => `$${price}`}
                 />
               ) : (
-                <EditableSeatRenderer
+                <ProfessionalAdminSeatMapRenderer
                   seatMapData={seatMapData}
                   blockedSeats={blockedSeats}
                   blockedSections={blockedSections}

@@ -29,7 +29,7 @@ const EditableSeatRenderer = ({
 
   const filterBlockedBySection = (sectionId) => {
     if (!blockedSeats || !blockedSeats.length) return [];
-    return blockedSeats.filter(seatId => seatId.startsWith(sectionId));
+    return blockedSeats.filter(seatId => seatId && typeof seatId === 'string' && seatId.startsWith(sectionId));
   };
 
   const isSectionBlocked = (sectionId) => {
@@ -170,7 +170,7 @@ const EditableSeatRenderer = ({
         alignItems: 'center', 
         gap: 30, 
         minWidth: isMobile ? 700 : 1000,
-        minHeight: 700,
+        minHeight: 1200,
         padding: '30px'
       }}>
         <Title level={4} style={{ margin: 0, color: COLORS.neutral.darker }}>
@@ -497,7 +497,7 @@ const EditableSeatRenderer = ({
         alignItems: 'center', 
         gap: 30, 
         minWidth: 1200,
-        minHeight: 800,
+        minHeight: 1400,
         padding: '30px'
       }}>
         <Title level={4} style={{ margin: 0, color: COLORS.neutral.darker }}>

@@ -25,7 +25,9 @@ const EditableSeatGrid = ({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const getSeatId = (row, seat) => `${sectionId}-${row}-${seat}`;
+
+  const getSeatId = (row, seat) => `${sectionId}-${row + 1}-${seat + 1}`;
+  
   const isSeatBlocked = (seatId) => blockedSeats?.includes(seatId) || false;
 
   const handleSeatClick = (row, seat) => {
