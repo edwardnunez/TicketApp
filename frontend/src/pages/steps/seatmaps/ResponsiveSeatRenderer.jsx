@@ -315,7 +315,7 @@ const ResponsiveSeatRenderer = ({
   };
 
   return (
-    <div>
+    <div className="responsive-seatmap-container">
       {/* Conmutador persistente */}
       <PersistentViewSwitcher
         currentView={currentView}

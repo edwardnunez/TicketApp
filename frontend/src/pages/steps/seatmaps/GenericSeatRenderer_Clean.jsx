@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import SeatRenderer from './SeatRenderer';
+import SeatMapLegend from './SeatMapLegend';
 import ProfessionalSeatMapRenderer from './ProfessionalSeatMapRenderer';
 import { COLORS } from '../../../components/colorscheme';
 import { Typography, notification, Card } from 'antd';
 import './SeatMapAnimations.css';
 
-const { Text } = Typography;
+const { Title, Text } = Typography;
 
 const GenericSeatMapRenderer = ({
   seatMapData,
@@ -18,7 +20,119 @@ const GenericSeatMapRenderer = ({
   event,
   calculateSeatPrice
 }) => {
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   if (!seatMapData) return null;
+
+  const { sections, config, name } = seatMapData;
+
+  const filterOccupiedBySection = (sectionId) => {
+    if (!occupiedSeats || !occupiedSeats.length) return [];
+    return occupiedSeats.filter(seatId => seatId.startsWith(sectionId));
+  };
+
+  const filterBlockedBySection = (sectionId) => {
+    if (!blockedSeats || !blockedSeats.length) return [];
+    return blockedSeats.filter(seatId => seatId.startsWith(sectionId));
+  };
+
+  const isSectionBlocked = (sectionId) => {
+    return blockedSections && blockedSections.includes(sectionId);
+  };
+
+  const getSectionPrice = (section) => {
+    if (!event) return section.defaultPrice || 0;
+    
+    if (event.usesSectionPricing && event.sectionPricing) {
+      const sectionPricing = event.sectionPricing.find(sp => sp.sectionId === section.id);
+      if (sectionPricing) {
+        return sectionPricing.price;
+      }
+    }
+    
+    return section.defaultPrice || 0;
+  };
+
+  const getSeatPrice = (row, seat) => {
+    if (!event) return getSectionPrice(row);
+    
+    if (event.usesRowPricing && event.rowPricing) {
+      const rowPricing = event.rowPricing.find(rp => rp.sectionId === row.sectionId && rp.rowNumber === row.rowNumber);
+      if (rowPricing) {
+        return rowPricing.price;
+      }
+    }
+    
+    return getSectionPrice(row);
+  };
+
+  const handleSeatClick = (row, seat) => {
+    if (isSectionBlocked(row.sectionId)) {
+      notification.warning({
+        message: 'Sección Bloqueada',
+        description: 'Esta sección no está disponible para la venta.',
+        duration: 3,
+      });
+      return;
+    }
+
+    const seatId = `${row.sectionId}-${row.rowNumber}-${seat.seatNumber}`;
+    const isOccupied = occupiedSeats && occupiedSeats.includes(seatId);
+    const isBlocked = blockedSeats && blockedSeats.includes(seatId);
+    
+    if (isOccupied || isBlocked) {
+      notification.warning({
+        message: 'Asiento No Disponible',
+        description: 'Este asiento ya está ocupado o bloqueado.',
+        duration: 3,
+      });
+      return;
+    }
+
+    const isSelected = selectedSeats.includes(seatId);
+    
+    if (isSelected) {
+      onSeatSelect(selectedSeats.filter(id => id !== seatId));
+    } else {
+      if (selectedSeats.length >= maxSeats) {
+        notification.warning({
+          message: 'Límite de Asientos',
+          description: `Solo puedes seleccionar hasta ${maxSeats} asiento(s).`,
+          duration: 3,
+        });
+        return;
+      }
+      onSeatSelect([...selectedSeats, seatId]);
+    }
+  };
+
+  const renderSectionTitle = (section) => {
+    const price = getSectionPrice(section);
+    const isBlocked = isSectionBlocked(section.id);
+    
+    return (
+      <Text 
+        style={{ 
+          fontSize: isMobile ? '14px' : '16px',
+          fontWeight: 'bold',
+          color: isBlocked ? COLORS.neutral.grey4 : COLORS.neutral.dark,
+          textDecoration: isBlocked ? 'line-through' : 'none'
+        }}
+      >
+        {section.name} - {formatPrice(price)}
+        {!section.hasNumberedSeats && ' (Entrada General)'}
+      </Text>
+    );
+  };
 
   // Usar el nuevo renderizador profesional
   return (
@@ -45,43 +159,13 @@ const GeneralAdmissionRenderer = ({
   maxSeats, 
   occupiedSeats, 
   blockedSeats, 
-  blockedSections,
   formatPrice, 
   event,
   calculateSeatPrice 
 }) => {
   const [quantity, setQuantity] = useState(0);
-  const [isMobile, setIsMobile] = useState(false);
   const price = calculateSeatPrice ? calculateSeatPrice(section, null) : (section.defaultPrice || 0);
   const isBlocked = blockedSections && blockedSections.includes(section.id);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  const renderSectionTitle = (section) => {
-    const price = calculateSeatPrice ? calculateSeatPrice(section, null) : (section.defaultPrice || 0);
-    const isBlocked = blockedSections && blockedSections.includes(section.id);
-    
-    return (
-      <Text 
-        style={{ 
-          fontSize: isMobile ? '14px' : '16px',
-          fontWeight: 'bold',
-          color: isBlocked ? COLORS.neutral.grey4 : COLORS.neutral.dark,
-          textDecoration: isBlocked ? 'line-through' : 'none'
-        }}
-      >
-        {section.name} - {formatPrice(price)}
-        {!section.hasNumberedSeats && ' (Entrada General)'}
-      </Text>
-    );
-  };
 
   const handleQuantityChange = (newQuantity) => {
     if (newQuantity < 0) return;
@@ -251,3 +335,6 @@ const GeneralAdmissionRenderer = ({
 
 export default GenericSeatMapRenderer;
 export { GeneralAdmissionRenderer };
+
+
+

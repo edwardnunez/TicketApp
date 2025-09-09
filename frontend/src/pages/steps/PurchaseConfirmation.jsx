@@ -44,7 +44,7 @@ export default function Confirmation({
     <div style={{ textAlign: 'center', padding: isMobile ? '18px 4px' : '40px 20px' }}>
       <CheckCircleOutlined style={{ 
         fontSize: isMobile ? '48px' : '72px', 
-        color: COLORS.status.success,
+        color: COLORS.accent.green,
         marginBottom: isMobile ? '12px' : '24px'
       }} />
       
@@ -147,7 +147,7 @@ export default function Confirmation({
               <Statistic
                 title="Total pagado"
                 value={formatPrice(getTotalPrice())}
-                valueStyle={{ color: COLORS.status.success, fontSize: '24px', fontWeight: 'bold' }}
+                valueStyle={{ color: COLORS.accent.green, fontSize: '24px', fontWeight: 'bold' }}
               />
             </div>
           </Card>
@@ -234,7 +234,7 @@ export default function Confirmation({
                     minute: '2-digit'
                   })}</Text>
                   <Text><strong>Ubicación:</strong> {event.location.name}</Text>
-                  <Text><strong>Estado:</strong> <Text style={{ color: COLORS.status.success }}>Pagado</Text></Text>
+                  <Text><strong>Estado:</strong> <Text style={{ color: COLORS.accent.green }}>Pagado</Text></Text>
                 </Space>
               </div>
             </Card>

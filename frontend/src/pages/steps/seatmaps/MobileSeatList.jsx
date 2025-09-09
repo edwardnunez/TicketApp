@@ -64,10 +64,28 @@ const MobileSeatList = ({
       const sectionBlockedSeats = blockedSeats?.filter(seatId => seatId.startsWith(section.id)) || [];
       
       if (section.hasNumberedSeats) {
+        // Función para obtener el número de fila correcto según la posición de la sección
+        const getRowNumber = (rowIndex) => {
+          // Determinar la posición de la sección basada en el nombre
+          const sectionNameLower = section.name.toLowerCase();
+          
+          if (sectionNameLower.includes('norte') || sectionNameLower.includes('north')) {
+            // Norte: numeración de abajo hacia arriba (1, 2, 3, 4, 5...)
+            return rowIndex;
+          } else if (sectionNameLower.includes('sur') || sectionNameLower.includes('south')) {
+            // Sur: numeración de arriba hacia abajo (5, 4, 3, 2, 1...)
+            return section.rows - rowIndex + 1;
+          } else {
+            // Este, Oeste, VIP, Gradas: numeración normal (1, 2, 3, 4, 5...)
+            return rowIndex;
+          }
+        };
+
         // Asientos numerados
         for (let row = 1; row <= section.rows; row++) {
           for (let seat = 1; seat <= section.seatsPerRow; seat++) {
-            const seatId = `${section.id}-${row}-${seat}`;
+            const actualRowNumber = getRowNumber(row);
+            const seatId = `${section.id}-${actualRowNumber}-${seat}`;
             const isOccupied = sectionOccupiedSeats.includes(seatId);
             const isBlocked = sectionBlockedSeats.includes(seatId) || sectionBlocked;
             const isSelected = selectedSeats?.some(s => s.id === seatId);
@@ -78,7 +96,7 @@ const MobileSeatList = ({
               const eventSectionPricing = event.sectionPricing.find(sp => sp.sectionId === section.id);
               if (eventSectionPricing) {
                 if (event.usesRowPricing && eventSectionPricing.rowPricing?.length > 0) {
-                  const rowPrice = eventSectionPricing.rowPricing.find(rp => rp.row === row);
+                  const rowPrice = eventSectionPricing.rowPricing.find(rp => rp.row === actualRowNumber);
                   if (rowPrice) {
                     seatPrice = rowPrice.price;
                   }
@@ -94,8 +112,8 @@ const MobileSeatList = ({
               sectionName: section.name,
               sectionColor: section.color,
               sectionDefaultPrice: section.defaultPrice,
-              row,
-              seat,
+              row: actualRowNumber,
+              seat: seat, // seat ya viene como 1, 2, 3... desde el bucle
               price: seatPrice,
               isOccupied,
               isBlocked,
