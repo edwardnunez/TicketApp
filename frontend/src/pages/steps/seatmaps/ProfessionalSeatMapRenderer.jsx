@@ -14,7 +14,100 @@ import AccessibilityFeatures from './AccessibilityFeatures';
 import './ProfessionalSeatMapAnimations.css';
 import './ProfessionalSeatMapLayouts.css';
 
-const { Title, Text } = Typography;
+  const { Title, Text } = Typography;
+
+// Componente para la barra superior de selección de asientos (replicando el diseño del modo admin)
+const SelectionTopBar = ({ selectedSeats, maxSeats, formatPrice, event, showLegend, setShowLegend, isFullscreen, toggleFullscreen }) => {
+  const totalPrice = selectedSeats.reduce((total, seat) => total + (seat.price || 0), 0);
+  
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 100,
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(10px)',
+        padding: '12px 16px',
+        borderBottom: `1px solid ${COLORS.neutral.grey2}`,
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <Title level={4} style={{ margin: 0, color: COLORS.neutral.darker }}>
+          Selección de Asientos
+        </Title>
+        <Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
+          Selecciona hasta {maxSeats} asiento(s) para continuar
+        </Text>
+      </div>
+      
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        {/* Información de selección */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{ textAlign: 'center' }}>
+            <Text style={{ 
+              fontSize: '12px',
+              color: COLORS.neutral.grey4,
+              display: 'block'
+            }}>
+              Asientos seleccionados
+            </Text>
+            <Text style={{ 
+              fontSize: '16px',
+              fontWeight: 'bold',
+              color: COLORS.primary.main
+            }}>
+              {selectedSeats.length} / {maxSeats}
+            </Text>
+          </div>
+          
+          {selectedSeats.length > 0 && (
+            <div style={{ textAlign: 'center' }}>
+              <Text style={{ 
+                fontSize: '12px',
+                color: COLORS.neutral.grey4,
+                display: 'block'
+              }}>
+                Total
+              </Text>
+              <Text style={{ 
+                fontSize: '16px',
+                fontWeight: 'bold',
+                color: COLORS.primary.main
+              }}>
+                {formatPrice(totalPrice)}
+              </Text>
+            </div>
+          )}
+        </div>
+        
+        {/* Botones de control */}
+        <Space>
+          <Button
+            size="small"
+            icon={<InfoCircleOutlined />}
+            onClick={() => setShowLegend(!showLegend)}
+            type={showLegend ? 'primary' : 'default'}
+          >
+            Leyenda
+          </Button>
+          <Button
+            size="small"
+            icon={isFullscreen ? <CompressOutlined /> : <FullscreenOutlined />}
+            onClick={toggleFullscreen}
+          >
+            {isFullscreen ? 'Salir' : 'Pantalla completa'}
+          </Button>
+        </Space>
+      </div>
+    </div>
+  );
+};
 
 const ProfessionalSeatMapRenderer = ({
   seatMapData,
@@ -26,7 +119,9 @@ const ProfessionalSeatMapRenderer = ({
   blockedSections,
   formatPrice,
   event,
-  calculateSeatPrice
+  calculateSeatPrice,
+  isAdminMode = false,
+  isPreviewMode = false
 }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
@@ -184,6 +279,7 @@ const ProfessionalSeatMapRenderer = ({
             calculateSeatPrice={calculateSeatPrice}
             sectionPricing={section.sectionPricing}
             venueType={type}
+            isAdminMode={isAdminMode}
             isMobile={isMobile}
             isTablet={isTablet}
             showTooltips={showTooltips}
@@ -653,7 +749,34 @@ const ProfessionalSeatMapRenderer = ({
   };
 
   return (
-    <>
+    <div 
+      ref={containerRef}
+      className={`professional-seatmap-container ${isFullscreen ? 'fullscreen' : ''} ${isHighContrast ? 'high-contrast' : ''}`}
+      style={{
+        position: 'relative',
+        width: '100%',
+        height: isFullscreen ? '100vh' : 'auto',
+        minHeight: isMobile ? '150vh' : '150vh',
+        backgroundColor: COLORS.neutral.grey50,
+        borderRadius: isFullscreen ? '0' : '16px',
+        overflow: 'visible',
+        boxShadow: isFullscreen ? 'none' : COLORS.shadows.xl
+      }}
+    >
+      {/* Barra superior de selección de asientos - Solo en modo usuario y no en vista previa */}
+      {!isAdminMode && !isPreviewMode && (
+        <SelectionTopBar 
+          selectedSeats={selectedSeats}
+          maxSeats={maxSeats}
+          formatPrice={formatPrice}
+          event={event}
+          showLegend={showLegend}
+          setShowLegend={setShowLegend}
+          isFullscreen={isFullscreen}
+          toggleFullscreen={toggleFullscreen}
+        />
+      )}
+      
       {/* Características de accesibilidad */}
       <AccessibilityFeatures
         onHighContrastToggle={setIsHighContrast}
@@ -666,86 +789,76 @@ const ProfessionalSeatMapRenderer = ({
         showTooltips={showTooltips}
         isMobile={isMobile}
       />
-
-      <div 
-        ref={containerRef}
-        className={`professional-seatmap-container ${isFullscreen ? 'fullscreen' : ''} ${isHighContrast ? 'high-contrast' : ''}`}
-        style={{
-          position: 'relative',
-          width: '100%',
-          height: isFullscreen ? '100vh' : 'auto',
-          minHeight: isMobile ? '150vh' : '150vh',
-          backgroundColor: COLORS.neutral.grey50,
-          borderRadius: isFullscreen ? '0' : '16px',
-          overflow: 'visible',
-          boxShadow: isFullscreen ? 'none' : COLORS.shadows.xl
-        }}
-      >
-      {/* Header del mapa - ELIMINADO */}
-
-      {/* Controles de zoom */}
-      <ZoomControls
-        zoomLevel={zoomLevel}
-        onZoomIn={handleZoomIn}
-        onZoomOut={handleZoomOut}
-        onReset={handleResetZoom}
-        isMobile={isMobile}
-      />
-
-      {/* Contenedor principal del mapa */}
-      <div 
-        ref={seatMapRef}
-        className="seatmap-content"
-        style={{
-          position: 'relative',
-          width: '100%',
-          minHeight: '120vh',
-          overflow: 'visible',
-          cursor: isDragging ? 'grabbing' : 'grab'
-        }}
-        onWheel={handleWheel}
-        onMouseDown={handleMouseDown}
-      >
-        <div
-          className="seatmap-transform"
-          style={{
-            transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`,
-            transformOrigin: 'center center',
-            transition: isDragging ? 'none' : 'transform 0.3s ease',
-            width: '100%',
-            height: '100%',
-            position: 'relative'
-          }}
-        >
-          {renderVenueLayout()}
-        </div>
-      </div>
-
-      {/* Leyenda */}
-      {showLegend && (
-        <div className="seatmap-legend">
-          <ProfessionalSeatMapLegend
-            venueType={type}
-            showPremium={true}
-            showAccessible={true}
+        {/* Controles de zoom */}
+        <div style={{
+          position: 'absolute',
+          top: (!isAdminMode && !isPreviewMode) ? '70px' : '10px',
+          right: '10px',
+          zIndex: 50
+        }}>
+          <ZoomControls
+            zoomLevel={zoomLevel}
+            onZoomIn={handleZoomIn}
+            onZoomOut={handleZoomOut}
+            onReset={handleResetZoom}
             isMobile={isMobile}
           />
         </div>
-      )}
 
-      {/* Información de selección */}
-      {selectedSeats.length > 0 && (
-        <div className="selection-info">
-          <Text strong>
-            {selectedSeats.length} asiento{selectedSeats.length !== 1 ? 's' : ''} seleccionado{selectedSeats.length !== 1 ? 's' : ''}
-          </Text>
-          <Text>
-            Total: {formatPrice(selectedSeats.reduce((sum, seat) => sum + seat.price, 0))}
-          </Text>
+        {/* Contenedor principal del mapa */}
+        <div 
+          ref={seatMapRef}
+          className="seatmap-content"
+          style={{
+            position: 'absolute',
+            top: (!isAdminMode && !isPreviewMode) ? '60px' : '0px', // Espacio para la cabecera en modo usuario
+            left: 0,
+            right: 0,
+            bottom: 0,
+            overflow: 'visible',
+            cursor: isDragging ? 'grabbing' : 'grab'
+          }}
+          onWheel={handleWheel}
+          onMouseDown={handleMouseDown}
+        >
+          <div
+            className="seatmap-transform"
+            style={{
+              transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`,
+              transformOrigin: 'center center',
+              transition: isDragging ? 'none' : 'transform 0.3s ease',
+              width: '100%',
+              height: '100%',
+              position: 'relative'
+            }}
+          >
+            {renderVenueLayout()}
+          </div>
         </div>
-      )}
-      </div>
-    </>
+
+        {/* Leyenda - No mostrar en modo de vista previa */}
+        {showLegend && !isPreviewMode && (
+          <div 
+            className="seatmap-legend"
+            style={{
+              position: 'absolute',
+              top: !isAdminMode ? '70px' : '10px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 10,
+              pointerEvents: 'none'
+            }}
+          >
+            <ProfessionalSeatMapLegend
+              venueType={type}
+              showPremium={true}
+              showAccessible={true}
+              isMobile={isMobile}
+            />
+          </div>
+        )}
+
+    </div>
   );
 };
 

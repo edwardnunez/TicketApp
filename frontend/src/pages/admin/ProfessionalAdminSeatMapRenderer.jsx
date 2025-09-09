@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Typography, Button, Space, notification } from 'antd';
+import { Typography, Button, Space, Card, Divider } from 'antd';
 import { 
   FullscreenOutlined,
   CompressOutlined,
-  InfoCircleOutlined,
   LockOutlined,
-  UnlockOutlined
+  UnlockOutlined,
+  InfoCircleOutlined
 } from '@ant-design/icons';
-import { COLORS, getVenueColors } from '../../components/colorscheme';
+import { COLORS } from '../../components/colorscheme';
+import ProfessionalSeatRenderer from '../steps/seatmaps/ProfessionalSeatRenderer';
 import ProfessionalSeatMapRenderer from '../steps/seatmaps/ProfessionalSeatMapRenderer';
+import VenueStageRenderer from '../steps/seatmaps/VenueStageRenderer';
 import '../steps/seatmaps/ProfessionalSeatMapAnimations.css';
 import '../steps/seatmaps/ProfessionalSeatMapLayouts.css';
 
@@ -30,11 +32,8 @@ const ProfessionalAdminSeatMapRenderer = ({
   // Función para manejar clic en asiento (adaptada para administración)
   const handleAdminSeatClick = (seatData) => {
     const seat = Array.isArray(seatData) ? seatData[0] : seatData;
-    console.log('handleAdminSeatClick: Datos de asiento clickeado:', seatData);
     if (onSeatToggle && seat && seat.id) {
       onSeatToggle(seat.id);
-    } else {
-      console.warn('handleAdminSeatClick: Datos de asiento inválidos:', seatData);
     }
   };
 
@@ -43,6 +42,17 @@ const ProfessionalAdminSeatMapRenderer = ({
     if (onSectionToggle) {
       onSectionToggle(sectionId);
     }
+  };
+
+  // Función para filtrar asientos bloqueados por sección
+  const filterBlockedBySection = (sectionId) => {
+    if (!blockedSeats || !blockedSeats.length) return [];
+    return blockedSeats.filter(seatId => seatId && typeof seatId === 'string' && seatId.startsWith(sectionId));
+  };
+
+  // Función para verificar si una sección está bloqueada
+  const isSectionBlocked = (sectionId) => {
+    return blockedSections && blockedSections.includes(sectionId);
   };
 
   // Función para alternar pantalla completa
@@ -205,9 +215,10 @@ const ProfessionalAdminSeatMapRenderer = ({
           occupiedSeats={[]} // No hay asientos ocupados en modo admin
           blockedSeats={blockedSeats.filter(id => id && typeof id === 'string')} // Los IDs ya están en el formato correcto
           blockedSections={blockedSections}
-          formatPrice={(price) => `$${price}`}
+          formatPrice={() => ''} // Sin precio en modo admin
           event={null}
           calculateSeatPrice={null}
+          isAdminMode={true} // Indicar que es modo admin
         />
       </div>
 

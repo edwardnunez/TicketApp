@@ -31,7 +31,8 @@ const ProfessionalSeatRenderer = ({
   isMobile = false,
   isTablet = false,
   showTooltips = true,
-  isHighContrast = false
+  isHighContrast = false,
+  isAdminMode = false
 }) => {
   const [hoveredSeat, setHoveredSeat] = useState(null);
   const [seatSize, setSeatSize] = useState({ width: 24, height: 24, fontSize: 10 });
@@ -312,7 +313,7 @@ const ProfessionalSeatRenderer = ({
 
   const getSeatTooltip = (row, seat, seatId) => {
     const seatPrice = getSeatPrice(row, seat);
-    const formattedPrice = formatPrice ? formatPrice(seatPrice) : `€${seatPrice}`;
+    const formattedPrice = isAdminMode ? '' : (formatPrice ? formatPrice(seatPrice) : `€${seatPrice}`);
     const state = getSeatState(seatId);
     const isPremium = sectionName.toLowerCase().includes('premium') || 
                      sectionName.toLowerCase().includes('vip');
@@ -343,12 +344,12 @@ const ProfessionalSeatRenderer = ({
       },
       selected: {
         title: 'Asiento Seleccionado',
-        content: `${sectionName} - Fila ${getRowNumber(actualRow)}, Asiento ${actualSeat + 1} - ${formattedPrice}`,
+        content: `${sectionName} - Fila ${getRowNumber(actualRow)}, Asiento ${actualSeat + 1}${isAdminMode ? '' : ` - ${formattedPrice}`}`,
         color: COLORS.primary.main
       },
       available: {
         title: isPremium ? 'Asiento Premium' : `${sectionName} - Fila ${getRowNumber(actualRow)}, Asiento ${actualSeat + 1}`,
-        content: `Precio: ${formattedPrice}${isPremium ? ' (Premium)' : ''}`,
+        content: isAdminMode ? (isPremium ? 'Asiento Premium' : 'Disponible') : `Precio: ${formattedPrice}${isPremium ? ' (Premium)' : ''}`,
         color: isPremium ? COLORS.accent.gold : (color || COLORS.primary.main)
       }
     };

@@ -459,7 +459,9 @@ const EventSeatMapEditor = () => {
                   selectedSeats={[]}
                   onSeatSelect={() => {}}
                   maxSeats={0}
-                  occupiedSeats={blockedSeats}
+                  occupiedSeats={[]}
+                  blockedSeats={blockedSeats}
+                  blockedSections={blockedSections}
                   generalAdmissionCapacities={generalAdmissionCapacities}
                   formatPrice={(price) => `$${price}`}
                 />
