@@ -147,6 +147,7 @@ const GenericSeatMapRenderer = ({
       formatPrice={formatPrice}
       event={event}
       calculateSeatPrice={calculateSeatPrice}
+      isPreviewMode={false}
     />
   );
 };

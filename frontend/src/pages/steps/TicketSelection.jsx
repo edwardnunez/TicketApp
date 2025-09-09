@@ -94,13 +94,13 @@ export default function SelectTickets({
     // Define compatibility mappings
     const compatibilityMappings = {
       cinema: ['cinema'],
-      theater: ['theater', 'theatre'],
-      theatre: ['theater', 'theatre'],
-      stadium: ['football', 'soccer', 'sports', 'stadium'],
-      football: ['football', 'soccer', 'sports', 'stadium'],
-      sports: ['football', 'soccer', 'sports', 'stadium', 'basketball', 'tennis'],
-      arena: ['concert', 'arena'],
-      concert: ['concert', 'arena'],
+      theater: ['theater', 'theatre', 'concert', 'concierto'],
+      theatre: ['theater', 'theatre', 'concert', 'concierto'],
+      stadium: ['football', 'soccer', 'sports', 'stadium', 'concert', 'concierto'],
+      football: ['football', 'soccer', 'sports', 'stadium', 'concert', 'concierto'],
+      sports: ['football', 'soccer', 'sports', 'stadium', 'basketball', 'tennis', 'concert', 'concierto'],
+      arena: ['concert', 'arena', 'concierto'],
+      concert: ['concert', 'arena', 'concierto'],
     };
 
     if (compatibilityMappings[seatMapType]) {
@@ -114,10 +114,10 @@ export default function SelectTickets({
     const specialCases = [
       (seatMapType === 'theater' && ['theatre', 'concert', 'concierto'].includes(normalizedEventType)),
       (seatMapType === 'theatre' && ['theater', 'concert', 'concierto'].includes(normalizedEventType)),
-      (seatMapType === 'football' && ['soccer', 'sports'].includes(normalizedEventType)),
-      (seatMapType === 'soccer' && ['football', 'sports'].includes(normalizedEventType)),
-      (seatMapType === 'concert' && ['concert', 'music'].includes(normalizedEventType)),
-      (seatMapType === 'arena' && ['concert', 'music'].includes(normalizedEventType))
+      (seatMapType === 'football' && ['soccer', 'sports', 'concert', 'concierto'].includes(normalizedEventType)),
+      (seatMapType === 'soccer' && ['football', 'sports', 'concert', 'concierto'].includes(normalizedEventType)),
+      (seatMapType === 'concert' && ['concert', 'music', 'concierto'].includes(normalizedEventType)),
+      (seatMapType === 'arena' && ['concert', 'music', 'concierto'].includes(normalizedEventType))
     ];
 
     return specialCases.some(condition => condition);

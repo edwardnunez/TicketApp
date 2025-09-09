@@ -101,6 +101,7 @@ const EnhancedSeatMapContainer = ({
           formatPrice={formatPrice}
           event={event}
           calculateSeatPrice={calculateSeatPrice}
+          isPreviewMode={false}
         />
       </div>
 

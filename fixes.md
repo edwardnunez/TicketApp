@@ -18,18 +18,16 @@ al crear ubicacion - el select de entrada general/asientos numerados no funciona
 
 
 nuevos problemas:
- - la paleta de colores tiene que volver a como estaba antes
- - hay features (por ejemplo, movilidad reducida) que no se usan
- - en el resumen de tickets del perfil: cuando es entrada general, muestra Fila Asiento, no deberia ser asi - corregido
  - revisar colores de secciones
- - revisar creacion de eventos
  - revisar barra que enuncia nombre de la ubicacion
  - hacer mas grande la pista
  - hover de los botones - cambian de color o forma
  - pulso en 'Cancelar' el ticket de un usuario y no pasa nada
- - los asientos no se bloquean correctamente al crear un evento
 
  hay que hacer limpieza de archivos
 
+visuales a corregir:
+- letra de las secciones
+- la pantalla completa en seleccion de asientos no funciona
 
- nota: comprobar nuevos mapas a ver como estan, sino echar todo pa atras y volver a hacer la pista grande
+pensar en poner limite de filas y columnas al crear evento

@@ -22,7 +22,6 @@
   width: 100%;
   min-height: 120vh; /* Altura mínima más grande */
   overflow: visible; /* Permitir que el contenido sea visible */
-  padding: 40px 0; /* Aumentar padding vertical */
   box-sizing: border-box; /* Incluir cualquier padding en el cálculo del ancho */
 }
 
