@@ -1,18 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { Card, Button, Typography, Space, Row, Col, Badge, Progress, Tooltip, Collapse } from 'antd';
-import { 
-  AppstoreOutlined, 
-  UnorderedListOutlined, 
-  BlockOutlined,
-  EyeOutlined,
-  CheckOutlined,
-  CloseOutlined,
-  LockOutlined,
-  StarOutlined
-} from '@ant-design/icons';
-import { COLORS } from '../../../components/colorscheme';
-import SeatRenderer from './SeatRenderer';
-import useDeviceDetection from '../../../hooks/useDeviceDetection';
+import { COLORS } from '../../../../components/colorscheme';
+import SeatRenderer from '../renderers/SeatRenderer';
+import useDeviceDetection from '../../../../hooks/useDeviceDetection';
 
 const { Title, Text } = Typography;
 const { Panel } = Collapse;

@@ -5,7 +5,7 @@ import {
   UserOutlined,
   LockOutlined
 } from '@ant-design/icons';
-import { COLORS, getRowLabelColor, getContrastInfoBackground, getContrastBorderColor } from '../../../components/colorscheme';
+import { COLORS, getRowLabelColor, getContrastInfoBackground, getContrastBorderColor } from '../../../../components/colorscheme';
 
 const SeatRenderer = ({
   sectionId,
@@ -107,16 +107,14 @@ const SeatRenderer = ({
 
   const getSeatPrice = (row, seat) => {
     const dimensions = getSectionDimensions();
-    let actualRow, actualSeat;
+    let actualRow;
     
     if (dimensions.isInverted) {
       // Para secciones laterales: usar las coordenadas invertidas
       actualRow = seat;
-      actualSeat = row;
     } else {
       // Para secciones normales: usar las coordenadas originales
       actualRow = row;
-      actualSeat = seat;
     }
 
     // Si el evento usa pricing por secciones, calcular dinámicamente
@@ -337,7 +335,6 @@ const SeatRenderer = ({
     const isInteractable = !occupied && !blocked && !sectionBlocked;
     const seatStyle = getSeatStyle(seatId);
     const tooltipInfo = getSeatTooltip(row, seat, seatId);
-    const seatPrice = getSeatPrice(row, seat);
     const currentSeatSize = adaptiveSeatSize;
 
     // Determinar el icono a mostrar

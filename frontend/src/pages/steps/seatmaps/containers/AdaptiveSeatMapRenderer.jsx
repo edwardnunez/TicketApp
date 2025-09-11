@@ -3,22 +3,17 @@ import { Card, Button, Typography, Space, Switch, message, Alert, Select, Toolti
 import { 
   EditOutlined, 
   EyeOutlined, 
-  SaveOutlined, 
-  AppstoreOutlined, 
-  UnorderedListOutlined, 
-  BlockOutlined,
-  ZoomInOutlined,
-  FullscreenOutlined,
+  SaveOutlined,
   ReloadOutlined
 } from '@ant-design/icons';
-import { COLORS } from '../../../components/colorscheme';
-import GenericSeatMapRenderer from './GenericSeatRenderer';
-import ResponsiveSeatRenderer from './ResponsiveSeatRenderer';
-import EditableSeatRenderer from './EditableSeatRenderer';
+import { COLORS } from '../../../../components/colorscheme';
+import GenericSeatMapRenderer from '../renderers/GenericSeatRenderer';
+import ResponsiveSeatRenderer from '../renderers/ResponsiveSeatRenderer';
+import EditableSeatRenderer from '../renderers/EditableSeatRenderer';
 import AlternativeViewRenderer from './AlternativeViewRenderer';
 import SmartZoomContainer from '../../SmartZoomContainer';
-import useDeviceDetection from '../../../hooks/useDeviceDetection';
-import useViewportManager from '../../../hooks/useViewportManager';
+import useDeviceDetection from '../../../../hooks/useDeviceDetection';
+import useViewportManager from '../../../../hooks/useViewportManager';
 
 const { Title, Text } = Typography;
 const { Option } = Select;

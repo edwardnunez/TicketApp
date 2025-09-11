@@ -1,20 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { Card, Button, Typography, Collapse, Badge, notification, Switch } from 'antd';
+import React, { useState } from 'react';
+import { Card, Typography, Badge, notification } from 'antd';
 import {
   DownOutlined,
-  UpOutlined,
-  AppstoreOutlined,
-  UnorderedListOutlined
+  UpOutlined
 } from '@ant-design/icons';
-import { COLORS, getSectionTextColor, getContrastTextColor, getContrastInfoBackground, getSectionLabelColor, getSectionDimensionColor } from '../../../components/colorscheme';
+import { COLORS, getSectionTextColor, getContrastTextColor, getSectionLabelColor } from '../../../../components/colorscheme';
 import SeatRenderer from './SeatRenderer';
-import SeatMapLegend from './SeatMapLegend';
-import MobileSeatList from './MobileSeatList';
-import SmartSeatFilters from '../../../components/SmartSeatFilters';
-import OptimizedSeatNavigation from '../../../components/OptimizedSeatNavigation';
-import PersistentViewSwitcher from '../../../components/PersistentViewSwitcher';
-import useDeviceDetection from '../../../hooks/useDeviceDetection';
-import './ProfessionalSeatMapAnimations.css';
+import SeatMapLegend from '../ui/SeatMapLegend';
+import MobileSeatList from '../containers/MobileSeatList';
+import SmartSeatFilters from '../../../../components/SmartSeatFilters';
+import OptimizedSeatNavigation from '../../../../components/OptimizedSeatNavigation';
+import PersistentViewSwitcher from '../../../../components/PersistentViewSwitcher';
+import useDeviceDetection from '../../../../hooks/useDeviceDetection';
+import '../styles/ProfessionalSeatMapAnimations.css';
 
 const { Title, Text } = Typography;
 
@@ -35,7 +33,7 @@ const ResponsiveSeatRenderer = ({
   const [hoveredSection, setHoveredSection] = useState(null);
   const [currentView, setCurrentView] = useState(deviceInfo.isMobile ? 'navigation' : 'map');
   const [previousView, setPreviousView] = useState(null);
-  const [filters, setFilters] = useState({});
+  const [filters, setFilters] = useState({}); // eslint-disable-line no-unused-vars
 
   if (!seatMapData) return null;
 

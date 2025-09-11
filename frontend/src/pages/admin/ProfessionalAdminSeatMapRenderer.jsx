@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Typography, Button, Space, Card, Divider } from 'antd';
+import React, { useState, useEffect, useRef } from 'react';
+import { Typography, Button, Space } from 'antd';
 import { 
   FullscreenOutlined,
   CompressOutlined,
@@ -8,11 +8,9 @@ import {
   InfoCircleOutlined
 } from '@ant-design/icons';
 import { COLORS } from '../../components/colorscheme';
-import ProfessionalSeatRenderer from '../steps/seatmaps/ProfessionalSeatRenderer';
-import ProfessionalSeatMapRenderer from '../steps/seatmaps/ProfessionalSeatMapRenderer';
-import VenueStageRenderer from '../steps/seatmaps/VenueStageRenderer';
-import '../steps/seatmaps/ProfessionalSeatMapAnimations.css';
-import '../steps/seatmaps/ProfessionalSeatMapLayouts.css';
+import ProfessionalSeatMapRenderer from '../steps/seatmaps/containers/ProfessionalSeatMapRenderer';
+import '../steps/seatmaps/styles/ProfessionalSeatMapAnimations.css';
+import '../steps/seatmaps/styles/ProfessionalSeatMapLayouts.css';
 
 const { Title, Text } = Typography;
 
@@ -44,16 +42,6 @@ const ProfessionalAdminSeatMapRenderer = ({
     }
   };
 
-  // Función para filtrar asientos bloqueados por sección
-  const filterBlockedBySection = (sectionId) => {
-    if (!blockedSeats || !blockedSeats.length) return [];
-    return blockedSeats.filter(seatId => seatId && typeof seatId === 'string' && seatId.startsWith(sectionId));
-  };
-
-  // Función para verificar si una sección está bloqueada
-  const isSectionBlocked = (sectionId) => {
-    return blockedSections && blockedSections.includes(sectionId);
-  };
 
   // Función para alternar pantalla completa
   const toggleFullscreen = () => {

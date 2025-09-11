@@ -1,5 +1,5 @@
 import React from 'react';
-import { COLORS } from '../../../components/colorscheme';
+import { COLORS } from '../../../../components/colorscheme';
 
 const VenueStageRenderer = ({ type, config, venueColors }) => {
   const renderFootballField = () => (

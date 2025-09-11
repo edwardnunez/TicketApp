@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Card, InputNumber, Typography, Alert, Spin, Button } from "antd";
 import { COLORS } from "../../components/colorscheme";
-import GenericSeatMapRenderer from "./seatmaps/GenericSeatRenderer";
-import ResponsiveSeatRenderer from "./seatmaps/ResponsiveSeatRenderer";
+import GenericSeatMapRenderer from "./seatmaps/renderers/GenericSeatRenderer";
+import ResponsiveSeatRenderer from "./seatmaps/renderers/ResponsiveSeatRenderer";
 import axios from 'axios';
 
 const { Title, Text } = Typography;
@@ -46,7 +46,7 @@ export default function SelectTickets({
     const soldTickets = memoizedEvent.soldTickets || 0;
     
     return Math.max(0, capacity - soldTickets);
-  }, [memoizedEvent?.capacity, memoizedEvent?.soldTickets]);
+  }, [memoizedEvent]);
 
   // Verificar si el evento está agotado
   const isSoldOut = useMemo(() => {
@@ -233,7 +233,7 @@ export default function SelectTickets({
     };
 
     loadSeatMapData();
-  }, [memoizedEvent?.location?.seatMapId, memoizedEvent?.type, memoizedEvent?.usesSectionPricing, memoizedEvent?.sectionPricing, requiresSeatMap, validateSeatMapCompatibility, gatewayUrl]);
+  }, [memoizedEvent, requiresSeatMap, validateSeatMapCompatibility, gatewayUrl]);
 
   // FIXED: Solo limpiar asientos cuando realmente cambia el evento, no cuando cambia la selección
   useEffect(() => {
@@ -248,7 +248,7 @@ export default function SelectTickets({
       }
       previousEventId.current = currentEventId;
     }
-  }, [memoizedEvent?._id, onSeatSelect, setQuantity]); // Removido selectedSeats.length de las dependencias
+  }, [memoizedEvent?._id, memoizedEvent?.usesRowPricing, onSeatSelect, setQuantity, selectedSeats.length]);
 
 
 

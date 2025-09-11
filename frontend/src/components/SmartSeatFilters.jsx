@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { 
   Card, 
   Select, 
@@ -24,7 +24,7 @@ import {
 } from '@ant-design/icons';
 import { COLORS } from './colorscheme';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 const { Option } = Select;
 
 const SmartSeatFilters = ({
@@ -50,7 +50,7 @@ const SmartSeatFilters = ({
   const [filtersApplied, setFiltersApplied] = useState(false);
 
   // Función para obtener el precio correcto de la sección
-  const getSectionPrice = (section) => {
+  const getSectionPrice = useCallback((section) => {
     if (event && event.usesSectionPricing && event.sectionPricing?.length > 0) {
       const eventSectionPricing = event.sectionPricing.find(sp => sp.sectionId === section.id);
       if (eventSectionPricing) {
@@ -58,7 +58,7 @@ const SmartSeatFilters = ({
       }
     }
     return section.defaultPrice || 0;
-  };
+  }, [event]);
 
   // Calcular estadísticas de secciones
   const sectionStats = useMemo(() => {
@@ -86,7 +86,7 @@ const SmartSeatFilters = ({
         priceRange: section.priceRange || [correctPrice, correctPrice]
       };
     });
-  }, [sections]);
+  }, [sections, getSectionPrice]);
 
   // Calcular rangos de precios
   const priceRanges = useMemo(() => {

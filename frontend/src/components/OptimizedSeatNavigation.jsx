@@ -1,24 +1,18 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { 
   Card, 
   Button, 
   Typography, 
-  Space, 
   Tag, 
   Badge, 
-  Collapse,
   Row,
   Col,
   Progress,
-  Tooltip,
   Empty
 } from 'antd';
 import { 
   DownOutlined, 
   RightOutlined,
-  TeamOutlined,
-  DollarOutlined,
-  EyeOutlined,
   LockOutlined,
   CheckCircleOutlined,
   ExclamationCircleOutlined
@@ -26,7 +20,6 @@ import {
 import { COLORS } from './colorscheme';
 
 const { Title, Text } = Typography;
-const { Panel } = Collapse;
 
 const OptimizedSeatNavigation = ({
   sections = [],
@@ -39,10 +32,9 @@ const OptimizedSeatNavigation = ({
   style = {}
 }) => {
   const [expandedSections, setExpandedSections] = useState(new Set());
-  const [viewMode, setViewMode] = useState('sections'); // 'sections', 'seats'
 
   // Función para obtener el precio correcto de la sección
-  const getSectionPrice = (section) => {
+  const getSectionPrice = useCallback((section) => {
     if (event && event.usesSectionPricing && event.sectionPricing?.length > 0) {
       const eventSectionPricing = event.sectionPricing.find(sp => sp.sectionId === section.id);
       if (eventSectionPricing) {
@@ -50,7 +42,7 @@ const OptimizedSeatNavigation = ({
       }
     }
     return section.defaultPrice || 0;
-  };
+  }, [event]);
 
   // Calcular estadísticas agregadas
   const sectionStats = useMemo(() => {
@@ -79,7 +71,7 @@ const OptimizedSeatNavigation = ({
         selectedCount: selectedSeats.filter(seat => seat.sectionId === section.id).length
       };
     });
-  }, [sections, selectedSeats]);
+  }, [sections, selectedSeats, getSectionPrice]);
 
   // Generar asientos para una sección
   const generateSeatsForSection = (section) => {

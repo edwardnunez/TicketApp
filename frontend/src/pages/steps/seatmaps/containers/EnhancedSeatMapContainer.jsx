@@ -1,14 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Typography, Button, Space } from 'antd';
-import { 
-  FullscreenOutlined,
-  CompressOutlined,
-  InfoCircleOutlined
-} from '@ant-design/icons';
-import { COLORS } from '../../../components/colorscheme';
+import React, { useRef } from 'react';
+import { Typography } from 'antd';
+import { COLORS } from '../../../../components/colorscheme';
 import ProfessionalSeatMapRenderer from './ProfessionalSeatMapRenderer';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 const EnhancedSeatMapContainer = ({
   seatMapData,
@@ -22,30 +17,8 @@ const EnhancedSeatMapContainer = ({
   event,
   calculateSeatPrice
 }) => {
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [showLegend, setShowLegend] = useState(true);
   const containerRef = useRef(null);
 
-  // Función para alternar pantalla completa
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      containerRef.current?.requestFullscreen();
-      setIsFullscreen(true);
-    } else {
-      document.exitFullscreen();
-      setIsFullscreen(false);
-    }
-  };
-
-  // Manejar cambios de pantalla completa
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
-    };
-    
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
-  }, []);
 
   if (!seatMapData) {
     return (
@@ -59,7 +32,6 @@ const EnhancedSeatMapContainer = ({
     );
   }
 
-  const { name } = seatMapData;
 
   return (
     <div
@@ -68,7 +40,7 @@ const EnhancedSeatMapContainer = ({
       style={{
         position: 'relative',
         width: '100%',
-        height: isFullscreen ? '100vh' : 'auto',
+        height: 'auto',
         minHeight: '150vh',
         backgroundColor: COLORS.neutral.grey1,
         borderRadius: '12px',

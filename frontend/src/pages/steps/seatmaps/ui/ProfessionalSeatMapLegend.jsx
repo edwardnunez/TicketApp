@@ -1,5 +1,5 @@
 import React from 'react';
-import { COLORS, getVenueColors } from '../../../components/colorscheme';
+import { COLORS, getVenueColors } from '../../../../components/colorscheme';
 
 const ProfessionalSeatMapLegend = ({ 
   venueType = 'concert',

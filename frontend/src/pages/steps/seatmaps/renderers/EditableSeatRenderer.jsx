@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Typography, Space, Modal, Form, Input, InputNumber, ColorPicker, Select, Switch, Popconfirm, message, Tooltip, Row, Col, Badge } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, SaveOutlined, UndoOutlined, RedoOutlined, EyeOutlined, EyeInvisibleOutlined, CopyOutlined, SettingOutlined } from '@ant-design/icons';
-import { COLORS } from '../../../components/colorscheme';
+import { PlusOutlined, EditOutlined, DeleteOutlined, SaveOutlined, EyeOutlined, EyeInvisibleOutlined, SettingOutlined } from '@ant-design/icons';
+import { COLORS } from '../../../../components/colorscheme';
 import SeatRenderer from './SeatRenderer';
-import SeatMapLegend from './SeatMapLegend';
-import useDeviceDetection from '../../../hooks/useDeviceDetection';
+import SeatMapLegend from '../ui/SeatMapLegend';
+import useDeviceDetection from '../../../../hooks/useDeviceDetection';
 import './ProfessionalSeatMapAnimations.css';
 
 const { Title, Text } = Typography;
