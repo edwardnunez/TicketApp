@@ -658,6 +658,202 @@ app.get('/tickets/user/:userId/events', validateObjectId, async (req, res) => {
   }
 });
 
+// GET /tickets/admin/statistics - Estadísticas generales para administradores
+app.get('/tickets/admin/statistics', async (req, res) => {
+  try {
+    const { eventType, dateFrom, dateTo, status } = req.query;
+
+    // Construir filtros
+    let matchFilters = {};
+    
+    if (status && ['pending', 'paid', 'cancelled'].includes(status)) {
+      matchFilters.status = status;
+    }
+    
+    if (dateFrom || dateTo) {
+      matchFilters.purchasedAt = {};
+      if (dateFrom) {
+        matchFilters.purchasedAt.$gte = new Date(dateFrom);
+      }
+      if (dateTo) {
+        matchFilters.purchasedAt.$lte = new Date(dateTo);
+      }
+    }
+
+    // Obtener estadísticas generales
+    const generalStats = await Ticket.aggregate([
+      { $match: matchFilters },
+      {
+        $group: {
+          _id: null,
+          totalTickets: { $sum: '$quantity' },
+          totalRevenue: { $sum: { $multiply: ['$price', '$quantity'] } },
+          totalTransactions: { $sum: 1 },
+          paidTickets: {
+            $sum: {
+              $cond: [{ $eq: ['$status', 'paid'] }, '$quantity', 0]
+            }
+          },
+          pendingTickets: {
+            $sum: {
+              $cond: [{ $eq: ['$status', 'pending'] }, '$quantity', 0]
+            }
+          },
+          cancelledTickets: {
+            $sum: {
+              $cond: [{ $eq: ['$status', 'cancelled'] }, '$quantity', 0]
+            }
+          },
+          paidRevenue: {
+            $sum: {
+              $cond: [
+                { $eq: ['$status', 'paid'] },
+                { $multiply: ['$price', '$quantity'] },
+                0
+              ]
+            }
+          }
+        }
+      }
+    ]);
+
+    // Obtener estadísticas por evento
+    const eventStats = await Ticket.aggregate([
+      { $match: matchFilters },
+      {
+        $group: {
+          _id: '$eventId',
+          totalTickets: { $sum: '$quantity' },
+          totalRevenue: { $sum: { $multiply: ['$price', '$quantity'] } },
+          totalTransactions: { $sum: 1 },
+          paidTickets: {
+            $sum: {
+              $cond: [{ $eq: ['$status', 'paid'] }, '$quantity', 0]
+            }
+          },
+          paidRevenue: {
+            $sum: {
+              $cond: [
+                { $eq: ['$status', 'paid'] },
+                { $multiply: ['$price', '$quantity'] },
+                0
+              ]
+            }
+          },
+          latestPurchase: { $max: '$purchasedAt' }
+        }
+      },
+      { $sort: { totalRevenue: -1 } }
+    ]);
+
+    // Obtener información de eventos para las estadísticas
+    const eventIds = eventStats.map(stat => stat._id);
+    const eventsInfo = {};
+    
+    if (eventIds.length > 0) {
+      const eventPromises = eventIds.map(async (eventId) => {
+        try {
+          const eventInfo = await getEventDetails(eventId);
+          eventsInfo[eventId.toString()] = eventInfo;
+        } catch (error) {
+          console.warn(`No se pudo obtener información del evento ${eventId}:`, error.message);
+          eventsInfo[eventId.toString()] = {
+            _id: eventId,
+            name: "Evento no disponible",
+            type: "unknown",
+            date: null,
+            location: { name: "Ubicación no disponible" }
+          };
+        }
+      });
+      
+      await Promise.all(eventPromises);
+    }
+
+    // Combinar estadísticas con información de eventos
+    const eventStatsWithInfo = eventStats.map(stat => ({
+      ...stat,
+      event: eventsInfo[stat._id.toString()] || {
+        _id: stat._id,
+        name: "Evento no disponible",
+        type: "unknown",
+        date: null,
+        location: { name: "Ubicación no disponible" }
+      }
+    }));
+
+    // Filtrar por tipo de evento si se especifica
+    let filteredEventStats = eventStatsWithInfo;
+    if (eventType && eventType !== 'all') {
+      filteredEventStats = eventStatsWithInfo.filter(stat => 
+        stat.event.type === eventType
+      );
+    }
+
+    // Estadísticas por tipo de evento
+    const typeStats = await Ticket.aggregate([
+      { $match: matchFilters },
+      {
+        $lookup: {
+          from: 'events',
+          localField: 'eventId',
+          foreignField: '_id',
+          as: 'event'
+        }
+      },
+      { $unwind: { path: '$event', preserveNullAndEmptyArrays: true } },
+      {
+        $group: {
+          _id: '$event.type',
+          totalTickets: { $sum: '$quantity' },
+          totalRevenue: { $sum: { $multiply: ['$price', '$quantity'] } },
+          totalTransactions: { $sum: 1 },
+          paidRevenue: {
+            $sum: {
+              $cond: [
+                { $eq: ['$status', 'paid'] },
+                { $multiply: ['$price', '$quantity'] },
+                0
+              ]
+            }
+          }
+        }
+      },
+      { $sort: { totalRevenue: -1 } }
+    ]);
+
+    res.json({
+      success: true,
+      statistics: {
+        general: generalStats[0] || {
+          totalTickets: 0,
+          totalRevenue: 0,
+          totalTransactions: 0,
+          paidTickets: 0,
+          pendingTickets: 0,
+          cancelledTickets: 0,
+          paidRevenue: 0
+        },
+        byEvent: filteredEventStats,
+        byType: typeStats,
+        filters: {
+          eventType,
+          dateFrom,
+          dateTo,
+          status
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Error obteniendo estadísticas de administrador:', error);
+    res.status(500).json({
+      error: "Error interno del servidor",
+      message: "No se pudieron obtener las estadísticas"
+    });
+  }
+});
+
 
 // Middleware de manejo de errores
 app.use((err, req, res, next) => {

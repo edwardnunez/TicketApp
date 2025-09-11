@@ -603,36 +603,36 @@ const AdminDashboard = () => {
               </Title>
             </Col>
             <Col>
-              <Button
-                type="primary"
-                size="large"
-                icon={<PlusOutlined />}
-                onClick={() => window.location.href = '/create-event'}
-                style={{ 
-                  backgroundColor: COLORS?.primary?.main || "#1890ff",
-                  borderColor: COLORS?.primary?.main || "#1890ff",
-                  borderRadius: '6px',
-                  boxShadow: '0 2px 4px rgba(24, 144, 255, 0.2)'
-                }}
-              >
-                Crear nuevo evento
-              </Button>
-            </Col>
-            <Col>
-              <Button
-                type="primary"
-                size="large"
-                icon={<PlusOutlined />}
-                onClick={() => window.location.href = '/create-location'}
-                style={{ 
-                  backgroundColor: COLORS?.primary?.main || "#1890ff",
-                  borderColor: COLORS?.primary?.main || "#1890ff",
-                  borderRadius: '6px',
-                  boxShadow: '0 2px 4px rgba(24, 144, 255, 0.2)'
-                }}
-              >
-                Crear nueva ubicación
-              </Button>
+              <Space>
+                <Button
+                  type="primary"
+                  size="large"
+                  icon={<PlusOutlined />}
+                  onClick={() => window.location.href = '/create-event'}
+                  style={{ 
+                    backgroundColor: COLORS?.primary?.main || "#1890ff",
+                    borderColor: COLORS?.primary?.main || "#1890ff",
+                    borderRadius: '6px',
+                    boxShadow: '0 2px 4px rgba(24, 144, 255, 0.2)'
+                  }}
+                >
+                  Crear nuevo evento
+                </Button>
+                <Button
+                  type="primary"
+                  size="large"
+                  icon={<PlusOutlined />}
+                  onClick={() => window.location.href = '/create-location'}
+                  style={{ 
+                    backgroundColor: COLORS?.primary?.main || "#1890ff",
+                    borderColor: COLORS?.primary?.main || "#1890ff",
+                    borderRadius: '6px',
+                    boxShadow: '0 2px 4px rgba(24, 144, 255, 0.2)'
+                  }}
+                >
+                  Crear nueva ubicación
+                </Button>
+              </Space>
             </Col>
           </Row>
 
