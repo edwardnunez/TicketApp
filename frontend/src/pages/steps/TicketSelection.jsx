@@ -7,6 +7,22 @@ import axios from 'axios';
 
 const { Title, Text } = Typography;
 
+// CSS para la animación del spinner
+const spinKeyframes = `
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+`;
+
+// Inyectar CSS si no existe
+if (!document.getElementById('spin-animation-ticket-selection')) {
+  const style = document.createElement('style');
+  style.id = 'spin-animation-ticket-selection';
+  style.textContent = spinKeyframes;
+  document.head.appendChild(style);
+}
+
 export default function SelectTickets({ 
   quantity, setQuantity, 
   formatPrice,
@@ -19,6 +35,8 @@ export default function SelectTickets({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isMobileOrTablet, setIsMobileOrTablet] = useState(false);
+  const [ticketAvailability, setTicketAvailability] = useState(null);
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
   const memoizedEvent = useMemo(() => event, [event]);
   
   // Ref para trackear el evento anterior y evitar limpiezas innecesarias
@@ -38,15 +56,62 @@ export default function SelectTickets({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Calcular entradas disponibles
-  const availableTickets = useMemo(() => {
-    if (!memoizedEvent) return 0;
+  // Función para obtener disponibilidad de tickets
+  const fetchTicketAvailability = async () => {
+    if (!memoizedEvent?._id) return;
     
+    setAvailabilityLoading(true);
+    try {
+      const response = await axios.get(`${gatewayUrl}/tickets/event/${memoizedEvent._id}`);
+      const ticketStats = response.data.statistics || [];
+      
+      // Procesar estadísticas para obtener disponibilidad
+      let soldTickets = 0;
+      let pendingTickets = 0;
+      
+      ticketStats.forEach(stat => {
+        if (stat._id === 'paid') {
+          soldTickets = stat.totalTickets || 0;
+        } else if (stat._id === 'pending') {
+          pendingTickets = stat.totalTickets || 0;
+        }
+      });
+
+      const totalCapacity = memoizedEvent?.capacity || 0;
+      const availableTickets = Math.max(0, totalCapacity - soldTickets - pendingTickets);
+      const isSoldOut = availableTickets <= 0;
+      const salesPercentage = totalCapacity > 0 ? Math.round(((soldTickets + pendingTickets) / totalCapacity) * 100) : 0;
+
+      setTicketAvailability({
+        eventId: memoizedEvent._id,
+        totalCapacity,
+        soldTickets,
+        pendingTickets,
+        availableTickets,
+        isSoldOut,
+        salesPercentage,
+        lastUpdated: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Error fetching ticket availability:", error);
+    } finally {
+      setAvailabilityLoading(false);
+    }
+  };
+
+  // Calcular entradas disponibles usando datos en tiempo real
+  const availableTickets = useMemo(() => {
+    if (ticketAvailability) {
+      return ticketAvailability.availableTickets || 0;
+    }
+    
+    // Fallback a datos del evento si no hay disponibilidad en tiempo real
+    if (!memoizedEvent) return 0;
     const capacity = memoizedEvent.capacity || 0;
     const soldTickets = memoizedEvent.soldTickets || 0;
     
     return Math.max(0, capacity - soldTickets);
-  }, [memoizedEvent]);
+  }, [memoizedEvent, ticketAvailability]);
 
   // Verificar si el evento está agotado
   const isSoldOut = useMemo(() => {
@@ -247,8 +312,22 @@ export default function SelectTickets({
         setQuantity(0);
       }
       previousEventId.current = currentEventId;
+      
+      // Cargar disponibilidad de tickets cuando cambia el evento
+      fetchTicketAvailability();
     }
   }, [memoizedEvent?._id, memoizedEvent?.usesRowPricing, onSeatSelect, setQuantity, selectedSeats.length]);
+
+  // Configurar actualización automática de disponibilidad cada 30 segundos
+  useEffect(() => {
+    if (!memoizedEvent?._id) return;
+
+    const interval = setInterval(() => {
+      fetchTicketAvailability();
+    }, 30000); // Actualizar cada 30 segundos
+
+    return () => clearInterval(interval);
+  }, [memoizedEvent?._id]);
 
 
 
@@ -294,9 +373,22 @@ export default function SelectTickets({
         justifyContent: 'space-between',
         alignItems: 'center'
       }}>
-        <Text style={{ color: COLORS.neutral.grey4 }}>
-          Entradas disponibles:
-        </Text>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <Text style={{ color: COLORS.neutral.grey4 }}>
+            Entradas disponibles:
+          </Text>
+          {availabilityLoading && (
+            <div style={{ 
+              width: '12px', 
+              height: '12px', 
+              border: '2px solid #f3f3f3',
+              borderTop: '2px solid #1890ff',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite',
+              marginLeft: '8px'
+            }} />
+          )}
+        </div>
         <Text strong style={{ color: COLORS.primary.main }}>
           {availableTickets}
         </Text>

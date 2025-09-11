@@ -14,3 +14,4 @@ error: 'Internal Server Error',
 gateway          |       message: 'SeatMap validation failed: compatibleEventTypes.0: `arena` is not a valid enum value for path `compatibleEventTypes.0`.' 
 
 quitar select de entrada general o asientos numerados
+

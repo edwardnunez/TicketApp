@@ -386,6 +386,8 @@ const EventCreation = () => {
     if (location && location.seatMapId) {
       await fetchLocationSections(locationId);
       const capacity = await getCapacityFromSeatMap(location.seatMapId);
+      // Store the seatmap capacity in the location object for validation
+      location.seatMapCapacity = capacity;
       form.setFieldsValue({ capacity: capacity });
       setIsCapacityLocked(true);
     } else {
@@ -692,7 +694,18 @@ const EventCreation = () => {
           )
         );
 
-        if (hasInvalidDefaultPrices || hasInvalidRowPricing || hasDuplicateRows || hasInvalidCapacities) {
+        // Validar que la capacidad total no exceda la capacidad del seatmap
+        const totalCapacity = sectionPricing.reduce((total, section) => {
+          if (!section.hasNumberedSeats && values.type === 'concert') {
+            return total + (parseInt(section.customCapacity) || 0);
+          }
+          return total + (section.capacity || 0);
+        }, 0);
+
+        const seatMapCapacity = await getCapacityFromSeatMap(selectedLocation?.seatMapId);
+        const exceedsSeatMapCapacity = seatMapCapacity > 0 && totalCapacity > seatMapCapacity;
+
+        if (hasInvalidDefaultPrices || hasInvalidRowPricing || hasDuplicateRows || hasInvalidCapacities || exceedsSeatMapCapacity) {
           let errorMsg = '';
           if (hasInvalidDefaultPrices) {
             errorMsg += 'Todos los precios por defecto deben ser números válidos y mayores o iguales a 0. ';
@@ -705,6 +718,9 @@ const EventCreation = () => {
           }
           if (hasInvalidCapacities) {
             errorMsg += 'Para conciertos con pistas, debe especificar una capacidad válida dentro del límite máximo. ';
+          }
+          if (exceedsSeatMapCapacity) {
+            errorMsg += `La capacidad total (${totalCapacity}) no puede exceder la capacidad del mapa de asientos (${seatMapCapacity}). `;
           }
           setErrorMessage(errorMsg.trim());
           setLoading(false);
@@ -757,10 +773,20 @@ const EventCreation = () => {
           setLoading(false);
           return;
         }
+
+        // Validar que la capacidad no exceda la capacidad de la ubicación
+        const locationCapacity = selectedLocation?.capacity || 0;
+        const requestedCapacity = parseInt(values.capacity);
+        
+        if (locationCapacity > 0 && requestedCapacity > locationCapacity) {
+          setErrorMessage(`La capacidad solicitada (${requestedCapacity}) no puede exceder la capacidad de la ubicación (${locationCapacity})`);
+          setLoading(false);
+          return;
+        }
         
         eventData.usesSectionPricing = false;
         eventData.usesRowPricing = false;
-        eventData.capacity = parseInt(values.capacity);
+        eventData.capacity = requestedCapacity;
         eventData.price = parseFloat(values.price);
       }
 
@@ -1171,6 +1197,14 @@ const EventCreation = () => {
               <Col span={12}>
                 <p><strong>Capacidad total:</strong> {getTotalCapacity()} asientos</p>
                 <p><strong>Rango de precios:</strong> {getOverallPriceRange()}</p>
+                {selectedLocation?.seatMapId && (
+                  <p style={{ 
+                    color: getTotalCapacity() > (selectedLocation.seatMapCapacity || 0) ? '#ff4d4f' : '#52c41a',
+                    fontWeight: 'bold'
+                  }}>
+                    Capacidad del seatmap: {selectedLocation.seatMapCapacity || 'No disponible'}
+                  </p>
+                )}
               </Col>
               <Col span={12}>
                 <p><strong>Número de secciones:</strong> {sectionPricing.length}</p>
@@ -1489,7 +1523,17 @@ const EventCreation = () => {
                       name="capacity"
                       rules={[
                         { required: true, message: 'Por favor ingrese la capacidad' },
-                        { type: 'number', min: 1, message: 'La capacidad debe ser al menos 1', transform: (value) => Number(value) }
+                        { type: 'number', min: 1, message: 'La capacidad debe ser al menos 1', transform: (value) => Number(value) },
+                        {
+                          validator: (_, value) => {
+                            if (!value || !selectedLocation) return Promise.resolve();
+                            const locationCapacity = selectedLocation.capacity || 0;
+                            if (locationCapacity > 0 && parseInt(value) > locationCapacity) {
+                              return Promise.reject(`La capacidad no puede exceder ${locationCapacity} (capacidad de la ubicación)`);
+                            }
+                            return Promise.resolve();
+                          }
+                        }
                       ]}
                     >
                       <Input 
@@ -1509,6 +1553,16 @@ const EventCreation = () => {
                         }
                       />
                     </Form.Item>
+                    {selectedLocation && selectedLocation.capacity > 0 && !isCapacityLocked && (
+                      <div style={{ 
+                        fontSize: '12px', 
+                        color: COLORS?.neutral?.grey4 || '#8c8c8c',
+                        marginTop: '-8px',
+                        marginBottom: '16px'
+                      }}>
+                        Capacidad máxima de la ubicación: {selectedLocation.capacity} personas
+                      </div>
+                    )}
                   </Col>
                   
                   <Col xs={24} md={12}>

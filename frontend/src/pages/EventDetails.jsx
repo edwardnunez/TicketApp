@@ -41,6 +41,22 @@ import FramedImage from "../components/FramedImage";
 // Configurar dayjs en español
 dayjs.locale('es');
 
+// CSS para la animación del spinner
+const spinKeyframes = `
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+`;
+
+// Inyectar CSS si no existe
+if (!document.getElementById('spin-animation')) {
+  const style = document.createElement('style');
+  style.id = 'spin-animation';
+  style.textContent = spinKeyframes;
+  document.head.appendChild(style);
+}
+
 const { Content } = Layout;
 const { Title, Text, Paragraph } = Typography;
 
@@ -50,6 +66,8 @@ const EventDetails = () => {
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [ticketAvailability, setTicketAvailability] = useState(null);
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
   const showNotification = (type, message, description) => {
     notification[type]({
       message,
@@ -69,6 +87,49 @@ const EventDetails = () => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Función para obtener disponibilidad de tickets
+  const fetchTicketAvailability = async () => {
+    if (!id) return;
+    
+    setAvailabilityLoading(true);
+    try {
+      const response = await axios.get(`${gatewayUrl}/tickets/event/${id}`);
+      const ticketStats = response.data.statistics || [];
+      
+      // Procesar estadísticas para obtener disponibilidad
+      let soldTickets = 0;
+      let pendingTickets = 0;
+      
+      ticketStats.forEach(stat => {
+        if (stat._id === 'paid') {
+          soldTickets = stat.totalTickets || 0;
+        } else if (stat._id === 'pending') {
+          pendingTickets = stat.totalTickets || 0;
+        }
+      });
+
+      const totalCapacity = event?.capacity || 0;
+      const availableTickets = Math.max(0, totalCapacity - soldTickets - pendingTickets);
+      const isSoldOut = availableTickets <= 0;
+      const salesPercentage = totalCapacity > 0 ? Math.round(((soldTickets + pendingTickets) / totalCapacity) * 100) : 0;
+
+      setTicketAvailability({
+        eventId: id,
+        totalCapacity,
+        soldTickets,
+        pendingTickets,
+        availableTickets,
+        isSoldOut,
+        salesPercentage,
+        lastUpdated: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Error fetching ticket availability:", error);
+    } finally {
+      setAvailabilityLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!id) {
@@ -90,6 +151,9 @@ const EventDetails = () => {
         
         setEvent(eventData);
         setLoading(false);
+        
+        // Cargar disponibilidad de tickets después de cargar el evento
+        fetchTicketAvailability();
       })
       .catch((err) => {
         console.error("Error loading event details:", err);
@@ -98,6 +162,17 @@ const EventDetails = () => {
         showNotification('error', 'Error', 'No se pudieron cargar los detalles del evento. Por favor, inténtalo de nuevo más tarde.');
       });
       }, [id, gatewayUrl]);
+
+  // Configurar actualización automática de disponibilidad cada 30 segundos
+  useEffect(() => {
+    if (!event) return;
+
+    const interval = setInterval(() => {
+      fetchTicketAvailability();
+    }, 30000); // Actualizar cada 30 segundos
+
+    return () => clearInterval(interval);
+  }, [event]);
 
   const mapEventTypeToCategory = (type) => {
     const typeMap = {
@@ -266,6 +341,122 @@ const EventDetails = () => {
             €{event.price}
           </Title>
         </div>
+      </Card>
+    );
+  };
+
+  const renderTicketAvailability = () => {
+    if (!ticketAvailability) return null;
+
+    const { availableTickets, totalCapacity, soldTickets, isSoldOut, salesPercentage, lastUpdated } = ticketAvailability;
+    
+    return (
+      <Card style={{ 
+        borderRadius: '12px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+        marginTop: '24px',
+        borderLeft: `4px solid ${isSoldOut ? COLORS.secondary.main : COLORS.accent.green}`
+      }}>
+        <Title level={5} style={{ 
+          color: COLORS.neutral.grey800,
+          marginBottom: '12px',
+          display: 'flex',
+          alignItems: 'center'
+        }}>
+          <TeamOutlined style={{ 
+            marginRight: '8px', 
+            color: isSoldOut ? COLORS.secondary.main : COLORS.accent.green 
+          }} />
+          Disponibilidad de entradas
+          {availabilityLoading && (
+            <div style={{ marginLeft: '8px' }}>
+              <div style={{ 
+                width: '12px', 
+                height: '12px', 
+                border: '2px solid #f3f3f3',
+                borderTop: '2px solid #1890ff',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite'
+              }} />
+            </div>
+          )}
+        </Title>
+        
+        <Row gutter={[16, 8]}>
+          <Col xs={24} sm={8}>
+            <div style={{ textAlign: 'center' }}>
+              <Text style={{ 
+                fontSize: '24px', 
+                fontWeight: 'bold',
+                color: isSoldOut ? COLORS.secondary.main : COLORS.accent.green
+              }}>
+                {availableTickets}
+              </Text>
+              <br />
+              <Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
+                Disponibles
+              </Text>
+            </div>
+          </Col>
+          <Col xs={24} sm={8}>
+            <div style={{ textAlign: 'center' }}>
+              <Text style={{ fontSize: '18px', fontWeight: 'bold', color: COLORS.neutral.grey4 }}>
+                {soldTickets}
+              </Text>
+              <br />
+              <Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
+                Vendidas
+              </Text>
+            </div>
+          </Col>
+          <Col xs={24} sm={8}>
+            <div style={{ textAlign: 'center' }}>
+              <Text style={{ fontSize: '18px', fontWeight: 'bold', color: COLORS.neutral.grey4 }}>
+                {totalCapacity}
+              </Text>
+              <br />
+              <Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
+                Capacidad total
+              </Text>
+            </div>
+          </Col>
+        </Row>
+        
+        {totalCapacity > 0 && (
+          <div style={{ marginTop: '16px' }}>
+            <div style={{ 
+              width: '100%', 
+              height: '8px', 
+              backgroundColor: COLORS.neutral.grey2,
+              borderRadius: '4px',
+              overflow: 'hidden'
+            }}>
+              <div style={{
+                width: `${salesPercentage}%`,
+                height: '100%',
+                backgroundColor: isSoldOut ? COLORS.secondary.main : COLORS.accent.green,
+                transition: 'width 0.3s ease'
+              }} />
+            </div>
+            <Text style={{ 
+              fontSize: '12px', 
+              color: COLORS.neutral.grey4,
+              marginTop: '4px',
+              display: 'block'
+            }}>
+              {salesPercentage}% vendido
+            </Text>
+          </div>
+        )}
+        
+        <Text style={{ 
+          fontSize: '10px', 
+          color: COLORS.neutral.grey3,
+          marginTop: '8px',
+          display: 'block'
+        }}>
+          Última actualización: {dayjs(lastUpdated).format('HH:mm:ss')}
+        </Text>
       </Card>
     );
   };
@@ -523,7 +714,7 @@ const EventDetails = () => {
 
                 {/* Botón de compra */}
                 <div>
-                  {isEventAvailable() ? (
+                  {isEventAvailable() && (!ticketAvailability || !ticketAvailability.isSoldOut) ? (
                     <Button
                       type="primary"
                       size="large"
@@ -551,7 +742,15 @@ const EventDetails = () => {
                         fontSize: '16px'
                       }}
                     >
-                      <ClockCircleOutlined /> {getStateText(event.state)}
+                      {ticketAvailability?.isSoldOut ? (
+                        <>
+                          <StopOutlined /> Agotado
+                        </>
+                      ) : (
+                        <>
+                          <ClockCircleOutlined /> {getStateText(event.state)}
+                        </>
+                      )}
                     </Button>
                   )}
                   
@@ -562,7 +761,9 @@ const EventDetails = () => {
                     color: COLORS.neutral.grey4,
                     fontSize: '14px'
                   }}>
-                    {isEventAvailable() ? 'Reserva tu lugar ahora' : `Este evento está ${event.state}`}
+                    {ticketAvailability?.isSoldOut ? 'No hay entradas disponibles' : 
+                     isEventAvailable() ? 'Reserva tu lugar ahora' : 
+                     `Este evento está ${event.state}`}
                   </Text>
                 </div>
               </Space>
@@ -571,6 +772,9 @@ const EventDetails = () => {
 
           {/* Información de precios detallada */}
           {renderPricingInfo()}
+
+          {/* Disponibilidad de tickets en tiempo real */}
+          {renderTicketAvailability()}
 
           {/* Estadísticas de bloqueos */}
           {renderBlockingStats()}
