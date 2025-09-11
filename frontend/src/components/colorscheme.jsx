@@ -263,3 +263,154 @@ const hexToRgb = (hex) => {
     `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : 
     '0, 0, 0';
 };
+
+// Funciones para calcular contraste de colores
+export const hexToRgbValues = (hex) => {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? {
+    r: parseInt(result[1], 16),
+    g: parseInt(result[2], 16),
+    b: parseInt(result[3], 16)
+  } : { r: 0, g: 0, b: 0 };
+};
+
+export const getLuminance = (r, g, b) => {
+  const [rs, gs, bs] = [r, g, b].map(c => {
+    c = c / 255;
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+};
+
+export const getContrastRatio = (color1, color2) => {
+  const rgb1 = hexToRgbValues(color1);
+  const rgb2 = hexToRgbValues(color2);
+  
+  const lum1 = getLuminance(rgb1.r, rgb1.g, rgb1.b);
+  const lum2 = getLuminance(rgb2.r, rgb2.g, rgb2.b);
+  
+  const brightest = Math.max(lum1, lum2);
+  const darkest = Math.min(lum1, lum2);
+  
+  return (brightest + 0.05) / (darkest + 0.05);
+};
+
+export const getContrastColor = (backgroundColor, lightColor = '#FFFFFF', darkColor = '#000000') => {
+  const lightContrast = getContrastRatio(backgroundColor, lightColor);
+  const darkContrast = getContrastRatio(backgroundColor, darkColor);
+  
+  // WCAG AA requiere un ratio mínimo de 4.5:1 para texto normal
+  // Si ambos colores tienen buen contraste, preferir el que tenga mejor ratio
+  if (lightContrast >= 4.5 && darkContrast >= 4.5) {
+    return lightContrast > darkContrast ? lightColor : darkColor;
+  }
+  
+  // Si solo uno tiene buen contraste, usar ese
+  if (lightContrast >= 4.5) return lightColor;
+  if (darkContrast >= 4.5) return darkColor;
+  
+  // Si ninguno tiene buen contraste, usar el que tenga mejor ratio
+  return lightContrast > darkContrast ? lightColor : darkColor;
+};
+
+export const getSectionTextColor = (sectionColor, isBlocked = false) => {
+  if (isBlocked) {
+    return NEUTRAL.grey400;
+  }
+  
+  if (!sectionColor) {
+    return NEUTRAL.grey800;
+  }
+  
+  return getContrastColor(sectionColor, NEUTRAL.white, NEUTRAL.darker);
+};
+
+// Función para obtener color de texto con contraste para fondos con transparencia
+export const getContrastTextColor = (backgroundColor, opacity = 1, isBlocked = false) => {
+  if (isBlocked) {
+    return NEUTRAL.grey400;
+  }
+  
+  if (!backgroundColor) {
+    return NEUTRAL.grey800;
+  }
+  
+  // Si el fondo tiene transparencia, ajustar el contraste
+  if (opacity < 1) {
+    // Para fondos semi-transparentes, usar un color más neutro
+    return getContrastColor(backgroundColor, NEUTRAL.grey100, NEUTRAL.grey700);
+  }
+  
+  return getContrastColor(backgroundColor, NEUTRAL.white, NEUTRAL.darker);
+};
+
+// Función para obtener color de borde con contraste
+export const getContrastBorderColor = (backgroundColor, isBlocked = false) => {
+  if (isBlocked) {
+    return NEUTRAL.grey200;
+  }
+  
+  if (!backgroundColor) {
+    return NEUTRAL.grey200;
+  }
+  
+  // Para bordes, usar una versión más clara del color de contraste
+  const contrastColor = getContrastColor(backgroundColor, NEUTRAL.white, NEUTRAL.darker);
+  return contrastColor === NEUTRAL.white ? `${backgroundColor}40` : `${backgroundColor}60`;
+};
+
+// Función para obtener color de fondo con contraste para elementos de información
+export const getContrastInfoBackground = (sectionColor, isBlocked = false) => {
+  if (isBlocked) {
+    return NEUTRAL.grey100;
+  }
+  
+  if (!sectionColor) {
+    return NEUTRAL.grey50;
+  }
+  
+  // Usar una versión muy clara del color de la sección
+  return `${sectionColor}20`;
+};
+
+// Función específica para etiquetas de secciones que siempre usa blanco cuando el fondo no es blanco
+export const getSectionLabelColor = (sectionColor, isBlocked = false) => {
+  if (isBlocked) {
+    return NEUTRAL.grey400;
+  }
+  
+  if (!sectionColor) {
+    return NEUTRAL.grey800;
+  }
+  
+  // Siempre usar blanco para etiquetas de secciones cuando hay un color de fondo
+  return NEUTRAL.white;
+};
+
+// Función específica para dimensiones de secciones que siempre usa blanco cuando el fondo no es blanco
+export const getSectionDimensionColor = (sectionColor, isBlocked = false) => {
+  if (isBlocked) {
+    return NEUTRAL.grey400;
+  }
+  
+  if (!sectionColor) {
+    return NEUTRAL.grey600;
+  }
+  
+  // Siempre usar blanco para dimensiones de secciones cuando hay un color de fondo
+  return NEUTRAL.white;
+};
+
+// Función específica para etiquetas de filas que siempre usa blanco cuando el fondo no es blanco
+export const getRowLabelColor = (sectionColor, isBlocked = false) => {
+  if (isBlocked) {
+    return NEUTRAL.grey400;
+  }
+  
+  if (!sectionColor) {
+    return NEUTRAL.grey600;
+  }
+  
+  // Siempre usar blanco para etiquetas de filas cuando hay un color de fondo
+  return NEUTRAL.white;
+};

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import SeatRenderer from './SeatRenderer';
 import SeatMapLegend from './SeatMapLegend';
 import ProfessionalSeatMapRenderer from './ProfessionalSeatMapRenderer';
-import { COLORS } from '../../../components/colorscheme';
+import { COLORS, getSectionTextColor, getContrastTextColor, getContrastInfoBackground, getSectionLabelColor, getSectionDimensionColor } from '../../../components/colorscheme';
 import { Typography, notification, Card } from 'antd';
 import './SeatMapAnimations.css';
 
@@ -124,7 +124,7 @@ const GenericSeatMapRenderer = ({
         style={{ 
           fontSize: isMobile ? '14px' : '16px',
           fontWeight: 'bold',
-          color: isBlocked ? COLORS.neutral.grey4 : COLORS.neutral.dark,
+          color: getSectionLabelColor(section.color, isBlocked),
           textDecoration: isBlocked ? 'line-through' : 'none'
         }}
       >
@@ -207,7 +207,7 @@ const GeneralAdmissionRenderer = ({
       }}>
         <div style={{ flex: 1, minWidth: '200px' }}>
           <Text style={{ 
-            color: COLORS.neutral.grey6,
+            color: getContrastTextColor(section.color, 0.8, isBlocked),
             fontSize: '14px',
             display: 'block',
             marginBottom: '8px'
@@ -215,7 +215,7 @@ const GeneralAdmissionRenderer = ({
             Entrada General - Sin asientos numerados
           </Text>
           <Text style={{ 
-            color: COLORS.neutral.dark,
+            color: getSectionTextColor(section.color, isBlocked),
             fontSize: '16px',
             fontWeight: 'bold'
           }}>

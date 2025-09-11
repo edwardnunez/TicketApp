@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ProfessionalSeatMapRenderer from './ProfessionalSeatMapRenderer';
 import EnhancedSeatMapContainer from './EnhancedSeatMapContainer';
-import { COLORS } from '../../../components/colorscheme';
+import { COLORS, getSectionTextColor, getContrastTextColor, getContrastInfoBackground, getSectionLabelColor, getSectionDimensionColor } from '../../../components/colorscheme';
 import { Typography, notification, Card } from 'antd';
 import './SeatMapAnimations.css';
 
@@ -74,7 +74,7 @@ const GeneralAdmissionRenderer = ({
         style={{ 
           fontSize: isMobile ? '14px' : '16px',
           fontWeight: 'bold',
-          color: isBlocked ? COLORS.neutral.grey4 : COLORS.neutral.dark,
+          color: getSectionLabelColor(section.color, isBlocked),
           textDecoration: isBlocked ? 'line-through' : 'none'
         }}
       >
@@ -123,7 +123,7 @@ const GeneralAdmissionRenderer = ({
       }}>
         <div style={{ flex: 1, minWidth: '200px' }}>
           <Text style={{ 
-            color: COLORS.neutral.grey6,
+            color: getContrastTextColor(section.color, 0.8, isBlocked),
             fontSize: '14px',
             display: 'block',
             marginBottom: '8px'
@@ -131,7 +131,7 @@ const GeneralAdmissionRenderer = ({
             Entrada General - Sin asientos numerados
           </Text>
           <Text style={{ 
-            color: COLORS.neutral.dark,
+            color: getSectionTextColor(section.color, isBlocked),
             fontSize: '16px',
             fontWeight: 'bold'
           }}>
@@ -177,7 +177,7 @@ const GeneralAdmissionRenderer = ({
               fontWeight: 'bold',
               minWidth: '30px',
               textAlign: 'center',
-              color: isBlocked ? COLORS.neutral.grey4 : COLORS.neutral.dark
+              color: getSectionTextColor(section.color, isBlocked)
             }}>
               {quantity}
             </span>
@@ -212,14 +212,14 @@ const GeneralAdmissionRenderer = ({
             }}>
               <Text style={{ 
                 fontSize: '14px',
-                color: COLORS.neutral.grey6
+                color: getContrastTextColor(section.color, 0.8, isBlocked)
               }}>
                 Total:
               </Text>
               <Text style={{ 
                 fontSize: '18px',
                 fontWeight: 'bold',
-                color: COLORS.primary.main,
+                color: getSectionTextColor(section.color, isBlocked),
                 display: 'block'
               }}>
                 {formatPrice(price * quantity)}
@@ -238,7 +238,7 @@ const GeneralAdmissionRenderer = ({
           border: `1px solid ${COLORS.neutral.grey3}`
         }}>
           <Text style={{ 
-            color: COLORS.neutral.grey5,
+            color: getContrastTextColor(section.color, 0.6, isBlocked),
             fontSize: '12px',
             fontStyle: 'italic'
           }}>

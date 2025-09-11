@@ -1,5 +1,5 @@
 import React, { memo, useMemo, useCallback } from 'react';
-import { COLORS } from '../../../components/colorscheme';
+import { COLORS, getSectionTextColor, getContrastTextColor, getContrastInfoBackground, getSectionLabelColor, getSectionDimensionColor, getRowLabelColor } from '../../../components/colorscheme';
 
 /**
  * Componente memoizado para renderizar filas de asientos
@@ -164,8 +164,8 @@ const MemoizedSeatRow = memo(({
           justifyContent: 'center',
           fontSize: isMobile ? '10px' : '12px',
           fontWeight: '600',
-          color: sectionBlocked ? COLORS.neutral.grey400 : COLORS.neutral.grey600,
-          backgroundColor: sectionBlocked ? COLORS.neutral.grey100 : 'transparent',
+          color: getRowLabelColor(section.color, sectionBlocked),
+          backgroundColor: getContrastInfoBackground(section.color, sectionBlocked),
           borderRadius: '4px',
           padding: '2px 4px',
           marginRight: '8px',
@@ -193,7 +193,7 @@ const MemoizedSeatRow = memo(({
           <div style={{
             padding: '0 8px',
             fontSize: '10px',
-            color: COLORS.neutral.grey500,
+            color: getContrastTextColor(section.color, 0.6, sectionBlocked),
             fontStyle: 'italic'
           }}>
             +{seatsPerRow - 25} más
@@ -329,7 +329,7 @@ const MemoizedSeatSection = memo(({
             style={{
               fontSize: '14px',
               fontWeight: '600',
-              color: sectionBlocked ? COLORS.neutral.grey400 : COLORS.neutral.grey800
+              color: getSectionLabelColor(section.color, sectionBlocked)
             }}
           >
             {section.name}

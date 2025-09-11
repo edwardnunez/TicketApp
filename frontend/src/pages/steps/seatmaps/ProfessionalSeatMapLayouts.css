@@ -10,7 +10,7 @@
   margin: 0 auto;
   padding: 20px 40px; /* Aumentar padding horizontal para evitar cortes */
   box-sizing: border-box;
-  overflow: visible; /* Permitir que el contenido sea visible */
+  overflow: visible; /* Restored to 'visible' to prevent content cutoff */
   min-height: 150vh; /* Usar altura de viewport más grande */
 }
 
@@ -21,7 +21,7 @@
   justify-content: center;
   width: 100%;
   min-height: 120vh; /* Altura mínima más grande */
-  overflow: visible; /* Permitir que el contenido sea visible */
+  overflow: visible; /* Restored to 'visible' to prevent content cutoff */
   box-sizing: border-box; /* Incluir cualquier padding en el cálculo del ancho */
 }
 
@@ -32,7 +32,8 @@
   justify-content: center;
   width: 100%;
   min-height: 100%;
-  overflow: visible; /* Permitir que el contenido sea visible */
+  overflow: visible; /* Restored to 'visible' to prevent content cutoff */
+  position: relative; /* Ensure proper positioning for transforms */
 }
 
 /* Contenedor del renderizador responsivo */
@@ -66,7 +67,7 @@
   background: linear-gradient(135deg, #1a4d1a 0%, #2d5a2d 50%, #1a4d1a 100%);
   border-radius: 16px;
   position: relative;
-  overflow: visible; /* Permitir que el contenido sea visible */
+  overflow: hidden; /* Prevent zoom overflow */
 }
 
 .football-stadium-layout::before {
@@ -97,7 +98,7 @@
   justify-content: center;
   align-items: center;
   z-index: 1;
-  overflow: visible; /* Permitir que el contenido sea visible */
+  overflow: hidden; /* Prevent zoom overflow */
   min-width: 0; /* Permitir que se contraiga si es necesario */
 }
 
@@ -107,7 +108,7 @@
   justify-content: center;
   align-items: center;
   z-index: 1;
-  overflow: visible; /* Permitir que el contenido sea visible */
+  overflow: hidden; /* Prevent zoom overflow */
   min-width: 0; /* Permitir que se contraiga si es necesario */
 }
 
@@ -168,7 +169,7 @@
   background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
   border-radius: 16px;
   position: relative;
-  overflow: visible; /* Permitir que el contenido sea visible */
+  overflow: hidden; /* Prevent zoom overflow */
 }
 
 /* Layout de venue de concierto tipo teatro */
@@ -182,7 +183,7 @@
   background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
   border-radius: 16px;
   position: relative;
-  overflow: visible; /* Permitir que el contenido sea visible */
+  overflow: hidden; /* Prevent zoom overflow */
 }
 
 .concert-venue-layout::before {
@@ -309,7 +310,7 @@
   background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
   border-radius: 16px;
   position: relative;
-  overflow: visible; /* Permitir que el contenido sea visible */
+  overflow: hidden; /* Prevent zoom overflow */
 }
 
 .cinema-layout::before {
@@ -386,7 +387,7 @@
   background: linear-gradient(135deg, #2c1810 0%, #3d2817 50%, #2c1810 100%);
   border-radius: 16px;
   position: relative;
-  overflow: visible; /* Permitir que el contenido sea visible */
+  overflow: hidden; /* Prevent zoom overflow */
 }
 
 /* Secciones específicas de teatro */
@@ -457,7 +458,7 @@
   background: linear-gradient(135deg, #374151 0%, #4B5563 100%);
   border-radius: 16px;
   position: relative;
-  overflow: visible; /* Permitir que el contenido sea visible */
+  overflow: hidden; /* Prevent zoom overflow */
 }
 
 .vip-container {
