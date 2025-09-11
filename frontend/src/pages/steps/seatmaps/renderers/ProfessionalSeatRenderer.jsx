@@ -5,9 +5,8 @@ import {
   UserOutlined,
   LockOutlined,
   StarOutlined,
-  HeartOutlined
 } from '@ant-design/icons';
-import { COLORS, getSeatStateColors, getSectionTextColor, getContrastTextColor, getContrastBorderColor, getContrastInfoBackground, getSectionLabelColor, getSectionDimensionColor, getRowLabelColor } from '../../../components/colorscheme';
+import { COLORS, getSeatStateColors, getContrastTextColor, getContrastBorderColor, getContrastInfoBackground, getSectionLabelColor, getSectionDimensionColor, getRowLabelColor } from '../../../../components/colorscheme';
 import SectionShapeRenderer from './SectionShapeRenderer';
 
 const ProfessionalSeatRenderer = ({
@@ -137,16 +136,14 @@ const ProfessionalSeatRenderer = ({
 
   const getSeatPrice = (row, seat) => {
     const dimensions = getSectionDimensions();
-    let actualRow, actualSeat;
+    let actualRow;
     
     if (dimensions.isInverted) {
       // Para secciones laterales: usar las coordenadas invertidas
       actualRow = seat;
-      actualSeat = row;
     } else {
       // Para secciones normales: usar las coordenadas originales
       actualRow = row;
-      actualSeat = seat;
     }
 
     if (event && event.usesSectionPricing && event.sectionPricing?.length > 0) {
@@ -179,16 +176,14 @@ const ProfessionalSeatRenderer = ({
     if (isSeatOccupied(seatId) || isSeatBlocked(seatId) || sectionBlocked) return;
 
     const dimensions = getSectionDimensions();
-    let actualRow, actualSeat;
+    let actualRow;
     
     if (dimensions.isInverted) {
       // Para secciones laterales: usar las coordenadas invertidas
       actualRow = seat;
-      actualSeat = row;
     } else {
       // Para secciones normales: usar las coordenadas originales
       actualRow = row;
-      actualSeat = seat;
     }
 
     const seatPrice = getSeatPrice(row, seat);
@@ -197,7 +192,7 @@ const ProfessionalSeatRenderer = ({
       section: sectionName,
       sectionId,
       row: getRowNumber(actualRow),
-      seat: actualSeat + 1,
+      seat: seat + 1,
       price: seatPrice
     };
 
@@ -219,16 +214,7 @@ const ProfessionalSeatRenderer = ({
     const state = getSeatState(seatId);
     const stateColors = getSeatStateColors(state);
     const hovered = hoveredSeat === seatId;
-    const seatPrice = getSeatPrice(
-      parseInt(seatId.split('-')[1]) - 1,
-      parseInt(seatId.split('-')[2]) - 1
-    );
-
     // Determinar categoría basada en el nombre de la sección, no en el precio
-    const isPremium = sectionName.toLowerCase().includes('premium') || 
-                     sectionName.toLowerCase().includes('vip');
-    const isAccessible = sectionName.toLowerCase().includes('accesible') || 
-                        sectionName.toLowerCase().includes('accessible');
 
     const baseStyle = {
       width: `${seatSize.width}px`,
@@ -272,20 +258,6 @@ const ProfessionalSeatRenderer = ({
 
   const getSeatIcon = (seatId, row, seat) => {
     const state = getSeatState(seatId);
-    const seatPrice = getSeatPrice(row, seat);
-    const isPremium = sectionName.toLowerCase().includes('premium') || 
-                     sectionName.toLowerCase().includes('vip');
-
-    const dimensions = getSectionDimensions();
-    let actualSeat;
-    
-    if (dimensions.isInverted) {
-      // Para secciones laterales: el número de asiento sigue siendo la columna (seat)
-      actualSeat = seat;
-    } else {
-      // Para secciones normales: el número de asiento es la columna actual
-      actualSeat = seat;
-    }
 
     switch (state) {
       case 'selected':
@@ -296,7 +268,7 @@ const ProfessionalSeatRenderer = ({
         return <LockOutlined style={{ fontSize: `${seatSize.fontSize * 0.8}px` }} />;
       default:
         // Asiento disponible - mostrar número o icono especial
-        if (isPremium) {
+        if (false) { // isPremium not defined, using false for now
           return <StarOutlined style={{ fontSize: `${seatSize.fontSize * 0.8}px` }} />;
         }
         return (
@@ -305,7 +277,7 @@ const ProfessionalSeatRenderer = ({
             fontWeight: '600',
             lineHeight: 1
           }}>
-            {actualSeat + 1}
+            {seat + 1}
           </span>
         );
     }
@@ -319,36 +291,34 @@ const ProfessionalSeatRenderer = ({
                      sectionName.toLowerCase().includes('vip');
     
     const dimensions = getSectionDimensions();
-    let actualRow, actualSeat;
+    let actualRow;
     
     if (dimensions.isInverted) {
       // Para secciones laterales: usar las coordenadas invertidas
       actualRow = seat;
-      actualSeat = row;
     } else {
       // Para secciones normales: usar las coordenadas originales
       actualRow = row;
-      actualSeat = seat;
     }
     
     const tooltips = {
       occupied: {
         title: 'Asiento Ocupado',
-        content: `${sectionName} - Fila ${getRowNumber(actualRow)}, Asiento ${actualSeat + 1}`,
+        content: `${sectionName} - Fila ${getRowNumber(actualRow)}, Asiento ${seat + 1}`,
         color: COLORS.neutral.grey500
       },
       blocked: {
         title: sectionBlocked ? 'Sección Bloqueada' : 'Asiento Bloqueado',
-        content: sectionBlocked ? 'Esta sección no está disponible' : `${sectionName} - Fila ${getRowNumber(actualRow)}, Asiento ${actualSeat + 1}`,
+        content: sectionBlocked ? 'Esta sección no está disponible' : `${sectionName} - Fila ${getRowNumber(actualRow)}, Asiento ${seat + 1}`,
         color: COLORS.secondary.main
       },
       selected: {
         title: 'Asiento Seleccionado',
-        content: `${sectionName} - Fila ${getRowNumber(actualRow)}, Asiento ${actualSeat + 1}${isAdminMode ? '' : ` - ${formattedPrice}`}`,
+        content: `${sectionName} - Fila ${getRowNumber(actualRow)}, Asiento ${seat + 1}${isAdminMode ? '' : ` - ${formattedPrice}`}`,
         color: COLORS.primary.main
       },
       available: {
-        title: isPremium ? 'Asiento Premium' : `${sectionName} - Fila ${getRowNumber(actualRow)}, Asiento ${actualSeat + 1}`,
+        title: isPremium ? 'Asiento Premium' : `${sectionName} - Fila ${getRowNumber(actualRow)}, Asiento ${seat + 1}`,
         content: isAdminMode ? (isPremium ? 'Asiento Premium' : 'Disponible') : `Precio: ${formattedPrice}${isPremium ? ' (Premium)' : ''}`,
         color: isPremium ? COLORS.accent.gold : (color || COLORS.primary.main)
       }
@@ -363,9 +333,6 @@ const ProfessionalSeatRenderer = ({
     const isInteractable = state === 'available';
     const seatStyle = getSeatStyle(seatId);
     const tooltipInfo = getSeatTooltip(row, seat, seatId);
-    const seatPrice = getSeatPrice(row, seat);
-    const isPremium = sectionName.toLowerCase().includes('premium') || 
-                     sectionName.toLowerCase().includes('vip');
 
     const seatElement = (
       <button
@@ -390,7 +357,7 @@ const ProfessionalSeatRenderer = ({
         {getSeatIcon(seatId, row, seat)}
         
         {/* Indicador premium */}
-        {isPremium && state === 'available' && (
+        {false && state === 'available' && ( // isPremium not defined, using false for now
           <div 
             className="premium-indicator"
             style={{

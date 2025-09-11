@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   Card, 
   List, 
@@ -9,9 +9,7 @@ import {
   Input, 
   Select, 
   Tag,
-  Divider,
   Collapse,
-  Tooltip,
   notification
 } from 'antd';
 import { 
@@ -19,13 +17,12 @@ import {
   FilterOutlined, 
   SortAscendingOutlined,
   SortDescendingOutlined,
-  EyeOutlined,
   CheckOutlined,
   CloseOutlined,
   LockOutlined,
   StarOutlined
 } from '@ant-design/icons';
-import { COLORS } from '../../../components/colorscheme';
+import { COLORS } from '../../../../components/colorscheme';
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -363,15 +360,6 @@ const MobileSeatList = ({
     );
   };
 
-  const toggleSection = (sectionId) => {
-    const newExpanded = new Set(expandedSections);
-    if (newExpanded.has(sectionId)) {
-      newExpanded.delete(sectionId);
-    } else {
-      newExpanded.add(sectionId);
-    }
-    setExpandedSections(newExpanded);
-  };
 
   return (
     <div style={{ padding: '16px' }}>

@@ -5,14 +5,14 @@ import {
   CompressOutlined,
   InfoCircleOutlined
 } from '@ant-design/icons';
-import { COLORS, getVenueColors } from '../../../components/colorscheme';
-import ProfessionalSeatRenderer from './ProfessionalSeatRenderer';
-import ProfessionalSeatMapLegend from './ProfessionalSeatMapLegend';
-import VenueStageRenderer from './VenueStageRenderer';
-import ZoomControls from './ZoomControls';
-import AccessibilityFeatures from './AccessibilityFeatures';
-import './ProfessionalSeatMapAnimations.css';
-import './ProfessionalSeatMapLayouts.css';
+import { COLORS, getVenueColors } from '../../../../components/colorscheme';
+import ProfessionalSeatRenderer from '../renderers/ProfessionalSeatRenderer';
+import ProfessionalSeatMapLegend from '../ui/ProfessionalSeatMapLegend';
+import VenueStageRenderer from '../renderers/VenueStageRenderer';
+import ZoomControls from '../ui/ZoomControls';
+import AccessibilityFeatures from '../ui/AccessibilityFeatures';
+import '../styles/ProfessionalSeatMapAnimations.css';
+import '../styles/ProfessionalSeatMapLayouts.css';
 
   const { Title, Text } = Typography;
 
@@ -233,7 +233,7 @@ const ProfessionalSeatMapRenderer = ({
 
   if (!seatMapData) return null;
 
-  const { sections, config, type, name } = seatMapData;
+  const { sections, config, type } = seatMapData;
   const venueColors = getVenueColors(type);
 
   // Filtrar asientos ocupados y bloqueados por sección
@@ -421,11 +421,6 @@ const ProfessionalSeatMapRenderer = ({
 
   // Layout para venue de concierto
   const renderConcertVenueLayout = () => {
-    const pistaSection = sections.find(s => 
-      !s.hasNumberedSeats || 
-      s.id.includes('pista') || s.name.toLowerCase().includes('pista') ||
-      s.id.includes('general') || s.name.toLowerCase().includes('general')
-    );
     
     // Detectar si es un concierto tipo estadio o tipo teatro
     const hasDirectionalSections = sections.some(s => 

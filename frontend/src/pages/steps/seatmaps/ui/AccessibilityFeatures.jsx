@@ -7,7 +7,7 @@ import {
   InfoCircleOutlined,
   QuestionCircleOutlined
 } from '@ant-design/icons';
-import { COLORS } from '../../../components/colorscheme';
+import { COLORS } from '../../../../components/colorscheme';
 
 const { Text } = Typography;
 

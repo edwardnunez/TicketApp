@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import ProfessionalSeatMapRenderer from './ProfessionalSeatMapRenderer';
-import EnhancedSeatMapContainer from './EnhancedSeatMapContainer';
-import { COLORS, getSectionTextColor, getContrastTextColor, getContrastInfoBackground, getSectionLabelColor, getSectionDimensionColor } from '../../../components/colorscheme';
+import EnhancedSeatMapContainer from '../containers/EnhancedSeatMapContainer';
+import { COLORS, getSectionTextColor, getContrastTextColor, getSectionLabelColor } from '../../../../components/colorscheme';
 import { Typography, notification, Card } from 'antd';
-import './ProfessionalSeatMapAnimations.css';
+import '../styles/ProfessionalSeatMapAnimations.css';
 
 const { Text } = Typography;
 

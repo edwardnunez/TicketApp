@@ -22,8 +22,7 @@ import {
   TeamOutlined
 } from '@ant-design/icons';
 import { COLORS } from '../../components/colorscheme';
-import GenericSeatMapRenderer from '../steps/seatmaps/GenericSeatRenderer';
-import EditableSeatRenderer from './EditableSeatRenderer';
+import GenericSeatMapRenderer from '../steps/seatmaps/renderers/GenericSeatRenderer';
 import ProfessionalAdminSeatMapRenderer from './ProfessionalAdminSeatMapRenderer';
 import axios from 'axios';
 

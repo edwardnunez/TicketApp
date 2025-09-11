@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Layout, Typography, Card, Avatar, Button, Divider, Skeleton, Empty, Space, Tag, Tabs, Spin, Alert, Modal, Collapse, Badge, Row, Col, Image } from "antd";
 import { 
   UserOutlined, 
@@ -9,7 +9,6 @@ import {
   TagOutlined,
   ClockCircleOutlined,
   DeleteOutlined,
-  ExclamationCircleOutlined,
   DownOutlined,
   UpOutlined,
   TeamOutlined,
@@ -27,7 +26,6 @@ dayjs.locale('es');
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
-const { confirm } = Modal;
 const { Panel } = Collapse;
 
 const Profile = () => {
@@ -61,6 +59,42 @@ const Profile = () => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  const loadUserTickets = useCallback(async (userId) => {
+    try {
+      setTicketsLoading(true);
+      
+      // Obtener tickets del usuario
+      const ticketsRes = await axios.get(`${gatewayUrl}/tickets/user/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      
+      const userTickets = ticketsRes.data.tickets || [];
+      setTickets(userTickets);
+      
+      // Obtener información de los eventos
+      const eventIds = [...new Set(userTickets.map(ticket => ticket.eventId))];
+      const eventsData = {};
+      
+      for (const eventId of eventIds) {
+        try {
+          const eventRes = await axios.get(`${gatewayUrl}/events/${eventId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          eventsData[eventId] = eventRes.data;
+        } catch (err) {
+          console.error(`Error al cargar evento ${eventId}:`, err);
+        }
+      }
+      
+      setEvents(eventsData);
+    } catch (err) {
+      console.error("Error al cargar tickets:", err);
+      setError("Error al cargar los tickets");
+    } finally {
+      setTicketsLoading(false);
+    }
+  }, [token, gatewayUrl]);
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -98,49 +132,8 @@ const Profile = () => {
     }
 
     loadUserData();
-  }, [token, username, gatewayUrl]);
+  }, [token, username, gatewayUrl, loadUserTickets]);
 
-  const loadUserTickets = async (userId) => {
-    try {
-      setTicketsLoading(true);
-      
-      // Obtener tickets del usuario
-      const ticketsRes = await axios.get(`${gatewayUrl}/tickets/user/${userId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      
-      const userTickets = ticketsRes.data.tickets || [];
-      setTickets(userTickets);
-      
-      // Obtener información de los eventos
-      const eventIds = [...new Set(userTickets.map(ticket => ticket.eventId))];
-      const eventsData = {};
-      
-      for (const eventId of eventIds) {
-        try {
-          const eventRes = await axios.get(`${gatewayUrl}/events/${eventId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          eventsData[eventId] = eventRes.data;
-        } catch (eventErr) {
-          console.warn(`No se pudo cargar el evento ${eventId}:`, eventErr);
-          eventsData[eventId] = {
-            name: "Evento no disponible",
-            date: null,
-            location: "Ubicación no disponible",
-            image: null
-          };
-        }
-      }
-      
-      setEvents(eventsData);
-    } catch (err) {
-      console.error("Error al cargar tickets:", err);
-      setError("Error al cargar las entradas");
-    } finally {
-      setTicketsLoading(false);
-    }
-  };
 
   const handleShowQR = (ticket) => {
     setSelectedTicket(ticket);
