@@ -3,6 +3,50 @@ import SeatMap from './seatmap-model.js';
 const seedSeatMaps = async (dbConnection) => {
   const SeatMapModel = dbConnection.models.SeatMap || dbConnection.model('SeatMap', SeatMap.schema);
 
+  // Convierte definición antigua (rows: number, seatsPerRow: number) a filas/asientos explícitos
+  const buildRows = (rowsCount, seatsPerRow) => {
+    const safeRows = Number.isFinite(rowsCount) && rowsCount > 0 ? rowsCount : 0;
+    const safeSeats = Number.isFinite(seatsPerRow) && seatsPerRow > 0 ? seatsPerRow : 0;
+    return Array.from({ length: safeRows }).map((_, rowIdx) => ({
+      index: rowIdx + 1,
+      label: String(rowIdx + 1),
+      seats: Array.from({ length: safeSeats }).map((_, seatIdx) => ({
+        number: seatIdx + 1,
+        label: String(seatIdx + 1)
+      }))
+    }));
+  };
+
+  const normalizeSection = (section) => {
+    const {
+      rows,
+      seatsPerRow,
+      price, // legacy, no usado
+      ...rest
+    } = section;
+
+    // defaultPrice: usar existente o 0 si no existe
+    const defaultPrice = section.defaultPrice !== undefined ? section.defaultPrice : 0;
+
+    if (section.hasNumberedSeats === false) {
+      // Entrada general: sin filas/asientos
+      return {
+        ...rest,
+        defaultPrice,
+        rows: [],
+        rowPricing: [],
+      };
+    }
+
+    return {
+      ...rest,
+      defaultPrice,
+      rows: Array.isArray(section.rows) ? section.rows : buildRows(rows, seatsPerRow),
+      rowPricing: Array.isArray(section.rowPricing) ? section.rowPricing : [],
+      totalCapacity: undefined
+    };
+  };
+
   const seatMaps = [
     // ============= ESTADIOS DE FÚTBOL =============
     // Estadio Santiago Bernabéu - Capacidad: 476
@@ -94,7 +138,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Tribuna Este',
           rows: 8,
           seatsPerRow: 17,
-          price: 0,
           color: '#2196F3',
           position: 'east',
           order: 2
@@ -104,7 +147,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Tribuna Oeste',
           rows: 8,
           seatsPerRow: 17,
-          price: 0,
           color: '#2196F3',
           position: 'west',
           order: 3
@@ -114,7 +156,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Tribuna Sur',
           rows: 10,
           seatsPerRow: 18,
-          price: 0,
           color: '#4CAF50',
           position: 'south',
           order: 4
@@ -124,7 +165,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Palcos VIP',
           rows: 3,
           seatsPerRow: 14,
-          price: 0,
           color: '#FF9800',
           position: 'vip',
           order: 5
@@ -147,7 +187,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Tribuna Norte',
           rows: 5,
           seatsPerRow: 12,
-          price: 0,
           color: '#4CAF50',
           position: 'north',
           order: 1
@@ -157,7 +196,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Tribuna Este',
           rows: 4,
           seatsPerRow: 10,
-          price: 0,
           color: '#2196F3',
           position: 'east',
           order: 2
@@ -167,7 +205,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Tribuna Oeste',
           rows: 4,
           seatsPerRow: 10,
-          price: 0,
           color: '#2196F3',
           position: 'west',
           order: 3
@@ -177,7 +214,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Tribuna Sur',
           rows: 5,
           seatsPerRow: 12,
-          price: 0,
           color: '#4CAF50',
           position: 'south',
           order: 4
@@ -203,9 +239,8 @@ const seedSeatMaps = async (dbConnection) => {
         {
           id: 'pista',
           name: 'Pista',
-          rows: 1, // No tiene filas definidas
-          seatsPerRow: 1, // No tiene asientos por fila
-          price: 0,
+          rows: 1, // legado, será ignorado
+          seatsPerRow: 1, // legado, será ignorado
           color: '#FF5722',
           position: 'center',
           order: 1,
@@ -217,7 +252,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Grada Baja',
           rows: 7,
           seatsPerRow: 10,
-          price: 0,
           defaultPrice: 80,
           color: '#4CAF50',
           position: 'lower',
@@ -229,7 +263,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Grada Media',
           rows: 5,
           seatsPerRow: 8,
-          price: 0,
           defaultPrice: 60,
           color: '#2196F3',
           position: 'middle',
@@ -241,7 +274,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Grada Alta',
           rows: 6,
           seatsPerRow: 11,
-          price: 0,
           color: '#FF9800',
           position: 'upper',
           order: 4,
@@ -252,7 +284,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Palcos VIP',
           rows: 2,
           seatsPerRow: 5,
-          price: 0,
           defaultPrice: 200,
           color: '#9C27B0',
           position: 'vip',
@@ -280,7 +311,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Pista',
           rows: 1,
           seatsPerRow: 1,
-          price: 0,
           color: '#FF5722',
           position: 'center',
           order: 1,
@@ -292,7 +322,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Lateral Este',
           rows: 8,
           seatsPerRow: 13,
-          price: 0,
           color: '#4CAF50',
           position: 'east',
           order: 2,
@@ -303,7 +332,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Lateral Oeste',
           rows: 8,
           seatsPerRow: 13,
-          price: 0,
           color: '#4CAF50',
           position: 'west',
           order: 3,
@@ -314,7 +342,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Fondo Norte',
           rows: 6,
           seatsPerRow: 10,
-          price: 0,
           color: '#2196F3',
           position: 'north',
           order: 4,
@@ -325,7 +352,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Fondo Sur',
           rows: 6,
           seatsPerRow: 10,
-          price: 0,
           color: '#2196F3',
           position: 'south',
           order: 5,
@@ -336,7 +362,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Palcos Premium',
           rows: 2,
           seatsPerRow: 10,
-          price: 0,
           defaultPrice: 180,
           color: '#9C27B0',
           position: 'vip',
@@ -365,7 +390,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Entrada General',
           rows: 0,
           seatsPerRow: 0,
-          price: 0,
           color: '#607D8B',
           position: 'general',
           order: 1,
@@ -390,7 +414,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Delanteras',
           rows: 3,
           seatsPerRow: 16,
-          price: 0,
           defaultPrice: 8,
           color: '#4CAF50',
           position: 'front',
@@ -401,7 +424,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Centrales',
           rows: 5,
           seatsPerRow: 16,
-          price: 0,
           color: '#2196F3',
           position: 'middle',
           order: 2
@@ -411,7 +433,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Traseras',
           rows: 4,
           seatsPerRow: 16,
-          price: 0,
           color: '#FF9800',
           position: 'back',
           order: 3
@@ -433,7 +454,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Delanteras',
           rows: 4,
           seatsPerRow: 18,
-          price: 0,
           color: '#4CAF50',
           position: 'front',
           order: 1
@@ -443,7 +463,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Centrales',
           rows: 6,
           seatsPerRow: 18,
-          price: 0,
           color: '#2196F3',
           position: 'middle',
           order: 2
@@ -453,7 +472,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Traseras',
           rows: 5,
           seatsPerRow: 18,
-          price: 0,
           color: '#FF9800',
           position: 'back',
           order: 3
@@ -463,7 +481,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Premium',
           rows: 2,
           seatsPerRow: 18,
-          price: 0,
           color: '#9C27B0',
           position: 'premium',
           order: 4
@@ -485,7 +502,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Delanteras',
           rows: 2,
           seatsPerRow: 10,
-          price: 0,
           color: '#4CAF50',
           position: 'front',
           order: 1
@@ -495,7 +511,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Centrales',
           rows: 3,
           seatsPerRow: 11,
-          price: 0,
           color: '#2196F3',
           position: 'middle',
           order: 2
@@ -505,7 +520,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Traseras',
           rows: 3,
           seatsPerRow: 11,
-          price: 0,
           color: '#FF9800',
           position: 'back',
           order: 3
@@ -529,7 +543,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Platea',
           rows: 15,
           seatsPerRow: 20,
-          price: 0,
           defaultPrice: 120,
           color: '#4CAF50',
           position: 'orchestra',
@@ -540,7 +553,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Entresuelo',
           rows: 8,
           seatsPerRow: 18,
-          price: 0,
           color: '#2196F3',
           position: 'mezzanine',
           order: 2
@@ -550,7 +562,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Balcón',
           rows: 6,
           seatsPerRow: 16,
-          price: 0,
           defaultPrice: 80,
           color: '#FF9800',
           position: 'balcony',
@@ -573,7 +584,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Palcos VIP',
           rows: 3,
           seatsPerRow: 4,
-          price: 0,
           defaultPrice: 300,
           color: '#9C27B0',
           position: 'boxes',
@@ -584,7 +594,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Platea',
           rows: 12,
           seatsPerRow: 16,
-          price: 0,
           color: '#4CAF50',
           position: 'orchestra',
           order: 2
@@ -606,7 +615,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Palcos VIP',
           rows: 4,
           seatsPerRow: 8,
-          price: 0,
           color: '#9C27B0',
           position: 'boxes',
           order: 1
@@ -616,7 +624,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Platea',
           rows: 20,
           seatsPerRow: 26,
-          price: 0,
           color: '#4CAF50',
           position: 'orchestra',
           order: 2
@@ -626,7 +633,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Entresuelo',
           rows: 12,
           seatsPerRow: 24,
-          price: 0,
           color: '#2196F3',
           position: 'mezzanine',
           order: 3
@@ -636,7 +642,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Balcón',
           rows: 10,
           seatsPerRow: 22,
-          price: 0,
           color: '#FF9800',
           position: 'balcony',
           order: 4
@@ -648,13 +653,15 @@ const seedSeatMaps = async (dbConnection) => {
   // Insertar o actualizar cada seatmap
   for (const seatMapData of seatMaps) {
     try {
-      if (!seatMapData.compatibleEventTypes) {
-        seatMapData.compatibleEventTypes = [seatMapData.type];
-      }
+      const prepared = {
+        ...seatMapData,
+        compatibleEventTypes: seatMapData.compatibleEventTypes || [seatMapData.type],
+        sections: (seatMapData.sections || []).map(normalizeSection)
+      };
 
       await SeatMapModel.findOneAndUpdate(
-        { id: seatMapData.id },
-        seatMapData,
+        { id: prepared.id },
+        prepared,
         { upsert: true, new: true }
       );
       console.log(`SeatMap ${seatMapData.id} insertado/actualizado correctamente`);

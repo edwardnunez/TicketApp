@@ -9,8 +9,6 @@ export default function PaymentMethod({
   event, 
   form, 
   quantity, 
-  selectedTicketType, 
-  ticketTypes, 
   formatPrice,
   selectedSeats,
   requiresSeatMap,
@@ -242,7 +240,7 @@ export default function PaymentMethod({
                 ))}
               </>
             ) : (
-              <Text>{quantity} x {ticketTypes.find(t => t.key === selectedTicketType)?.label}</Text>
+                              <Text>{quantity} x Ticket</Text>
             )}
           </div>
 

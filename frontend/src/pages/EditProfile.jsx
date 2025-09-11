@@ -96,7 +96,7 @@ const EditProfile = () => {
     notification.success({
       message: title,
       description: description,
-      icon: <CheckCircleOutlined style={{ color: COLORS.status.success }} />,
+      icon: <CheckCircleOutlined style={{ color: COLORS.accent.green }} />,
       placement: 'topRight',
       duration: duration,
       style: {
@@ -508,8 +508,8 @@ const EditProfile = () => {
               <Card
                 title={
                   <div style={{ display: "flex", alignItems: "center" }}>
-                    <SecurityScanOutlined style={{ color: COLORS.status.warning, marginRight: "8px" }} />
-                    <span style={{ color: COLORS.neutral.darker }}>Cambiar contraseña</span>
+                    <SecurityScanOutlined style={{ color: COLORS.accent.gold, marginRight: "8px" }} />
+                    <span style={{ color: COLORS.neutral.grey800 }}>Cambiar contraseña</span>
                   </div>
                 }
                 style={{
@@ -610,8 +610,8 @@ const EditProfile = () => {
                       icon={<LockOutlined />}
                       block
                       style={{ 
-                        backgroundColor: COLORS.status.warning,
-                        borderColor: COLORS.status.warning,
+                        backgroundColor: COLORS.accent.gold,
+                        borderColor: COLORS.accent.gold,
                         borderRadius: "6px",
                         height: "44px"
                       }}
@@ -676,7 +676,7 @@ const EditProfile = () => {
           <Modal
             title={
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <ExclamationCircleOutlined style={{ color: COLORS.status.warning }} />
+                <ExclamationCircleOutlined style={{ color: COLORS.accent.gold }} />
                 <span>¿Estás seguro de que quieres cambiar tu contraseña?</span>
               </div>
             }
@@ -689,8 +689,8 @@ const EditProfile = () => {
             confirmLoading={passwordLoading}
             okButtonProps={{
               style: {
-                backgroundColor: COLORS.status.warning,
-                borderColor: COLORS.status.warning,
+                backgroundColor: COLORS.accent.gold,
+                borderColor: COLORS.accent.gold,
               }
             }}
             cancelButtonProps={{

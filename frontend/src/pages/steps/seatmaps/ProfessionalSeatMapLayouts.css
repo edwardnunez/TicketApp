@@ -1,0 +1,1037 @@
+/* Estilos específicos para layouts de venues profesionales */
+
+/* Contenedor principal del mapa de asientos */
+.professional-seatmap-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px 40px; /* Aumentar padding horizontal para evitar cortes */
+  box-sizing: border-box;
+  overflow: visible; /* Restored to 'visible' to prevent content cutoff */
+  min-height: 150vh; /* Usar altura de viewport más grande */
+}
+
+/* Contenido del mapa de asientos */
+.seatmap-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 120vh; /* Altura mínima más grande */
+  overflow: visible; /* Restored to 'visible' to prevent content cutoff */
+  box-sizing: border-box; /* Incluir cualquier padding en el cálculo del ancho */
+}
+
+/* Transformación del mapa */
+.seatmap-transform {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 100%;
+  overflow: visible; /* Restored to 'visible' to prevent content cutoff */
+  position: relative; /* Ensure proper positioning for transforms */
+}
+
+/* Contenedor del renderizador responsivo */
+.responsive-seatmap-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* Layout de estadio de fútbol */
+.football-stadium-layout {
+  display: grid;
+  grid-template-areas: 
+    "north north north"
+    "west center east"
+    "south south south"
+    "vip vip vip";
+  grid-template-columns: 1.5fr 2fr 1.5fr; /* Aumentar espacio para secciones laterales */
+  grid-template-rows: auto 2fr auto auto;
+  gap: 20px;
+  padding: 20px 40px; /* Aumentar padding horizontal */
+  min-height: 130vh; /* Usar altura de viewport más grande */
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  background: linear-gradient(135deg, #1a4d1a 0%, #2d5a2d 50%, #1a4d1a 100%);
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden; /* Prevent zoom overflow */
+}
+
+.football-stadium-layout::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(76, 175, 80, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(76, 175, 80, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 60%, rgba(76, 175, 80, 0.05) 0%, transparent 50%);
+  z-index: 0;
+}
+
+.tribuna-norte {
+  grid-area: north;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+}
+
+.tribuna-oeste {
+  grid-area: west;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+  overflow: hidden; /* Prevent zoom overflow */
+  min-width: 0; /* Permitir que se contraiga si es necesario */
+}
+
+.tribuna-este {
+  grid-area: east;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+  overflow: hidden; /* Prevent zoom overflow */
+  min-width: 0; /* Permitir que se contraiga si es necesario */
+}
+
+.tribuna-sur {
+  grid-area: south;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+}
+
+.field-container {
+  grid-area: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+}
+
+.vip-section {
+  grid-area: vip;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+}
+
+/* Estilos para secciones de gradas */
+.grada-alta {
+  /* Sin rotación - se maneja por lógica de numeración */
+}
+
+.grada-media {
+  /* Sin rotación - se maneja por lógica de numeración */
+}
+
+.grada-baja {
+  /* Sin rotación - se maneja por lógica de numeración */
+}
+
+/* Layout de venue de concierto tipo estadio */
+.concert-stadium-layout {
+  display: grid;
+  grid-template-areas: 
+    "north north north"
+    "west center east"
+    "south south south"
+    "pit pit pit"
+    "vip vip vip";
+  grid-template-columns: 1.5fr 2fr 1.5fr; /* Aumentar espacio para secciones laterales */
+  grid-template-rows: auto 2fr auto auto auto;
+  gap: 20px;
+  padding: 20px 40px; /* Aumentar padding horizontal */
+  min-height: 130vh; /* Usar altura de viewport más grande */
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden; /* Prevent zoom overflow */
+}
+
+/* Layout de venue de concierto tipo teatro */
+.concert-theater-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+  padding: 30px;
+  min-height: 150vh; /* Usar altura de viewport más grande */
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden; /* Prevent zoom overflow */
+}
+
+.concert-venue-layout::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 30% 20%, rgba(220, 38, 38, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 70% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
+  z-index: 0;
+}
+
+.stage-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+  margin-bottom: 20px;
+}
+
+.pista-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+  margin-bottom: 20px;
+}
+
+.pit-area {
+  grid-area: pit;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+}
+
+.gradas-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  z-index: 1;
+  width: 100%;
+  max-width: 1200px;
+}
+
+/* Mejoras para la distribución de asientos */
+.seats-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+  max-width: 100%;
+}
+
+.seat-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 4px;
+}
+
+/* Layouts específicos para diferentes tipos de secciones */
+.high-tier-section .seats-container {
+  /* transform: perspective(100px) rotateX(5deg); */
+  /* transform-origin: bottom center; */
+}
+
+.low-tier-section .seats-container {
+  /* transform: perspective(100px) rotateX(-3deg); */
+  /* transform-origin: top center; */
+}
+
+.side-section .seats-container {
+  /* transform: skewY(-2deg); */
+  max-width: 200px;
+}
+
+.pit-section .seats-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  max-width: 300px;
+}
+
+.vip-section .seats-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.vip-section .seats-container::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%);
+  animation: vipShimmer 3s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.vip-section .seats-container > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Layout de cine */
+.cinema-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 30px;
+  min-height: 120vh; /* Usar altura de viewport más grande */
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden; /* Prevent zoom overflow */
+}
+
+.cinema-layout::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #ff6b35, #f7931e, #ffd23f, #f7931e, #ff6b35);
+  animation: cinemaLights 3s ease-in-out infinite;
+  z-index: 1;
+}
+
+.screen-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+  margin-bottom: 20px;
+}
+
+.seats-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  z-index: 1;
+  width: 100%;
+  max-width: 600px;
+}
+
+/* Secciones específicas de cine */
+.premium-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+  margin-bottom: 15px;
+}
+
+.front-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+  margin-bottom: 12px;
+}
+
+.middle-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+  margin-bottom: 12px;
+}
+
+.back-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+  margin-bottom: 10px;
+}
+
+/* Layout de teatro */
+.theater-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 30px;
+  min-height: 120vh; /* Usar altura de viewport más grande */
+  background: linear-gradient(135deg, #2c1810 0%, #3d2817 50%, #2c1810 100%);
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden; /* Prevent zoom overflow */
+}
+
+/* Secciones específicas de teatro */
+.boxes-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+  margin-bottom: 10px;
+}
+
+.orchestra-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+  margin-bottom: 15px;
+}
+
+.mezzanine-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+  margin-bottom: 10px;
+}
+
+.balcony-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+  margin-bottom: 10px;
+}
+
+.theater-layout::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 60px;
+  height: 100%;
+  background: linear-gradient(90deg, #8B0000 0%, #A52A2A 50%, #8B0000 100%);
+  clip-path: polygon(0 0, 100% 0, 80% 100%, 0 100%);
+  z-index: 1;
+}
+
+.theater-layout::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 60px;
+  height: 100%;
+  background: linear-gradient(90deg, #8B0000 0%, #A52A2A 50%, #8B0000 100%);
+  clip-path: polygon(20% 0, 100% 0, 100% 100%, 0 100%);
+  z-index: 1;
+}
+
+/* Layout de arena */
+.arena-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 30px;
+  min-height: 120vh; /* Usar altura de viewport más grande */
+  background: linear-gradient(135deg, #374151 0%, #4B5563 100%);
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden; /* Prevent zoom overflow */
+}
+
+.vip-container {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  justify-content: center;
+  z-index: 1;
+}
+
+.upper-sections {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  z-index: 1;
+}
+
+.lower-sections {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  z-index: 1;
+}
+
+/* Layout genérico */
+.generic-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: #F5F5F5;
+  border-radius: 12px;
+}
+
+/* Estilos para entrada general */
+.general-admission {
+  min-width: 300px;
+  padding: 30px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%);
+  border: 2px solid #D1D5DB;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  transform: scale(1);
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+}
+
+.general-admission:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+.general-admission.selected {
+  background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+  border-color: #1E3A8A;
+  color: white;
+  box-shadow: 0 8px 32px rgba(30, 64, 175, 0.3), 0 0 0 4px rgba(30, 64, 175, 0.2);
+  transform: scale(1.02);
+}
+
+.general-admission-blocked {
+  padding: 30px;
+  text-align: center;
+  color: #9CA3AF;
+  font-size: 14px;
+  background: #F3F4F6;
+  border: 2px dashed #D1D5DB;
+  border-radius: 16px;
+  opacity: 0.7;
+}
+
+.blocked-icon {
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
+.blocked-text {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.blocked-subtext {
+  font-size: 12px;
+}
+
+.ga-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+  filter: brightness(0) invert(1);
+}
+
+.general-admission:not(.selected) .ga-icon {
+  filter: none;
+}
+
+.ga-title {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.capacity-bar {
+  width: 100%;
+  height: 4px;
+  background-color: rgba(255,255,255,0.3);
+  border-radius: 2px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+.general-admission:not(.selected) .capacity-bar {
+  background-color: #E5E7EB;
+}
+
+.capacity-fill {
+  height: 100%;
+  background-color: rgba(255,255,255,0.8);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.general-admission:not(.selected) .capacity-fill {
+  background-color: #1E40AF;
+}
+
+.capacity-info {
+  font-size: 11px;
+  display: block;
+  margin-bottom: 12px;
+  opacity: 0.9;
+}
+
+.general-admission:not(.selected) .capacity-info {
+  color: #6B7280;
+}
+
+.capacity-warning {
+  color: #EF4444;
+  margin-left: 4px;
+}
+
+.ga-price {
+  padding: 8px 16px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 20px;
+  display: inline-block;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.general-admission:not(.selected) .ga-price {
+  background: #F3F4F6;
+  color: #1E40AF;
+}
+
+.selection-count {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 24px;
+  height: 24px;
+  background-color: #1E40AF;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+/* Estilos para header del mapa */
+.seatmap-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, #00BFA5 0%, #008E76 100%); /* Usar nuevos colores verde menta */
+  color: white;
+  border-radius: 16px 16px 0 0;
+  position: relative;
+  z-index: 10;
+  width: 100%; /* Asegurar que ocupe todo el ancho */
+  box-sizing: border-box; /* Incluir padding en el cálculo del ancho */
+}
+
+.header-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1; /* Hacer que ocupe todo el espacio disponible */
+  min-width: 0; /* Permitir que se contraiga si es necesario */
+  width: 100%; /* Asegurar que ocupe todo el ancho disponible */
+}
+
+.venue-title {
+  margin: 0 !important;
+  color: white !important;
+  font-size: 28px !important; /* Aumentar tamaño de fuente */
+  font-weight: 700 !important;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  line-height: 1.2 !important; /* Mejorar espaciado de líneas */
+  word-break: break-word; /* Permitir salto de línea si es necesario */
+}
+
+.venue-type {
+  color: rgba(255, 255, 255, 0.9); /* Hacer más visible */
+  font-size: 16px; /* Aumentar tamaño */
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 500; /* Añadir peso de fuente */
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto; /* Asegurar que esté alineado a la derecha */
+}
+
+/* Estilos para información de selección */
+.selection-info {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  padding: 12px 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  backdrop-filter: blur(10px);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Estilos responsivos */
+@media (max-width: 1024px) {
+  .professional-seatmap-container {
+    padding: 16px 30px; /* Ajustar padding horizontal para tablet */
+    min-height: 150vh; /* Usar altura más grande en tablet */
+  }
+  
+  .seatmap-content {
+    min-height: 120vh; /* Usar altura más grande en tablet */
+  }
+  
+  .responsive-seatmap-container {
+    padding: 16px;
+  }
+  .football-stadium-layout {
+    grid-template-areas: 
+      "north"
+      "center"
+      "west east"
+      "south"
+      "vip";
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto auto;
+    gap: 16px;
+    padding: 16px;
+  }
+  
+  .concert-stadium-layout {
+    grid-template-areas: 
+      "north"
+      "center"
+      "west east"
+      "south"
+      "pit"
+      "vip";
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto auto auto;
+    gap: 16px;
+    padding: 16px;
+  }
+  
+  .concert-theater-layout {
+    gap: 20px;
+    padding: 20px;
+  }
+  
+  .cinema-layout,
+  .theater-layout,
+  .arena-layout {
+    gap: 16px;
+    padding: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .professional-seatmap-container {
+    padding: 12px 20px; /* Ajustar padding horizontal para móvil */
+    min-height: 150vh; /* Usar altura más grande en móvil */
+  }
+  
+  .seatmap-content {
+    min-height: 120vh; /* Usar altura más grande en móvil */
+  }
+  
+  .responsive-seatmap-container {
+    padding: 12px;
+  }
+  .football-stadium-layout {
+    grid-template-areas: 
+      "north"
+      "center"
+      "west"
+      "east"
+      "south"
+      "vip";
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto auto auto;
+    gap: 12px;
+    padding: 12px;
+  }
+  
+  /* Secciones laterales sin rotación - se maneja por lógica de renderizado */
+  .tribuna-oeste {
+    /* Sin rotación - se maneja por lógica de renderizado */
+  }
+  
+  .tribuna-este {
+    /* Sin rotación - se maneja por lógica de renderizado */
+  }
+  
+  .concert-stadium-layout {
+    grid-template-areas: 
+      "north"
+      "center"
+      "west"
+      "east"
+      "south"
+      "pit"
+      "vip";
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto auto auto auto;
+    gap: 12px;
+    padding: 12px;
+  }
+  
+  .concert-theater-layout {
+    gap: 16px;
+    padding: 16px;
+  }
+  
+  .cinema-layout,
+  .theater-layout,
+  .arena-layout {
+    gap: 12px;
+    padding: 16px;
+  }
+  
+  .seatmap-header {
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px 16px;
+  }
+  
+  .venue-title {
+    font-size: 24px !important; /* Mantener tamaño grande en tablet */
+  }
+  
+  .venue-type {
+    font-size: 14px; /* Ajustar tamaño en tablet */
+  }
+  
+  .general-admission {
+    min-width: 150px;
+    padding: 16px;
+  }
+  
+  .selection-info {
+    position: relative;
+    bottom: auto;
+    left: auto;
+    margin: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .professional-seatmap-container {
+    padding: 8px 15px; /* Ajustar padding horizontal para móvil pequeño */
+    min-height: 100vh; /* Usar altura completa en móvil pequeño */
+  }
+  
+  .seatmap-content {
+    min-height: 80vh; /* Usar altura de viewport en móvil pequeño */
+  }
+  
+  .responsive-seatmap-container {
+    padding: 8px;
+  }
+  
+  /* Ajustar controles de zoom para móviles */
+  .zoom-controls {
+    top: 70px;
+    right: 12px;
+  }
+  
+  .zoom-controls .ant-btn {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+  }
+  .football-stadium-layout,
+  .concert-venue-layout,
+  .cinema-layout,
+  .theater-layout,
+  .arena-layout {
+    padding: 8px;
+    gap: 8px;
+  }
+  
+  .venue-title {
+    font-size: 20px !important; /* Mantener tamaño legible en móvil */
+  }
+  
+  .venue-type {
+    font-size: 12px; /* Ajustar tamaño en móvil */
+  }
+  
+  .general-admission {
+    min-width: 120px;
+    padding: 12px;
+  }
+  
+  .ga-icon {
+    font-size: 20px;
+  }
+  
+  .ga-title {
+    font-size: 12px;
+  }
+  
+  .ga-price {
+    font-size: 14px;
+    padding: 6px 12px;
+  }
+}
+
+/* Modo pantalla completa */
+.professional-seatmap-container.fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  border-radius: 0;
+}
+
+.professional-seatmap-container.fullscreen .seatmap-header {
+  border-radius: 0;
+}
+
+.professional-seatmap-container.fullscreen .zoom-controls {
+  top: 90px;
+  right: 20px;
+}
+
+/* Efectos de hover mejorados */
+.professional-section:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.professional-seat:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
+}
+
+/* Efectos de selección */
+.professional-seat.selected {
+  animation: seatSelect 0.4s ease-out forwards;
+}
+
+.general-admission.selected {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* Efectos de aparición */
+.professional-section {
+  animation: sectionAppear 0.6s ease-out forwards;
+}
+
+/* Efectos de zoom */
+.seatmap-transform {
+  transition: transform 0.3s ease;
+}
+
+.seatmap-transform.zooming {
+  transition: none;
+}
+
+/* Efectos de arrastre */
+.seatmap-content.dragging {
+  cursor: grabbing;
+}
+
+.seatmap-content.dragging * {
+  pointer-events: none;
+}
+
+/* Efectos de leyenda */
+.seatmap-legend {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  max-width: 90%;
+}
+
+/* Efectos de accesibilidad */
+.professional-seat:focus {
+  outline: 2px solid #1E40AF;
+  outline-offset: 2px;
+}
+
+.general-admission:focus {
+  outline: 2px solid #1E40AF;
+  outline-offset: 2px;
+}
+
+/* Efectos de alto contraste */
+@media (prefers-contrast: high) {
+  .professional-seat {
+    border-width: 3px;
+  }
+  
+  .general-admission {
+    border-width: 3px;
+  }
+  
+  .seatmap-header {
+    background: #000000;
+    padding: 12px 16px;
+  }
+}
+
+/* Efectos de movimiento reducido */
+@media (prefers-reduced-motion: reduce) {
+  .professional-seat,
+  .general-admission,
+  .professional-section,
+  .seatmap-transform {
+    transition: none;
+  }
+  
+  .professional-seat:hover,
+  .general-admission:hover,
+  .professional-section:hover {
+    transform: none;
+  }
+  
+  .stage-lights,
+  .cinema-lights,
+  .shimmer-effect,
+  .pulse-effect,
+  .glow-effect {
+    animation: none;
+  }
+}

@@ -12,7 +12,6 @@ import {
   Skeleton,
   Alert,
   Divider,
-  Image,
   Table
 } from "antd";
 import { notification } from 'antd';
@@ -37,6 +36,7 @@ import "dayjs/locale/es";
 
 // Importamos el esquema de colores
 import { COLORS } from "../components/colorscheme";
+import FramedImage from "../components/FramedImage";
 
 // Configurar dayjs en español
 dayjs.locale('es');
@@ -112,11 +112,11 @@ const EventDetails = () => {
 
   const getStateColor = (state) => {
     switch(state) {
-      case 'activo': return COLORS.status.success;
-      case 'proximo': return COLORS.status.warning;
-      case 'finalizado': return COLORS.neutral.grey4;
-      case 'cancelado': return COLORS.status.error;
-      default: return COLORS.neutral.grey4;
+      case 'activo': return COLORS.accent.green;
+      case 'proximo': return COLORS.accent.gold;
+      case 'finalizado': return COLORS.neutral.grey400;
+      case 'cancelado': return COLORS.secondary.main;
+      default: return COLORS.neutral.grey400;
     }
   };
 
@@ -132,11 +132,11 @@ const EventDetails = () => {
 
   const getCategoryColor = (categoryName) => {
     switch(categoryName) {
-      case "Conciertos": return COLORS.categories.conciertos;
-      case "Teatro": return COLORS.categories.teatro;
-      case "Deportes": return COLORS.categories.deportes;
-      case "Festivales": return COLORS.categories.festivales;
-      case "Cine": return COLORS.categories.cine;
+      case "Conciertos": return COLORS.accent.purple;
+      case "Teatro": return COLORS.accent.gold;
+      case "Deportes": return COLORS.accent.green;
+      case "Festivales": return COLORS.secondary.main;
+      case "Cine": return COLORS.primary.main;
       default: return COLORS.primary.main;
     }
   };
@@ -278,17 +278,17 @@ const EventDetails = () => {
         borderRadius: '12px',
         boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
         marginTop: '24px',
-        borderLeft: `4px solid ${COLORS.status.warning}`
+        borderLeft: `4px solid ${COLORS.accent.gold}`
       }}>
         <Title level={5} style={{ 
-          color: COLORS.neutral.darker,
+          color: COLORS.neutral.grey800,
           marginBottom: '12px',
           display: 'flex',
           alignItems: 'center'
         }}>
           <StopOutlined style={{ 
             marginRight: '8px', 
-            color: COLORS.status.warning 
+            color: COLORS.accent.gold 
           }} />
           Restricciones de disponibilidad
         </Title>
@@ -353,7 +353,8 @@ const EventDetails = () => {
           <div style={{ 
             backgroundColor: COLORS.neutral.grey1, 
             padding: '16px 0',
-            borderBottom: `1px solid ${COLORS.neutral.grey2}`
+            borderBottom: `1px solid ${COLORS.neutral.grey2}`,
+            marginBottom: '32px'
           }}>
             <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
               <Link to="/">
@@ -381,35 +382,15 @@ const EventDetails = () => {
                 }}
               >
               {event.image ? (
-                <div style={{ 
-                  position: 'relative',
-                  width: '100%',
-                  minHeight: '300px',
-                  maxHeight: '500px',
-                  overflow: 'hidden',
-                  borderRadius: '12px'
-                }}>
-                  <Image 
-                    alt={event.name}
-                    src={event.image}
-                    style={{ 
-                      width: '100%',
-                      height: 'auto',
-                      minHeight: '300px',
-                      maxHeight: '500px',
-                      objectFit: 'cover',
-                      backgroundColor: COLORS.neutral.grey1,
-                      display: 'block'
-                    }}
-                    preview={{
-                      mask: (
-                        <div style={{ color: COLORS.neutral.white }}>
-                          <PictureOutlined /> Ver imagen completa
-                        </div>
-                      )
-                    }}
-                  />
-                </div>
+                <FramedImage 
+                  src={event.image}
+                  alt={event.name}
+                  backgroundColor={COLORS.neutral.grey1}
+                  borderRadius={12}
+                  aspectRatio={isMobile ? 16/9 : 4/3}
+                  maxHeight={isMobile ? 320 : 500}
+                  objectFit="smart"
+                />
               ) : (
                   <div style={{ 
                     display: 'flex', 
