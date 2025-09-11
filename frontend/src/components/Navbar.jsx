@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Avatar, Typography, Menu, Dropdown } from "antd";
-import { UserOutlined, TagOutlined } from "@ant-design/icons";
+import { UserOutlined, TagOutlined, BarChartOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 import { COLORS } from "./colorscheme";
 import { ensureAuthFreshness, scheduleAuthExpiryTimer, clearAuthSession } from "../utils/authSession";
+import useUserRole from "../hooks/useUserRole";
 
 const { Title } = Typography;
 
@@ -11,6 +12,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const { isAdmin, isLoading } = useUserRole();
 
 
   useEffect(() => {
@@ -70,9 +72,23 @@ const Navbar = () => {
         <Link to="/" style={{ color: COLORS.neutral.white, fontWeight: "500", fontSize: isMobile ? 13 : undefined }}>
           Eventos
         </Link>
-        <Link to="/admin" style={{ color: COLORS.neutral.white, fontWeight: "500", fontSize: isMobile ? 13 : undefined }}>
-          Panel de administrador
-        </Link>
+        
+        {/* Opciones para todos los usuarios autenticados */}
+        {isLoggedIn && (
+          <Link to="/help" style={{ color: COLORS.neutral.white, fontWeight: "500", fontSize: isMobile ? 13 : undefined }}>
+            <QuestionCircleOutlined style={{ marginRight: 4 }} />
+            {!isMobile && "Ayuda"}
+          </Link>
+        )}
+
+        {/* Opciones exclusivas para administradores */}
+        {isLoggedIn && isAdmin && !isLoading && (
+          <>
+            <Link to="/admin" style={{ color: COLORS.neutral.white, fontWeight: "500", fontSize: isMobile ? 13 : undefined }}>
+              Panel de administrador
+            </Link>
+          </>
+        )}
 
         {isLoggedIn && (
           <Dropdown overlay={menu} placement="bottomRight" trigger={["click"]}>
