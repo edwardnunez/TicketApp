@@ -159,7 +159,7 @@ const ProfessionalSeatMapRenderer = ({
   const handleWheel = useCallback((e) => {
     e.preventDefault();
     const delta = e.deltaY > 0 ? -0.1 : 0.1;
-    const newZoom = Math.max(0.5, Math.min(3, zoomLevel + delta));
+    const newZoom = Math.max(0.3, Math.min(2.5, zoomLevel + delta)); // Reduced max zoom from 3 to 2.5
     setZoomLevel(newZoom);
   }, [zoomLevel]);
 
@@ -198,11 +198,11 @@ const ProfessionalSeatMapRenderer = ({
 
   // Controles de zoom
   const handleZoomIn = () => {
-    setZoomLevel(prev => Math.min(3, prev + 0.2));
+    setZoomLevel(prev => Math.min(2.5, prev + 0.2)); // Reduced max zoom from 3 to 2.5
   };
 
   const handleZoomOut = () => {
-    setZoomLevel(prev => Math.max(0.5, prev - 0.2));
+    setZoomLevel(prev => Math.max(0.3, prev - 0.2)); // Reduced min zoom from 0.5 to 0.3
   };
 
   const handleResetZoom = () => {
@@ -210,9 +210,26 @@ const ProfessionalSeatMapRenderer = ({
     setPanOffset({ x: 0, y: 0 });
   };
 
+  // Función para alternar pantalla completa
   const toggleFullscreen = () => {
-    setIsFullscreen(!isFullscreen);
+    if (!document.fullscreenElement) {
+      containerRef.current?.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
   };
+
+  // Manejar cambios de pantalla completa
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
 
   if (!seatMapData) return null;
 
@@ -759,7 +776,7 @@ const ProfessionalSeatMapRenderer = ({
         minHeight: isMobile ? '150vh' : '150vh',
         backgroundColor: COLORS.neutral.grey50,
         borderRadius: isFullscreen ? '0' : '16px',
-        overflow: 'visible',
+        overflow: 'visible', // Restored to 'visible' to prevent content cutoff
         boxShadow: isFullscreen ? 'none' : COLORS.shadows.xl
       }}
     >
@@ -801,6 +818,8 @@ const ProfessionalSeatMapRenderer = ({
             onZoomIn={handleZoomIn}
             onZoomOut={handleZoomOut}
             onReset={handleResetZoom}
+            onFullscreen={toggleFullscreen}
+            isFullscreen={isFullscreen}
             isMobile={isMobile}
           />
         </div>
@@ -815,7 +834,7 @@ const ProfessionalSeatMapRenderer = ({
             left: 0,
             right: 0,
             bottom: 0,
-            overflow: 'visible',
+            overflow: 'visible', // Restored to 'visible' to prevent content cutoff
             cursor: isDragging ? 'grabbing' : 'grab'
           }}
           onWheel={handleWheel}
@@ -829,7 +848,11 @@ const ProfessionalSeatMapRenderer = ({
               transition: isDragging ? 'none' : 'transform 0.3s ease',
               width: '100%',
               height: '100%',
-              position: 'relative'
+              position: 'relative',
+              minWidth: '100%', // Ensure minimum width
+              minHeight: '100%', // Ensure minimum height
+              maxWidth: 'none', // Allow content to scale
+              maxHeight: 'none' // Allow content to scale
             }}
           >
             {renderVenueLayout()}

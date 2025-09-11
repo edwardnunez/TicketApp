@@ -6,7 +6,7 @@ import {
   AppstoreOutlined,
   UnorderedListOutlined
 } from '@ant-design/icons';
-import { COLORS } from '../../../components/colorscheme';
+import { COLORS, getSectionTextColor, getContrastTextColor, getContrastInfoBackground, getSectionLabelColor, getSectionDimensionColor } from '../../../components/colorscheme';
 import SeatRenderer from './SeatRenderer';
 import SeatMapLegend from './SeatMapLegend';
 import MobileSeatList from './MobileSeatList';
@@ -145,7 +145,7 @@ const ResponsiveSeatRenderer = ({
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
               <Title level={5} style={{ 
                 margin: 0, 
-                color: availability.isFullyBooked ? COLORS.neutral.grey4 : COLORS.neutral.darker,
+                color: availability.isFullyBooked ? COLORS.neutral.grey4 : getSectionLabelColor(section.color, availability.isFullyBooked),
                 textDecoration: availability.isFullyBooked ? 'line-through' : 'none'
               }}>
                 {section.name}
@@ -165,14 +165,14 @@ const ResponsiveSeatRenderer = ({
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
-              <Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
+              <Text style={{ color: getContrastTextColor(section.color, 0.8, availability.isFullyBooked), fontSize: '12px' }}>
                 {section.hasNumberedSeats 
                   ? `${section.rows} filas × ${section.seatsPerRow} asientos`
                   : `Capacidad: ${section.totalCapacity} personas`
                 }
               </Text>
               
-              <Text strong style={{ color: COLORS.primary.main }}>
+              <Text strong style={{ color: getSectionTextColor(section.color, availability.isFullyBooked) }}>
                 {formatPrice(sectionPrice)}
               </Text>
               
@@ -340,10 +340,10 @@ const ResponsiveSeatRenderer = ({
       }}>
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <Title level={3} style={{ margin: 0, color: COLORS.neutral.darker }}>
+          <Title level={3} style={{ margin: 0, color: getContrastTextColor('#FFFFFF', 1, false) }}>
             {config?.venueName || name}
           </Title>
-          <Text style={{ color: COLORS.neutral.grey4 }}>
+          <Text style={{ color: getContrastTextColor('#FFFFFF', 0.8, false) }}>
             {currentView === 'map' ? 'Selecciona una sección para ver los asientos disponibles' :
              currentView === 'navigation' ? 'Navega por las secciones y selecciona tus asientos' :
              currentView === 'filters' ? 'Usa los filtros para encontrar los mejores asientos' :
@@ -479,7 +479,7 @@ const GeneralAdmissionRenderer = ({
         </div>
         
         <Text strong style={{ 
-          color: isSelected ? 'white' : section.color,
+          color: isSelected ? 'white' : getSectionTextColor(section.color),
           display: 'block',
           marginBottom: '6px',
           fontSize: '12px',
@@ -527,7 +527,7 @@ const GeneralAdmissionRenderer = ({
           display: 'inline-block'
         }}>
           <Text style={{ 
-            color: isSelected ? 'white' : section.color,
+            color: isSelected ? 'white' : getSectionTextColor(section.color),
             fontSize: '14px',
             fontWeight: 'bold'
           }}>

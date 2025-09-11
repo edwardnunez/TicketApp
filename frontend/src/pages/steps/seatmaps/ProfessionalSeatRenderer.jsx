@@ -7,7 +7,7 @@ import {
   StarOutlined,
   HeartOutlined
 } from '@ant-design/icons';
-import { COLORS, getSeatStateColors } from '../../../components/colorscheme';
+import { COLORS, getSeatStateColors, getSectionTextColor, getContrastTextColor, getContrastBorderColor, getContrastInfoBackground, getSectionLabelColor, getSectionDimensionColor, getRowLabelColor } from '../../../components/colorscheme';
 import SectionShapeRenderer from './SectionShapeRenderer';
 
 const ProfessionalSeatRenderer = ({
@@ -493,11 +493,11 @@ const ProfessionalSeatRenderer = ({
             justifyContent: 'center',
             fontSize: `${isMobile ? 9 : 11}px`,
             fontWeight: '600',
-            color: sectionBlocked ? COLORS.neutral.grey400 : COLORS.neutral.grey600,
-            backgroundColor: sectionBlocked ? COLORS.neutral.grey100 : COLORS.neutral.grey50,
+            color: getRowLabelColor(color, sectionBlocked),
+            backgroundColor: getContrastInfoBackground(color, sectionBlocked),
             borderRadius: '3px',
             marginRight: '4px',
-            border: `1px solid ${sectionBlocked ? COLORS.neutral.grey200 : COLORS.neutral.grey100}`,
+            border: `1px solid ${getContrastBorderColor(color, sectionBlocked)}`,
             transition: 'all 0.2s ease',
             flexShrink: 0
           }}
@@ -582,7 +582,7 @@ const ProfessionalSeatRenderer = ({
             style={{
               fontSize: isMobile ? '12px' : '13px',
               fontWeight: '600',
-              color: sectionBlocked ? COLORS.neutral.grey400 : COLORS.neutral.grey800
+              color: getSectionLabelColor(color, sectionBlocked)
             }}
           >
             {sectionName}
@@ -593,11 +593,11 @@ const ProfessionalSeatRenderer = ({
           className="section-info"
           style={{
             fontSize: isMobile ? '10px' : '11px',
-            color: sectionBlocked ? COLORS.neutral.grey400 : COLORS.neutral.grey500,
-            backgroundColor: sectionBlocked ? COLORS.neutral.grey100 : COLORS.neutral.grey50,
+            color: getSectionDimensionColor(color, sectionBlocked),
+            backgroundColor: getContrastInfoBackground(color, sectionBlocked),
             padding: '2px 6px',
             borderRadius: '8px',
-            border: `1px solid ${COLORS.neutral.grey200}`
+            border: `1px solid ${getContrastBorderColor(color, sectionBlocked)}`
           }}
         >
           {dimensions.displayRows}×{dimensions.displaySeatsPerRow}
@@ -648,7 +648,7 @@ const ProfessionalSeatRenderer = ({
           <span style={{ 
             fontSize: '11px', 
             fontWeight: '600', 
-            color: COLORS.secondary.main 
+            color: getContrastTextColor(COLORS.secondary.main, 1, false)
           }}>
             SECCIÓN BLOQUEADA
           </span>

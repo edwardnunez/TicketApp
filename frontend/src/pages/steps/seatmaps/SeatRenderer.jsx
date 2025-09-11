@@ -5,7 +5,7 @@ import {
   UserOutlined,
   LockOutlined
 } from '@ant-design/icons';
-import { COLORS } from '../../../components/colorscheme';
+import { COLORS, getRowLabelColor, getContrastInfoBackground, getContrastBorderColor } from '../../../components/colorscheme';
 
 const SeatRenderer = ({
   sectionId,
@@ -467,12 +467,12 @@ const SeatRenderer = ({
           justifyContent: 'center',
           fontSize: responsiveMode && isMobile ? 10 : 12,
           fontWeight: '600',
-          color: sectionBlocked ? '#9CA3AF' : (COLORS?.neutral?.grey4 || '#6B7280'),
-          backgroundColor: sectionBlocked ? '#F3F4F6' : 'transparent',
+          color: getRowLabelColor(color, sectionBlocked),
+          backgroundColor: getContrastInfoBackground(color, sectionBlocked),
           borderRadius: '4px',
           padding: '2px 4px',
           marginRight: '8px',
-          border: sectionBlocked ? '1px solid #E5E7EB' : 'none',
+          border: `1px solid ${getContrastBorderColor(color, sectionBlocked)}`,
           transition: 'all 0.2s ease'
         }}
       >
