@@ -5,7 +5,7 @@ import { COLORS } from '../../../components/colorscheme';
 import SeatRenderer from './SeatRenderer';
 import SeatMapLegend from './SeatMapLegend';
 import useDeviceDetection from '../../../hooks/useDeviceDetection';
-import './SeatMapAnimations.css';
+import './ProfessionalSeatMapAnimations.css';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
