@@ -327,8 +327,8 @@ const LocationCreation = () => {
         id: section.position,
         order: index + 1,
         key: `section_${index}`,
-        // Asegurar que hasNumberedSeats esté definido correctamente
-        hasNumberedSeats: section.hasNumberedSeats !== undefined ? section.hasNumberedSeats : true
+        // Determinar automáticamente el tipo basado en la posición
+        hasNumberedSeats: section.position === 'pista' ? false : true
       }));
       setSections(defaultSections);
     }
@@ -365,7 +365,7 @@ const LocationCreation = () => {
       color: '#1890ff',
       defaultPrice: 0,
       order: sections.length + 1,
-      hasNumberedSeats: true // Inicializar como asientos numerados por defecto
+      hasNumberedSeats: newPosition === 'pista' ? false : true // Determinar automáticamente basado en posición
     };
     setSections([...sections, newSection]);
   };
@@ -381,6 +381,13 @@ const LocationCreation = () => {
         message.warning('Esta posición ya está siendo utilizada por otra sección');
         return;
       }
+      
+      // Actualizar automáticamente el tipo de asientos basado en la posición
+      const newHasNumberedSeats = value === 'pista' ? false : true;
+      setSections(sections.map(section => 
+        section.key === key ? { ...section, [field]: value, hasNumberedSeats: newHasNumberedSeats } : section
+      ));
+      return;
     }
     
     // Validar límites cuando se cambian filas o asientos por fila
@@ -601,30 +608,29 @@ const LocationCreation = () => {
     {
       title: 'Tipo',
       render: (_, record) => {
-        // Determinar el valor actual del selector
-        const currentValue = record.hasNumberedSeats === false ? 'general' : 'numbered';
+        // Determinar el tipo basado en la posición
+        const isGeneralAdmission = record.position === 'pista';
         
         return (
-          <Select
-            value={currentValue}
-            onChange={(value) => {
-              const isNumbered = value === 'numbered';
-              updateSection(record.key, 'hasNumberedSeats', isNumbered);
-              if (!isNumbered) {
-                // Para entrada general, establecer valores por defecto
-                updateSection(record.key, 'rows', 1);
-                updateSection(record.key, 'seatsPerRow', 1);
-                updateSection(record.key, 'totalCapacity', record.totalCapacity || 100);
-              } else {
-                // Para asientos numerados, limpiar totalCapacity
-                updateSection(record.key, 'totalCapacity', undefined);
-              }
-            }}
-            style={{ width: '100%' }}
-          >
-            <Option value="numbered">Asientos numerados</Option>
-            <Option value="general">Entrada general</Option>
-          </Select>
+          <div style={{  
+            backgroundColor: isGeneralAdmission ? '#fff7e6' : '#f6ffed',
+            border: `1px solid ${isGeneralAdmission ? '#ffd591' : '#b7eb8f'}`,
+            borderRadius: '6px',
+            textAlign: 'center',
+            minWidth: '120px',
+            whiteSpace: 'nowrap'
+          }}>
+            <Text style={{ 
+              color: isGeneralAdmission ? '#d46b08' : '#389e0d',
+              fontWeight: '500',
+              fontSize: '11.5px',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis'
+            }}>
+              {isGeneralAdmission ? 'Entrada general' : 'Asientos numerados'}
+            </Text>
+          </div>
         );
       }
     },

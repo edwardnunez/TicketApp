@@ -147,7 +147,7 @@ const seatMapSchema = new mongoose.Schema({
   },
   compatibleEventTypes: {
     type: [String],
-    enum: ['football', 'cinema', 'concert', 'theater', 'festival']
+    enum: ['football', 'cinema', 'concert', 'theater', 'festival', 'arena']
   },
   description: {
     type: String,
