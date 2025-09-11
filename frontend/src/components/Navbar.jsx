@@ -87,6 +87,10 @@ const Navbar = () => {
             <Link to="/admin" style={{ color: COLORS.neutral.white, fontWeight: "500", fontSize: isMobile ? 13 : undefined }}>
               Panel de administrador
             </Link>
+            <Link to="/admin/statistics" style={{ color: COLORS.neutral.white, fontWeight: "500", fontSize: isMobile ? 13 : undefined }}>
+              <BarChartOutlined style={{ marginRight: 4 }} />
+              {!isMobile && "Estadísticas"}
+            </Link>
           </>
         )}
 

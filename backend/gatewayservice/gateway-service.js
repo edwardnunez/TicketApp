@@ -191,6 +191,18 @@ app.get('/tickets/user/:userId/events', async (req, res) => {
     }
 });
 
+// Endpoint para estadísticas de administrador
+app.get('/tickets/admin/statistics', async (req, res) => {
+  try {
+    const ticketResponse = await axios.get(`${ticketServiceUrl}/tickets/admin/statistics`, {
+      params: req.query
+    });
+    res.json(ticketResponse.data);
+  } catch (error) {
+    returnError(res, error);
+  }
+});
+
 // Nuevo endpoint para eliminar tickets por evento
 app.delete("/tickets/event/:eventId", async (req, res) => {
   try {
