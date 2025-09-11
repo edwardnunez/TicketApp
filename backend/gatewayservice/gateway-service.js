@@ -339,6 +339,18 @@ app.delete("/events/:eventId/cancel", async (req, res) => {
   }
 });
 
+// Nuevo endpoint para estadísticas de eventos con ventas
+app.get("/events/admin/statistics", async (req, res) => {
+  try {
+    const eventResponse = await axios.get(`${eventServiceUrl}/events/admin/statistics`, {
+      params: req.query
+    });
+    res.json(eventResponse.data);
+  } catch (error) {
+    returnError(res, error);
+  }
+});
+
 // **Location Routes**
 app.post("/location", async (req, res) => {
   try {
