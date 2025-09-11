@@ -40,6 +40,7 @@ import dayjs from "dayjs";
 
 // Importamos el esquema de colores
 import { COLORS } from "../components/colorscheme";
+import FramedImage from "../components/FramedImage";
 
 const { Content } = Layout;
 const { Title, Text, Paragraph } = Typography;
@@ -67,11 +68,11 @@ const Home = () => {
   const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
 
   const FEATURED_CATEGORIES = [
-    { name: "Conciertos", color: COLORS.categories.conciertos },
-    { name: "Teatro", color: COLORS.categories.teatro },
-    { name: "Deportes", color: COLORS.categories.deportes },
-    { name: "Festivales", color: COLORS.categories.festivales },
-    { name: "Cine", color: COLORS.categories.cine }
+    { name: "Conciertos", color: COLORS.accent.purple },
+    { name: "Teatro", color: COLORS.accent.gold },
+    { name: "Deportes", color: COLORS.accent.green },
+    { name: "Festivales", color: COLORS.secondary.main },
+    { name: "Cine", color: COLORS.primary.main }
   ];
 
   // Detectar si es mobile
@@ -205,22 +206,22 @@ const Home = () => {
 
   const getCategoryColor = (categoryName) => {
     switch(categoryName) {
-      case "Conciertos": return COLORS.categories.conciertos;
-      case "Teatro": return COLORS.categories.teatro;
-      case "Deportes": return COLORS.categories.deportes;
-      case "Festivales": return COLORS.categories.festivales;
-      case "Cine": return COLORS.categories.cine;
+      case "Conciertos": return COLORS.accent.purple;
+      case "Teatro": return COLORS.accent.gold;
+      case "Deportes": return COLORS.accent.green;
+      case "Festivales": return COLORS.secondary.main;
+      case "Cine": return COLORS.primary.main;
       default: return COLORS.primary.main;
     }
   };
 
   const getStateColor = (state) => {
     switch(state) {
-      case "activo": return COLORS.status.success;
-      case "proximo": return COLORS.status.info;
-      case "finalizado": return COLORS.neutral.grey4;
-      case "cancelado": return COLORS.status.error;
-      default: return COLORS.neutral.grey3;
+      case "activo": return COLORS.accent.green;
+      case "proximo": return COLORS.primary.main;
+      case "finalizado": return COLORS.neutral.grey400;
+      case "cancelado": return COLORS.secondary.main;
+      default: return COLORS.neutral.grey300;
     }
   };
 
@@ -240,31 +241,31 @@ const Home = () => {
       hoverable
       className="event-card"
       cover={
-        <div style={{ position: 'relative', height: isMobile ? '140px' : '180px', overflow: 'hidden' }}>
+        <div style={{ position: 'relative' }}>
           {event.image ? (
-            <img 
-              alt={event.name} 
-              src={event.image} 
-              style={{ 
-                width: '100%', 
-                height: '100%', 
-                objectFit: 'cover',
-                transition: 'transform 0.3s ease'
-              }} 
+            <FramedImage
+              src={event.image}
+              alt={event.name}
+              backgroundColor={COLORS.neutral.grey50}
+              borderRadius={8}
+              aspectRatio={isMobile ? 16/10 : 16/9}
+              style={{ transition: 'transform 0.3s ease' }}
             />
           ) : (
             <div style={{ 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center', 
-              height: '100%',
-              backgroundColor: COLORS.neutral.grey1
+              width: '100%',
+              aspectRatio: isMobile ? '16/10' : '16/9',
+              backgroundColor: COLORS.neutral.grey50,
+              borderRadius: 8
             }}>
-              <PictureOutlined style={{ fontSize: isMobile ? '32px' : '48px', color: COLORS.neutral.grey3 }} />
+              <PictureOutlined style={{ fontSize: isMobile ? '32px' : '48px', color: COLORS.neutral.grey300 }} />
             </div>
           )}
           {featured && (
-            <Tag color={COLORS.status.warning} style={{ 
+            <Tag color={COLORS.accent.gold} style={{ 
               position: 'absolute', 
               top: '8px', 
               right: '8px',
@@ -319,7 +320,7 @@ const Home = () => {
               textOverflow: 'ellipsis',
               fontSize: isMobile ? '14px' : '16px',
               fontWeight: '600',
-              color: COLORS.neutral.darker
+              color: COLORS.neutral.grey800
             }}>
               {event.name}
             </div>
@@ -331,20 +332,20 @@ const Home = () => {
               <Text style={{ 
                 display: 'flex', 
                 alignItems: 'center', 
-                color: COLORS.neutral.grey4,
+                color: COLORS.neutral.grey400,
                 fontSize: isMobile ? '12px' : '14px'
               }}>
-                <CalendarOutlined style={{ marginRight: '4px', color: COLORS.neutral.grey4 }} /> 
+                <CalendarOutlined style={{ marginRight: '4px', color: COLORS.neutral.grey400 }} /> 
                 {dayjs(event.date).format(isMobile ? "DD MMM" : "DD MMM YYYY")}
               </Text>
             </div>
             <Text style={{ 
               display: 'flex', 
               alignItems: 'center', 
-              color: COLORS.neutral.grey4,
+              color: COLORS.neutral.grey400,
               fontSize: isMobile ? '12px' : '14px'
             }}>
-              <EnvironmentOutlined style={{ marginRight: '4px', color: COLORS.neutral.grey4 }} /> 
+              <EnvironmentOutlined style={{ marginRight: '4px', color: COLORS.neutral.grey400 }} /> 
               <Tooltip title={event.location.name}>
                 <span style={{ 
                   whiteSpace: 'nowrap', 
@@ -370,7 +371,7 @@ const Home = () => {
         marginBottom: '16px', 
         display: 'flex', 
         alignItems: 'center', 
-        color: COLORS.neutral.dark 
+        color: COLORS.neutral.grey700 
       }}>
         <TagOutlined style={{ marginRight: '8px', color: COLORS.primary.main }} />
         Categorías {!isMobile && "Destacadas"}
@@ -448,7 +449,7 @@ const Home = () => {
                 <Input
                   size="large"
                   placeholder="Buscar eventos..."
-                  prefix={<SearchOutlined style={{ color: COLORS.neutral.grey4 }} />}
+                  prefix={<SearchOutlined style={{ color: COLORS.neutral.grey400 }} />}
                   value={searchText}
                   onChange={handleSearch}
                   style={{ width: '100%' }}
@@ -627,7 +628,7 @@ const Home = () => {
                       <Empty
                         image={Empty.PRESENTED_IMAGE_SIMPLE}
                         description={
-                          <span style={{ color: COLORS.neutral.grey4 }}>
+                          <span style={{ color: COLORS.neutral.grey400 }}>
                             No se encontraron eventos con los filtros seleccionados
                           </span>
                         }

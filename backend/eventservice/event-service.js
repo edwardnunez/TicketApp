@@ -279,11 +279,6 @@ app.post("/event", largePayloadMiddleware, largeUrlEncodedMiddleware, async (req
       };
 
       eventData.seatMapConfiguration = seatMapConfig;
-      eventData.blockedSeats = seatMapConfig.blockedSeats || [];
-      eventData.blockedSections = seatMapConfig.blockedSections || [];
-    } else {
-      eventData.blockedSeats = [];
-      eventData.blockedSections = [];
     }
 
     // Validación: no permitir eventos en la misma ubicación con menos de 24h de diferencia
@@ -539,8 +534,8 @@ app.get("/events/:eventId", stateService.updateStatesMiddleware.bind(stateServic
     }
 
     // Estadísticas de bloqueos
-    const blockedSeats = eventObj.seatMapConfiguration?.blockedSeats || eventObj.blockedSeats || [];
-    const blockedSections = eventObj.seatMapConfiguration?.blockedSections || eventObj.blockedSections || [];
+    const blockedSeats = eventObj.seatMapConfiguration?.blockedSeats || [];
+    const blockedSections = eventObj.seatMapConfiguration?.blockedSections || [];
     
     const blockingStats = {
       blockedSeats: blockedSeats.length,
@@ -564,7 +559,7 @@ app.get("/events/:eventId/seat-price/:sectionId/:row/:seat", async (req, res) =>
     const event = await EventModel.findById(eventId);
     if (!event) return res.status(404).json({ error: "Event not found" });
 
-    const seatId = `${sectionId}-${row}-${seat}`;
+    const seatId = `${sectionId}-${parseInt(row) + 1}-${parseInt(seat) + 1}`;
     const price = event.getSeatPrice(sectionId, parseInt(row), parseInt(seat));
     const isBlocked = event.isSeatBlocked(seatId);
 
@@ -599,7 +594,7 @@ app.post("/events/:eventId/seats-pricing", async (req, res) => {
 
     const seatsPricing = seats.map(seatInfo => {
       const { sectionId, row, seat } = seatInfo;
-      const seatId = `${sectionId}-${row}-${seat}`;
+      const seatId = `${sectionId}-${parseInt(row) + 1}-${parseInt(seat) + 1}`;
       const price = event.getSeatPrice(sectionId, parseInt(row), parseInt(seat));
       const isBlocked = event.isSeatBlocked(seatId);
 
@@ -795,8 +790,7 @@ app.put("/events/:eventId", async (req, res) => {
       usesSectionPricing: eventData.usesSectionPricing,
       usesRowPricing: eventData.usesRowPricing,
       sectionPricing: eventData.sectionPricing,
-      blockedSeats: eventData.blockedSeats || [],
-      blockedSections: eventData.blockedSections || [],
+
       generalAdmissionCapacities: eventData.generalAdmissionCapacities || {},
       seatMapConfiguration: eventData.seatMapConfiguration
     };
@@ -856,20 +850,19 @@ app.put("/events/:eventId/seat-blocks", async (req, res) => {
       };
     }
 
-    event.blockedSeats = blockedSeats || [];
-    event.blockedSections = blockedSections || [];
+
 
     await event.save();
 
     console.log(`Updated seat blocks for event ${eventId}:`, {
-      blockedSeats: event.blockedSeats.length,
-      blockedSections: event.blockedSections.length
+      blockedSeats: event.seatMapConfiguration?.blockedSeats?.length || 0,
+      blockedSections: event.seatMapConfiguration?.blockedSections?.length || 0
     });
 
     res.status(200).json({
       message: "Seat blocks updated successfully",
-      blockedSeats: event.blockedSeats.length,
-      blockedSections: event.blockedSections.length
+      blockedSeats: event.seatMapConfiguration?.blockedSeats?.length || 0,
+      blockedSections: event.seatMapConfiguration?.blockedSections?.length || 0
     });
   } catch (error) {
     console.error("Error updating seat blocks:", error);
@@ -959,6 +952,147 @@ app.delete("/events/:eventId/cancel", async (req, res) => {
     res.status(500).json({ 
       error: "Error interno del servidor", 
       details: error.message 
+    });
+  }
+});
+
+// Ruta para obtener estadísticas de eventos con ventas de tickets
+app.get("/events/admin/statistics", async (req, res) => {
+  try {
+    const { eventType, eventState, dateFrom, dateTo, search } = req.query;
+
+    // Construir filtros para eventos
+    let eventFilters = {};
+    
+    if (eventType && eventType !== 'all') {
+      eventFilters.type = eventType;
+    }
+    
+    if (eventState && eventState !== 'all') {
+      eventFilters.state = eventState;
+    }
+    
+    if (dateFrom || dateTo) {
+      eventFilters.date = {};
+      if (dateFrom) {
+        eventFilters.date.$gte = new Date(dateFrom);
+      }
+      if (dateTo) {
+        eventFilters.date.$lte = new Date(dateTo);
+      }
+    }
+
+    if (search && search.trim()) {
+      eventFilters.name = { $regex: search.trim(), $options: 'i' };
+    }
+
+    // Obtener todos los eventos con filtros
+    const events = await EventModel.find(eventFilters)
+      .sort({ date: -1 })
+      .lean();
+
+    // Obtener estadísticas de tickets para cada evento
+    const eventsWithStats = await Promise.all(
+      events.map(async (event) => {
+        try {
+          // Obtener estadísticas de tickets del evento
+          const ticketStatsResponse = await axios.get(`${ticketServiceUrl}/tickets/event/${event._id}`);
+          const ticketStats = ticketStatsResponse.data.statistics || [];
+
+          // Calcular estadísticas consolidadas
+          const stats = {
+            totalTickets: 0,
+            soldTickets: 0,
+            pendingTickets: 0,
+            cancelledTickets: 0,
+            totalRevenue: 0,
+            soldRevenue: 0
+          };
+
+          ticketStats.forEach(stat => {
+            stats.totalTickets += stat.totalTickets || 0;
+            stats.totalRevenue += stat.totalRevenue || 0;
+            
+            if (stat._id === 'paid') {
+              stats.soldTickets += stat.totalTickets || 0;
+              stats.soldRevenue += stat.totalRevenue || 0;
+            } else if (stat._id === 'pending') {
+              stats.pendingTickets += stat.totalTickets || 0;
+            } else if (stat._id === 'cancelled') {
+              stats.cancelledTickets += stat.totalTickets || 0;
+            }
+          });
+
+          // Calcular porcentaje de ventas
+          const salesPercentage = event.capacity > 0 
+            ? Math.round((stats.soldTickets / event.capacity) * 100) 
+            : 0;
+
+          // Obtener información de ubicación
+          let locationInfo = null;
+          try {
+            const locationResponse = await axios.get(`${locationServiceUrl}/locations/${event.location}`);
+            locationInfo = locationResponse.data;
+          } catch (error) {
+            console.warn(`No se pudo obtener información de ubicación para evento ${event._id}:`, error.message);
+          }
+
+          return {
+            ...event,
+            location: locationInfo,
+            ticketStats: stats,
+            salesPercentage,
+            availableTickets: event.capacity - stats.soldTickets - stats.pendingTickets
+          };
+        } catch (error) {
+          console.warn(`Error obteniendo estadísticas para evento ${event._id}:`, error.message);
+          return {
+            ...event,
+            location: null,
+            ticketStats: {
+              totalTickets: 0,
+              soldTickets: 0,
+              pendingTickets: 0,
+              cancelledTickets: 0,
+              totalRevenue: 0,
+              soldRevenue: 0
+            },
+            salesPercentage: 0,
+            availableTickets: event.capacity
+          };
+        }
+      })
+    );
+
+    // Estadísticas generales
+    const generalStats = {
+      totalEvents: eventsWithStats.length,
+      totalCapacity: eventsWithStats.reduce((sum, event) => sum + event.capacity, 0),
+      totalSoldTickets: eventsWithStats.reduce((sum, event) => sum + event.ticketStats.soldTickets, 0),
+      totalRevenue: eventsWithStats.reduce((sum, event) => sum + event.ticketStats.soldRevenue, 0),
+      averageSalesPercentage: eventsWithStats.length > 0 
+        ? Math.round(eventsWithStats.reduce((sum, event) => sum + event.salesPercentage, 0) / eventsWithStats.length)
+        : 0
+    };
+
+    res.json({
+      success: true,
+      events: eventsWithStats,
+      generalStats,
+      filters: {
+        eventType,
+        eventState,
+        dateFrom,
+        dateTo,
+        search
+      }
+    });
+
+  } catch (error) {
+    console.error('Error obteniendo estadísticas de eventos:', error);
+    res.status(500).json({
+      error: "Error interno del servidor",
+      message: "No se pudieron obtener las estadísticas de eventos"
     });
   }
 });

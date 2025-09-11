@@ -380,12 +380,17 @@ const AdminDashboard = () => {
     const idsToFetch = creatorIds.filter(id => id && !usernamesById[id]);
     if (idsToFetch.length === 0) return;
     Promise.all(idsToFetch.map(id =>
-      axios.get(`${gatewayUrl}/users/search?username=${id}`)
-        .then(res => ({ id, username: res.data.username }))
+      axios.get(`${gatewayUrl}/users/search?userId=${id}`)
+        .then(res => ({ 
+          id, 
+          username: res.data.username
+        }))
         .catch(() => ({ id, username: id }))
     )).then(results => {
       const newMap = { ...usernamesById };
+      console.log('Fetched usernames:', results);
       results.forEach(({ id, username }) => { newMap[id] = username; });
+      console.log('Fetched newMap:', newMap);
       setUsernamesById(newMap);
     });
   // eslint-disable-next-line
@@ -598,36 +603,36 @@ const AdminDashboard = () => {
               </Title>
             </Col>
             <Col>
-              <Button
-                type="primary"
-                size="large"
-                icon={<PlusOutlined />}
-                onClick={() => window.location.href = '/create-event'}
-                style={{ 
-                  backgroundColor: COLORS?.primary?.main || "#1890ff",
-                  borderColor: COLORS?.primary?.main || "#1890ff",
-                  borderRadius: '6px',
-                  boxShadow: '0 2px 4px rgba(24, 144, 255, 0.2)'
-                }}
-              >
-                Crear nuevo evento
-              </Button>
-            </Col>
-            <Col>
-              <Button
-                type="primary"
-                size="large"
-                icon={<PlusOutlined />}
-                onClick={() => window.location.href = '/create-location'}
-                style={{ 
-                  backgroundColor: COLORS?.primary?.main || "#1890ff",
-                  borderColor: COLORS?.primary?.main || "#1890ff",
-                  borderRadius: '6px',
-                  boxShadow: '0 2px 4px rgba(24, 144, 255, 0.2)'
-                }}
-              >
-                Crear nueva ubicación
-              </Button>
+              <Space>
+                <Button
+                  type="primary"
+                  size="large"
+                  icon={<PlusOutlined />}
+                  onClick={() => window.location.href = '/create-event'}
+                  style={{ 
+                    backgroundColor: COLORS?.primary?.main || "#1890ff",
+                    borderColor: COLORS?.primary?.main || "#1890ff",
+                    borderRadius: '6px',
+                    boxShadow: '0 2px 4px rgba(24, 144, 255, 0.2)'
+                  }}
+                >
+                  Crear nuevo evento
+                </Button>
+                <Button
+                  type="primary"
+                  size="large"
+                  icon={<PlusOutlined />}
+                  onClick={() => window.location.href = '/create-location'}
+                  style={{ 
+                    backgroundColor: COLORS?.primary?.main || "#1890ff",
+                    borderColor: COLORS?.primary?.main || "#1890ff",
+                    borderRadius: '6px',
+                    boxShadow: '0 2px 4px rgba(24, 144, 255, 0.2)'
+                  }}
+                >
+                  Crear nueva ubicación
+                </Button>
+              </Space>
             </Col>
           </Row>
 

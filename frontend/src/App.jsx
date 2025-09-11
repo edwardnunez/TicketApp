@@ -10,8 +10,10 @@ import AboutUs from "./pages/AboutUs";
 import TicketPurchase from "./pages/TicketPurchase";
 
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminStatistics from "./pages/admin/AdminStatistics";
 import EventCreation from "./pages/admin/EventCreation";
 import EventSeatMapEditor from "./pages/admin/EventSeatmapEditor";
+import HelpCenter from "./pages/HelpCenter";
 
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -34,8 +36,10 @@ function App() {
         <Route path="/profile" element={<ProtectedRoute element={<Profile />} />} />
         <Route path="/edit-profile" element={<ProtectedRoute element={<EditProfile />} />} />
         <Route path="/event/purchase/:id" element={<ProtectedRoute element={<TicketPurchase />} />} />
+        <Route path="/help" element={<ProtectedRoute element={<HelpCenter />} />} />
 
         <Route path="/admin" element={<AdminRoute element={<AdminDashboard />} />} />
+        <Route path="/admin/statistics" element={<AdminRoute element={<AdminStatistics />} />} />
         <Route path="/create-event" element={<AdminRoute element={<EventCreation />} />} />
         <Route path="/create-location" element={<AdminRoute element={<LocationCreation />} />} />
         <Route path="/admin/event-seatmap-config" element={<AdminRoute element={<EventSeatMapEditor />} />} />

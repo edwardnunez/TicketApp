@@ -1,16 +1,15 @@
-
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { Card, Radio, Space, InputNumber, Typography, Alert, Spin, Button } from "antd";
+import { Card, InputNumber, Typography, Alert, Spin, Button } from "antd";
 import { COLORS } from "../../components/colorscheme";
 import GenericSeatMapRenderer from "./seatmaps/GenericSeatRenderer";
+import ResponsiveSeatRenderer from "./seatmaps/ResponsiveSeatRenderer";
 import axios from 'axios';
 
 const { Title, Text } = Typography;
 
 export default function SelectTickets({ 
-  selectedTicketType, setSelectedTicketType, 
   quantity, setQuantity, 
-  ticketTypes, formatPrice,
+  formatPrice,
   event,
   selectedSeats = [],
   onSeatSelect,
@@ -19,12 +18,25 @@ export default function SelectTickets({
   const [seatMapData, setSeatMapData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [isMobileOrTablet, setIsMobileOrTablet] = useState(false);
   const memoizedEvent = useMemo(() => event, [event]);
   
   // Ref para trackear el evento anterior y evitar limpiezas innecesarias
   const previousEventId = useRef(null);
   
   const gatewayUrl = process.env.REACT_API_ENDPOINT || "http://localhost:8000";
+
+  // Hook para detectar si es móvil o tablet
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobileOrTablet(window.innerWidth < 1024); // 1024px como breakpoint para tablet
+    };
+    
+    handleResize(); // Ejecutar al montar
+    window.addEventListener('resize', handleResize);
+    
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Calcular entradas disponibles
   const availableTickets = useMemo(() => {
@@ -82,13 +94,13 @@ export default function SelectTickets({
     // Define compatibility mappings
     const compatibilityMappings = {
       cinema: ['cinema'],
-      theater: ['theater', 'theatre'],
-      theatre: ['theater', 'theatre'],
-      stadium: ['football', 'soccer', 'sports', 'stadium'],
-      football: ['football', 'soccer', 'sports', 'stadium'],
-      sports: ['football', 'soccer', 'sports', 'stadium', 'basketball', 'tennis'],
-      arena: ['concert', 'arena'],
-      concert: ['concert', 'arena'],
+      theater: ['theater', 'theatre', 'concert', 'concierto'],
+      theatre: ['theater', 'theatre', 'concert', 'concierto'],
+      stadium: ['football', 'soccer', 'sports', 'stadium', 'concert', 'concierto'],
+      football: ['football', 'soccer', 'sports', 'stadium', 'concert', 'concierto'],
+      sports: ['football', 'soccer', 'sports', 'stadium', 'basketball', 'tennis', 'concert', 'concierto'],
+      arena: ['concert', 'arena', 'concierto'],
+      concert: ['concert', 'arena', 'concierto'],
     };
 
     if (compatibilityMappings[seatMapType]) {
@@ -102,10 +114,10 @@ export default function SelectTickets({
     const specialCases = [
       (seatMapType === 'theater' && ['theatre', 'concert', 'concierto'].includes(normalizedEventType)),
       (seatMapType === 'theatre' && ['theater', 'concert', 'concierto'].includes(normalizedEventType)),
-      (seatMapType === 'football' && ['soccer', 'sports'].includes(normalizedEventType)),
-      (seatMapType === 'soccer' && ['football', 'sports'].includes(normalizedEventType)),
-      (seatMapType === 'concert' && ['concert', 'music'].includes(normalizedEventType)),
-      (seatMapType === 'arena' && ['concert', 'music'].includes(normalizedEventType))
+      (seatMapType === 'football' && ['soccer', 'sports', 'concert', 'concierto'].includes(normalizedEventType)),
+      (seatMapType === 'soccer' && ['football', 'sports', 'concert', 'concierto'].includes(normalizedEventType)),
+      (seatMapType === 'concert' && ['concert', 'music', 'concierto'].includes(normalizedEventType)),
+      (seatMapType === 'arena' && ['concert', 'music', 'concierto'].includes(normalizedEventType))
     ];
 
     return specialCases.some(condition => condition);
@@ -181,7 +193,7 @@ export default function SelectTickets({
             
             if (eventSectionPricing) {
               // Usar el precio por defecto de la sección
-              const displayPrice = eventSectionPricing.defaultPrice || section.price;
+              const displayPrice = eventSectionPricing.defaultPrice || section.defaultPrice;
               
               return { 
                 ...section, 
@@ -238,13 +250,7 @@ export default function SelectTickets({
     }
   }, [memoizedEvent?._id, onSeatSelect, setQuantity]); // Removido selectedSeats.length de las dependencias
 
-  useEffect(() => {
-    const needsMap = requiresSeatMap();
-    
-    if (!needsMap && ticketTypes.length > 0 && !selectedTicketType) {
-      setSelectedTicketType(ticketTypes[0].key);
-    }
-  }, [requiresSeatMap, ticketTypes, selectedTicketType, setSelectedTicketType]);
+
 
   // Ajustar cantidad si excede las disponibles
   useEffect(() => {
@@ -339,9 +345,11 @@ export default function SelectTickets({
       );
     }
 
-    // Usar el GenericSeatMapRenderer pasando los asientos y secciones bloqueados
+    // Determinar qué renderer usar basado en el tamaño de pantalla
+    const SeatMapComponent = isMobileOrTablet ? ResponsiveSeatRenderer : GenericSeatMapRenderer;
+
     return (
-      <GenericSeatMapRenderer
+      <SeatMapComponent
         seatMapData={seatMapData}
         selectedSeats={selectedSeats}
         onSeatSelect={handleSeatSelection}
@@ -353,12 +361,9 @@ export default function SelectTickets({
         event={memoizedEvent} // Pasar el evento para el cálculo de precios
       />
     );
-  }, [loading, error, seatMapData, selectedSeats, handleSeatSelection, occupiedSeats, blockedSeats, blockedSections, formatPrice, memoizedEvent, maxSelectableTickets]);
+  }, [loading, error, seatMapData, selectedSeats, handleSeatSelection, occupiedSeats, blockedSeats, blockedSections, formatPrice, memoizedEvent, maxSelectableTickets, isMobileOrTablet]);
 
-  // Memoize the selected ticket type data
-  const selectedTicketData = useMemo(() => {
-    return ticketTypes.find(t => t.key === selectedTicketType);
-  }, [ticketTypes, selectedTicketType]);
+
 
   // Check if seat map is required
   const needsSeatMap = requiresSeatMap();
@@ -385,51 +390,7 @@ export default function SelectTickets({
       {/* Mostrar información de disponibilidad */}
       {renderAvailabilityAlert()}
 
-      {/* Mostrar selección de tipo de ticket cuando NO hay mapa de asientos */}
-      {!needsSeatMap && (
-        <Card style={{ marginBottom: '24px' }}>
-          <Title level={4} style={{ color: COLORS.neutral.darker, marginBottom: '16px' }}>
-            Selecciona tu tipo de ticket
-          </Title>
-          <Radio.Group 
-            value={selectedTicketType} 
-            onChange={(e) => setSelectedTicketType(e.target.value)}
-            style={{ width: '100%' }}
-          >
-            <Space direction="vertical" size={16} style={{ width: '100%' }}>
-              {ticketTypes.map(ticket => (
-                <Radio key={ticket.key} value={ticket.key} style={{ width: '100%' }}>
-                  <Card 
-                    size="small"
-                    style={{ 
-                      marginLeft: '8px',
-                      border: selectedTicketType === ticket.key ? `2px solid ${COLORS.primary.main}` : `1px solid ${COLORS.neutral.grey2}`,
-                      backgroundColor: selectedTicketType === ticket.key ? `${COLORS.primary.light}10` : COLORS.neutral.white
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <div style={{ flex: 1 }}>
-                        <Title level={5} style={{ marginBottom: '4px', color: COLORS.neutral.darker }}>
-                          {ticket.label}
-                        </Title>
-                        <Text style={{ color: COLORS.neutral.grey4 }}>
-                          Entrada general
-                        </Text>
-                      </div>
-                      <div style={{ textAlign: 'right', marginLeft: '16px' }}>
-                        <Title level={4} style={{ color: COLORS.primary.main, marginBottom: '4px' }}>
-                          {formatPrice(ticket.price)}
-                        </Title>
-                        <Text style={{ color: COLORS.neutral.grey4 }}>por ticket</Text>
-                      </div>
-                    </div>
-                  </Card>
-                </Radio>
-              ))}
-            </Space>
-          </Radio.Group>
-        </Card>
-      )}
+
 
       {/* Mostrar mapa de asientos cuando se requiere */}
       {needsSeatMap ? (
@@ -444,7 +405,8 @@ export default function SelectTickets({
 
           {renderSeatMap()}
 
-          {selectedSeats.length > 0 && (
+          {/* Mostrar resumen de asientos seleccionados solo en desktop cuando no usa ResponsiveSeatRenderer */}
+          {!isMobileOrTablet && selectedSeats.length > 0 && (
             <Card style={{ marginTop: '24px', backgroundColor: COLORS.neutral.grey1 }}>
               <Title level={4} style={{ color: COLORS.neutral.darker, marginBottom: '16px' }}>
                 Resumen de asientos seleccionados
@@ -527,24 +489,22 @@ export default function SelectTickets({
             </Text>
           </div>
 
-          {selectedTicketData && (
-            <div style={{ 
-              marginTop: '24px',
-              padding: '16px',
-              backgroundColor: COLORS.neutral.grey1,
-              borderRadius: '8px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center'
-            }}>
-              <div>
-                <Text>Subtotal ({quantity} ticket{quantity !== 1 ? 's' : ''}):</Text>
-              </div>
-              <Title level={4} style={{ color: COLORS.primary.main, margin: 0 }}>
-                {formatPrice(selectedTicketData.price * quantity || 0)}
-              </Title>
+          <div style={{ 
+            marginTop: '24px',
+            padding: '16px',
+            backgroundColor: COLORS.neutral.grey1,
+            borderRadius: '8px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
+            <div>
+              <Text>Subtotal ({quantity} ticket{quantity !== 1 ? 's' : ''}):</Text>
             </div>
-          )}
+            <Title level={4} style={{ color: COLORS.primary.main, margin: 0 }}>
+              {formatPrice(event?.price * quantity || 0)}
+            </Title>
+          </div>
         </Card>
       )}
     </>

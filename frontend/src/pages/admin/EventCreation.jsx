@@ -41,8 +41,7 @@ import {
   LockOutlined,
   EuroOutlined,
   PlusOutlined,
-  DeleteOutlined,
-  EditOutlined
+  DeleteOutlined
 } from '@ant-design/icons';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
@@ -50,6 +49,8 @@ import dayjs from 'dayjs';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 
 import { COLORS } from "../../components/colorscheme";
+import ImageCropperModal from "../../components/ImageCropperModal";
+import FramedImage from "../../components/FramedImage";
 
 const { Content } = Layout;
 const { Option } = Select;
@@ -155,13 +156,18 @@ const EventCreation = () => {
 
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
-  const [uploadLoading, setUploadLoading] = useState(false);
+  const [uploadLoading] = useState(false);
+  const [cropSrc, setCropSrc] = useState(null);
+  const [isCropOpen, setIsCropOpen] = useState(false);
 
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [eventDataToSave, setEventDataToSave] = useState(null);
   const [saving, setSaving] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
+
+  const [showConflictModal, setShowConflictModal] = useState(false);
+  const [, setConflictEventInfo] = useState(null);
 
   const navigate = useNavigate();
   
@@ -473,12 +479,11 @@ const EventCreation = () => {
         return;
       }
       
-      setImageFile(file);
-      
-      // Crear preview
+      // Abrir recorte con preview
       const reader = new FileReader();
       reader.onload = (e) => {
-        setImagePreview(e.target.result);
+        setCropSrc(e.target.result);
+        setIsCropOpen(true);
       };
       reader.readAsDataURL(file);
     } else {
@@ -487,51 +492,83 @@ const EventCreation = () => {
     }
   };
 
-  const resizeImage = (file, maxWidth = 800, maxHeight = 600, quality = 0.8) => {
+  // Función no utilizada - comentada para evitar warnings de linting
+  // const resizeImage = (file, maxWidth = 800, maxHeight = 600, quality = 0.8) => {
+  //   return new Promise((resolve) => {
+  //     const canvas = document.createElement('canvas');
+  //     const ctx = canvas.getContext('2d');
+  //     const img = new Image();
+      
+  //     img.onload = () => {
+  //       // Calcular nuevas dimensiones manteniendo proporción
+  //       let { width, height } = img;
+        
+  //       if (width > height) {
+  //         if (width > maxWidth) {
+  //           height = (height * maxWidth) / width;
+  //           width = maxWidth;
+  //         }
+  //       } else {
+  //         if (height > maxHeight) {
+  //           width = (width * maxHeight) / height;
+  //           height = maxHeight;
+  //         }
+  //       }
+        
+  //       canvas.width = width;
+  //       canvas.height = height;
+        
+  //       // Dibujar imagen redimensionada
+  //       ctx.drawImage(img, 0, 0, width, height);
+        
+  //       // Convertir a blob
+  //       canvas.toBlob(resolve, file.type, quality);
+  //     };
+      
+  //     img.src = URL.createObjectURL(file);
+  //   });
+  // };
+
+  // Transforma la imagen a un lienzo fijo (contain) para que se vea entera en un marco 16:9
+  const processImageToFixedCanvas = (file, targetWidth = 1280, targetHeight = 720, background = '#111', quality = 0.8) => {
     return new Promise((resolve) => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       const img = new Image();
-      
+
       img.onload = () => {
-        // Calcular nuevas dimensiones manteniendo proporción
-        let { width, height } = img;
-        
-        if (width > height) {
-          if (width > maxWidth) {
-            height = (height * maxWidth) / width;
-            width = maxWidth;
-          }
-        } else {
-          if (height > maxHeight) {
-            width = (width * maxHeight) / height;
-            height = maxHeight;
-          }
-        }
-        
-        canvas.width = width;
-        canvas.height = height;
-        
-        // Dibujar imagen redimensionada
-        ctx.drawImage(img, 0, 0, width, height);
-        
-        // Convertir a blob
-        canvas.toBlob(resolve, file.type, quality);
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+
+        // Escalar modo contain
+        const scale = Math.min(targetWidth / img.width, targetHeight / img.height);
+        const drawWidth = Math.round(img.width * scale);
+        const drawHeight = Math.round(img.height * scale);
+        const offsetX = Math.floor((targetWidth - drawWidth) / 2);
+        const offsetY = Math.floor((targetHeight - drawHeight) / 2);
+
+        // Fondo del marco
+        ctx.fillStyle = background;
+        ctx.fillRect(0, 0, targetWidth, targetHeight);
+        // Imagen centrada y escalada
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+
+        // Mantener el tipo original si es posible
+        const mimeType = file.type && file.type.startsWith('image/') ? file.type : 'image/jpeg';
+        canvas.toBlob(resolve, mimeType, quality);
       };
-      
+
       img.src = URL.createObjectURL(file);
     });
   };
 
   const convertFileToBase64 = async (file) => {
     try {
-      // Redimensionar imagen si es muy grande
-      let processedFile = file;
-      
-      if (file.size > 200 * 1024) { // Si es mayor a 200KB
-        console.log('Redimensionando imagen...');
-        processedFile = await resizeImage(file, 800, 600, 0.8);
-      }
+      // Normalizar SIEMPRE la imagen a un marco fijo 16:9 para mantener dimensiones uniformes
+      // Elegimos 1280x720 para buena calidad; se puede ajustar si prefieres otro tamaño.
+      const processedFile = await processImageToFixedCanvas(file, 1280, 720, '#111', 0.8);
       
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -554,15 +591,11 @@ const EventCreation = () => {
   };
 
   const handleConfirmSaveEvent = async () => {
-    console.log('=== HANDLE CONFIRM SAVE EVENT CALLED ===');
-    console.log('EventDataToSave:', eventDataToSave);
     setSaving(true);
     
     try {
-      console.log('Creating event without seatmap:', eventDataToSave);
-      
       // Crear el evento (solo para eventos sin seatmap)
-      const createEventResponse = await axios.post(`${gatewayUrl}/events`, eventDataToSave);
+      await axios.post(`${gatewayUrl}/events`, eventDataToSave);
       
       message.success('Evento creado correctamente');
       setShowConfirmModal(false);
@@ -571,20 +604,17 @@ const EventCreation = () => {
       navigate('/admin');
       
     } catch (error) {
-      console.error("Error creando el evento:", error);
       
       if (error.response) {
         console.error('Server error:', error.response.data);
-        if (
-          error.response.data &&
-          error.response.data.error &&
-          error.response.data.error.includes('menos de 24 horas')
-        ) {
-          setErrorMessage(
-            `No se puede crear el evento: ya existe otro evento en esta ubicación con menos de 24 horas de diferencia.\n` +
-            (error.response.data.conflictEvent ? `Conflicto con: "${error.response.data.conflictEvent.name}" el ${new Date(error.response.data.conflictEvent.date).toLocaleString('es-ES')}` : '')
-          );
-        } else {
+        if (error.response?.data?.error?.includes("Ya existe un evento en esta ubicación")) {
+          setConflictEventInfo(error.response.data.conflictEvent);
+          setShowConflictModal(true);
+          setShowConfirmModal(false);
+          setSaving(false);
+          return;
+        }
+        else {
           setErrorMessage(`Error del servidor: ${error.response.data.error || error.response.statusText}`);
         }
       } else if (error.request) {
@@ -777,12 +807,29 @@ const EventCreation = () => {
           });
         } catch (error) {
           console.error('Error creando evento:', error);
-          
-          if (error.response?.status === 413) {
-            message.error('La imagen es demasiado grande. Intenta con una imagen más pequeña.');
+
+          if (error.response) {
+            console.error('Server error:', error.response.data);
+            if (error.response?.data?.error?.includes("Ya existe un evento en esta ubicación")) {
+              setConflictEventInfo(error.response.data.conflictEvent);
+              setShowConflictModal(true);
+              setShowConfirmModal(false);
+              return;
+            }
+            else if (error.response?.status === 413) {
+              message.error('La imagen es demasiado grande. Intenta con una imagen más pequeña.');
+            }
+            else {
+              setErrorMessage(`Error del servidor: ${error.response.data.error || error.response.statusText}`);
+            }
+          } else if (error.request) {
+            console.error('Network error:', error.request);
+            setErrorMessage('Error de conexión. Verifica tu conexión a internet.');
           } else {
-            message.error('Error al crear el evento');
+            console.error('Error:', error.message);
+            setErrorMessage('Hubo un error al crear el evento');
           }
+          
         } finally {
           setLoading(false);
         }
@@ -1154,16 +1201,16 @@ const EventCreation = () => {
         }}
       >
         <div style={{ textAlign: 'center' }}>
-          <img 
-            src={imagePreview} 
-            alt="Preview" 
-            style={{ 
-              maxWidth: '100%', 
-              maxHeight: '200px', 
-              borderRadius: '8px',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-            }} 
-          />
+          <div style={{ maxWidth: '100%', margin: '0 auto' }}>
+            <FramedImage 
+              src={imagePreview}
+              alt="Preview"
+              backgroundColor={COLORS.neutral.grey1}
+              borderRadius={8}
+              aspectRatio={16/9}
+              maxHeight={220}
+            />
+          </div>
           <div style={{ marginTop: '8px' }}>
             <Text type="secondary">
               {imageFile?.name} ({(imageFile?.size / 1024 / 1024).toFixed(2)} MB)
@@ -1172,6 +1219,17 @@ const EventCreation = () => {
         </div>
       </Card>
     );
+  };
+
+  const onCropComplete = async (blob) => {
+    // blob -> File para seguir flujo actual
+    const fileFromBlob = new File([blob], imageFile?.name || 'cropped.jpg', { type: blob.type || 'image/jpeg' });
+    setImageFile(fileFromBlob);
+    setIsCropOpen(false);
+    // Mostrar preview recortada
+    const reader = new FileReader();
+    reader.onload = (e) => setImagePreview(e.target.result);
+    reader.readAsDataURL(fileFromBlob);
   };
 
   return (
@@ -1495,6 +1553,13 @@ const EventCreation = () => {
                       </Button>
                     </Upload>
                     {renderImagePreview()}
+                    <ImageCropperModal
+                      open={isCropOpen}
+                      src={cropSrc}
+                      onCancel={() => setIsCropOpen(false)}
+                      onComplete={onCropComplete}
+                      aspect={16/9}
+                    />
                   </Form.Item>
                 </Col>
               </Row>
@@ -1718,6 +1783,23 @@ const EventCreation = () => {
             />
           </div>
         )}
+      </Modal>
+
+      <Modal
+        title="Conflicto de horarios"
+        open={showConflictModal}
+        onOk={() => setShowConflictModal(false)}
+        onCancel={() => setShowConflictModal(false)}
+        okText="Entendido"
+        cancelButtonProps={{ style: { display: 'none' } }}
+        width={500}
+      >
+        <div>
+          <p>Ya existe un evento en esta ubicación con menos de 24 horas de diferencia.</p>
+          <p style={{ marginTop: '12px', color: '#666' }}>
+            Por favor, selecciona una fecha diferente o una ubicación distinta.
+          </p>
+        </div>
       </Modal>
     </Layout>
   );

@@ -42,6 +42,11 @@ const Profile = () => {
   // Estados para el modal QR
   const [showQRModal, setShowQRModal] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
+  
+  // Estados para el modal de cancelación
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [ticketToCancel, setTicketToCancel] = useState(null);
+  const [cancelling, setCancelling] = useState(false);
 
   const token = localStorage.getItem("token");
   const username = localStorage.getItem("username");
@@ -142,33 +147,45 @@ const Profile = () => {
     setShowQRModal(true);
   };
 
-  const handleCancelTicket = (ticketId) => {
-    confirm({
-      title: '¿Estás seguro de que quieres cancelar esta entrada?',
-      icon: <ExclamationCircleOutlined />,
-      content: 'Esta acción no se puede deshacer. Se procesará la devolución según nuestras políticas.',
-      okText: 'Sí, cancelar',
-      okType: 'danger',
-      cancelText: 'No',
-      onOk: async () => {
-        try {
-          await axios.delete(`${gatewayUrl}/tickets/${ticketId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          
-          // Recargar tickets
-          if (user?._id) {
-            await loadUserTickets(user._id);
-          }
-        } catch (err) {
-          console.error("Error al cancelar ticket:", err);
-          Modal.error({
-            title: 'Error',
-            content: 'No se pudo cancelar la entrada. Inténtalo de nuevo.',
-          });
-        }
-      },
-    });
+  const handleCancelTicket = (ticket) => {
+    setTicketToCancel(ticket);
+    setShowCancelModal(true);
+  };
+
+  const handleConfirmCancelTicket = async () => {
+    if (!ticketToCancel) return;
+    
+    setCancelling(true);
+    
+    try {
+      await axios.delete(`${gatewayUrl}/tickets/${ticketToCancel._id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      
+      // Recargar tickets
+      if (user?._id) {
+        await loadUserTickets(user._id);
+      }
+      
+      // Cerrar modal y mostrar mensaje de éxito
+      setShowCancelModal(false);
+      setTicketToCancel(null);
+      
+      Modal.success({
+        title: 'Entrada cancelada',
+        content: 'La entrada ha sido cancelada exitosamente. Se procesará la devolución según nuestras políticas.',
+        okText: 'Entendido'
+      });
+    } catch (err) {
+      console.error("Error al cancelar ticket:", err);
+      Modal.error({
+        title: 'Error al cancelar',
+        content: 'No se pudo cancelar la entrada. Por favor, inténtalo de nuevo o contacta con soporte.',
+        okText: 'Entendido'
+      });
+    } finally {
+      setCancelling(false);
+    }
   };
 
   const getTicketStatusTag = (status) => {
@@ -311,7 +328,7 @@ const Profile = () => {
                   danger 
                   size="small"
                   icon={<DeleteOutlined />}
-                  onClick={() => handleCancelTicket(ticket._id)}
+                  onClick={() => handleCancelTicket(ticket)}
                 >
                   Cancelar
                 </Button>
@@ -722,7 +739,7 @@ const Profile = () => {
                     {events[selectedTicket.eventId]?.name || "Evento"}
                   </Text>
                   <Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
-                    {selectedTicket.ticketType} • {selectedTicket.quantity} entrada{selectedTicket.quantity > 1 ? 's' : ''}
+                    {selectedTicket.quantity} entrada{selectedTicket.quantity > 1 ? 's' : ''}
                   </Text>
                 </div>
 
@@ -760,6 +777,66 @@ const Profile = () => {
                   showIcon
                   style={{ textAlign: 'left' }}
                 />
+              </div>
+            )}
+          </Modal>
+
+          {/* Modal de confirmación de cancelación */}
+          <Modal
+            title="Confirmar cancelación de entrada"
+            open={showCancelModal}
+            onOk={handleConfirmCancelTicket}
+            onCancel={() => setShowCancelModal(false)}
+            confirmLoading={cancelling}
+            okText="Sí, cancelar"
+            cancelText="No"
+            okButtonProps={{
+              style: {
+                backgroundColor: COLORS?.status?.error || "#ff4d4f",
+                borderColor: COLORS?.status?.error || "#ff4d4f"
+              }
+            }}
+            width={600}
+          >
+            {ticketToCancel && (
+              <div>
+                <Text>¿Estás seguro de que quieres cancelar esta entrada?</Text>
+                <Divider />
+                
+                <div style={{ marginBottom: '12px' }}>
+                  <Text strong>Evento:</Text> {events[ticketToCancel.eventId]?.name || "Evento no disponible"}
+                </div>
+                
+                <div style={{ marginBottom: '12px' }}>
+                  <Text strong>ID de entrada:</Text> {formatTicketId(ticketToCancel._id)}
+                </div>
+                
+                <div style={{ marginBottom: '12px' }}>
+                  <Text strong>Cantidad:</Text> {ticketToCancel.quantity} entrada{ticketToCancel.quantity > 1 ? 's' : ''}
+                </div>
+                
+                <div style={{ marginBottom: '12px' }}>
+                  <Text strong>Importe a devolver:</Text> 
+                  <Text style={{ color: COLORS?.primary?.main || "#1890ff", fontWeight: '600', marginLeft: '8px' }}>
+                    {(ticketToCancel.price * ticketToCancel.quantity).toFixed(2)}€
+                  </Text>
+                </div>
+                
+                <div style={{ 
+                  padding: '12px', 
+                  backgroundColor: '#fff2f0', 
+                  border: '1px solid #ffccc7',
+                  borderRadius: '6px',
+                  marginTop: '16px'
+                }}>
+                  <Text style={{ 
+                    color: COLORS?.status?.error || "#ff4d4f", 
+                    fontSize: '14px',
+                    fontWeight: '500'
+                  }}>
+                    ⚠️ Esta acción no se puede deshacer. Se procesará la devolución según nuestras políticas de cancelación.
+                  </Text>
+                </div>
               </div>
             )}
           </Modal>

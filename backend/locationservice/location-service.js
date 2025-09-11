@@ -58,7 +58,7 @@ seedDatabases();
 
 app.post("/location", async (req, res) => {
   try {
-    const { name, category, address, seatMapId, capacity, seatingMap } = req.body;
+    const { name, category, address, seatMapId, capacity } = req.body;
 
     if (!name || !category || !address) {
       return res.status(400).json({ error: "Missing required fields" });
@@ -73,7 +73,6 @@ app.post("/location", async (req, res) => {
       locationDoc.address = address;
       locationDoc.seatMapId = seatMapId;
       locationDoc.capacity = capacity;
-      if (seatingMap) locationDoc.seatingMap = seatingMap;
 
       await locationDoc.save();
       return res.status(200).json(locationDoc);
@@ -85,8 +84,7 @@ app.post("/location", async (req, res) => {
         category,
         address,
         ...(seatMapId && { seatMapId }),
-        ...(capacity && { capacity }),
-        seatingMap: seatingMap || []
+        ...(capacity && { capacity })
       });
       await locationDoc.save();
       res.status(201).json(locationDoc);
@@ -121,6 +119,91 @@ app.get("/locations/:locationId", async (req, res) => {
 // ============= ENDPOINTS SEATMAPS =============
 
 // Obtener todos los SeatMaps (con filtros opcionales)
+// Helpers de transformación para compatibilidad API
+const deriveRowsCount = (section) => Array.isArray(section.rows) ? section.rows.length : (section.rows || 0);
+const deriveSeatsPerRow = (section) => {
+  if (Array.isArray(section.rows) && section.rows.length > 0) {
+    return Math.max(...section.rows.map(r => (r.seats?.length || 0)));
+  }
+  return section.seatsPerRow || 0;
+};
+const computeSectionCapacity = (section) => {
+  if (section.hasNumberedSeats === false) return section.totalCapacity || 0;
+  if (Array.isArray(section.rows)) {
+    return section.rows.reduce((sum, r) => sum + (r.seats?.length || 0), 0);
+  }
+  const rows = section.rows || 0;
+  const seatsPerRow = section.seatsPerRow || 0;
+  return rows * seatsPerRow;
+};
+const mapSeatMapForApi = (seatMap) => {
+  const obj = seatMap.toObject ? seatMap.toObject() : seatMap;
+  const sections = (obj.sections || []).map(s => ({
+    id: s.id,
+    name: s.name,
+    rows: deriveRowsCount(s),
+    seatsPerRow: deriveSeatsPerRow(s),
+    defaultPrice: s.defaultPrice ?? 0,
+    price: s.defaultPrice ?? 0,
+    rowPricing: s.rowPricing || [],
+    color: s.color,
+    position: s.position,
+    order: s.order || 0,
+    hasNumberedSeats: s.hasNumberedSeats !== false,
+    totalCapacity: s.hasNumberedSeats === false ? (s.totalCapacity || 0) : computeSectionCapacity(s)
+  }));
+  return {
+    id: obj.id,
+    name: obj.name,
+    type: obj.type,
+    subtype: obj.subtype,
+    sections,
+    config: obj.config,
+    isActive: obj.isActive,
+    compatibleEventTypes: obj.compatibleEventTypes,
+    description: obj.description
+  };
+};
+
+// ===== Normalización de entrada (aceptar formato legado y nuevo) =====
+const buildRows = (rowsCount, seatsPerRow) => {
+  const safeRows = Number.isFinite(rowsCount) && rowsCount > 0 ? rowsCount : 0;
+  const safeSeats = Number.isFinite(seatsPerRow) && seatsPerRow > 0 ? seatsPerRow : 0;
+  return Array.from({ length: safeRows }).map((_, rowIdx) => ({
+    index: rowIdx + 1,
+    label: String(rowIdx + 1),
+    seats: Array.from({ length: safeSeats }).map((_, seatIdx) => ({
+      number: seatIdx + 1,
+      label: String(seatIdx + 1)
+    }))
+  }));
+};
+
+const normalizeSection = (section) => {
+  const { rows, seatsPerRow, price, ...rest } = section || {};
+  const defaultPrice = section && section.defaultPrice !== undefined ? section.defaultPrice : 0;
+
+  if (section && section.hasNumberedSeats === false) {
+    return {
+      ...rest,
+      defaultPrice,
+      rows: [],
+      rowPricing: Array.isArray(section.rowPricing) ? section.rowPricing : [],
+      totalCapacity: section.totalCapacity || 0
+    };
+  }
+
+  // si ya viene como array de filas, respetarlo
+  const normalizedRows = Array.isArray(rows) ? rows : buildRows(rows, seatsPerRow);
+  return {
+    ...rest,
+    defaultPrice,
+    rows: normalizedRows,
+    rowPricing: Array.isArray(section?.rowPricing) ? section.rowPricing : [],
+    totalCapacity: undefined
+  };
+};
+
 app.get('/seatmaps', async (req, res) => {
   try {
     const { type, isActive } = req.query;
@@ -133,7 +216,8 @@ app.get('/seatmaps', async (req, res) => {
       .sort({ type: 1, name: 1 })
       .select('-__v');
 
-    res.status(200).json(seatMaps);
+    const transformed = seatMaps.map(mapSeatMapForApi);
+    res.status(200).json(transformed);
   } catch (error) {
     console.error('Error fetching seatmaps:', error);
     res.status(500).json({ 
@@ -157,7 +241,7 @@ app.get('/seatmaps/:id', async (req, res) => {
       });
     }
 
-    res.status(200).json(seatMap);
+    res.status(200).json(mapSeatMapForApi(seatMap));
   } catch (error) {
     console.error('Error fetching seatmap:', error);
     res.status(500).json({ 
@@ -181,10 +265,17 @@ app.post('/seatmaps', async (req, res) => {
       });
     }
 
-    const newSeatMap = new SeatMapModel(seatMapData);
+    // Normalizar secciones para compatibilidad con esquema (rows como array de objetos)
+    const prepared = {
+      ...seatMapData,
+      sections: (seatMapData.sections || []).map(normalizeSection),
+      compatibleEventTypes: seatMapData.compatibleEventTypes || [seatMapData.type]
+    };
+
+    const newSeatMap = new SeatMapModel(prepared);
     await newSeatMap.save();
-    
-    res.status(201).json(newSeatMap);
+
+    res.status(201).json(mapSeatMapForApi(newSeatMap));
   } catch (error) {
     console.error('Error creating seatmap:', error);
     res.status(500).json({ 
@@ -200,9 +291,14 @@ app.put('/seatmaps/:id', async (req, res) => {
     const { id } = req.params;
     const updateData = req.body;
     
+    const preparedUpdate = {
+      ...updateData,
+      ...(updateData.sections ? { sections: updateData.sections.map(normalizeSection) } : {})
+    };
+
     const seatMap = await SeatMapModel.findOneAndUpdate(
       { id }, 
-      updateData, 
+      preparedUpdate, 
       { new: true, runValidators: true }
     );
     
@@ -213,7 +309,7 @@ app.put('/seatmaps/:id', async (req, res) => {
       });
     }
 
-    res.status(200).json(seatMap);
+    res.status(200).json(mapSeatMapForApi(seatMap));
   } catch (error) {
     console.error('Error updating seatmap:', error);
     res.status(500).json({ 
@@ -255,10 +351,10 @@ app.get('/seatmaps/type/:type', async (req, res) => {
   try {
     const { type } = req.params;
     
-    if (!['football', 'cinema', 'theater'].includes(type)) {
+    if (!['football', 'cinema', 'theater', 'concert'].includes(type)) {
       return res.status(400).json({ 
         error: 'Invalid type',
-        message: 'Type must be one of: football, cinema, theater' 
+        message: 'Type must be one of: football, cinema, theater, concert' 
       });
     }
     
@@ -266,7 +362,8 @@ app.get('/seatmaps/type/:type', async (req, res) => {
       .sort({ name: 1 })
       .select('-__v');
 
-    res.status(200).json(seatMaps);
+    const transformed = seatMaps.map(mapSeatMapForApi);
+    res.status(200).json(transformed);
   } catch (error) {
     console.error('Error fetching seatmaps by type:', error);
     res.status(500).json({ 
@@ -306,19 +403,20 @@ app.get('/location/:locationId/sections', async (req, res) => {
       });
     }
 
-    // Transformar las secciones del seatmap al formato esperado por el frontend
+    // Transformar las secciones del seatmap al formato esperado por el frontend (compat)
     const sections = seatMap.sections.map(section => ({
       sectionId: section.id,
       sectionName: section.name,
-      capacity: section.hasNumberedSeats ? section.rows * section.seatsPerRow : section.totalCapacity,
-      rows: section.rows,
-      seatsPerRow: section.seatsPerRow,
-      defaultPrice: section.defaultPrice, // Precio por defecto para filas no configuradas
-      rowPricing: section.rowPricing || [], // Precios específicos por fila
+      capacity: computeSectionCapacity(section),
+      rows: deriveRowsCount(section),
+      seatsPerRow: deriveSeatsPerRow(section),
+      defaultPrice: section.defaultPrice,
+      price: section.defaultPrice ?? 0,
+      rowPricing: section.rowPricing || [],
       color: section.color,
       position: section.position,
-      hasNumberedSeats: section.hasNumberedSeats,
-      totalCapacity: section.totalCapacity,
+      hasNumberedSeats: section.hasNumberedSeats !== false,
+      totalCapacity: section.hasNumberedSeats === false ? (section.totalCapacity || 0) : computeSectionCapacity(section),
       order: section.order || 0
     }));
 
