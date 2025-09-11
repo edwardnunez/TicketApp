@@ -956,6 +956,147 @@ app.delete("/events/:eventId/cancel", async (req, res) => {
   }
 });
 
+// Ruta para obtener estadísticas de eventos con ventas de tickets
+app.get("/events/admin/statistics", async (req, res) => {
+  try {
+    const { eventType, eventState, dateFrom, dateTo, search } = req.query;
+
+    // Construir filtros para eventos
+    let eventFilters = {};
+    
+    if (eventType && eventType !== 'all') {
+      eventFilters.type = eventType;
+    }
+    
+    if (eventState && eventState !== 'all') {
+      eventFilters.state = eventState;
+    }
+    
+    if (dateFrom || dateTo) {
+      eventFilters.date = {};
+      if (dateFrom) {
+        eventFilters.date.$gte = new Date(dateFrom);
+      }
+      if (dateTo) {
+        eventFilters.date.$lte = new Date(dateTo);
+      }
+    }
+
+    if (search && search.trim()) {
+      eventFilters.name = { $regex: search.trim(), $options: 'i' };
+    }
+
+    // Obtener todos los eventos con filtros
+    const events = await EventModel.find(eventFilters)
+      .sort({ date: -1 })
+      .lean();
+
+    // Obtener estadísticas de tickets para cada evento
+    const eventsWithStats = await Promise.all(
+      events.map(async (event) => {
+        try {
+          // Obtener estadísticas de tickets del evento
+          const ticketStatsResponse = await axios.get(`${ticketServiceUrl}/tickets/event/${event._id}`);
+          const ticketStats = ticketStatsResponse.data.statistics || [];
+
+          // Calcular estadísticas consolidadas
+          const stats = {
+            totalTickets: 0,
+            soldTickets: 0,
+            pendingTickets: 0,
+            cancelledTickets: 0,
+            totalRevenue: 0,
+            soldRevenue: 0
+          };
+
+          ticketStats.forEach(stat => {
+            stats.totalTickets += stat.totalTickets || 0;
+            stats.totalRevenue += stat.totalRevenue || 0;
+            
+            if (stat._id === 'paid') {
+              stats.soldTickets += stat.totalTickets || 0;
+              stats.soldRevenue += stat.totalRevenue || 0;
+            } else if (stat._id === 'pending') {
+              stats.pendingTickets += stat.totalTickets || 0;
+            } else if (stat._id === 'cancelled') {
+              stats.cancelledTickets += stat.totalTickets || 0;
+            }
+          });
+
+          // Calcular porcentaje de ventas
+          const salesPercentage = event.capacity > 0 
+            ? Math.round((stats.soldTickets / event.capacity) * 100) 
+            : 0;
+
+          // Obtener información de ubicación
+          let locationInfo = null;
+          try {
+            const locationResponse = await axios.get(`${locationServiceUrl}/locations/${event.location}`);
+            locationInfo = locationResponse.data;
+          } catch (error) {
+            console.warn(`No se pudo obtener información de ubicación para evento ${event._id}:`, error.message);
+          }
+
+          return {
+            ...event,
+            location: locationInfo,
+            ticketStats: stats,
+            salesPercentage,
+            availableTickets: event.capacity - stats.soldTickets - stats.pendingTickets
+          };
+        } catch (error) {
+          console.warn(`Error obteniendo estadísticas para evento ${event._id}:`, error.message);
+          return {
+            ...event,
+            location: null,
+            ticketStats: {
+              totalTickets: 0,
+              soldTickets: 0,
+              pendingTickets: 0,
+              cancelledTickets: 0,
+              totalRevenue: 0,
+              soldRevenue: 0
+            },
+            salesPercentage: 0,
+            availableTickets: event.capacity
+          };
+        }
+      })
+    );
+
+    // Estadísticas generales
+    const generalStats = {
+      totalEvents: eventsWithStats.length,
+      totalCapacity: eventsWithStats.reduce((sum, event) => sum + event.capacity, 0),
+      totalSoldTickets: eventsWithStats.reduce((sum, event) => sum + event.ticketStats.soldTickets, 0),
+      totalRevenue: eventsWithStats.reduce((sum, event) => sum + event.ticketStats.soldRevenue, 0),
+      averageSalesPercentage: eventsWithStats.length > 0 
+        ? Math.round(eventsWithStats.reduce((sum, event) => sum + event.salesPercentage, 0) / eventsWithStats.length)
+        : 0
+    };
+
+    res.json({
+      success: true,
+      events: eventsWithStats,
+      generalStats,
+      filters: {
+        eventType,
+        eventState,
+        dateFrom,
+        dateTo,
+        search
+      }
+    });
+
+  } catch (error) {
+    console.error('Error obteniendo estadísticas de eventos:', error);
+    res.status(500).json({
+      error: "Error interno del servidor",
+      message: "No se pudieron obtener las estadísticas de eventos"
+    });
+  }
+});
+
 // Ruta para eliminar un evento (cualquier admin)
 app.delete("/events/:eventId", async (req, res) => {
   try {
