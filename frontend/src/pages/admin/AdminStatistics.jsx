@@ -223,12 +223,12 @@ const AdminStatistics = () => {
                 color: COLORS?.primary?.main || '#1890ff'
               }}
             >
-              Volver al Dashboard
+              Volver al dashboard
             </Button>
           </div>
           <Title level={2} style={{ margin: 0, color: COLORS?.primary?.main || '#1890ff' }}>
             <BarChartOutlined style={{ marginRight: '8px' }} />
-            Estadísticas de Ventas
+            Estadísticas de ventas
           </Title>
           <Text type="secondary">
             Análisis detallado de tickets vendidos y recaudaciones
@@ -243,7 +243,7 @@ const AdminStatistics = () => {
           </Title>
           <Row gutter={[16, 16]} align="middle">
             <Col xs={24} sm={12} md={6}>
-              <Text strong>Buscar Evento:</Text>
+              <Text strong>Buscar evento:</Text>
               <Input
                 placeholder="Buscar por nombre..."
                 prefix={<SearchOutlined />}
@@ -254,7 +254,7 @@ const AdminStatistics = () => {
               />
             </Col>
             <Col xs={24} sm={12} md={6}>
-              <Text strong>Tipo de Evento:</Text>
+              <Text strong>Tipo de evento:</Text>
               <Select
                 value={filters.eventType}
                 onChange={handleEventTypeChange}
@@ -270,7 +270,7 @@ const AdminStatistics = () => {
               </Select>
             </Col>
             <Col xs={24} sm={12} md={6}>
-              <Text strong>Estado del Evento:</Text>
+              <Text strong>Estado del evento:</Text>
               <Select
                 value={filters.eventState}
                 onChange={handleEventStateChange}
@@ -330,7 +330,7 @@ const AdminStatistics = () => {
           <Col xs={24} sm={12} md={6}>
             <Card>
               <Statistic
-                title="Recaudación Total"
+                title="Recaudación total"
                 value={generalStats?.totalRevenue || 0}
                 formatter={(value) => formatCurrency(value)}
                 prefix={<DollarOutlined />}
@@ -341,7 +341,7 @@ const AdminStatistics = () => {
           <Col xs={24} sm={12} md={6}>
             <Card>
               <Statistic
-                title="Promedio de Ventas"
+                title="Promedio de ventas"
                 value={generalStats?.averageSalesPercentage || 0}
                 suffix="%"
                 prefix={<PercentageOutlined />}
@@ -355,7 +355,7 @@ const AdminStatistics = () => {
         <Card>
           <Title level={4} style={{ marginBottom: '16px' }}>
             <EyeOutlined style={{ marginRight: '8px' }} />
-            Lista de Eventos con Estadísticas de Ventas
+            Lista de eventos con estadísticas de ventas
           </Title>
           <Table
             dataSource={events || []}
@@ -417,7 +417,7 @@ const AdminStatistics = () => {
                 align: 'center',
               },
               {
-                title: 'Tickets Vendidos',
+                title: 'Tickets vendidos',
                 dataIndex: ['ticketStats', 'soldTickets'],
                 key: 'soldTickets',
                 render: (value) => (
@@ -429,7 +429,7 @@ const AdminStatistics = () => {
                 align: 'center',
               },
               {
-                title: 'Porcentaje de Ventas',
+                title: 'Porcentaje de ventas',
                 key: 'salesPercentage',
                 render: (_, record) => {
                   const percentage = record.salesPercentage || 0;
@@ -462,7 +462,7 @@ const AdminStatistics = () => {
                 align: 'right',
               },
               {
-                title: 'Tickets Disponibles',
+                title: 'Tickets disponibles',
                 key: 'availableTickets',
                 render: (_, record) => {
                   const available = record.availableTickets || 0;

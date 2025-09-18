@@ -88,9 +88,23 @@ const EventDetails = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Cálculo robusto de capacidad total del evento
+  const computeEventCapacity = (evt) => {
+    if (!evt) return 0;
+    // Si viene información detallada por secciones, sumar capacidades
+    if (evt.usesSectionPricing && Array.isArray(evt.sectionPricingInfo) && evt.sectionPricingInfo.length > 0) {
+      return evt.sectionPricingInfo.reduce((sum, s) => sum + (Number(s.capacity) || 0), 0);
+    }
+    // Fallbacks
+    if (typeof evt.capacity === 'number' && evt.capacity > 0) return evt.capacity;
+    if (evt.location && typeof evt.location.capacity === 'number') return evt.location.capacity || 0;
+    return 0;
+  };
+
   // Función para obtener disponibilidad de tickets
-  const fetchTicketAvailability = async () => {
+  const fetchTicketAvailability = async (evtParam) => {
     if (!id) return;
+    const currentEvent = evtParam || event;
     
     setAvailabilityLoading(true);
     try {
@@ -109,7 +123,7 @@ const EventDetails = () => {
         }
       });
 
-      const totalCapacity = event?.capacity || 0;
+      const totalCapacity = computeEventCapacity(currentEvent);
       const availableTickets = Math.max(0, totalCapacity - soldTickets - pendingTickets);
       const isSoldOut = availableTickets <= 0;
       const salesPercentage = totalCapacity > 0 ? Math.round(((soldTickets + pendingTickets) / totalCapacity) * 100) : 0;
@@ -152,8 +166,8 @@ const EventDetails = () => {
         setEvent(eventData);
         setLoading(false);
         
-        // Cargar disponibilidad de tickets después de cargar el evento
-        fetchTicketAvailability();
+        // Cargar disponibilidad usando el evento recién obtenido para evitar capacidad 0
+        fetchTicketAvailability(eventData);
       })
       .catch((err) => {
         console.error("Error loading event details:", err);
@@ -172,6 +186,13 @@ const EventDetails = () => {
     }, 30000); // Actualizar cada 30 segundos
 
     return () => clearInterval(interval);
+  }, [event]);
+
+  // Refrescar disponibilidad inmediatamente cuando el evento cambia
+  useEffect(() => {
+    if (event) {
+      fetchTicketAvailability();
+    }
   }, [event]);
 
   const mapEventTypeToCategory = (type) => {
