@@ -39,7 +39,7 @@ const SelectionTopBar = ({ selectedSeats, maxSeats, formatPrice, event, showLege
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
         <Title level={4} style={{ margin: 0, color: COLORS.neutral.darker }}>
-          Selección de Asientos
+          Selección de asientos
         </Title>
         <Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
           Selecciona hasta {maxSeats} asiento(s) para continuar
