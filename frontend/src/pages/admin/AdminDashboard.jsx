@@ -536,19 +536,19 @@ const AdminDashboard = () => {
   // Dashboard stats actualizadas con los eventos filtrados
   const stats = [
     { 
-      title: 'Total de Eventos', 
+      title: 'Total de eventos', 
       value: filteredEvents.length, 
       icon: <AppstoreOutlined />, 
       color: COLORS?.primary?.main || "#1890ff" 
     },
     { 
-      title: 'Eventos Activos', 
+      title: 'Eventos activos', 
       value: filteredEvents.filter(e => e.state === 'activo').length, 
       icon: <CheckCircleOutlined />, 
       color: COLORS?.status?.success || "#52c41a"
     },
     { 
-      title: 'Próximos Eventos', 
+      title: 'Próximos eventos', 
       value: filteredEvents.filter(e => e.state === 'proximo').length, 
       icon: <ClockCircleOutlined />, 
       color: COLORS?.status?.info || "#1890ff"
@@ -599,7 +599,7 @@ const AdminDashboard = () => {
                 }}
               >
                 <DashboardOutlined style={{ marginRight: '12px', color: COLORS?.primary?.main || "#1890ff" }} />
-                Panel de Administración
+                Panel de administración
               </Title>
             </Col>
             <Col>
@@ -822,7 +822,7 @@ const AdminDashboard = () => {
                   marginRight: '8px', 
                   fontSize: '20px' 
                 }} />
-                <span style={{ fontSize: '18px', fontWeight: '600' }}>Lista de Eventos</span>
+                <span style={{ fontSize: '18px', fontWeight: '600' }}>Lista de eventos</span>
               </div>
             }
             style={{ 

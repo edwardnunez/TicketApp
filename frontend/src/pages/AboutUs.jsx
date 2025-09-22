@@ -133,7 +133,7 @@ const AboutUs = () => {
         }}>
           <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
             <Title level={isMobile ? 2 : 1} style={{ color: "#fff", marginBottom: isMobile ? "8px" : "16px" }}>
-              Nuestro Equipo
+              Nuestro equipo
             </Title>
             <Paragraph style={{ 
               fontSize: isMobile ? "15px" : "18px", 
@@ -167,7 +167,7 @@ const AboutUs = () => {
                   color: COLORS?.neutral?.dark || "#262626",
                   marginTop: 0
                 }}>
-                  Acerca de Nosotros
+                  Acerca de nosotros
                 </Title>
                 <Paragraph style={{ 
                   color: COLORS?.neutral?.grey4 || "#8c8c8c",
