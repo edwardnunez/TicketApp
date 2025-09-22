@@ -328,7 +328,7 @@ const EventSeatMapEditor = () => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <Title level={2} style={{ margin: 0, color: COLORS?.neutral?.darker }}>
-                {isConcertVenue() ? 'Configurar Concierto' : 'Configurar Mapa de Asientos'}
+                {isConcertVenue() ? 'Configurar concierto' : 'Configurar mapa de asientos'}
               </Title>
               <Text style={{ color: COLORS?.neutral?.grey4 }}>
                 Evento: {eventData.name}

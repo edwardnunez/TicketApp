@@ -299,7 +299,7 @@ const AdminStatistics = () => {
                 onClick={clearFilters}
                 style={{ marginTop: '8px' }}
               >
-                Limpiar Filtros
+                Limpiar filtros
               </Button>
             </Col>
           </Row>
@@ -310,7 +310,7 @@ const AdminStatistics = () => {
           <Col xs={24} sm={12} md={6}>
             <Card>
               <Statistic
-                title="Total de Eventos"
+                title="Total de eventos"
                 value={generalStats?.totalEvents || 0}
                 prefix={<CalendarOutlined />}
                 valueStyle={{ color: COLORS?.primary?.main || '#1890ff' }}
@@ -320,7 +320,7 @@ const AdminStatistics = () => {
           <Col xs={24} sm={12} md={6}>
             <Card>
               <Statistic
-                title="Tickets Vendidos"
+                title="Tickets vendidos"
                 value={generalStats?.totalSoldTickets || 0}
                 prefix={<ShoppingCartOutlined />}
                 valueStyle={{ color: COLORS?.status?.success || '#52c41a' }}
