@@ -170,9 +170,9 @@ const ProfessionalAdminSeatMapRenderer = ({
               onClick={() => handleSectionClick(section.id)}
               style={{
                 borderColor: blockedSections.includes(section.id) ? '#ff4d4f' : section.color,
-                color: blockedSections.includes(section.id) ? '#fff' : section.color,
+                color: blockedSections.includes(section.id) ? '#fff' : '#fff',
                 ...(blockedSections.includes(section.id) ? {} : {
-                  backgroundColor: section.color + '10'
+                  backgroundColor: section.color
                 })
               }}
             >
@@ -182,6 +182,67 @@ const ProfessionalAdminSeatMapRenderer = ({
           ))}
         </Space>
       </div>
+
+      {/* Leyenda */}
+      {showLegend && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '140px',
+            right: '16px',
+            zIndex: 80,
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(10px)',
+            padding: '12px',
+            borderRadius: '8px',
+            border: `1px solid ${COLORS.neutral.grey2}`,
+            minWidth: '200px',
+            maxWidth: '250px'
+          }}
+        >
+          <Text style={{ fontWeight: 'bold', marginBottom: '8px', display: 'block' }}>
+            Leyenda
+          </Text>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ 
+                width: '16px', 
+                height: '16px', 
+                backgroundColor: COLORS.neutral.grey3,
+                borderRadius: '4px'
+              }} />
+              <Text style={{ fontSize: '12px' }}>Disponible</Text>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ 
+                width: '16px', 
+                height: '16px', 
+                backgroundColor: '#ff7875',
+                borderRadius: '4px'
+              }} />
+              <Text style={{ fontSize: '12px' }}>Asiento bloqueado</Text>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ 
+                width: '16px', 
+                height: '16px', 
+                backgroundColor: '#ff4d4f',
+                borderRadius: '4px'
+              }} />
+              <Text style={{ fontSize: '12px' }}>Sección bloqueada</Text>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ 
+                width: '16px', 
+                height: '16px', 
+                backgroundColor: COLORS.primary.main,
+                borderRadius: '4px'
+              }} />
+              <Text style={{ fontSize: '12px' }}>Seleccionado</Text>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Contenedor principal del mapa - Usar exactamente el mismo renderizador que los compradores */}
       <div

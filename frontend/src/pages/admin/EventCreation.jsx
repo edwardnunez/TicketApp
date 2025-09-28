@@ -363,8 +363,10 @@ const EventCreation = () => {
       if (seatMap.sections && seatMap.sections.length > 0) {
         const totalCapacity = seatMap.sections.reduce((total, section) => {
           if (section.hasNumberedSeats === false) {
-            return total + (section.capacity || 0);
+            // Para secciones sin asientos numerados (como pistas), usar totalCapacity
+            return total + (section.totalCapacity || section.capacity || 0);
           } else {
+            // Para secciones con asientos numerados, calcular filas * asientos por fila
             return total + (section.rows * section.seatsPerRow);
           }
         }, 0);

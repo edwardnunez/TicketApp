@@ -462,7 +462,7 @@ const EventSeatMapEditor = () => {
                   blockedSeats={blockedSeats}
                   blockedSections={blockedSections}
                   generalAdmissionCapacities={generalAdmissionCapacities}
-                  formatPrice={(price) => `$${price}`}
+                  formatPrice={(price) => `${price}€`}
                 />
               ) : (
                 <ProfessionalAdminSeatMapRenderer

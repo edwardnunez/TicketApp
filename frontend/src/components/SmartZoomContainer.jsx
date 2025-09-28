@@ -165,35 +165,55 @@ const SmartZoomContainer = ({
               <Tooltip title="Zoom In">
                 <Button
                   type="text"
-                  icon={<ZoomInOutlined />}
+                  icon={<ZoomInOutlined style={{ color: COLORS?.neutral?.darker || '#262626' }} />}
                   onClick={zoomIn}
                   disabled={scale >= maxScale}
                   size="small"
+                  style={{
+                    color: COLORS?.neutral?.darker || '#262626',
+                    border: 'none',
+                    boxShadow: 'none'
+                  }}
                 />
               </Tooltip>
               <Tooltip title="Zoom Out">
                 <Button
                   type="text"
-                  icon={<ZoomOutOutlined />}
+                  icon={<ZoomOutOutlined style={{ color: COLORS?.neutral?.darker || '#262626' }} />}
                   onClick={zoomOut}
                   disabled={scale <= minScale}
                   size="small"
+                  style={{
+                    color: COLORS?.neutral?.darker || '#262626',
+                    border: 'none',
+                    boxShadow: 'none'
+                  }}
                 />
               </Tooltip>
               <Tooltip title="Reset">
                 <Button
                   type="text"
-                  icon={<ReloadOutlined />}
+                  icon={<ReloadOutlined style={{ color: COLORS?.neutral?.darker || '#262626' }} />}
                   onClick={resetZoom}
                   size="small"
+                  style={{
+                    color: COLORS?.neutral?.darker || '#262626',
+                    border: 'none',
+                    boxShadow: 'none'
+                  }}
                 />
               </Tooltip>
               <Tooltip title="Fit to Screen">
                 <Button
                   type="text"
-                  icon={<FullscreenOutlined />}
+                  icon={<FullscreenOutlined style={{ color: COLORS?.neutral?.darker || '#262626' }} />}
                   onClick={fitToScreen}
                   size="small"
+                  style={{
+                    color: COLORS?.neutral?.darker || '#262626',
+                    border: 'none',
+                    boxShadow: 'none'
+                  }}
                 />
               </Tooltip>
             </Space>
