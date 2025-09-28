@@ -130,7 +130,7 @@ const ProfessionalSeatMapRenderer = ({
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [showLegend, setShowLegend] = useState(true);
+  const [showLegend, setShowLegend] = useState(false);
   const [hoveredSection, setHoveredSection] = useState(null);
   
   // Estados de accesibilidad
@@ -829,7 +829,7 @@ const ProfessionalSeatMapRenderer = ({
             left: 0,
             right: 0,
             bottom: 0,
-            overflow: 'visible', // Restored to 'visible' to prevent content cutoff
+            overflow: 'hidden', // Prevent zoom overflow while allowing content to scale
             cursor: isDragging ? 'grabbing' : 'grab'
           }}
           onWheel={handleWheel}

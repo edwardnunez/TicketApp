@@ -77,7 +77,7 @@ const EditableSeatRenderer = ({ seatMapData, onSeatMapUpdate, initialData = null
     message.success('Mapa de asientos guardado');
   };
 
-  const formatPrice = (price) => `$${price}`;
+  const formatPrice = (price) => `€${price}`;
 
   return (
     <div style={{ padding: '20px' }}>

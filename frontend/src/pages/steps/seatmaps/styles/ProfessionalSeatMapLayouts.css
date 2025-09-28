@@ -67,7 +67,7 @@
   background: linear-gradient(135deg, #1a4d1a 0%, #2d5a2d 50%, #1a4d1a 100%);
   border-radius: 16px;
   position: relative;
-  overflow: hidden; /* Prevent zoom overflow */
+  overflow: visible; /* Restored to 'visible' to prevent content cutoff */
 }
 
 .football-stadium-layout::before {
@@ -98,7 +98,7 @@
   justify-content: center;
   align-items: center;
   z-index: 1;
-  overflow: hidden; /* Prevent zoom overflow */
+  overflow: visible; /* Restored to 'visible' to prevent content cutoff */
   min-width: 0; /* Permitir que se contraiga si es necesario */
 }
 
@@ -108,7 +108,7 @@
   justify-content: center;
   align-items: center;
   z-index: 1;
-  overflow: hidden; /* Prevent zoom overflow */
+  overflow: visible; /* Restored to 'visible' to prevent content cutoff */
   min-width: 0; /* Permitir que se contraiga si es necesario */
 }
 
@@ -169,7 +169,7 @@
   background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
   border-radius: 16px;
   position: relative;
-  overflow: hidden; /* Prevent zoom overflow */
+  overflow: visible; /* Restored to 'visible' to prevent content cutoff */
 }
 
 /* Layout de venue de concierto tipo teatro */
@@ -183,7 +183,7 @@
   background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
   border-radius: 16px;
   position: relative;
-  overflow: hidden; /* Prevent zoom overflow */
+  overflow: visible; /* Restored to 'visible' to prevent content cutoff */
 }
 
 .concert-venue-layout::before {
@@ -310,7 +310,7 @@
   background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
   border-radius: 16px;
   position: relative;
-  overflow: hidden; /* Prevent zoom overflow */
+  overflow: visible; /* Restored to 'visible' to prevent content cutoff */
 }
 
 .cinema-layout::before {
@@ -387,7 +387,7 @@
   background: linear-gradient(135deg, #2c1810 0%, #3d2817 50%, #2c1810 100%);
   border-radius: 16px;
   position: relative;
-  overflow: hidden; /* Prevent zoom overflow */
+  overflow: visible; /* Restored to 'visible' to prevent content cutoff */
 }
 
 /* Secciones específicas de teatro */
@@ -458,7 +458,7 @@
   background: linear-gradient(135deg, #374151 0%, #4B5563 100%);
   border-radius: 16px;
   position: relative;
-  overflow: hidden; /* Prevent zoom overflow */
+  overflow: visible; /* Restored to 'visible' to prevent content cutoff */
 }
 
 .vip-container {

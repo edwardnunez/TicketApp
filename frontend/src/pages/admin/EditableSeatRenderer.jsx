@@ -65,9 +65,9 @@ const EditableSeatRenderer = ({
             onClick={() => onSectionToggle(section.id)}
             style={{
               borderColor: isSectionBlocked(section.id) ? '#ff4d4f' : section.color,
-              color: isSectionBlocked(section.id) ? '#fff' : section.color,
+              color: isSectionBlocked(section.id) ? '#fff' : '#fff',
               ...(isSectionBlocked(section.id) ? {} : {
-                backgroundColor: section.color + '10'
+                backgroundColor: section.color
               })
             }}
           >
@@ -123,7 +123,7 @@ const EditableSeatRenderer = ({
             zIndex: 1,
             borderRadius: 6
           }}>
-            <Text strong style={{ color: '#999', fontSize: 12 }}>SECCIÓN BLOQUEADA</Text>
+            <Text strong style={{ color: '#ff4d4f', fontSize: 12 }}>SECCIÓN BLOQUEADA</Text>
           </div>
         )}
         <EditableSeatGrid
@@ -318,7 +318,7 @@ const EditableSeatRenderer = ({
             {renderSectionHeader(vipSection)}
             {renderSectionCard(vipSection, {
               border: `2px solid ${isSectionBlocked(vipSection.id) ? '#ccc' : vipSection.color}`,
-              backgroundColor: isSectionBlocked(vipSection.id) ? '#f5f5f5' : vipSection.color + '20'
+              backgroundColor: isSectionBlocked(vipSection.id) ? '#f5f5f5' : vipSection.color
             })}
           </div>
         )}
@@ -624,7 +624,7 @@ const EditableSeatRenderer = ({
                   height: config?.stageHeight + 120 || 200,
                   border: `3px solid ${isSectionBlocked(pistaSection.id) ? '#ccc' : pistaSection.color}`,
                   borderRadius: '16px',
-                  backgroundColor: isSectionBlocked(pistaSection.id) ? '#f5f5f5' : pistaSection.color + '10',
+                  backgroundColor: isSectionBlocked(pistaSection.id) ? '#f5f5f5' : pistaSection.color,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -647,7 +647,7 @@ const EditableSeatRenderer = ({
                       borderRadius: '13px',
                       fontSize: '14px',
                       fontWeight: 'bold',
-                      color: '#999'
+                      color: '#ff4d4f'
                     }}>
                       PISTA BLOQUEADA
                     </div>
@@ -756,7 +756,7 @@ const EditableSeatRenderer = ({
             {renderSectionHeader(vipSection)}
             {renderSectionCard(vipSection, {
               border: `2px solid ${isSectionBlocked(vipSection.id) ? '#ccc' : vipSection.color}`,
-              backgroundColor: isSectionBlocked(vipSection.id) ? '#f5f5f5' : vipSection.color + '20',
+              backgroundColor: isSectionBlocked(vipSection.id) ? '#f5f5f5' : vipSection.color,
               boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
             })}
           </div>
@@ -806,7 +806,7 @@ const EditableSeatRenderer = ({
               <div key={section.id} style={{ marginBottom: '24px', position: 'relative' }}>
                 <div style={{
                   padding: '12px 16px',
-                  backgroundColor: sectionBlocked ? '#f5f5f5' : section.color + '20',
+                  backgroundColor: sectionBlocked ? '#f5f5f5' : section.color,
                   borderLeft: `4px solid ${sectionBlocked ? '#ccc' : section.color}`,
                   marginBottom: '12px',
                   borderRadius: '4px',
@@ -840,7 +840,7 @@ const EditableSeatRenderer = ({
                       zIndex: 1,
                       borderRadius: 6
                     }}>
-                      <Text strong style={{ color: '#999', fontSize: 14 }}>SECCIÓN BLOQUEADA</Text>
+                      <Text strong style={{ color: '#ff4d4f', fontSize: 14 }}>SECCIÓN BLOQUEADA</Text>
                     </div>
                   )}
                   <EditableSeatGrid
