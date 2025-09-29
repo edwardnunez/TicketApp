@@ -99,9 +99,9 @@
   align-items: center;
   z-index: 1;
   overflow: visible; /* Restored to 'visible' to prevent content cutoff */
-  min-width: 300px; /* Aumentar ancho mínimo para evitar corte de números */
-  max-width: 500px; /* Ancho máximo para controlar el tamaño */
-  padding: 0 20px; /* Padding interno para separar del borde */
+  min-width: 150px; /* Aumentado */
+  max-width: none; /* Sin límite máximo */
+  padding: 0 15px;
 }
 
 .tribuna-este {
@@ -111,9 +111,9 @@
   align-items: center;
   z-index: 1;
   overflow: visible; /* Restored to 'visible' to prevent content cutoff */
-  min-width: 300px; /* Aumentar ancho mínimo para evitar corte de números */
-  max-width: 500px; /* Ancho máximo para controlar el tamaño */
-  padding: 0 20px; /* Padding interno para separar del borde */
+  min-width: 150px; /* Aumentado */
+  max-width: none; /* Sin límite máximo */
+  padding: 0 15px;
 }
 
 .tribuna-sur {
@@ -171,12 +171,12 @@
     "pit pit pit"
     "south south south"
     "vip vip vip";
-  grid-template-columns: 4fr 1fr 4fr; /* Laterales mucho más anchos y escenario más estrecho */
+  grid-template-columns: 1fr 0.8fr 1fr; /* Cambiar a proporciones más balanceadas */
   grid-template-rows: auto 2fr auto auto auto;
-  gap: 45px; /* Aumentar separación entre secciones y escenario */
-  padding: 30px 60px; /* Aumentar padding horizontal para más ancho */
+  gap: 25px; /* Reducir separación para mejor balance */
+  padding: 30px 40px; /* Reducir padding horizontal */
   min-height: 130vh; /* Usar altura de viewport más grande */
-  max-width: 1500px; /* Ancho máximo más grande */
+  max-width: 1600px; /* Aumentar ancho máximo */
   width: 100%;
   margin: 0 auto; /* Centrar el layout */
   box-sizing: border-box;
@@ -189,18 +189,19 @@
 /* Estilos específicos para secciones laterales en conciertos */
 .concert-stadium-layout .tribuna-oeste,
 .concert-stadium-layout .tribuna-este {
-  min-width: 350px; /* Ancho mínimo mayor para conciertos */
-  max-width: 600px; /* Ancho máximo mayor para conciertos */
-  padding: 0 25px; /* Más padding interno */
-  margin: 0 10px; /* Margen adicional para separación del escenario */
+  min-width: 200px; /* Aumentado de 350px */
+  max-width: none; /* Eliminar restricción de max-width */
+  padding: 0 15px; /* Reducir padding interno */
+  margin: 0; /* Eliminar margen */
+  overflow: visible; /* Asegurar que nada se corte */
 }
 
 /* Asegurar que las secciones laterales tengan suficiente espacio para los números */
 .concert-stadium-layout .tribuna-oeste .professional-section,
 .concert-stadium-layout .tribuna-este .professional-section {
-  min-width: 300px; /* Ancho mínimo para el contenido de la sección */
-  width: 100%;
-  max-width: 100%;
+  min-width: 200px; /* Aumentado de 300px */
+  max-width: none; /* Eliminar restricción de max-width */
+  overflow: visible; /* Asegurar que nada se corte */
 }
 
 /* Layout de venue de concierto tipo teatro */
@@ -298,7 +299,9 @@
 
 .side-section .seats-container {
   /* transform: skewY(-2deg); */
-  max-width: 200px;
+  max-width: none; /* Eliminar restricción de max-width */
+  min-width: 350px; /* Aumentar ancho mínimo */
+  overflow: visible; /* Asegurar que nada se corte */
 }
 
 .pit-section .seats-container {

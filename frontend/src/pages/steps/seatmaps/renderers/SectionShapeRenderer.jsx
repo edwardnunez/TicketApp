@@ -123,7 +123,8 @@ const SectionShapeRenderer = ({
         boxShadow: `0 4px 12px rgba(0,0,0,0.08)`,
         // transform: 'skewY(-2deg)',
         marginBottom: '6px',
-        maxWidth: isMobile ? '150px' : '200px'
+        maxWidth: isMobile ? '300px' : '350px',
+        minWidth: isMobile ? '150px' : '200px'
       }}
     >
       {children}
