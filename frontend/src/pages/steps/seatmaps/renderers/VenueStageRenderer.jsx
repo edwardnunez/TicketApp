@@ -105,10 +105,10 @@ const VenueStageRenderer = ({ type, config, venueColors }) => {
     <div
       className="concert-stage"
       style={{
-        width: config?.stageWidth || 600,
-        height: config?.stageHeight || 150,
+        width: config?.stageWidth || 300,
+        height: config?.stageHeight || 300,
         background: COLORS.gradients.stage,
-        borderRadius: '20px 20px 8px 8px',
+        borderRadius: '20px',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',

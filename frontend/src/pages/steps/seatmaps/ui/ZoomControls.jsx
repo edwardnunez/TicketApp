@@ -119,18 +119,12 @@ const ZoomControls = ({
               }}
               onMouseEnter={(e) => {
                 if (!control.disabled) {
-                  e.target.style.backgroundColor = COLORS.primary.main;
-                  e.target.style.color = 'white';
                   e.target.style.borderColor = COLORS.primary.main;
-                  e.target.style.transform = 'scale(1.05)';
                 }
               }}
               onMouseLeave={(e) => {
                 if (!control.disabled) {
-                  e.target.style.backgroundColor = 'white';
-                  e.target.style.color = COLORS.neutral.grey700;
                   e.target.style.borderColor = '#E5E7EB';
-                  e.target.style.transform = 'scale(1)';
                 }
               }}
             />

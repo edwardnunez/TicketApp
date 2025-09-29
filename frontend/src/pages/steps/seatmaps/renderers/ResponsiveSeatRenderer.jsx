@@ -147,7 +147,7 @@ const ResponsiveSeatRenderer = ({
                 textDecoration: availability.isFullyBooked ? 'line-through' : 'none'
               }}>
                 {section.name}
-                {availability.isFullyBooked && ' (AGOTADO)'}
+                {availability.isFullyBooked && ' (BLOQUEADO)'}
                 {!section.hasNumberedSeats && ' (Entrada General)'}
               </Title>
               
@@ -439,7 +439,7 @@ const GeneralAdmissionRenderer = ({
         fontSize: '12px'
       }}>
         <div style={{ fontSize: '16px', marginBottom: '6px' }}>⚠️</div>
-        <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>AGOTADO</div>
+        <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>BLOQUEADO</div>
         <div style={{ fontSize: '10px' }}>No hay entradas disponibles</div>
       </div>
     );

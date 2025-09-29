@@ -460,6 +460,7 @@ const ProfessionalSeatRenderer = ({
             justifyContent: 'center',
             fontSize: `${isMobile ? 9 : 11}px`,
             fontWeight: '600',
+            // Detección automática: texto negro para fondos claros, blanco para fondos oscuros
             color: getRowLabelColor(color, sectionBlocked),
             backgroundColor: getContrastInfoBackground(color, sectionBlocked),
             borderRadius: '3px',
@@ -519,6 +520,7 @@ const ProfessionalSeatRenderer = ({
       seatsPerRow={dimensions.displaySeatsPerRow}
       isMobile={isMobile}
       sectionBlocked={sectionBlocked}
+      sectionColor={color}
     >
       {/* Header de la sección */}
       <div 
@@ -549,6 +551,7 @@ const ProfessionalSeatRenderer = ({
             style={{
               fontSize: isMobile ? '12px' : '13px',
               fontWeight: '600',
+              // Detección automática: texto negro para fondos claros, blanco para fondos oscuros
               color: getSectionLabelColor(color, sectionBlocked)
             }}
           >
@@ -560,6 +563,7 @@ const ProfessionalSeatRenderer = ({
           className="section-info"
           style={{
             fontSize: isMobile ? '10px' : '11px',
+            // Detección automática: texto negro para fondos claros, blanco para fondos oscuros
             color: getSectionDimensionColor(color, sectionBlocked),
             backgroundColor: getContrastInfoBackground(color, sectionBlocked),
             padding: '2px 6px',

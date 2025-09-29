@@ -116,14 +116,14 @@ const EditableSeatRenderer = ({
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             zIndex: 1,
             borderRadius: 6
           }}>
-            <Text strong style={{ color: '#ff4d4f', fontSize: 12 }}>SECCIÓN BLOQUEADA</Text>
+            <Text strong style={{ color: '#000000', fontSize: 12 }}>SECCIÓN BLOQUEADA</Text>
           </div>
         )}
         <EditableSeatGrid
@@ -833,14 +833,14 @@ const EditableSeatRenderer = ({
                       left: 0,
                       right: 0,
                       bottom: 0,
-                      backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                      backgroundColor: 'rgba(0, 0, 0, 0.7)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       zIndex: 1,
                       borderRadius: 6
                     }}>
-                      <Text strong style={{ color: '#ff4d4f', fontSize: 14 }}>SECCIÓN BLOQUEADA</Text>
+                      <Text strong style={{ color: '#000000', fontSize: 14 }}>SECCIÓN BLOQUEADA</Text>
                     </div>
                   )}
                   <EditableSeatGrid
@@ -853,6 +853,7 @@ const EditableSeatRenderer = ({
                     sectionBlocked={sectionBlocked}
                     onSeatToggle={onSeatToggle}
                     hasNumberedSeats={section.hasNumberedSeats}
+                    venueType={type}
                   />
                 </div>
               </div>
