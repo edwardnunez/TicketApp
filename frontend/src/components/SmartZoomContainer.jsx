@@ -172,7 +172,8 @@ const SmartZoomContainer = ({
                   style={{
                     color: COLORS?.neutral?.darker || '#262626',
                     border: 'none',
-                    boxShadow: 'none'
+                    boxShadow: 'none',
+                    backgroundColor: 'transparent !important'
                   }}
                 />
               </Tooltip>
@@ -186,7 +187,8 @@ const SmartZoomContainer = ({
                   style={{
                     color: COLORS?.neutral?.darker || '#262626',
                     border: 'none',
-                    boxShadow: 'none'
+                    boxShadow: 'none',
+                    backgroundColor: 'transparent !important'
                   }}
                 />
               </Tooltip>
@@ -199,7 +201,8 @@ const SmartZoomContainer = ({
                   style={{
                     color: COLORS?.neutral?.darker || '#262626',
                     border: 'none',
-                    boxShadow: 'none'
+                    boxShadow: 'none',
+                    backgroundColor: 'transparent !important'
                   }}
                 />
               </Tooltip>
@@ -212,7 +215,8 @@ const SmartZoomContainer = ({
                   style={{
                     color: COLORS?.neutral?.darker || '#262626',
                     border: 'none',
-                    boxShadow: 'none'
+                    boxShadow: 'none',
+                    backgroundColor: 'transparent !important'
                   }}
                 />
               </Tooltip>

@@ -7,7 +7,8 @@ const SectionShapeRenderer = ({
   seatsPerRow,
   children,
   isMobile = false,
-  sectionBlocked = false
+  sectionBlocked = false,
+  sectionColor
 }) => {
   const getSectionShape = () => {
     switch (sectionType) {
@@ -39,10 +40,10 @@ const SectionShapeRenderer = ({
       className="high-tier-section"
       style={{
         position: 'relative',
-        background: `linear-gradient(135deg, ${COLORS.categories.conciertos}20 0%, ${COLORS.categories.conciertos}40 100%)`,
+        background: `linear-gradient(135deg, ${sectionColor || COLORS.categories.conciertos} 0%, ${sectionColor || COLORS.categories.conciertos} 100%)`,
         borderRadius: '20px 20px 8px 8px',
         padding: isMobile ? '12px' : '16px',
-        border: `2px solid ${sectionBlocked ? COLORS.neutral.grey300 : COLORS.categories.conciertos}`,
+        border: `2px solid ${sectionBlocked ? COLORS.neutral.grey300 : (sectionColor || COLORS.categories.conciertos)}`,
         boxShadow: `0 4px 12px rgba(0,0,0,0.1)`,
         // transform: 'perspective(100px) rotateX(5deg)',
         // transformOrigin: 'bottom center',
@@ -58,10 +59,10 @@ const SectionShapeRenderer = ({
       className="mid-tier-section"
       style={{
         position: 'relative',
-        background: `linear-gradient(135deg, ${COLORS.categories.teatro}20 0%, ${COLORS.categories.teatro}40 100%)`,
+        background: `linear-gradient(135deg, ${sectionColor || COLORS.categories.teatro} 0%, ${sectionColor || COLORS.categories.teatro} 100%)`,
         borderRadius: '16px',
         padding: isMobile ? '12px' : '16px',
-        border: `2px solid ${sectionBlocked ? COLORS.neutral.grey300 : COLORS.categories.teatro}`,
+        border: `2px solid ${sectionBlocked ? COLORS.neutral.grey300 : (sectionColor || COLORS.categories.teatro)}`,
         boxShadow: `0 6px 16px rgba(0,0,0,0.12)`,
         marginBottom: '6px'
       }}
@@ -75,10 +76,10 @@ const SectionShapeRenderer = ({
       className="low-tier-section"
       style={{
         position: 'relative',
-        background: `linear-gradient(135deg, ${COLORS.categories.deportes}20 0%, ${COLORS.categories.deportes}40 100%)`,
+        background: `linear-gradient(135deg, ${sectionColor || COLORS.categories.deportes} 0%, ${sectionColor || COLORS.categories.deportes} 100%)`,
         borderRadius: '12px 12px 20px 20px',
         padding: isMobile ? '12px' : '16px',
-        border: `2px solid ${sectionBlocked ? COLORS.neutral.grey300 : COLORS.categories.deportes}`,
+        border: `2px solid ${sectionBlocked ? COLORS.neutral.grey300 : (sectionColor || COLORS.categories.deportes)}`,
         boxShadow: `0 8px 20px rgba(102, 187, 106, 0.2)`,
         // transform: 'perspective(100px) rotateX(-3deg)',
         // transformOrigin: 'top center',
@@ -94,10 +95,10 @@ const SectionShapeRenderer = ({
       className="pit-section"
       style={{
         position: 'relative',
-        background: `linear-gradient(135deg, ${COLORS.secondary.light} 0%, ${COLORS.secondary.main} 100%)`,
+        background: `linear-gradient(135deg, ${sectionColor || COLORS.secondary.light} 0%, ${sectionColor || COLORS.secondary.main} 100%)`,
         borderRadius: '50%',
         padding: isMobile ? '20px' : '24px',
-        border: `3px solid ${sectionBlocked ? COLORS.neutral.grey300 : COLORS.secondary.dark}`,
+        border: `3px solid ${sectionBlocked ? COLORS.neutral.grey300 : (sectionColor || COLORS.secondary.dark)}`,
         boxShadow: `0 8px 24px rgba(220, 38, 38, 0.3)`,
         minWidth: isMobile ? '280px' : '400px',
         minHeight: isMobile ? '160px' : '240px',
@@ -115,10 +116,10 @@ const SectionShapeRenderer = ({
       className="side-section"
       style={{
         position: 'relative',
-        background: `linear-gradient(45deg, ${COLORS.categories.festivales}20 0%, ${COLORS.categories.festivales}40 100%)`,
+        background: `linear-gradient(45deg, ${sectionColor || COLORS.categories.festivales} 0%, ${sectionColor || COLORS.categories.festivales} 100%)`,
         borderRadius: '8px 20px 20px 8px',
         padding: isMobile ? '10px' : '14px',
-        border: `2px solid ${sectionBlocked ? COLORS.neutral.grey300 : COLORS.categories.festivales}`,
+        border: `2px solid ${sectionBlocked ? COLORS.neutral.grey300 : (sectionColor || COLORS.categories.festivales)}`,
         boxShadow: `0 4px 12px rgba(0,0,0,0.08)`,
         // transform: 'skewY(-2deg)',
         marginBottom: '6px',
@@ -134,10 +135,10 @@ const SectionShapeRenderer = ({
       className="vip-section"
       style={{
         position: 'relative',
-        background: `linear-gradient(135deg, ${COLORS.accent.gold} 0%, ${COLORS.accent.bronze} 100%)`,
+        background: `linear-gradient(135deg, ${sectionColor || COLORS.accent.gold} 0%, ${sectionColor || COLORS.accent.bronze} 100%)`,
         borderRadius: '24px',
         padding: isMobile ? '16px' : '20px',
-        border: `3px solid ${sectionBlocked ? COLORS.neutral.grey300 : COLORS.accent.gold}`,
+        border: `3px solid ${sectionBlocked ? COLORS.neutral.grey300 : (sectionColor || COLORS.accent.gold)}`,
         boxShadow: `0 12px 32px rgba(245, 158, 11, 0.4)`,
         overflow: 'hidden'
       }}
@@ -164,10 +165,10 @@ const SectionShapeRenderer = ({
       className="orchestra-section"
       style={{
         position: 'relative',
-        background: `linear-gradient(135deg, ${COLORS.accent.gold} 0%, ${COLORS.accent.bronze} 100%)`,
+        background: `linear-gradient(135deg, ${sectionColor || COLORS.accent.gold} 0%, ${sectionColor || COLORS.accent.bronze} 100%)`,
         borderRadius: '16px 16px 4px 4px',
         padding: isMobile ? '12px' : '16px',
-        border: `2px solid ${sectionBlocked ? COLORS.neutral.grey300 : COLORS.accent.gold}`,
+        border: `2px solid ${sectionBlocked ? COLORS.neutral.grey300 : (sectionColor || COLORS.accent.gold)}`,
         boxShadow: `0 6px 16px rgba(245, 158, 11, 0.2)`,
         marginBottom: '8px'
       }}
@@ -181,10 +182,10 @@ const SectionShapeRenderer = ({
       className="mezzanine-section"
       style={{
         position: 'relative',
-        background: `linear-gradient(135deg, ${COLORS.categories.cine}20 0%, ${COLORS.categories.cine}40 100%)`,
+        background: `linear-gradient(135deg, ${sectionColor || COLORS.categories.cine} 0%, ${sectionColor || COLORS.categories.cine} 100%)`,
         borderRadius: '12px',
         padding: isMobile ? '10px' : '14px',
-        border: `2px solid ${sectionBlocked ? COLORS.neutral.grey300 : COLORS.categories.cine}`,
+        border: `2px solid ${sectionBlocked ? COLORS.neutral.grey300 : (sectionColor || COLORS.categories.cine)}`,
         boxShadow: `0 4px 12px rgba(77, 182, 172, 0.2)`,
         marginBottom: '6px'
       }}
@@ -198,10 +199,10 @@ const SectionShapeRenderer = ({
       className="balcony-section"
       style={{
         position: 'relative',
-        background: `linear-gradient(135deg, ${COLORS.primary.light}20 0%, ${COLORS.primary.light}40 100%)`,
+        background: `linear-gradient(135deg, ${sectionColor || COLORS.primary.light} 0%, ${sectionColor || COLORS.primary.light} 100%)`,
         borderRadius: '20px 20px 8px 8px',
         padding: isMobile ? '10px' : '14px',
-        border: `2px solid ${sectionBlocked ? COLORS.neutral.grey300 : COLORS.primary.light}`,
+        border: `2px solid ${sectionBlocked ? COLORS.neutral.grey300 : (sectionColor || COLORS.primary.light)}`,
         boxShadow: `0 6px 16px rgba(0,0,0,0.1)`,
         // transform: 'perspective(120px) rotateX(8deg)',
         // transformOrigin: 'bottom center',
@@ -217,10 +218,10 @@ const SectionShapeRenderer = ({
       className="default-section"
       style={{
         position: 'relative',
-        background: `linear-gradient(135deg, ${COLORS.primary.main}20 0%, ${COLORS.primary.main}40 100%)`,
+        background: `linear-gradient(135deg, ${sectionColor || COLORS.primary.main} 0%, ${sectionColor || COLORS.primary.main} 100%)`,
         borderRadius: '12px',
         padding: isMobile ? '12px' : '16px',
-        border: `2px solid ${sectionBlocked ? COLORS.neutral.grey300 : COLORS.primary.main}`,
+        border: `2px solid ${sectionBlocked ? COLORS.neutral.grey300 : (sectionColor || COLORS.primary.main)}`,
         boxShadow: `0 4px 12px rgba(0,0,0,0.08)`,
         marginBottom: '6px'
       }}

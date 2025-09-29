@@ -462,6 +462,11 @@ const ProfessionalSeatMapRenderer = ({
       s.id.includes('general') || s.name.toLowerCase().includes('general')
     );
     const vipSection = sections.find(s => s.id.includes('vip') || s.name.toLowerCase().includes('vip'));
+    const premiumBoxesSection = sections.find(s => 
+      s.id.includes('palcos') || s.name.toLowerCase().includes('palcos') ||
+      s.id.includes('premium') || s.name.toLowerCase().includes('premium') ||
+      s.id.includes('boxes') || s.name.toLowerCase().includes('boxes')
+    );
 
     return (
       <div className="concert-stadium-layout">
@@ -513,6 +518,13 @@ const ProfessionalSeatMapRenderer = ({
         {vipSection && (
           <div className="vip-section">
             {renderProfessionalSection(vipSection, { gridArea: 'vip' })}
+          </div>
+        )}
+
+        {/* Palcos Premium */}
+        {premiumBoxesSection && (
+          <div className="premium-boxes-section">
+            {renderProfessionalSection(premiumBoxesSection, { gridArea: 'vip' })}
           </div>
         )}
       </div>
@@ -635,19 +647,23 @@ const ProfessionalSeatMapRenderer = ({
   const renderTheaterLayout = () => {
     const orchestraSection = sections.find(s => 
       s.id.includes('orchestra') || s.name.toLowerCase().includes('orchestra') ||
-      s.id.includes('orquesta') || s.name.toLowerCase().includes('orquesta')
+      s.id.includes('orquesta') || s.name.toLowerCase().includes('orquesta') ||
+      s.id === 'orchestra'
     );
     const mezzanineSection = sections.find(s => 
       s.id.includes('mezzanine') || s.name.toLowerCase().includes('mezzanine') ||
-      s.id.includes('mezanine') || s.name.toLowerCase().includes('mezanine')
+      s.id.includes('mezanine') || s.name.toLowerCase().includes('mezanine') ||
+      s.id === 'mezzanine'
     );
     const balconySection = sections.find(s => 
       s.id.includes('balcony') || s.name.toLowerCase().includes('balcony') ||
-      s.id.includes('balcón') || s.name.toLowerCase().includes('balcón')
+      s.id.includes('balcón') || s.name.toLowerCase().includes('balcón') ||
+      s.id === 'balcony'
     );
     const boxesSection = sections.find(s => 
       s.id.includes('boxes') || s.name.toLowerCase().includes('boxes') ||
-      s.id.includes('palcos') || s.name.toLowerCase().includes('palcos')
+      s.id.includes('palcos') || s.name.toLowerCase().includes('palcos') ||
+      s.id === 'boxes'
     );
     const vipSection = sections.find(s => s.id.includes('vip') || s.name.toLowerCase().includes('vip'));
 
@@ -696,6 +712,7 @@ const ProfessionalSeatMapRenderer = ({
             {renderProfessionalSection(vipSection)}
           </div>
         )}
+
       </div>
     );
   };
@@ -944,7 +961,7 @@ const ProfessionalGeneralAdmissionRenderer = ({
     return (
       <div className="general-admission-blocked">
         <div className="blocked-icon">⚠️</div>
-        <div className="blocked-text">AGOTADO</div>
+        <div className="blocked-text">BLOQUEADO</div>
         <div className="blocked-subtext">No hay entradas disponibles</div>
       </div>
     );

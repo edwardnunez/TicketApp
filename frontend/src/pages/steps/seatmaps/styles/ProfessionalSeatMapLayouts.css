@@ -99,7 +99,9 @@
   align-items: center;
   z-index: 1;
   overflow: visible; /* Restored to 'visible' to prevent content cutoff */
-  min-width: 0; /* Permitir que se contraiga si es necesario */
+  min-width: 300px; /* Aumentar ancho mínimo para evitar corte de números */
+  max-width: 500px; /* Ancho máximo para controlar el tamaño */
+  padding: 0 20px; /* Padding interno para separar del borde */
 }
 
 .tribuna-este {
@@ -109,7 +111,9 @@
   align-items: center;
   z-index: 1;
   overflow: visible; /* Restored to 'visible' to prevent content cutoff */
-  min-width: 0; /* Permitir que se contraiga si es necesario */
+  min-width: 300px; /* Aumentar ancho mínimo para evitar corte de números */
+  max-width: 500px; /* Ancho máximo para controlar el tamaño */
+  padding: 0 20px; /* Padding interno para separar del borde */
 }
 
 .tribuna-sur {
@@ -136,6 +140,15 @@
   z-index: 1;
 }
 
+.premium-boxes-section {
+  grid-area: vip;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+  margin-top: 20px; /* Separación adicional para palcos premium */
+}
+
 /* Estilos para secciones de gradas */
 .grada-alta {
   /* Sin rotación - se maneja por lógica de numeración */
@@ -155,16 +168,17 @@
   grid-template-areas: 
     "north north north"
     "west center east"
-    "south south south"
     "pit pit pit"
+    "south south south"
     "vip vip vip";
-  grid-template-columns: 1.5fr 2fr 1.5fr; /* Aumentar espacio para secciones laterales */
+  grid-template-columns: 4fr 1fr 4fr; /* Laterales mucho más anchos y escenario más estrecho */
   grid-template-rows: auto 2fr auto auto auto;
-  gap: 20px;
-  padding: 20px 40px; /* Aumentar padding horizontal */
+  gap: 45px; /* Aumentar separación entre secciones y escenario */
+  padding: 30px 60px; /* Aumentar padding horizontal para más ancho */
   min-height: 130vh; /* Usar altura de viewport más grande */
+  max-width: 1500px; /* Ancho máximo más grande */
   width: 100%;
-  max-width: 100%;
+  margin: 0 auto; /* Centrar el layout */
   box-sizing: border-box;
   background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
   border-radius: 16px;
@@ -172,14 +186,34 @@
   overflow: visible; /* Restored to 'visible' to prevent content cutoff */
 }
 
+/* Estilos específicos para secciones laterales en conciertos */
+.concert-stadium-layout .tribuna-oeste,
+.concert-stadium-layout .tribuna-este {
+  min-width: 350px; /* Ancho mínimo mayor para conciertos */
+  max-width: 600px; /* Ancho máximo mayor para conciertos */
+  padding: 0 25px; /* Más padding interno */
+  margin: 0 10px; /* Margen adicional para separación del escenario */
+}
+
+/* Asegurar que las secciones laterales tengan suficiente espacio para los números */
+.concert-stadium-layout .tribuna-oeste .professional-section,
+.concert-stadium-layout .tribuna-este .professional-section {
+  min-width: 300px; /* Ancho mínimo para el contenido de la sección */
+  width: 100%;
+  max-width: 100%;
+}
+
 /* Layout de venue de concierto tipo teatro */
 .concert-theater-layout {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 30px;
-  padding: 30px;
+  gap: 35px; /* Aumentar separación */
+  padding: 40px 60px; /* Aumentar padding horizontal para más ancho */
   min-height: 150vh; /* Usar altura de viewport más grande */
+  max-width: 1500px; /* Ancho máximo más grande */
+  width: 100%;
+  margin: 0 auto; /* Centrar el layout */
   background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
   border-radius: 16px;
   position: relative;
@@ -304,9 +338,12 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
-  padding: 30px;
+  gap: 25px; /* Aumentar separación */
+  padding: 40px 60px; /* Aumentar padding horizontal para más ancho */
   min-height: 120vh; /* Usar altura de viewport más grande */
+  max-width: 1400px; /* Ancho máximo más grande */
+  width: 100%;
+  margin: 0 auto; /* Centrar el layout */
   background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
   border-radius: 16px;
   position: relative;
@@ -337,10 +374,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 15px; /* Aumentar separación */
   z-index: 1;
   width: 100%;
-  max-width: 600px;
+  max-width: 800px; /* Aumentar ancho máximo para más espacio */
 }
 
 /* Secciones específicas de cine */
@@ -349,7 +386,9 @@
   justify-content: center;
   align-items: center;
   z-index: 1;
-  margin-bottom: 15px;
+  margin-bottom: 18px; /* Aumentar separación */
+  width: 100%;
+  max-width: 1000px; /* Ancho máximo para secciones */
 }
 
 .front-section {
@@ -357,7 +396,9 @@
   justify-content: center;
   align-items: center;
   z-index: 1;
-  margin-bottom: 12px;
+  margin-bottom: 15px; /* Aumentar separación */
+  width: 100%;
+  max-width: 1000px; /* Ancho máximo para secciones */
 }
 
 .middle-section {
@@ -365,7 +406,9 @@
   justify-content: center;
   align-items: center;
   z-index: 1;
-  margin-bottom: 12px;
+  margin-bottom: 15px; /* Aumentar separación */
+  width: 100%;
+  max-width: 1000px; /* Ancho máximo para secciones */
 }
 
 .back-section {
@@ -373,7 +416,9 @@
   justify-content: center;
   align-items: center;
   z-index: 1;
-  margin-bottom: 10px;
+  margin-bottom: 12px; /* Aumentar separación */
+  width: 100%;
+  max-width: 1000px; /* Ancho máximo para secciones */
 }
 
 /* Layout de teatro */
@@ -381,9 +426,12 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
-  padding: 30px;
+  gap: 30px; /* Aumentar separación entre secciones */
+  padding: 40px 60px; /* Aumentar padding horizontal para más ancho */
   min-height: 120vh; /* Usar altura de viewport más grande */
+  max-width: 1400px; /* Ancho máximo más grande */
+  width: 100%;
+  margin: 0 auto; /* Centrar el layout */
   background: linear-gradient(135deg, #2c1810 0%, #3d2817 50%, #2c1810 100%);
   border-radius: 16px;
   position: relative;
@@ -396,7 +444,9 @@
   justify-content: center;
   align-items: center;
   z-index: 1;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
+  width: 100%;
+  max-width: 1200px; /* Ancho máximo para secciones */
 }
 
 .orchestra-section {
@@ -404,7 +454,9 @@
   justify-content: center;
   align-items: center;
   z-index: 1;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
+  width: 100%;
+  max-width: 1200px; /* Ancho máximo para secciones */
 }
 
 .mezzanine-section {
@@ -412,7 +464,9 @@
   justify-content: center;
   align-items: center;
   z-index: 1;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
+  width: 100%;
+  max-width: 1200px; /* Ancho máximo para secciones */
 }
 
 .balcony-section {
@@ -420,7 +474,9 @@
   justify-content: center;
   align-items: center;
   z-index: 1;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
+  width: 100%;
+  max-width: 1200px; /* Ancho máximo para secciones */
 }
 
 .theater-layout::before {

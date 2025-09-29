@@ -12,7 +12,8 @@ const EditableSeatGrid = ({
   blockedSeats,
   sectionBlocked,
   onSeatToggle,
-  hasNumberedSeats
+  hasNumberedSeats,
+  venueType
 }) => {
   const [hoveredSeat, setHoveredSeat] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
@@ -33,6 +34,9 @@ const EditableSeatGrid = ({
   const handleSeatClick = (row, seat) => {
     // Si la sección está bloqueada, no permitir cambios individuales
     if (sectionBlocked) return;
+    
+    // Si es una sección de teatro, no permitir modificación de asientos individuales
+    if (venueType === 'theater') return;
     
     const seatId = getSeatId(row, seat);
     onSeatToggle(seatId);
@@ -63,6 +67,9 @@ const EditableSeatGrid = ({
     if (sectionBlocked) {
       return `${sectionName} - Fila ${row + 1}, Asiento ${seat + 1} - Sección bloqueada`;
     }
+    if (venueType === 'theater') {
+      return `${sectionName} - Fila ${row + 1}, Asiento ${seat + 1} - Teatro (no editable)`;
+    }
     if (isSeatBlocked(seatId)) {
       return `${sectionName} - Fila ${row + 1}, Asiento ${seat + 1} - Asiento bloqueado (click para desbloquear)`;
     }
@@ -87,7 +94,7 @@ const EditableSeatGrid = ({
             border: sectionBlocked || blocked ? '2px solid #ff4d4f' : '1px solid #d9d9d9',
             borderRadius: 4,
             backgroundColor: getSeatColor(seatId),
-            cursor: sectionBlocked ? 'not-allowed' : 'pointer',
+            cursor: (sectionBlocked || venueType === 'theater') ? 'not-allowed' : 'pointer',
             opacity: getSeatOpacity(seatId),
             transform: (blocked || sectionBlocked) ? 'scale(1.05)' : hovered ? 'scale(1.1)' : 'scale(1)',
             transition: 'all 0.2s ease',
@@ -102,7 +109,7 @@ const EditableSeatGrid = ({
           onClick={() => handleSeatClick(row, seat)}
           onMouseEnter={() => !sectionBlocked && setHoveredSeat(seatId)}
           onMouseLeave={() => setHoveredSeat(null)}
-          disabled={sectionBlocked}
+          disabled={sectionBlocked || venueType === 'theater'}
         >
           {getSeatIcon(seatId)}
           {/* Indicador visual adicional para asientos bloqueados */}
@@ -164,21 +171,6 @@ const EditableSeatGrid = ({
 
   return (
     <div style={{ padding: isMobile ? '4px' : '12px' }}>
-      {/* Leyenda específica para la sección si está bloqueada */}
-      {sectionBlocked && (
-        <div style={{ 
-          textAlign: 'center', 
-          marginBottom: '8px',
-          padding: '4px',
-          backgroundColor: '#ff4d4f20',
-          borderRadius: '4px',
-          fontSize: '12px',
-          color: '#ff4d4f'
-        }}>
-          <LockOutlined style={{ marginRight: '4px' }} />
-          Sección completa bloqueada
-        </div>
-      )}
       
       {/* Grid de asientos */}
       <div>
