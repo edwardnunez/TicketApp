@@ -645,7 +645,7 @@ const SeatRenderer = ({
           <span style={{ 
             fontSize: '12px', 
             fontWeight: '600', 
-            color: '#DC2626' 
+            color: '#000000' // Negro fijo para "SECCIÓN BLOQUEADA" 
           }}>
             SECCIÓN BLOQUEADA
           </span>

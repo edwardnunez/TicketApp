@@ -619,7 +619,7 @@ const ProfessionalSeatRenderer = ({
           <span style={{ 
             fontSize: '11px', 
             fontWeight: '600', 
-            color: getContrastTextColor(COLORS.secondary.main, 1, false)
+            color: '#000000' // Negro fijo para "SECCIÓN BLOQUEADA"
           }}>
             SECCIÓN BLOQUEADA
           </span>
