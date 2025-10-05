@@ -26,6 +26,10 @@ const { Content } = Layout;
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
 
+/**
+ * Help center page component with FAQ and support information
+ * @returns {JSX.Element} Help center page with searchable FAQ and contact options
+ */
 const HelpCenter = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [contactMessage, setContactMessage] = useState('');

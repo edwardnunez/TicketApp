@@ -47,6 +47,10 @@ const avatars = [
   "/avatars/avatar5.png",
 ];
 
+/**
+ * Edit profile page component for user profile management
+ * @returns {JSX.Element} Profile editing form with avatar selection and password change
+ */
 const EditProfile = () => {
   const [form] = Form.useForm();
   const [passwordForm] = Form.useForm();

@@ -6,6 +6,21 @@ import '../styles/ProfessionalSeatMapAnimations.css';
 
 const { Text } = Typography;
 
+/**
+ * Generic seat map renderer component for standard seat map display
+ * @param {Object} props - Component props
+ * @param {Object} props.seatMapData - Seat map data object
+ * @param {Array} props.selectedSeats - Currently selected seats
+ * @param {Function} props.onSeatSelect - Seat selection handler
+ * @param {number} props.maxSeats - Maximum number of selectable seats
+ * @param {Array} props.occupiedSeats - List of occupied seat IDs
+ * @param {Array} props.blockedSeats - List of blocked seat IDs
+ * @param {Array} props.blockedSections - List of blocked section IDs
+ * @param {Function} props.formatPrice - Price formatting function
+ * @param {Object} props.event - Event data object
+ * @param {Function} props.calculateSeatPrice - Seat price calculation function
+ * @returns {JSX.Element} Generic seat map renderer using enhanced container
+ */
 const GenericSeatMapRenderer = ({
   seatMapData,
   selectedSeats,
@@ -37,7 +52,21 @@ const GenericSeatMapRenderer = ({
   );
 };
 
-// Componente para entrada general (mantenido para compatibilidad)
+/**
+ * General admission renderer component for non-numbered seating sections
+ * @param {Object} props - Component props
+ * @param {Object} props.section - Section data object
+ * @param {Array} props.selectedSeats - Currently selected seats
+ * @param {Function} props.onSeatSelect - Seat selection handler
+ * @param {number} props.maxSeats - Maximum number of selectable seats
+ * @param {Array} props.occupiedSeats - List of occupied seat IDs
+ * @param {Array} props.blockedSeats - List of blocked seat IDs
+ * @param {Array} props.blockedSections - List of blocked section IDs
+ * @param {Function} props.formatPrice - Price formatting function
+ * @param {Object} props.event - Event data object
+ * @param {Function} props.calculateSeatPrice - Seat price calculation function
+ * @returns {JSX.Element} General admission renderer with quantity selection
+ */
 const GeneralAdmissionRenderer = ({ 
   section, 
   selectedSeats, 

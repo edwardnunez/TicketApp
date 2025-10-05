@@ -18,21 +18,29 @@ const EVENT_SERVICE_URL = process.env.EVENT_SERVICE_URL || "http://localhost:800
 const mongoUri = process.env.MONGODB_URI || "mongodb://localhost:27017/ticketdb";
 mongoose.connect(mongoUri, { useNewUrlParser: true, useUnifiedTopology: true });
 
-// Configuración de nodemailer (usar variables de entorno en producción)
+/**
+ * Nodemailer transporter configuration for sending emails
+ */
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
   port: process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT) : 587,
-  secure: false, // true para 465, false para otros puertos
+  secure: false,
   auth: {
     user: process.env.SMTP_USER || 'tu_email@gmail.com',
     pass: process.env.SMTP_PASS || 'tu_contraseña',
   },
   tls: {
-    rejectUnauthorized: false // Permitir certificados autofirmados (solo pruebas)
+    rejectUnauthorized: false
   }
 });
 
-// Función para enviar email de confirmación de compra
+/**
+ * Sends purchase confirmation email to users
+ * @param {Object} params - Email parameters
+ * @param {string} params.to - Recipient email address
+ * @param {string} params.subject - Email subject
+ * @param {string} params.html - Email HTML content
+ */
 async function enviarEmailConfirmacionCompra({ to, subject, html }) {
   const mailOptions = {
     from: process.env.SMTP_FROM || 'TicketApp <no-reply@ticketapp.com>',
@@ -48,14 +56,20 @@ async function enviarEmailConfirmacionCompra({ to, subject, html }) {
   }
 }
 
-// Función para generar número de ticket único
+/**
+ * Generates a unique ticket number
+ * @returns {string} Unique ticket number
+ */
 const generateTicketNumber = () => {
   const timestamp = Date.now().toString(36);
   const random = Math.random().toString(36).substring(2, 8);
   return `TKT-${timestamp}-${random}`.toUpperCase();
 };
 
-// Función para generar código de validación
+/**
+ * Generates a validation code for ticket verification
+ * @returns {string} Hexadecimal validation code
+ */
 const generateValidationCode = () => {
   return crypto.randomBytes(16).toString('hex').toUpperCase();
 };

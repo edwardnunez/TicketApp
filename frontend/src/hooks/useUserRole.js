@@ -2,6 +2,14 @@ import { useState, useEffect } from 'react';
 import { ensureAuthFreshness } from '../utils/authSession';
 import axios from 'axios';
 
+/**
+ * Custom hook to manage user role and authentication state
+ * @returns {Object} User role information and authentication status
+ * @returns {string|null} userRole - Current user role (admin, user, null)
+ * @returns {boolean} isAdmin - Whether user has admin privileges
+ * @returns {boolean} isLoading - Loading state for role verification
+ * @returns {boolean} isAuthenticated - Whether user is authenticated
+ */
 const useUserRole = () => {
   const [userRole, setUserRole] = useState(null);
   const [isLoading, setIsLoading] = useState(true);

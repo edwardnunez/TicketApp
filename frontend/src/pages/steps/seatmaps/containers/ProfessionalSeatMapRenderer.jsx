@@ -14,9 +14,21 @@ import AccessibilityFeatures from '../ui/AccessibilityFeatures';
 import '../styles/ProfessionalSeatMapAnimations.css';
 import '../styles/ProfessionalSeatMapLayouts.css';
 
-  const { Title, Text } = Typography;
+const { Title, Text } = Typography;
 
-// Componente para la barra superior de selección de asientos (replicando el diseño del modo admin)
+/**
+ * Top bar component for seat selection with summary and controls
+ * @param {Object} props - Component props
+ * @param {Array} props.selectedSeats - Currently selected seats
+ * @param {number} props.maxSeats - Maximum number of selectable seats
+ * @param {Function} props.formatPrice - Price formatting function
+ * @param {Object} props.event - Event data object
+ * @param {boolean} props.showLegend - Whether legend is visible
+ * @param {Function} props.setShowLegend - Legend visibility setter
+ * @param {boolean} props.isFullscreen - Whether in fullscreen mode
+ * @param {Function} props.toggleFullscreen - Fullscreen toggle function
+ * @returns {JSX.Element} Selection top bar with seat summary and controls
+ */
 const SelectionTopBar = ({ selectedSeats, maxSeats, formatPrice, event, showLegend, setShowLegend, isFullscreen, toggleFullscreen }) => {
   const totalPrice = selectedSeats.reduce((total, seat) => total + (seat.price || 0), 0);
   

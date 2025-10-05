@@ -38,6 +38,10 @@ const { Title, Text } = Typography;
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 
+/**
+ * Admin statistics page component for detailed sales and revenue analysis
+ * @returns {JSX.Element} Statistics dashboard with filtering and data visualization
+ */
 const AdminStatistics = () => {
   const [statistics, setStatistics] = useState(null);
   const [loading, setLoading] = useState(false);

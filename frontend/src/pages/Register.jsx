@@ -10,6 +10,10 @@ import { COLORS } from "../components/colorscheme";
 const { Content } = Layout;
 const { Title, Text } = Typography;
 
+/**
+ * User registration page component
+ * @returns {JSX.Element} Registration form with user details and validation
+ */
 const Register = () => {
   const [loading, setLoading] = useState(false);
   const [registerError, setRegisterError] = useState({});

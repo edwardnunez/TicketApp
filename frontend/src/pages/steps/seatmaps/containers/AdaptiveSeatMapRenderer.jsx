@@ -18,6 +18,25 @@ import useViewportManager from '../../../../hooks/useViewportManager';
 const { Title, Text } = Typography;
 const { Option } = Select;
 
+/**
+ * Adaptive seat map renderer component that automatically selects the best rendering approach
+ * @param {Object} props - Component props
+ * @param {Object} props.seatMapData - Seat map data object
+ * @param {Array} props.selectedSeats - Currently selected seats
+ * @param {Function} props.onSeatSelect - Seat selection handler
+ * @param {number} props.maxSeats - Maximum number of selectable seats
+ * @param {Array} props.occupiedSeats - List of occupied seat IDs
+ * @param {Array} props.blockedSeats - List of blocked seat IDs
+ * @param {Array} props.blockedSections - List of blocked section IDs
+ * @param {Function} props.formatPrice - Price formatting function
+ * @param {Object} props.event - Event data object
+ * @param {Function} props.calculateSeatPrice - Seat price calculation function
+ * @param {boolean} [props.editMode=false] - Whether in edit mode
+ * @param {Function} [props.onSeatMapUpdate] - Seat map update handler
+ * @param {Object} [props.initialData=null] - Initial seat map data
+ * @param {boolean} [props.readOnly=false] - Whether in read-only mode
+ * @returns {JSX.Element} Adaptive seat map renderer with automatic view selection
+ */
 const AdaptiveSeatMapRenderer = ({
   seatMapData,
   selectedSeats,

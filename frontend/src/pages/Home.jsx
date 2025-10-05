@@ -38,7 +38,6 @@ import {
 import axios from "axios";
 import dayjs from "dayjs";
 
-// Importamos el esquema de colores
 import { COLORS } from "../components/colorscheme";
 import FramedImage from "../components/FramedImage";
 
@@ -49,6 +48,10 @@ const { Meta } = Card;
 const { TabPane } = Tabs;
 const { Option } = Select;
 
+/**
+ * Home page component displaying events with filtering, sorting, and search capabilities
+ * @returns {JSX.Element} Home page with event listings and navigation
+ */
 const Home = () => {
   const [allEvents, setAllEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);

@@ -56,6 +56,17 @@ const seedDatabases = async () => {
 
 seedDatabases();
 
+/**
+ * Creates or updates a location
+ * @route POST /location
+ * @param {Object} req.body - Location data
+ * @param {string} req.body.name - Location name
+ * @param {string} req.body.category - Location category
+ * @param {string} req.body.address - Location address
+ * @param {string} [req.body.seatMapId] - Associated seatmap ID
+ * @param {number} [req.body.capacity] - Location capacity
+ * @returns {Object} Created or updated location data
+ */
 app.post("/location", async (req, res) => {
   try {
     const { name, category, address, seatMapId, capacity } = req.body;

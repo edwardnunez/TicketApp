@@ -8,6 +8,10 @@ import useUserRole from "../hooks/useUserRole";
 
 const { Title } = Typography;
 
+/**
+ * Navigation bar component with user authentication and role-based menu items
+ * @returns {JSX.Element} Navigation bar with logo, menu items, and user dropdown
+ */
 const Navbar = () => {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);

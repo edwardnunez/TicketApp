@@ -8,7 +8,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Ruta de prueba
+/**
+ * Health check endpoint
+ * @route GET /
+ * @returns {string} API status message
+ */
 app.get("/", (req, res) => {
   res.send("API funcionando");
 });

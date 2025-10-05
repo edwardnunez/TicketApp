@@ -34,14 +34,14 @@ import axios from "axios";
 import dayjs from "dayjs";
 import "dayjs/locale/es";
 
-// Importamos el esquema de colores
+// Import color scheme
 import { COLORS } from "../components/colorscheme";
 import FramedImage from "../components/FramedImage";
 
-// Configurar dayjs en español
+// Configure dayjs in Spanish
 dayjs.locale('es');
 
-// CSS para la animación del spinner
+// CSS for spinner animation
 const spinKeyframes = `
   @keyframes spin {
     0% { transform: rotate(0deg); }
@@ -49,7 +49,7 @@ const spinKeyframes = `
   }
 `;
 
-// Inyectar CSS si no existe
+// Inject CSS if it doesn't exist
 if (!document.getElementById('spin-animation')) {
   const style = document.createElement('style');
   style.id = 'spin-animation';
@@ -60,6 +60,10 @@ if (!document.getElementById('spin-animation')) {
 const { Content } = Layout;
 const { Title, Text, Paragraph } = Typography;
 
+/**
+ * Event details page component displaying comprehensive event information
+ * @returns {JSX.Element} Event details page with information and purchase options
+ */
 const EventDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -88,10 +92,10 @@ const EventDetails = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Cálculo robusto de capacidad total del evento
+  // Robust calculation of total event capacity
   const computeEventCapacity = (evt) => {
     if (!evt) return 0;
-    // Si viene información detallada por secciones, sumar capacidades
+    // If detailed section information is available, sum capacities
     if (evt.usesSectionPricing && Array.isArray(evt.sectionPricingInfo) && evt.sectionPricingInfo.length > 0) {
       return evt.sectionPricingInfo.reduce((sum, s) => sum + (Number(s.capacity) || 0), 0);
     }
@@ -101,7 +105,7 @@ const EventDetails = () => {
     return 0;
   };
 
-  // Función para obtener disponibilidad de tickets
+  // Function to get ticket availability
   const fetchTicketAvailability = async (evtParam) => {
     if (!id) return;
     const currentEvent = evtParam || event;
@@ -111,7 +115,7 @@ const EventDetails = () => {
       const response = await axios.get(`${gatewayUrl}/tickets/event/${id}`);
       const ticketStats = response.data.statistics || [];
       
-      // Procesar estadísticas para obtener disponibilidad
+      // Process statistics to get availability
       let soldTickets = 0;
       let pendingTickets = 0;
       
@@ -159,14 +163,14 @@ const EventDetails = () => {
           ...res.data,
           date: res.data.date,
           image: res.data.imageUrl || "/event-images/default.jpg",
-          // Mapear tipo de evento a categoría para consistencia con Home
+          // Map event type to category for consistency with Home
           category: mapEventTypeToCategory(res.data.type)
         };
         
         setEvent(eventData);
         setLoading(false);
         
-        // Cargar disponibilidad usando el evento recién obtenido para evitar capacidad 0
+        // Load availability using the newly obtained event to avoid capacity 0
         fetchTicketAvailability(eventData);
       })
       .catch((err) => {
@@ -177,7 +181,7 @@ const EventDetails = () => {
       });
       }, [id, gatewayUrl]);
 
-  // Configurar actualización automática de disponibilidad cada 30 segundos
+  // Configure automatic availability update every 30 seconds
   useEffect(() => {
     if (!event) return;
 
