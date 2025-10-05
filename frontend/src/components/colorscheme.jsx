@@ -335,27 +335,13 @@ export const getContrastTextColor = (backgroundColor, opacity = 1, isBlocked = f
     return NEUTRAL.grey800;
   }
   
-  // Calcular la luminancia del color de fondo
-  const rgb = hexToRgbValues(backgroundColor);
-  const luminance = getLuminance(rgb.r, rgb.g, rgb.b);
-  
-  // Umbral de luminancia para determinar si hay poca legibilidad con texto blanco
-  // Valores > 0.6 indican colores claros donde el texto blanco sería poco legible
-  const LEGIBILITY_THRESHOLD = 0.6;
-  
-  // Si el fondo es más claro que el umbral, usar texto negro para mejor legibilidad
-  if (luminance > LEGIBILITY_THRESHOLD) {
-    return NEUTRAL.darker; // Texto negro para fondos claros
-  }
-  
   // Si el fondo tiene transparencia, ajustar el contraste
   if (opacity < 1) {
     // Para fondos semi-transparentes, usar un color más neutro
     return getContrastColor(backgroundColor, NEUTRAL.grey100, NEUTRAL.grey700);
   }
   
-  // Para fondos oscuros (luminancia <= umbral), usar blanco
-  return NEUTRAL.white;
+  return getContrastColor(backgroundColor, NEUTRAL.white, NEUTRAL.darker);
 };
 
 // Función para obtener color de borde con contraste
@@ -387,7 +373,7 @@ export const getContrastInfoBackground = (sectionColor, isBlocked = false) => {
   return `${sectionColor}20`;
 };
 
-// Función específica para etiquetas de secciones con detección automática de contraste
+// Función específica para etiquetas de secciones que siempre usa blanco cuando el fondo no es blanco
 export const getSectionLabelColor = (sectionColor, isBlocked = false) => {
   if (isBlocked) {
     return NEUTRAL.grey400;
@@ -397,24 +383,11 @@ export const getSectionLabelColor = (sectionColor, isBlocked = false) => {
     return NEUTRAL.grey800;
   }
   
-  // Calcular la luminancia del color de fondo
-  const rgb = hexToRgbValues(sectionColor);
-  const luminance = getLuminance(rgb.r, rgb.g, rgb.b);
-  
-  // Umbral de luminancia para determinar si hay poca legibilidad con texto blanco
-  // Valores > 0.6 indican colores claros donde el texto blanco sería poco legible
-  const LEGIBILITY_THRESHOLD = 0.6;
-  
-  // Si el fondo es más claro que el umbral, usar texto negro para mejor legibilidad
-  if (luminance > LEGIBILITY_THRESHOLD) {
-    return NEUTRAL.darker; // Texto negro para fondos claros
-  }
-  
-  // Para fondos oscuros (luminancia <= umbral), usar blanco
+  // Siempre usar blanco para etiquetas de secciones cuando hay un color de fondo
   return NEUTRAL.white;
 };
 
-// Función específica para dimensiones de secciones con detección automática de contraste
+// Función específica para dimensiones de secciones que siempre usa blanco cuando el fondo no es blanco
 export const getSectionDimensionColor = (sectionColor, isBlocked = false) => {
   if (isBlocked) {
     return NEUTRAL.grey400;
@@ -424,24 +397,11 @@ export const getSectionDimensionColor = (sectionColor, isBlocked = false) => {
     return NEUTRAL.grey600;
   }
   
-  // Calcular la luminancia del color de fondo
-  const rgb = hexToRgbValues(sectionColor);
-  const luminance = getLuminance(rgb.r, rgb.g, rgb.b);
-  
-  // Umbral de luminancia para determinar si hay poca legibilidad con texto blanco
-  // Valores > 0.6 indican colores claros donde el texto blanco sería poco legible
-  const LEGIBILITY_THRESHOLD = 0.6;
-  
-  // Si el fondo es más claro que el umbral, usar texto negro para mejor legibilidad
-  if (luminance > LEGIBILITY_THRESHOLD) {
-    return NEUTRAL.darker; // Texto negro para fondos claros
-  }
-  
-  // Para fondos oscuros (luminancia <= umbral), usar blanco
+  // Siempre usar blanco para dimensiones de secciones cuando hay un color de fondo
   return NEUTRAL.white;
 };
 
-// Función específica para etiquetas de filas con detección automática de contraste
+// Función específica para etiquetas de filas que siempre usa blanco cuando el fondo no es blanco
 export const getRowLabelColor = (sectionColor, isBlocked = false) => {
   if (isBlocked) {
     return NEUTRAL.grey400;
@@ -451,19 +411,6 @@ export const getRowLabelColor = (sectionColor, isBlocked = false) => {
     return NEUTRAL.grey600;
   }
   
-  // Calcular la luminancia del color de fondo
-  const rgb = hexToRgbValues(sectionColor);
-  const luminance = getLuminance(rgb.r, rgb.g, rgb.b);
-  
-  // Umbral de luminancia para determinar si hay poca legibilidad con texto blanco
-  // Valores > 0.6 indican colores claros donde el texto blanco sería poco legible
-  const LEGIBILITY_THRESHOLD = 0.6;
-  
-  // Si el fondo es más claro que el umbral, usar texto negro para mejor legibilidad
-  if (luminance > LEGIBILITY_THRESHOLD) {
-    return NEUTRAL.darker; // Texto negro para fondos claros
-  }
-  
-  // Para fondos oscuros (luminancia <= umbral), usar blanco
+  // Siempre usar blanco para etiquetas de filas cuando hay un color de fondo
   return NEUTRAL.white;
 };
