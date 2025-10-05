@@ -21,6 +21,10 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
 import LocationCreation from "./pages/admin/LocationCreation";
 
+/**
+ * Main application component that handles routing
+ * @returns {JSX.Element} The main app component with routing configuration
+ */
 function App() {
   return (
     <div className="min-h-screen bg-gray-100">

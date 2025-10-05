@@ -2,6 +2,23 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import useDeviceDetection from './useDeviceDetection';
 import useSeatMapViability from './useSeatMapViability';
 
+/**
+ * Custom hook for managing viewport and zoom functionality in seat maps
+ * @param {Object} seatMapData - Seat map data object
+ * @param {React.RefObject} [containerRef=null] - Container reference for viewport calculations
+ * @returns {Object} Viewport management utilities and state
+ * @returns {Object} viewport - Current viewport state (scale, pan, dimensions)
+ * @returns {string} viewMode - Current view mode ('auto', 'full', 'zoomed', 'blocks', 'simplified', 'list')
+ * @returns {Object} viability - Seat map viability information
+ * @returns {boolean} isInitialized - Whether viewport is initialized
+ * @returns {Function} setScale - Function to set zoom scale
+ * @returns {Function} setPan - Function to set pan position
+ * @returns {Function} setViewMode - Function to set view mode
+ * @returns {Function} resetViewport - Function to reset viewport to optimal state
+ * @returns {Function} fitToScreen - Function to fit content to screen
+ * @returns {Function} centerContent - Function to center content
+ * @returns {Function} adjustViewport - Function to adjust viewport automatically
+ */
 const useViewportManager = (seatMapData, containerRef = null) => {
   const deviceInfo = useDeviceDetection();
   const viability = useSeatMapViability(seatMapData);

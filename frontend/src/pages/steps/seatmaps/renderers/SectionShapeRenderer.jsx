@@ -1,6 +1,18 @@
 import React from 'react';
 import { COLORS } from '../../../../components/colorscheme';
 
+/**
+ * Section shape renderer component for different venue section types
+ * @param {Object} props - Component props
+ * @param {string} props.sectionType - Type of section (grada-alta, pista, vip, etc.)
+ * @param {number} props.rows - Number of rows in section
+ * @param {number} props.seatsPerRow - Number of seats per row
+ * @param {React.ReactNode} props.children - Child components to render inside shape
+ * @param {boolean} [props.isMobile=false] - Whether in mobile view
+ * @param {boolean} [props.sectionBlocked=false] - Whether section is blocked
+ * @param {string} [props.sectionColor] - Custom section color
+ * @returns {JSX.Element} Section shape renderer with venue-specific layouts
+ */
 const SectionShapeRenderer = ({
   sectionType,
   rows,

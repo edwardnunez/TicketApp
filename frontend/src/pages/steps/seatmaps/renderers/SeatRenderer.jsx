@@ -7,6 +7,28 @@ import {
 } from '@ant-design/icons';
 import { COLORS, getRowLabelColor, getContrastInfoBackground, getContrastBorderColor } from '../../../../components/colorscheme';
 
+/**
+ * Individual seat renderer component for numbered seating sections
+ * @param {Object} props - Component props
+ * @param {string} props.sectionId - Section identifier
+ * @param {number} props.rows - Number of rows in section
+ * @param {number} props.seatsPerRow - Number of seats per row
+ * @param {number} props.price - Base price for seats in section
+ * @param {string} props.color - Section color
+ * @param {string} props.name - Section name
+ * @param {Array} props.selectedSeats - Currently selected seats
+ * @param {Array} props.occupiedSeats - List of occupied seat IDs
+ * @param {Array} [props.blockedSeats=[]] - List of blocked seat IDs
+ * @param {boolean} [props.sectionBlocked=false] - Whether entire section is blocked
+ * @param {number} props.maxSeats - Maximum number of selectable seats
+ * @param {Function} props.onSeatSelect - Seat selection handler
+ * @param {Function} props.formatPrice - Price formatting function
+ * @param {Object} props.event - Event data object
+ * @param {Function} props.calculateSeatPrice - Seat price calculation function
+ * @param {boolean} [props.compactMode=false] - Whether in compact display mode
+ * @param {boolean} [props.responsiveMode=false] - Whether in responsive mode
+ * @returns {JSX.Element} Seat renderer with interactive seat grid
+ */
 const SeatRenderer = ({
   sectionId,
   rows,
@@ -38,13 +60,13 @@ const SeatRenderer = ({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Función para obtener el número de fila correcto según la posición de la sección
+  // Function to get the correct row number based on section position
   const getRowNumber = (rowIndex) => {
-    // Determinar la posición de la sección basada en el nombre
+    // Determine section position based on name
     const sectionNameLower = sectionName.toLowerCase();
     
     if (sectionNameLower.includes('norte') || sectionNameLower.includes('north')) {
-      // Norte: numeración de abajo hacia arriba (1, 2, 3, 4, 5...)
+      // North: numbering from bottom to top (1, 2, 3, 4, 5...)
       return rowIndex + 1;
     } else if (sectionNameLower.includes('sur') || sectionNameLower.includes('south')) {
       // Sur: numeración de arriba hacia abajo (5, 4, 3, 2, 1...)

@@ -56,7 +56,15 @@ const { Content } = Layout;
 const { Option } = Select;
 const { Title, Text, Paragraph } = Typography;
 
-// Componente optimizado para la tabla de precios por fila
+/**
+ * Optimized component for row pricing table
+ * @param {Object} props - Component props
+ * @param {Object} props.section - Section data with pricing information
+ * @param {Function} props.updateRowPrice - Function to update row price
+ * @param {Function} props.removeRowPrice - Function to remove row price
+ * @param {Function} props.addRowPrice - Function to add new row price
+ * @returns {JSX.Element} Row pricing table component
+ */
 const RowPricingTable = React.memo(({ section, updateRowPrice, removeRowPrice, addRowPrice }) => {
   const columns = [
     {
@@ -138,6 +146,11 @@ const RowPricingTable = React.memo(({ section, updateRowPrice, removeRowPrice, a
   );
 });
 
+/**
+ * Event creation component for administrators
+ * Handles event creation with location, pricing, and image management
+ * @returns {JSX.Element} Event creation form component
+ */
 const EventCreation = () => {
   const [loading, setLoading] = useState(false);
   const [type, setType] = useState(null);
@@ -269,6 +282,11 @@ const EventCreation = () => {
       .catch(() => setCurrentUserId(null));
   }, [username, gatewayUrl]);
 
+  /**
+   * Determines automatic event state based on date
+   * @param {string|Date} date - Event date
+   * @returns {string} Event state ('activo', 'proximo', 'finalizado')
+   */
   const getAutoState = (date) => {
     if (!date) return 'proximo';
     const now = dayjs();
@@ -282,6 +300,11 @@ const EventCreation = () => {
     }
   };
 
+  /**
+   * Handles section capacity updates
+   * @param {string} sectionId - Section identifier
+   * @param {string|number} newCapacity - New capacity value
+   */
   const handleSectionCapacity = (sectionId, newCapacity) => {
     setSectionPricing(prevPricing => 
       prevPricing.map(section => 
@@ -296,6 +319,11 @@ const EventCreation = () => {
     );
   };
 
+  /**
+   * Handles section default price updates
+   * @param {string} sectionId - Section identifier
+   * @param {string|number} newPrice - New price value
+   */
   const handleSectionDefaultPrice = (sectionId, newPrice) => {
     setSectionPricing(prevPricing => 
       prevPricing.map(section => 
@@ -309,6 +337,10 @@ const EventCreation = () => {
     );
   };
 
+  /**
+   * Adds a new row price entry for a section
+   * @param {string} sectionId - Section identifier
+   */
   const addRowPrice = (sectionId) => {
     setSectionPricing(prevPricing => 
       prevPricing.map(section => 
@@ -644,6 +676,10 @@ const EventCreation = () => {
     return typeLabels[type] || type;
   };
 
+  /**
+   * Handles form submission for event creation
+   * @param {Object} values - Form values from the event creation form
+   */
   const onFinish = async (values) => {
     setLoading(true);
     setErrorMessage(null);

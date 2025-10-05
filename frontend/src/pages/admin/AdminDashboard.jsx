@@ -40,7 +40,6 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import dayjs from 'dayjs';
 
-// Importamos el esquema de colores (asumiendo que está disponible)
 import { COLORS } from "../../components/colorscheme";
 
 const { Content } = Layout;
@@ -48,6 +47,10 @@ const { Title, Text } = Typography;
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 
+/**
+ * Admin dashboard component for event management and statistics
+ * @returns {JSX.Element} Admin dashboard with event management interface
+ */
 const AdminDashboard = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);

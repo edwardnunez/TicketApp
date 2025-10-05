@@ -10,6 +10,10 @@ import { COLORS } from "../components/colorscheme";
 const { Content } = Layout;
 const { Title, Text } = Typography;
 
+/**
+ * Login page component for user authentication
+ * @returns {JSX.Element} Login form with username and password fields
+ */
 const Login = () => {
   const [loading, setLoading] = useState(false);
   const [loginError, setLoginError] = useState({});
@@ -29,6 +33,12 @@ const Login = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  /**
+   * Validates username field
+   * @param {*} _ - Field rule (unused)
+   * @param {string} value - Username value
+   * @returns {Promise} Validation result
+   */
   const validateUsername = (_, value) => {
     if (!value) {
       return Promise.reject(new Error("Por favor ingresa tu nombre de usuario"));
@@ -36,6 +46,12 @@ const Login = () => {
     return Promise.resolve();
   };
 
+  /**
+   * Validates password field
+   * @param {*} _ - Field rule (unused)
+   * @param {string} value - Password value
+   * @returns {Promise} Validation result
+   */
   const validatePassword = (_, value) => {
     if (!value) {
       return Promise.reject(new Error("Por favor ingresa tu contraseña"));
@@ -43,6 +59,10 @@ const Login = () => {
     return Promise.resolve();
   };
 
+  /**
+   * Handles form submission for user login
+   * @param {Object} values - Form values containing username and password
+   */
   const onFinish = async (values) => {
     setLoading(true);
     setLoginError({});

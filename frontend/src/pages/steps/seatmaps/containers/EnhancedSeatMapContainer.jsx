@@ -5,6 +5,21 @@ import ProfessionalSeatMapRenderer from './ProfessionalSeatMapRenderer';
 
 const { Text } = Typography;
 
+/**
+ * Enhanced seat map container with professional rendering capabilities
+ * @param {Object} props - Component props
+ * @param {Object} props.seatMapData - Seat map data object
+ * @param {Array} [props.selectedSeats=[]] - Currently selected seats
+ * @param {Function} props.onSeatSelect - Seat selection handler
+ * @param {number} props.maxSeats - Maximum number of selectable seats
+ * @param {Array} [props.occupiedSeats=[]] - List of occupied seat IDs
+ * @param {Array} [props.blockedSeats=[]] - List of blocked seat IDs
+ * @param {Array} [props.blockedSections=[]] - List of blocked section IDs
+ * @param {Function} props.formatPrice - Price formatting function
+ * @param {Object} props.event - Event data object
+ * @param {Function} props.calculateSeatPrice - Seat price calculation function
+ * @returns {JSX.Element} Enhanced seat map container with professional rendering
+ */
 const EnhancedSeatMapContainer = ({
   seatMapData,
   selectedSeats = [],

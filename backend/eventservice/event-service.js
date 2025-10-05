@@ -17,7 +17,7 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use('/event', express.json({ limit: '10mb' }));
 app.use('/events/*/image', express.json({ limit: '10mb' }));
 
-// Límites aumentados solo para rutas con imágenes o payloads grandes
+// Increased limits only for routes with images or large payloads
 const largePayloadMiddleware = express.json({ limit: '10mb' });
 const largeUrlEncodedMiddleware = express.urlencoded({ limit: '10mb', extended: true });
 
@@ -26,7 +26,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ 
   storage: storage,
   fileFilter: (req, file, cb) => {
-    // Solo permitir imágenes
+    // Only allow images
     if (file.mimetype.startsWith('image/')) {
       cb(null, true);
     } else {
@@ -34,7 +34,7 @@ const upload = multer({
     }
   },
   limits: {
-    fileSize: 5 * 1024 * 1024 // Límite de 5MB
+    fileSize: 5 * 1024 * 1024 // 5MB limit
   }
 });
 
@@ -57,17 +57,19 @@ const EventModel = eventDbConnection.model('Event', Event.schema);
 const stateService = new EventStateService();
 stateService.setEventModel(EventModel);
 
-// Configuración de nodemailer (usar variables de entorno en producción)
+/**
+ * Nodemailer transporter configuration for sending emails
+ */
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
   port: process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT) : 587,
-  secure: false, // true para 465, false para otros puertos
+  secure: false,
   auth: {
     user: process.env.SMTP_USER || 'tu_email@gmail.com',
     pass: process.env.SMTP_PASS || 'tu_contraseña',
   },
   tls: {
-    rejectUnauthorized: false // Permitir certificados autofirmados (solo pruebas)
+    rejectUnauthorized: false
   }
 });
 
@@ -149,7 +151,27 @@ const createSectionPricing = (seatMapInfo, pricingData) => {
   });
 };
 
-// Ruta para crear un evento
+/**
+ * Create a new event
+ * @route POST /event
+ * @param {Object} req.body - Event data
+ * @param {string} req.body.name - Event name
+ * @param {string} req.body.date - Event date
+ * @param {string} req.body.location - Location ID
+ * @param {string} req.body.type - Event type
+ * @param {string} req.body.description - Event description
+ * @param {number} req.body.capacity - Event capacity
+ * @param {number} req.body.price - Event price
+ * @param {string} req.body.state - Event state
+ * @param {Array} [req.body.sectionPricing] - Section pricing configuration
+ * @param {boolean} [req.body.usesSectionPricing] - Whether event uses section pricing
+ * @param {boolean} [req.body.usesRowPricing] - Whether event uses row pricing
+ * @param {Array} [req.body.blockedSeats] - List of blocked seats
+ * @param {Array} [req.body.blockedSections] - List of blocked sections
+ * @param {Object} [req.body.seatMapConfiguration] - Seat map configuration
+ * @param {string} [req.body.imageData] - Base64 encoded image data
+ * @returns {Object} Created event data
+ */
 app.post("/event", largePayloadMiddleware, largeUrlEncodedMiddleware, async (req, res) => {
   const requestId = Math.random().toString(36).substr(2, 9);
   console.log(`=== INICIO CREACIÓN DE EVENTO [${requestId}] ===`);
@@ -345,6 +367,13 @@ app.post("/event", largePayloadMiddleware, largeUrlEncodedMiddleware, async (req
   }
 });
 
+/**
+ * Update event image
+ * @route PATCH /events/:eventId/image
+ * @param {string} req.params.eventId - Event ID
+ * @param {File} req.file - Image file
+ * @returns {Object} Updated event with new image URL
+ */
 app.patch("/events/:eventId/image", largePayloadMiddleware, largeUrlEncodedMiddleware, upload.single('image'), async (req, res) => {
   try {
     const { eventId } = req.params;
@@ -390,6 +419,12 @@ app.patch("/events/:eventId/image", largePayloadMiddleware, largeUrlEncodedMiddl
   }
 });
 
+/**
+ * Get event image
+ * @route GET /events/:eventId/image
+ * @param {string} req.params.eventId - Event ID
+ * @returns {Object} Event image data including URL and metadata
+ */
 app.get("/events/:eventId/image", async (req, res) => {
   try {
     const { eventId } = req.params;
@@ -418,7 +453,11 @@ app.get("/events/:eventId/image", async (req, res) => {
   }
 });
 
-// Ruta para obtener todos los eventos
+/**
+ * Get all events with location data and pricing information
+ * @route GET /events
+ * @returns {Array} List of events with location data and price ranges
+ */
 app.get("/events", stateService.updateStatesMiddleware.bind(stateService), async (req, res) => {
   try {
     const events = await EventModel.find();
@@ -481,7 +520,12 @@ app.get("/events", stateService.updateStatesMiddleware.bind(stateService), async
   }
 });
 
-// Ruta para obtener un evento específico
+/**
+ * Get specific event by ID with location and seatmap data
+ * @route GET /events/:eventId
+ * @param {string} req.params.eventId - Event ID
+ * @returns {Object} Event details with location and seatmap information
+ */
 app.get("/events/:eventId", stateService.updateStatesMiddleware.bind(stateService), async (req, res) => {
   try {
     const event = await EventModel.findById(req.params.eventId);
@@ -551,7 +595,15 @@ app.get("/events/:eventId", stateService.updateStatesMiddleware.bind(stateServic
   }
 });
 
-// Ruta para obtener el precio de un asiento específico
+/**
+ * Get price for a specific seat
+ * @route GET /events/:eventId/seat-price/:sectionId/:row/:seat
+ * @param {string} req.params.eventId - Event ID
+ * @param {string} req.params.sectionId - Section ID
+ * @param {string} req.params.row - Row number
+ * @param {string} req.params.seat - Seat number
+ * @returns {Object} Seat price and blocking status
+ */
 app.get("/events/:eventId/seat-price/:sectionId/:row/:seat", async (req, res) => {
   try {
     const { eventId, sectionId, row, seat } = req.params;
@@ -579,7 +631,14 @@ app.get("/events/:eventId/seat-price/:sectionId/:row/:seat", async (req, res) =>
   }
 });
 
-// Ruta para obtener precios de múltiples asientos
+/**
+ * Get pricing for multiple seats
+ * @route POST /events/:eventId/seats-pricing
+ * @param {string} req.params.eventId - Event ID
+ * @param {Object} req.body - Request body
+ * @param {Array} req.body.seats - Array of seat objects with sectionId, row, seat
+ * @returns {Array} Array of seat pricing information
+ */
 app.post("/events/:eventId/seats-pricing", async (req, res) => {
   try {
     const { eventId } = req.params;
@@ -626,7 +685,11 @@ app.post("/events/:eventId/seats-pricing", async (req, res) => {
   }
 });
 
-// Ruta manual para actualizar estados
+/**
+ * Manually update event states
+ * @route POST /events/update-states
+ * @returns {Object} State update results and statistics
+ */
 app.post("/events/update-states", async (req, res) => {
   try {
     const result = await stateService.updateEventStates();
@@ -644,6 +707,11 @@ app.post("/events/update-states", async (req, res) => {
 });
 
 // Ruta para obtener estadísticas de eventos por estado
+/**
+ * Get event statistics grouped by state
+ * @route GET /events/stats/states
+ * @returns {Object} Event statistics grouped by state with counts and event lists
+ */
 app.get("/events/stats/states", async (req, res) => {
   try {
     const stats = await EventModel.aggregate([

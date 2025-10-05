@@ -1,6 +1,14 @@
 import React from 'react';
 import { COLORS } from '../../../../components/colorscheme';
 
+/**
+ * Venue stage renderer component for different venue types
+ * @param {Object} props - Component props
+ * @param {string} props.type - Type of venue (football, concert, theater, cinema)
+ * @param {Object} props.config - Stage configuration object
+ * @param {Object} props.venueColors - Custom venue color scheme
+ * @returns {JSX.Element} Venue stage renderer with type-specific designs
+ */
 const VenueStageRenderer = ({ type, config, venueColors }) => {
   const renderFootballField = () => (
     <div 

@@ -28,6 +28,11 @@ import { COLORS } from "../components/colorscheme";
 const { Title, Paragraph, Text } = Typography;
 const { Content } = Layout;
 
+/**
+ * About Us page component displaying team information and project details
+ * @returns {JSX.Element} About Us page with team member information
+ */
+
 const AboutUs = () => {
   const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(false);

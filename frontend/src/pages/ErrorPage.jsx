@@ -3,12 +3,15 @@ import { Button, Typography, Layout, Space } from "antd";
 import { useNavigate } from "react-router-dom";
 import { FrownOutlined, HomeOutlined } from "@ant-design/icons";
 
-// Importamos el esquema de colores (asumiendo que está disponible)
 import { COLORS } from "../components/colorscheme";
 
 const { Title, Paragraph } = Typography;
 const { Content } = Layout;
 
+/**
+ * Error page component for handling 404 and other error states
+ * @returns {JSX.Element} Error page with navigation options
+ */
 const ErrorPage = () => {
   const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(false);

@@ -28,6 +28,10 @@ const { Content } = Layout;
 const { Title, Text } = Typography;
 const { Panel } = Collapse;
 
+/**
+ * User profile page component displaying user information and ticket history
+ * @returns {JSX.Element} Profile page with user data and ticket management
+ */
 const Profile = () => {
   const [user, setUser] = useState(null);
   const [tickets, setTickets] = useState([]);

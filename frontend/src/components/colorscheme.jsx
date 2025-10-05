@@ -1,4 +1,4 @@
-// Paleta de colores profesional con tema verde menta
+// Professional color palette with mint green theme
 const PRIMARY = {
   main: '#00BFA5',
   light: '#5DF2D6',
@@ -7,7 +7,7 @@ const PRIMARY = {
 };
 
 const SECONDARY = {
-  main: '#DC2626', // Rojo para acciones importantes
+  main: '#DC2626', // Red for important actions
   light: '#EF4444',
   dark: '#B91C1C',
   contrast: '#FFFFFF'
@@ -15,28 +15,28 @@ const SECONDARY = {
 
 const CATEGORIES = {
   conciertos: '#00ACC1',
-  teatro: '#26A69A', // Verde menta variante
-  deportes: '#66BB6A', // Verde que armoniza
-  festivales: '#00897B', // Verde-azulado
-  cine: '#4DB6AC', // Verde menta claro
+  teatro: '#26A69A', // Mint green variant
+  deportes: '#66BB6A', // Harmonizing green
+  festivales: '#00897B', // Green-blue
+  cine: '#4DB6AC', // Light mint green
 };
 
 const STATUS = {
-  success: '#00BFA5', // Mismo color principal
-  info: '#4DD0E1', // Azul claro compatible
-  warning: '#FFC107', // Amarillo ámbar
-  error: '#F44336', // Rojo para errores
+  success: '#00BFA5', // Same as primary color
+  info: '#4DD0E1', // Compatible light blue
+  warning: '#FFC107', // Amber yellow
+  error: '#F44336', // Red for errors
 };
 
 const ACCENT = {
-  gold: '#F59E0B', // Dorado para VIP/Premium
-  silver: '#6B7280', // Plata para secciones medias
-  bronze: '#D97706', // Bronce para secciones básicas
-  green: '#10B981', // Verde para disponible
-  red: '#EF4444', // Rojo para ocupado
-  blue: '#3B82F6', // Azul para seleccionado
-  purple: '#8B5CF6', // Púrpura para accesible
-  orange: '#F97316' // Naranja para entrada general
+  gold: '#F59E0B', // Gold for VIP/Premium
+  silver: '#6B7280', // Silver for mid-tier sections
+  bronze: '#D97706', // Bronze for basic sections
+  green: '#10B981', // Green for available
+  red: '#EF4444', // Red for occupied
+  blue: '#3B82F6', // Blue for selected
+  purple: '#8B5CF6', // Purple for accessible
+  orange: '#F97316' // Orange for general admission
 };
 
 const NEUTRAL = {
@@ -45,54 +45,54 @@ const NEUTRAL = {
   grey2: '#E0E0E0',
   grey3: '#BDBDBD',
   grey4: '#757575',
-  dark: '#424242', // Gris oscuro
+  dark: '#424242', // Dark grey
   darker: '#212121',
   black: '#000000'
 };
 
-// Colores específicos para secciones de venues
+// Specific colors for venue sections
 const VENUE_SECTIONS = {
-  // Estadios de fútbol
+  // Football stadiums
   football: {
-    field: '#22C55E', // Verde césped
-    tribuna: '#3B82F6', // Azul tribuna
-    vip: '#F59E0B', // Dorado VIP
-    general: '#6B7280' // Gris entrada general
+    field: '#22C55E', // Grass green
+    tribuna: '#3B82F6', // Blue stands
+    vip: '#F59E0B', // Gold VIP
+    general: '#6B7280' // Grey general admission
   },
-  // Conciertos
+  // Concerts
   concert: {
-    stage: '#1F2937', // Negro escenario
-    pista: '#DC2626', // Rojo pista
-    grada: '#8B5CF6', // Púrpura gradas
-    vip: '#F59E0B', // Dorado VIP
-    premium: '#EC4899' // Rosa premium
+    stage: '#1F2937', // Black stage
+    pista: '#DC2626', // Red floor
+    grada: '#8B5CF6', // Purple stands
+    vip: '#F59E0B', // Gold VIP
+    premium: '#EC4899' // Pink premium
   },
-  // Cines
+  // Cinemas
   cinema: {
-    screen: '#000000', // Negro pantalla
-    premium: '#8B5CF6', // Púrpura premium
-    standard: '#3B82F6', // Azul estándar
-    economy: '#6B7280' // Gris económico
+    screen: '#000000', // Black screen
+    premium: '#8B5CF6', // Purple premium
+    standard: '#3B82F6', // Blue standard
+    economy: '#6B7280' // Grey economy
   },
-  // Teatros
+  // Theaters
   theater: {
-    stage: '#8B4513', // Marrón escenario
-    orchestra: '#F59E0B', // Dorado orquesta
-    mezzanine: '#8B5CF6', // Púrpura mezzanine
-    balcony: '#6B7280', // Gris balcón
-    boxes: '#EC4899' // Rosa palcos
+    stage: '#8B4513', // Brown stage
+    orchestra: '#F59E0B', // Gold orchestra
+    mezzanine: '#8B5CF6', // Purple mezzanine
+    balcony: '#6B7280', // Grey balcony
+    boxes: '#EC4899' // Pink boxes
   },
   // Arenas
   arena: {
-    floor: '#374151', // Gris pista
-    lower: '#3B82F6', // Azul inferior
-    upper: '#6B7280', // Gris superior
-    vip: '#F59E0B', // Dorado VIP
-    premium: '#8B5CF6' // Púrpura premium
+    floor: '#374151', // Grey floor
+    lower: '#3B82F6', // Blue lower
+    upper: '#6B7280', // Grey upper
+    vip: '#F59E0B', // Gold VIP
+    premium: '#8B5CF6' // Purple premium
   }
 };
 
-// Estados de asientos
+// Seat states
 const SEAT_STATES = {
   available: {
     background: '#FFFFFF',
@@ -181,7 +181,7 @@ const SPACING = {
   '3xl': '64px'
 };
 
-// Tipografía
+// Typography
 const TYPOGRAPHY = {
   fontFamily: {
     sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
@@ -246,17 +246,17 @@ export const getSeatStateColors = (state) => {
   return SEAT_STATES[state] || SEAT_STATES.available;
 };
 
-// Utilidades para generar gradientes dinámicos
+// Utilities for generating dynamic gradients
 export const createGradient = (color1, color2, direction = '135deg') => {
   return `linear-gradient(${direction}, ${color1} 0%, ${color2} 100%)`;
 };
 
-// Utilidades para generar sombras dinámicas
+// Utilities for generating dynamic shadows
 export const createShadow = (color, opacity = 0.1, blur = 10) => {
   return `0 4px ${blur}px rgba(${hexToRgb(color)}, ${opacity})`;
 };
 
-// Función auxiliar para convertir hex a rgb
+// Helper function to convert hex to rgb
 const hexToRgb = (hex) => {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result ? 
@@ -299,17 +299,17 @@ export const getContrastColor = (backgroundColor, lightColor = '#FFFFFF', darkCo
   const lightContrast = getContrastRatio(backgroundColor, lightColor);
   const darkContrast = getContrastRatio(backgroundColor, darkColor);
   
-  // WCAG AA requiere un ratio mínimo de 4.5:1 para texto normal
-  // Si ambos colores tienen buen contraste, preferir el que tenga mejor ratio
+  // WCAG AA requires a minimum ratio of 4.5:1 for normal text
+  // If both colors have good contrast, prefer the one with better ratio
   if (lightContrast >= 4.5 && darkContrast >= 4.5) {
     return lightContrast > darkContrast ? lightColor : darkColor;
   }
   
-  // Si solo uno tiene buen contraste, usar ese
+  // If only one has good contrast, use that one
   if (lightContrast >= 4.5) return lightColor;
   if (darkContrast >= 4.5) return darkColor;
   
-  // Si ninguno tiene buen contraste, usar el que tenga mejor ratio
+  // If none have good contrast, use the one with better ratio
   return lightContrast > darkContrast ? lightColor : darkColor;
 };
 
@@ -325,7 +325,7 @@ export const getSectionTextColor = (sectionColor, isBlocked = false) => {
   return getContrastColor(sectionColor, NEUTRAL.white, NEUTRAL.darker);
 };
 
-// Función para obtener color de texto con contraste para fondos con transparencia
+// Function to get text color with contrast for backgrounds with transparency
 export const getContrastTextColor = (backgroundColor, opacity = 1, isBlocked = false) => {
   if (isBlocked) {
     return NEUTRAL.grey400;
@@ -335,16 +335,16 @@ export const getContrastTextColor = (backgroundColor, opacity = 1, isBlocked = f
     return NEUTRAL.grey800;
   }
   
-  // Si el fondo tiene transparencia, ajustar el contraste
+  // If background has transparency, adjust contrast
   if (opacity < 1) {
-    // Para fondos semi-transparentes, usar un color más neutro
+    // For semi-transparent backgrounds, use a more neutral color
     return getContrastColor(backgroundColor, NEUTRAL.grey100, NEUTRAL.grey700);
   }
   
   return getContrastColor(backgroundColor, NEUTRAL.white, NEUTRAL.darker);
 };
 
-// Función para obtener color de borde con contraste
+// Function to get border color with contrast
 export const getContrastBorderColor = (backgroundColor, isBlocked = false) => {
   if (isBlocked) {
     return NEUTRAL.grey200;
@@ -354,12 +354,12 @@ export const getContrastBorderColor = (backgroundColor, isBlocked = false) => {
     return NEUTRAL.grey200;
   }
   
-  // Para bordes, usar una versión más clara del color de contraste
+  // For borders, use a lighter version of the contrast color
   const contrastColor = getContrastColor(backgroundColor, NEUTRAL.white, NEUTRAL.darker);
   return contrastColor === NEUTRAL.white ? `${backgroundColor}40` : `${backgroundColor}60`;
 };
 
-// Función para obtener color de fondo con contraste para elementos de información
+// Function to get background color with contrast for information elements
 export const getContrastInfoBackground = (sectionColor, isBlocked = false) => {
   if (isBlocked) {
     return NEUTRAL.grey100;
@@ -369,11 +369,11 @@ export const getContrastInfoBackground = (sectionColor, isBlocked = false) => {
     return NEUTRAL.grey50;
   }
   
-  // Usar una versión muy clara del color de la sección
+  // Use a very light version of the section color
   return `${sectionColor}20`;
 };
 
-// Función específica para etiquetas de secciones que siempre usa blanco cuando el fondo no es blanco
+// Specific function for section labels that always uses white when background is not white
 export const getSectionLabelColor = (sectionColor, isBlocked = false) => {
   if (isBlocked) {
     return NEUTRAL.grey400;
@@ -383,11 +383,11 @@ export const getSectionLabelColor = (sectionColor, isBlocked = false) => {
     return NEUTRAL.grey800;
   }
   
-  // Siempre usar blanco para etiquetas de secciones cuando hay un color de fondo
+  // Always use white for section labels when there's a background color
   return NEUTRAL.white;
 };
 
-// Función específica para dimensiones de secciones que siempre usa blanco cuando el fondo no es blanco
+// Specific function for section dimensions that always uses white when background is not white
 export const getSectionDimensionColor = (sectionColor, isBlocked = false) => {
   if (isBlocked) {
     return NEUTRAL.grey400;
@@ -397,11 +397,11 @@ export const getSectionDimensionColor = (sectionColor, isBlocked = false) => {
     return NEUTRAL.grey600;
   }
   
-  // Siempre usar blanco para dimensiones de secciones cuando hay un color de fondo
+  // Always use white for section dimensions when there's a background color
   return NEUTRAL.white;
 };
 
-// Función específica para etiquetas de filas que siempre usa blanco cuando el fondo no es blanco
+// Specific function for row labels that always uses white when background is not white
 export const getRowLabelColor = (sectionColor, isBlocked = false) => {
   if (isBlocked) {
     return NEUTRAL.grey400;
@@ -411,6 +411,6 @@ export const getRowLabelColor = (sectionColor, isBlocked = false) => {
     return NEUTRAL.grey600;
   }
   
-  // Siempre usar blanco para etiquetas de filas cuando hay un color de fondo
+  // Always use white for row labels when there's a background color
   return NEUTRAL.white;
 };

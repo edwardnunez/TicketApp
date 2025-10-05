@@ -9,9 +9,8 @@ import bcrypt from 'bcrypt';
 const app = express();
 const port = 8001; 
 
-const secretKey='your-secret-key';
+const secretKey = 'your-secret-key';
 
-// Middleware to parse JSON in request body
 app.use(express.json());
 
 const corsOptions = {
@@ -22,19 +21,27 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-
-// Middleware to parse JSON in request body
 app.use(bodyParser.json());
 
-// Connect to MongoDB
 const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/userdb';
 mongoose.connect(mongoUri);
 
+/**
+ * Validates email format using regex pattern
+ * @param {string} email - Email address to validate
+ * @returns {boolean} True if email format is valid
+ */
 function validateEmailFormat(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 }
 
+/**
+ * Validates that all required fields are present in request body
+ * @param {Object} req - Express request object
+ * @param {string[]} requiredFields - Array of required field names
+ * @throws {Error} If any required field is missing or email format is invalid
+ */
 function validateRequiredFields(req, requiredFields) {
     for (const field of requiredFields) {
       if (!(field in req.body)) {
@@ -42,7 +49,6 @@ function validateRequiredFields(req, requiredFields) {
       }
     }
     
-    // Validación específica para email
     if (requiredFields.includes('email') && req.body.email) {
       if (!validateEmailFormat(req.body.email)) {
         throw new Error('Invalid email format');
@@ -50,13 +56,25 @@ function validateRequiredFields(req, requiredFields) {
     }
 }
 
+/**
+ * Creates a new user account
+ * @route POST /adduser
+ * @param {Object} req.body - User registration data
+ * @param {string} req.body.username - Unique username
+ * @param {string} req.body.name - User first name
+ * @param {string} req.body.surname - User last name
+ * @param {string} req.body.email - User email address
+ * @param {string} req.body.password - User password
+ * @param {string} req.body.confirmPassword - Password confirmation
+ * @param {string} [req.body.role="user"] - User role (default: user)
+ * @returns {Object} User data with authentication tokens
+ */
 app.post("/adduser", async (req, res) => {
   try {
     validateRequiredFields(req, ["username", "name", "surname", "email", "password", "confirmPassword"]);
 
     const { username, password, confirmPassword, email } = req.body;
 
-    // Validación de contraseñas coincidentes
     if (password !== confirmPassword) {
       return res.status(400).json({
         error: "Passwords do not match.",
@@ -64,7 +82,6 @@ app.post("/adduser", async (req, res) => {
       });
     }
 
-    // Validación de formato de contraseña
     const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
     if (!passwordRegex.test(password)) {
       return res.status(400).json({
@@ -73,7 +90,6 @@ app.post("/adduser", async (req, res) => {
       });
     }
 
-    // Verificar si el usuario ya existe
     const existingUser = await User.findOne({ username });
     if (existingUser) {
       return res.status(400).json({
@@ -82,7 +98,6 @@ app.post("/adduser", async (req, res) => {
       });
     }
 
-    // Verificar si el email ya existe
     const existingEmail = await User.findOne({ email: email });
     if (existingEmail) {
       return res.status(400).json({
@@ -133,7 +148,14 @@ app.post("/adduser", async (req, res) => {
   }
 });
 
-// Route for user login
+/**
+ * Authenticates user and returns JWT tokens
+ * @route POST /login
+ * @param {Object} req.body - Login credentials
+ * @param {string} req.body.username - User username
+ * @param {string} req.body.password - User password
+ * @returns {Object} Authentication tokens and user data
+ */
 app.post('/login', async (req, res) => {
   try {
     validateRequiredFields(req, ['username', 'password']);
@@ -161,6 +183,12 @@ app.post('/login', async (req, res) => {
   }
 });
 
+/**
+ * Validates and sanitizes string input
+ * @param {*} input - Input to validate
+ * @returns {string} Trimmed string
+ * @throws {Error} If input is not a string
+ */
 function checkInput(input) {
   if (typeof input !== "string") {
     throw new Error("Input debe ser una cadena de texto");
@@ -168,6 +196,11 @@ function checkInput(input) {
   return input.trim();
 }
 
+/**
+ * Retrieves all users (excluding passwords)
+ * @route GET /users
+ * @returns {Object[]} Array of user objects without passwords
+ */
 app.get("/users", async (req, res) => {
   try {
     const users = await User.find({}, { password: 0});
@@ -177,6 +210,13 @@ app.get("/users", async (req, res) => {
   }
 });
 
+/**
+ * Searches for a specific user by username or userId
+ * @route GET /users/search
+ * @param {string} [req.query.username] - Username to search for
+ * @param {string} [req.query.userId] - User ID to search for
+ * @returns {Object} User data without password
+ */
 app.get("/users/search", async (req, res) => {
   try {
     const { username, userId } = req.query;
@@ -186,10 +226,9 @@ app.get("/users/search", async (req, res) => {
     if (username) {
       currentUser = await User.findOne({ username: username });
     } else if (userId) {
-      // Validar que userId es un ObjectId válido
-      if (!mongoose.Types.ObjectId.isValid(userId)) {
-        return res.status(400).json({ error: "Invalid userId format" });
-      }
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ error: "Invalid userId format" });
+    }
       currentUser = await User.findById(userId);
     } else {
       return res.status(400).json({ error: "Username or userId is required" });
@@ -210,12 +249,20 @@ app.get("/users/search", async (req, res) => {
   }
 });
 
+/**
+ * Updates user profile information
+ * @route PUT /edit-user/:userId
+ * @param {string} req.params.userId - User ID to update
+ * @param {Object} req.body - Updated user data
+ * @param {string} [req.body.password] - New password (requires currentPassword)
+ * @param {string} [req.body.currentPassword] - Current password for verification
+ * @returns {Object} Updated user data
+ */
 app.put("/edit-user/:userId", async (req, res) => {
   try {
     const { password, currentPassword, ...otherFields } = req.body;
     const userId = req.params.userId;
 
-    // Buscar el usuario actual
     const currentUser = await User.findById(userId);
     if (!currentUser) {
       return res.status(404).json({ 
@@ -226,9 +273,7 @@ app.put("/edit-user/:userId", async (req, res) => {
 
     let updateData = { ...otherFields };
 
-    // Si se está intentando cambiar la contraseña
     if (password) {
-      // Verificar que se proporcionó la contraseña actual
       if (!currentPassword) {
         return res.status(400).json({
           error: "Current password is required to change password",
@@ -236,7 +281,6 @@ app.put("/edit-user/:userId", async (req, res) => {
         });
       }
 
-      // Verificar que la contraseña actual es correcta
       const isCurrentPasswordValid = await bcrypt.compare(currentPassword, currentUser.password);
       if (!isCurrentPasswordValid) {
         return res.status(400).json({
@@ -245,7 +289,6 @@ app.put("/edit-user/:userId", async (req, res) => {
         });
       }
 
-      // Validar el formato de la nueva contraseña
       const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
       if (!passwordRegex.test(password)) {
         return res.status(400).json({
@@ -254,7 +297,6 @@ app.put("/edit-user/:userId", async (req, res) => {
         });
       }
 
-      // Verificar que la nueva contraseña no sea igual a la actual
       const isSamePassword = await bcrypt.compare(password, currentUser.password);
       if (isSamePassword) {
         return res.status(400).json({
@@ -263,12 +305,10 @@ app.put("/edit-user/:userId", async (req, res) => {
         });
       }
 
-      // Hashear la nueva contraseña
       const hashedPassword = await bcrypt.hash(password, 10);
       updateData.password = hashedPassword;
     }
 
-    // Validar email si se está actualizando
     if (otherFields.email) {
       if (!validateEmailFormat(otherFields.email)) {
         return res.status(400).json({
@@ -277,7 +317,6 @@ app.put("/edit-user/:userId", async (req, res) => {
         });
       }
 
-      // Verificar que el email no esté en uso por otro usuario
       const existingEmailUser = await User.findOne({ 
         email: otherFields.email,
         _id: { $ne: userId }
@@ -291,7 +330,6 @@ app.put("/edit-user/:userId", async (req, res) => {
       }
     }
 
-    // Verificar username si se está actualizando
     if (otherFields.username) {
       const existingUsernameUser = await User.findOne({ 
         username: otherFields.username,
@@ -306,7 +344,6 @@ app.put("/edit-user/:userId", async (req, res) => {
       }
     }
 
-    // Actualizar el usuario
     const updatedUser = await User.findByIdAndUpdate(
       userId, 
       updateData, 
@@ -327,6 +364,13 @@ app.put("/edit-user/:userId", async (req, res) => {
   }
 });
 
+/**
+ * Verifies JWT token and returns user role
+ * @route POST /verifyToken
+ * @param {Object} req.body - Token verification data
+ * @param {string} req.body.token - JWT token to verify
+ * @returns {Object} User role information
+ */
 app.post('/verifyToken', (req, res) => {
   const { token } = req.body;
 
@@ -348,13 +392,11 @@ app.post('/verifyToken', (req, res) => {
 });
 
 
-// Start the server
 const server = app.listen(port, () => {
   console.log(`User Service listening at http://localhost:${port}`);
 });
 
 server.on('close', () => {
-    // Close the Mongoose connection
     mongoose.connection.close();
   });
 

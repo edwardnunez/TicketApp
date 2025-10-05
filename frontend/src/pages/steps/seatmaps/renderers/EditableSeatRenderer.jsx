@@ -10,6 +10,15 @@ import './ProfessionalSeatMapAnimations.css';
 const { Title, Text } = Typography;
 const { Option } = Select;
 
+/**
+ * Editable seat renderer component for seat map creation and editing
+ * @param {Object} props - Component props
+ * @param {Object} props.seatMapData - Seat map data object
+ * @param {Function} props.onSeatMapUpdate - Seat map update handler
+ * @param {Object} [props.initialData=null] - Initial seat map data
+ * @param {boolean} [props.readOnly=false] - Whether in read-only mode
+ * @returns {JSX.Element} Editable seat renderer with section management
+ */
 const EditableSeatRenderer = ({ seatMapData, onSeatMapUpdate, initialData = null, readOnly = false }) => {
   const deviceInfo = useDeviceDetection();
   const [form] = Form.useForm();

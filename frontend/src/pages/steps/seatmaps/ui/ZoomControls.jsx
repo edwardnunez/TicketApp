@@ -9,6 +9,18 @@ import {
 } from '@ant-design/icons';
 import { COLORS } from '../../../../components/colorscheme';
 
+/**
+ * Zoom controls component for seat map navigation
+ * @param {Object} props - Component props
+ * @param {number} props.zoomLevel - Current zoom level
+ * @param {Function} props.onZoomIn - Zoom in handler
+ * @param {Function} props.onZoomOut - Zoom out handler
+ * @param {Function} props.onReset - Reset zoom handler
+ * @param {Function} props.onFullscreen - Fullscreen toggle handler
+ * @param {boolean} [props.isFullscreen=false] - Whether in fullscreen mode
+ * @param {boolean} [props.isMobile=false] - Whether in mobile view
+ * @returns {JSX.Element} Zoom controls with navigation buttons
+ */
 const ZoomControls = ({
   zoomLevel,
   onZoomIn,

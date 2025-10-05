@@ -30,12 +30,15 @@ import BuyerInfo from "./steps/BuyerInfo";
 import PaymentMethod from "./steps/PaymentMethod";
 import Confirmation from "./steps/PurchaseConfirmation";
 
-// Importamos el esquema de colores
 import { COLORS } from "../components/colorscheme";
 
 const { Content } = Layout;
 const { Title, Text} = Typography;
 
+/**
+ * Ticket purchase page component with multi-step checkout process
+ * @returns {JSX.Element} Multi-step ticket purchase flow
+ */
 const TicketPurchase = () => {
   const { id } = useParams();
   const navigate = useNavigate();
