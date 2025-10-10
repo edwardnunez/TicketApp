@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { Typography } from 'antd';
 import { COLORS } from '../../../../components/colorscheme';
-import ProfessionalSeatMapRenderer from './ProfessionalSeatMapRenderer';
+import MainSeatMapContainer from './MainSeatMapContainer';
 
 const { Text } = Typography;
 
@@ -20,7 +20,7 @@ const { Text } = Typography;
  * @param {Function} props.calculateSeatPrice - Seat price calculation function
  * @returns {JSX.Element} Enhanced seat map container with professional rendering
  */
-const EnhancedSeatMapContainer = ({
+const SeatMapContainer = ({
   seatMapData,
   selectedSeats = [],
   onSeatSelect,
@@ -117,5 +117,5 @@ const EnhancedSeatMapContainer = ({
   );
 };
 
-export default EnhancedSeatMapContainer;
+export default SeatMapContainer;
 

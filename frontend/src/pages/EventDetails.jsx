@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom"; 
 import { 
   Layout, 
@@ -94,36 +94,107 @@ const EventDetails = () => {
 
   // Robust calculation of total event capacity
   const computeEventCapacity = (evt) => {
-    if (!evt) return 0;
-    // If detailed section information is available, sum capacities
-    if (evt.usesSectionPricing && Array.isArray(evt.sectionPricingInfo) && evt.sectionPricingInfo.length > 0) {
-      return evt.sectionPricingInfo.reduce((sum, s) => sum + (Number(s.capacity) || 0), 0);
+    if (!evt) {
+      console.log('No event provided to computeEventCapacity');
+      return 0;
     }
-    // Fallbacks
-    if (typeof evt.capacity === 'number' && evt.capacity > 0) return evt.capacity;
-    if (evt.location && typeof evt.location.capacity === 'number') return evt.location.capacity || 0;
+    
+    console.log('computeEventCapacity - Event data:', {
+      usesSectionPricing: evt.usesSectionPricing,
+      sectionPricing: evt.sectionPricing,
+      sectionPricingInfo: evt.sectionPricingInfo,
+      capacity: evt.capacity,
+      location: evt.location,
+      fullEvent: evt
+    });
+    
+    // If detailed section information is available, sum capacities
+    if (evt.usesSectionPricing && Array.isArray(evt.sectionPricing) && evt.sectionPricing.length > 0) {
+      const sectionCapacity = evt.sectionPricing.reduce((sum, s) => {
+        const cap = Number(s.capacity) || 0;
+        console.log(`Section ${s.sectionName || s.sectionId}: capacity ${cap}`);
+        return sum + cap;
+      }, 0);
+      console.log('Section capacity calculated:', sectionCapacity);
+      return sectionCapacity;
+    }
+    
+    // Check if there's sectionPricingInfo (alternative structure)
+    if (evt.sectionPricingInfo && Array.isArray(evt.sectionPricingInfo) && evt.sectionPricingInfo.length > 0) {
+      const sectionCapacity = evt.sectionPricingInfo.reduce((sum, s) => {
+        const cap = Number(s.capacity) || 0;
+        console.log(`SectionPricingInfo ${s.sectionName || s.sectionId}: capacity ${cap}`);
+        return sum + cap;
+      }, 0);
+      console.log('Section pricing info capacity calculated:', sectionCapacity);
+      return sectionCapacity;
+    }
+    
+    // Check if event has a direct capacity property
+    if (typeof evt.capacity === 'number' && evt.capacity > 0) {
+      console.log('Using event capacity:', evt.capacity);
+      return evt.capacity;
+    }
+    
+    // Check location capacity
+    if (evt.location && typeof evt.location.capacity === 'number' && evt.location.capacity > 0) {
+      console.log('Using location capacity:', evt.location.capacity);
+      return evt.location.capacity;
+    }
+    
+    // Check if location has sectionPricing
+    if (evt.location && evt.location.sectionPricing && Array.isArray(evt.location.sectionPricing) && evt.location.sectionPricing.length > 0) {
+      const sectionCapacity = evt.location.sectionPricing.reduce((sum, s) => {
+        const cap = Number(s.capacity) || 0;
+        console.log(`Location section ${s.sectionName || s.sectionId}: capacity ${cap}`);
+        return sum + cap;
+      }, 0);
+      console.log('Location section capacity calculated:', sectionCapacity);
+      return sectionCapacity;
+    }
+    
+    console.log('No capacity found, returning 0');
     return 0;
   };
 
   // Function to get ticket availability
-  const fetchTicketAvailability = async (evtParam) => {
+  const fetchTicketAvailability = useCallback(async (evtParam) => {
     if (!id) return;
     const currentEvent = evtParam || event;
+    
+    console.log('fetchTicketAvailability - Current event:', currentEvent);
+    console.log('fetchTicketAvailability - Event capacity check:', {
+      directCapacity: currentEvent?.capacity,
+      usesSectionPricing: currentEvent?.usesSectionPricing,
+      sectionPricing: currentEvent?.sectionPricing,
+      sectionPricingInfo: currentEvent?.sectionPricingInfo,
+      location: currentEvent?.location
+    });
     
     setAvailabilityLoading(true);
     try {
       const response = await axios.get(`${gatewayUrl}/tickets/event/${id}`);
       const ticketStats = response.data.statistics || [];
       
+      console.log('Ticket statistics response:', {
+        statistics: ticketStats,
+        fullResponse: response.data
+      });
+      
       // Process statistics to get availability
       let soldTickets = 0;
       let pendingTickets = 0;
       
+      console.log('Processing statistics:', ticketStats);
+      
       ticketStats.forEach(stat => {
+        console.log('Processing stat:', stat);
         if (stat._id === 'paid') {
           soldTickets = stat.totalTickets || 0;
+          console.log('Found paid tickets:', soldTickets);
         } else if (stat._id === 'pending') {
           pendingTickets = stat.totalTickets || 0;
+          console.log('Found pending tickets:', pendingTickets);
         }
       });
 
@@ -131,6 +202,15 @@ const EventDetails = () => {
       const availableTickets = Math.max(0, totalCapacity - soldTickets - pendingTickets);
       const isSoldOut = availableTickets <= 0;
       const salesPercentage = totalCapacity > 0 ? Math.round(((soldTickets + pendingTickets) / totalCapacity) * 100) : 0;
+
+      console.log('Final availability calculation:', {
+        totalCapacity,
+        soldTickets,
+        pendingTickets,
+        availableTickets,
+        isSoldOut,
+        salesPercentage
+      });
 
       setTicketAvailability({
         eventId: id,
@@ -147,7 +227,7 @@ const EventDetails = () => {
     } finally {
       setAvailabilityLoading(false);
     }
-  };
+  }, [id, gatewayUrl, event]);
 
   useEffect(() => {
     if (!id) {
@@ -167,11 +247,23 @@ const EventDetails = () => {
           category: mapEventTypeToCategory(res.data.type)
         };
         
+        console.log('Event data loaded:', eventData);
+        console.log('Event capacity check:', {
+          directCapacity: eventData.capacity,
+          usesSectionPricing: eventData.usesSectionPricing,
+          sectionPricing: eventData.sectionPricing,
+          sectionPricingInfo: eventData.sectionPricingInfo,
+          location: eventData.location
+        });
         setEvent(eventData);
         setLoading(false);
         
         // Load availability using the newly obtained event to avoid capacity 0
-        fetchTicketAvailability(eventData);
+        // Add a small delay to ensure state is updated
+        setTimeout(() => {
+          console.log('Calling fetchTicketAvailability with eventData:', eventData);
+          fetchTicketAvailability(eventData);
+        }, 100);
       })
       .catch((err) => {
         console.error("Error loading event details:", err);
@@ -190,14 +282,14 @@ const EventDetails = () => {
     }, 30000); // Actualizar cada 30 segundos
 
     return () => clearInterval(interval);
-  }, [event]);
+  }, [event, fetchTicketAvailability]);
 
   // Refrescar disponibilidad inmediatamente cuando el evento cambia
   useEffect(() => {
     if (event) {
       fetchTicketAvailability();
     }
-  }, [event]);
+  }, [event, fetchTicketAvailability]);
 
   const mapEventTypeToCategory = (type) => {
     const typeMap = {

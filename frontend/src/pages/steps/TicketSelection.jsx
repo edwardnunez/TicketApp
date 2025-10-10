@@ -57,7 +57,7 @@ export default function SelectTickets({
   }, []);
 
   // Función para obtener disponibilidad de tickets
-  const fetchTicketAvailability = async () => {
+  const fetchTicketAvailability = useCallback(async () => {
     if (!memoizedEvent?._id) return;
     
     setAvailabilityLoading(true);
@@ -97,7 +97,7 @@ export default function SelectTickets({
     } finally {
       setAvailabilityLoading(false);
     }
-  };
+  }, [memoizedEvent?._id, memoizedEvent?.capacity, gatewayUrl]);
 
   // Calcular entradas disponibles usando datos en tiempo real
   const availableTickets = useMemo(() => {
@@ -316,7 +316,7 @@ export default function SelectTickets({
       // Cargar disponibilidad de tickets cuando cambia el evento
       fetchTicketAvailability();
     }
-  }, [memoizedEvent?._id, memoizedEvent?.usesRowPricing, onSeatSelect, setQuantity, selectedSeats.length]);
+  }, [memoizedEvent?._id, memoizedEvent?.usesRowPricing, onSeatSelect, setQuantity, selectedSeats.length, fetchTicketAvailability]);
 
   // Configurar actualización automática de disponibilidad cada 30 segundos
   useEffect(() => {
@@ -327,7 +327,7 @@ export default function SelectTickets({
     }, 30000); // Actualizar cada 30 segundos
 
     return () => clearInterval(interval);
-  }, [memoizedEvent?._id]);
+  }, [memoizedEvent?._id, fetchTicketAvailability]);
 
 
 

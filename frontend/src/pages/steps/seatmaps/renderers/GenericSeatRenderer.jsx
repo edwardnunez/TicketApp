@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import EnhancedSeatMapContainer from '../containers/EnhancedSeatMapContainer';
+import SmartSeatMapContainer from '../containers/SmartSeatMapContainer';
 import { COLORS, getSectionTextColor, getContrastTextColor, getSectionLabelColor } from '../../../../components/colorscheme';
 import { Typography, notification, Card } from 'antd';
-import '../styles/ProfessionalSeatMapAnimations.css';
+import '../styles/SeatMapAnimations.css';
 
 const { Text } = Typography;
 
@@ -35,9 +35,9 @@ const GenericSeatMapRenderer = ({
 }) => {
   if (!seatMapData) return null;
 
-  // Usar el nuevo contenedor mejorado
+  // Usar el nuevo contenedor inteligente
   return (
-    <EnhancedSeatMapContainer
+    <SmartSeatMapContainer
       seatMapData={seatMapData}
       selectedSeats={selectedSeats}
       onSeatSelect={onSeatSelect}

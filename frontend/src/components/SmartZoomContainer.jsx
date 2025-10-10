@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Button, Slider, Typography, Space, Tooltip } from 'antd';
-import { ZoomInOutlined, ZoomOutOutlined, ReloadOutlined, FullscreenOutlined, FullscreenExitOutlined } from '@ant-design/icons';
-import { COLORS } from '../colorscheme';
+import { ZoomInOutlined, ZoomOutOutlined, ReloadOutlined, FullscreenOutlined } from '@ant-design/icons';
+import { COLORS } from './colorscheme';
 
 const { Text } = Typography;
 
@@ -22,7 +22,7 @@ const SmartZoomContainer = ({
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  // const [isFullscreen, setIsFullscreen] = useState(false);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 
   // Actualizar tamaño del contenedor
@@ -105,25 +105,25 @@ const SmartZoomContainer = ({
     if (onScaleChange) onScaleChange(newScale);
   };
 
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      containerRef.current?.requestFullscreen();
-      setIsFullscreen(true);
-    } else {
-      document.exitFullscreen();
-      setIsFullscreen(false);
-    }
-  };
+  // const toggleFullscreen = () => {
+  //   if (!document.fullscreenElement) {
+  //     containerRef.current?.requestFullscreen();
+  //     setIsFullscreen(true);
+  //   } else {
+  //     document.exitFullscreen();
+  //     setIsFullscreen(false);
+  //   }
+  // };
 
   // Manejar cambio de pantalla completa
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
-    };
+  // useEffect(() => {
+  //   const handleFullscreenChange = () => {
+  //     setIsFullscreen(!!document.fullscreenElement);
+  //   };
 
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
-  }, []);
+  //   document.addEventListener('fullscreenchange', handleFullscreenChange);
+  //   return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  // }, []);
 
   // Estilos del contenedor
   const containerStyle = {

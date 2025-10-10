@@ -183,7 +183,7 @@ const useViewportManager = (seatMapData, containerRef = null) => {
     }));
   }, []);
 
-  const setViewMode = useCallback((mode) => {
+  const setViewModeCallback = useCallback((mode) => {
     setViewMode(mode);
     if (mode !== 'auto') {
       adjustViewport();
@@ -222,7 +222,7 @@ const useViewportManager = (seatMapData, containerRef = null) => {
     isInitialized,
     setScale,
     setPan,
-    setViewMode,
+    setViewMode: setViewModeCallback,
     resetViewport,
     fitToScreen,
     centerContent,

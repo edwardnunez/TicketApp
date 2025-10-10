@@ -56,12 +56,12 @@ const useSeatMapViability = (seatMapData, containerDimensions = null) => {
 
       case 'concert':
         // Layout de concierto: escenario central con secciones alrededor
-        const stageWidth = 300;
+        const concertStageWidth = 300;
         const stageHeight = 80;
         const concertSectionWidth = Math.max(...sections.map(s => s.seatsPerRow * 24 + 100));
         const concertSectionHeight = Math.max(...sections.map(s => s.rows * 24 + 100));
         
-        totalWidth = stageWidth + (concertSectionWidth * 2) + 200;
+        totalWidth = concertStageWidth + (concertSectionWidth * 2) + 200;
         totalHeight = stageHeight + (concertSectionHeight * 2) + 150;
         break;
 
@@ -69,14 +69,14 @@ const useSeatMapViability = (seatMapData, containerDimensions = null) => {
         // Layout genérico: grid de secciones
         const maxSeatsPerRow = Math.max(...sections.map(s => s.seatsPerRow));
         const maxRows = Math.max(...sections.map(s => s.rows));
-        const sectionWidth = maxSeatsPerRow * 24 + 100;
+        const gridSectionWidth = maxSeatsPerRow * 24 + 100;
         const sectionHeight = maxRows * 24 + 100;
         
         // Calcular grid
         const cols = Math.ceil(Math.sqrt(sections.length));
         const rows = Math.ceil(sections.length / cols);
         
-        totalWidth = (sectionWidth * cols) + (20 * (cols - 1)) + 100;
+        totalWidth = (gridSectionWidth * cols) + (20 * (cols - 1)) + 100;
         totalHeight = (sectionHeight * rows) + (20 * (rows - 1)) + 100;
         break;
     }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { Card, Button, Typography, Space, Switch, message, Alert, Select, Tooltip } from 'antd';
 import { 
   EditOutlined, 
@@ -10,8 +10,8 @@ import { COLORS } from '../../../../components/colorscheme';
 import GenericSeatMapRenderer from '../renderers/GenericSeatRenderer';
 import ResponsiveSeatRenderer from '../renderers/ResponsiveSeatRenderer';
 import EditableSeatRenderer from '../renderers/EditableSeatRenderer';
-import AlternativeViewRenderer from './AlternativeViewRenderer';
-import SmartZoomContainer from '../../SmartZoomContainer';
+import FallbackViewContainer from './FallbackViewContainer';
+import SmartZoomContainer from '../../../../components/SmartZoomContainer';
 import useDeviceDetection from '../../../../hooks/useDeviceDetection';
 import useViewportManager from '../../../../hooks/useViewportManager';
 
@@ -37,7 +37,7 @@ const { Option } = Select;
  * @param {boolean} [props.readOnly=false] - Whether in read-only mode
  * @returns {JSX.Element} Adaptive seat map renderer with automatic view selection
  */
-const AdaptiveSeatMapRenderer = ({
+const SmartSeatMapContainer = ({
   seatMapData,
   selectedSeats,
   onSeatSelect,
@@ -87,7 +87,7 @@ const AdaptiveSeatMapRenderer = ({
     // Usar vista alternativa si el mapa no es viable o se selecciona manualmente
     if (currentViewMode === 'blocks' || currentViewMode === 'simplified' || currentViewMode === 'list') {
       return (
-        <AlternativeViewRenderer
+        <FallbackViewContainer
           seatMapData={seatMapData}
           selectedSeats={selectedSeats}
           onSeatSelect={onSeatSelect}
@@ -156,12 +156,12 @@ const AdaptiveSeatMapRenderer = ({
     setIsEditMode(!isEditMode);
   };
 
-  const handleSeatMapUpdate = (updatedData) => {
-    setHasUnsavedChanges(true);
-    if (onSeatMapUpdate) {
-      onSeatMapUpdate(updatedData);
-    }
-  };
+  // const handleSeatMapUpdate = (updatedData) => {
+  //   setHasUnsavedChanges(true);
+  //   if (onSeatMapUpdate) {
+  //     onSeatMapUpdate(updatedData);
+  //   }
+  // };
 
   if (!seatMapData) {
     return (
@@ -362,4 +362,4 @@ const AdaptiveSeatMapRenderer = ({
   );
 };
 
-export default AdaptiveSeatMapRenderer;
+export default SmartSeatMapContainer;

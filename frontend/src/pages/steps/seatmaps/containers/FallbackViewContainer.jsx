@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Card, Button, Typography, Space, Row, Col, Badge, Progress, Tooltip, Collapse } from 'antd';
+import { Card, Button, Typography, Row, Col, Badge, Progress, Collapse } from 'antd';
 import { COLORS } from '../../../../components/colorscheme';
 import SeatRenderer from '../renderers/SeatRenderer';
 import useDeviceDetection from '../../../../hooks/useDeviceDetection';
@@ -7,7 +7,7 @@ import useDeviceDetection from '../../../../hooks/useDeviceDetection';
 const { Title, Text } = Typography;
 const { Panel } = Collapse;
 
-const AlternativeViewRenderer = ({
+const FallbackViewContainer = ({
   seatMapData,
   selectedSeats,
   onSeatSelect,
@@ -23,12 +23,10 @@ const AlternativeViewRenderer = ({
   const deviceInfo = useDeviceDetection();
   const [expandedSections, setExpandedSections] = useState(new Set());
 
-  if (!seatMapData) return null;
-
-  const { sections } = seatMapData;
-
   // Calcular estadísticas de secciones
   const sectionStats = useMemo(() => {
+    if (!seatMapData) return [];
+    const { sections } = seatMapData;
     return sections.map(section => {
       const sectionOccupiedSeats = occupiedSeats?.filter(seatId => seatId.startsWith(section.id)) || [];
       const sectionBlockedSeats = blockedSeats?.filter(seatId => seatId.startsWith(section.id)) || [];
@@ -61,7 +59,9 @@ const AlternativeViewRenderer = ({
         occupancyRate
       };
     });
-  }, [sections, occupiedSeats, blockedSeats, blockedSections]);
+  }, [seatMapData, occupiedSeats, blockedSeats, blockedSections]);
+
+  if (!seatMapData) return null;
 
   const handleSeatSelect = (seatData) => {
     if (onSeatSelect) {
@@ -346,4 +346,4 @@ const AlternativeViewRenderer = ({
   }
 };
 
-export default AlternativeViewRenderer;
+export default FallbackViewContainer;

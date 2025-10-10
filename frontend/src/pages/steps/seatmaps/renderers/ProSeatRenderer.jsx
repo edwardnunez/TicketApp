@@ -6,10 +6,10 @@ import {
   LockOutlined,
   StarOutlined,
 } from '@ant-design/icons';
-import { COLORS, getSeatStateColors, getContrastTextColor, getContrastBorderColor, getContrastInfoBackground, getSectionLabelColor, getSectionDimensionColor, getRowLabelColor } from '../../../../components/colorscheme';
+import { COLORS, getSeatStateColors, getContrastBorderColor, getContrastInfoBackground, getSectionLabelColor, getSectionDimensionColor, getRowLabelColor } from '../../../../components/colorscheme';
 import SectionShapeRenderer from './SectionShapeRenderer';
 
-const ProfessionalSeatRenderer = ({
+const ProSeatRenderer = ({
   sectionId,
   rows,
   seatsPerRow,
@@ -629,4 +629,4 @@ const ProfessionalSeatRenderer = ({
   );
 };
 
-export default ProfessionalSeatRenderer;
+export default ProSeatRenderer;
