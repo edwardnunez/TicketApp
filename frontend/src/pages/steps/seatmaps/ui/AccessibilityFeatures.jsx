@@ -69,7 +69,7 @@ const AccessibilityFeatures = ({
   const accessibilityFeatures = [
     {
       key: 'high-contrast',
-      label: 'Alto Contraste',
+      label: 'Alto contraste',
       description: 'Mejora la visibilidad de los elementos',
       icon: <EyeOutlined />,
       enabled: isHighContrast,
@@ -77,7 +77,7 @@ const AccessibilityFeatures = ({
     },
     {
       key: 'keyboard-nav',
-      label: 'Navegación por Teclado',
+      label: 'Navegación por teclado',
       description: 'Navegar con flechas y seleccionar con Enter',
       icon: <BulbOutlined />,
       enabled: isKeyboardNavigationEnabled,
@@ -142,7 +142,7 @@ const AccessibilityFeatures = ({
         >
           <div style={{ marginBottom: '16px' }}>
             <Text strong style={{ fontSize: '16px', color: COLORS.neutral.grey800 }}>
-              Configuración de Accesibilidad
+              Configuración de accesibilidad
             </Text>
           </div>
 

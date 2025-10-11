@@ -4,7 +4,6 @@ import { COLORS } from '../../../../components/colorscheme';
 const SeatMapLegend = ({ 
   theme = 'default', // 'default', 'cinema', 'theater', 'stadium', 'concert'
   showPremium = true,
-  showAccessible = false,
   className = ''
 }) => {
   const getThemeStyles = () => {
@@ -86,15 +85,6 @@ const SeatMapLegend = ({
       border: 'none',
       label: 'VIP/Premium',
       description: 'Asiento premium'
-    });
-  }
-
-  if (showAccessible) {
-    legendItems.push({
-      color: '#4CAF50',
-      border: 'none',
-      label: 'Accesible',
-      description: 'Para personas con movilidad reducida'
     });
   }
 

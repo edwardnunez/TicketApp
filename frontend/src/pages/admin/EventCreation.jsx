@@ -1808,7 +1808,7 @@ const EventCreation = () => {
         onOk={handleConfirmSaveEvent}
         onCancel={() => setShowConfirmModal(false)}
         confirmLoading={saving}
-        okText="Crear Evento"
+        okText="Crear evento"
         cancelText="Cancelar"
         okButtonProps={{
           style: {

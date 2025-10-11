@@ -186,7 +186,7 @@ const Register = () => {
                 validateStatus={registerError["name"] ? "error" : ""}
                 help={registerError["name"]}
               >
-                <Input prefix={<UserOutlined style={{ color: COLORS.neutral.grey4 }} />} placeholder="Nombre completo" style={{ borderRadius: "6px" }} />
+                <Input prefix={<UserOutlined style={{ color: COLORS.neutral.grey4 }} />} placeholder="Nombre" style={{ borderRadius: "6px" }} />
               </Form.Item>
 
               <Form.Item

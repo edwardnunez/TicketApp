@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { 
-  Table, 
   Layout, 
   Typography, 
   Button, 
@@ -75,57 +74,6 @@ const AboutUs = () => {
     }
   ];
 
-  const columns = [
-    {
-      title: "Nombre",
-      dataIndex: "name",
-      key: "name",
-      render: (text, record) => (
-        <Space>
-          <Avatar 
-            icon={<UserOutlined />} 
-            style={{ 
-              backgroundColor: COLORS?.primary?.main || "#1890ff",
-              color: "#fff"
-            }} 
-            src={record.avatar} 
-          />
-          <span>{text}</span>
-        </Space>
-      )
-    },
-    {
-      title: "UO",
-      dataIndex: "UO",
-      key: "UO",
-      responsive: ["md"]
-    },
-    {
-      title: "Email",
-      dataIndex: "email",
-      key: "email",
-      responsive: ["lg"]
-    },
-    {
-      title: "GitHub",
-      dataIndex: "github",
-      key: "github",
-      render: (text, record) => (
-        <a 
-          href={record.githubUrl} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          style={{ 
-            color: COLORS?.primary?.main || "#1890ff",
-            display: "flex",
-            alignItems: "center" 
-          }}
-        >
-          <GithubOutlined style={{ marginRight: 8 }} /> {text}
-        </a>
-      )
-    }
-  ];
 
   return (
     <Layout style={{ backgroundColor: COLORS?.neutral?.white || "#fff", minHeight: "100vh" }}>
@@ -162,29 +110,6 @@ const AboutUs = () => {
             }}
           >
             <Space direction="vertical" size="large" style={{ width: "100%" }}>
-              <div style={{ textAlign: "center" }}>
-                <TeamOutlined style={{ 
-                  fontSize: "48px", 
-                  color: COLORS?.primary?.main || "#1890ff", 
-                  marginBottom: "16px" 
-                }} />
-                <Title level={3} style={{ 
-                  color: COLORS?.neutral?.dark || "#262626",
-                  marginTop: 0
-                }}>
-                  Acerca de nosotros
-                </Title>
-                <Paragraph style={{ 
-                  color: COLORS?.neutral?.grey4 || "#8c8c8c",
-                  fontSize: "16px"
-                }}>
-                  Somos un equipo dedicado al desarrollo de soluciones web innovadoras.
-                  Nuestra plataforma de eventos está diseñada para proporcionar una experiencia
-                  fluida y agradable para los usuarios que buscan descubrir y asistir a eventos.
-                </Paragraph>
-              </div>
-
-              <Divider style={{ margin: "24px 0" }} />
 
               <div className="mobile-cards" style={{ display: "block", marginBottom: "24px" }}>
                 <Row gutter={[24, 24]}>
@@ -245,16 +170,6 @@ const AboutUs = () => {
                 </Row>
               </div>
 
-              <div className="desktop-table" style={{ overflowX: "auto" }}>
-                <Table 
-                  dataSource={teamMembers} 
-                  columns={columns} 
-                  pagination={false}
-                  style={{ marginBottom: "24px" }}
-                  className="team-table"
-                  rowClassName={() => "team-table-row"}
-                />
-              </div>
             </Space>
           </Card>
 
