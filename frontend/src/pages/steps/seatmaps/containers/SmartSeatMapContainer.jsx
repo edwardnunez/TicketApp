@@ -10,8 +10,8 @@ import { COLORS } from '../../../../components/colorscheme';
 import GenericSeatMapRenderer from '../renderers/GenericSeatRenderer';
 import ResponsiveSeatRenderer from '../renderers/ResponsiveSeatRenderer';
 import EditableSeatRenderer from '../renderers/EditableSeatRenderer';
-import AlternativeViewRenderer from './AlternativeViewRenderer';
-import SmartZoomContainer from '../../SmartZoomContainer';
+import FallbackViewContainer from './FallbackViewContainer';
+import SmartZoomContainer from './SmartZoomContainer';
 import useDeviceDetection from '../../../../hooks/useDeviceDetection';
 import useViewportManager from '../../../../hooks/useViewportManager';
 
@@ -87,7 +87,7 @@ const AdaptiveSeatMapRenderer = ({
     // Usar vista alternativa si el mapa no es viable o se selecciona manualmente
     if (currentViewMode === 'blocks' || currentViewMode === 'simplified' || currentViewMode === 'list') {
       return (
-        <AlternativeViewRenderer
+        <FallbackViewContainer
           seatMapData={seatMapData}
           selectedSeats={selectedSeats}
           onSeatSelect={onSeatSelect}

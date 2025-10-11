@@ -12,7 +12,7 @@ import SmartSeatFilters from '../../../../components/SmartSeatFilters';
 import OptimizedSeatNavigation from '../../../../components/OptimizedSeatNavigation';
 import PersistentViewSwitcher from '../../../../components/PersistentViewSwitcher';
 import useDeviceDetection from '../../../../hooks/useDeviceDetection';
-import '../styles/ProfessionalSeatMapAnimations.css';
+import '../styles/SeatMapAnimations.css';
 
 const { Title, Text } = Typography;
 

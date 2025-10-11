@@ -52,11 +52,8 @@ const Footer = () => {
           <Link to="/about-us" style={{ color: COLORS.primary.main, fontWeight: "500" }}>
             Sobre nosotros
           </Link>
-          <Link to="/contact" style={{ color: COLORS.primary.main, fontWeight: "500" }}>
-            Contacto
-          </Link>
-          <Link to="/terms" style={{ color: COLORS.primary.main, fontWeight: "500" }}>
-            Términos y condiciones
+          <Link to="/help" style={{ color: COLORS.primary.main, fontWeight: "500" }}>
+            Centro de ayuda
           </Link>
         </div>
 

@@ -7,7 +7,7 @@ import useDeviceDetection from '../../../../hooks/useDeviceDetection';
 const { Title, Text } = Typography;
 const { Panel } = Collapse;
 
-const AlternativeViewRenderer = ({
+const FallbackViewContainer = ({
   seatMapData,
   selectedSeats,
   onSeatSelect,
@@ -346,4 +346,4 @@ const AlternativeViewRenderer = ({
   }
 };
 
-export default AlternativeViewRenderer;
+export default FallbackViewContainer;

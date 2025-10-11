@@ -13,29 +13,15 @@ const { Text } = Typography;
 
 const AccessibilityFeatures = ({
   onHighContrastToggle,
-  onScreenReaderToggle,
   onKeyboardNavigationToggle,
   onTooltipToggle,
   isHighContrast = false,
-  isScreenReaderEnabled = false,
   isKeyboardNavigationEnabled = false,
   showTooltips = true,
   isMobile = false
 }) => {
   const [showAccessibilityPanel, setShowAccessibilityPanel] = useState(false);
-  const [announcements, setAnnouncements] = useState([]);
 
-  // Anunciar cambios importantes para lectores de pantalla
-  const announce = useCallback((message) => {
-    if (isScreenReaderEnabled) {
-      setAnnouncements(prev => [...prev, { id: Date.now(), message }]);
-      
-      // Limpiar anuncios después de 5 segundos
-      setTimeout(() => {
-        setAnnouncements(prev => prev.slice(1));
-      }, 5000);
-    }
-  }, [isScreenReaderEnabled]);
 
   // Manejar navegación por teclado
   useEffect(() => {
@@ -65,7 +51,6 @@ const AccessibilityFeatures = ({
         }
         
         focusableElements[nextIndex]?.focus();
-        announce(`Navegando a elemento ${nextIndex + 1} de ${focusableElements.length}`);
       }
       
       // Selección con Enter o Espacio
@@ -74,13 +59,12 @@ const AccessibilityFeatures = ({
            e.target.classList.contains('general-admission'))) {
         e.preventDefault();
         e.target.click();
-        announce('Asiento seleccionado');
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isKeyboardNavigationEnabled, announce]);
+  }, [isKeyboardNavigationEnabled]);
 
   const accessibilityFeatures = [
     {
@@ -90,14 +74,6 @@ const AccessibilityFeatures = ({
       icon: <EyeOutlined />,
       enabled: isHighContrast,
       onChange: onHighContrastToggle
-    },
-    {
-      key: 'screen-reader',
-      label: 'Lector de Pantalla',
-      description: 'Anuncios de voz para cambios importantes',
-      icon: <SoundOutlined />,
-      enabled: isScreenReaderEnabled,
-      onChange: onScreenReaderToggle
     },
     {
       key: 'keyboard-nav',
@@ -222,7 +198,6 @@ const AccessibilityFeatures = ({
                   checked={feature.enabled}
                   onChange={(checked) => {
                     feature.onChange(checked);
-                    announce(`${feature.label} ${checked ? 'activado' : 'desactivado'}`);
                   }}
                   size={isMobile ? 'small' : 'default'}
                 />
@@ -247,25 +222,6 @@ const AccessibilityFeatures = ({
         </div>
       )}
 
-      {/* Anuncios para lectores de pantalla */}
-      <div 
-        className="screen-reader-announcements"
-        style={{
-          position: 'absolute',
-          left: '-10000px',
-          width: '1px',
-          height: '1px',
-          overflow: 'hidden'
-        }}
-        aria-live="polite"
-        aria-atomic="true"
-      >
-        {announcements.map(announcement => (
-          <div key={announcement.id}>
-            {announcement.message}
-          </div>
-        ))}
-      </div>
 
       {/* Estilos para alto contraste */}
       {isHighContrast && (

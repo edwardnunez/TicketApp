@@ -8,13 +8,13 @@ import {
   InfoCircleOutlined
 } from '@ant-design/icons';
 import { COLORS } from '../../components/colorscheme';
-import ProfessionalSeatMapRenderer from '../steps/seatmaps/containers/ProfessionalSeatMapRenderer';
-import '../steps/seatmaps/styles/ProfessionalSeatMapAnimations.css';
-import '../steps/seatmaps/styles/ProfessionalSeatMapLayouts.css';
+import MainSeatMapContainer from '../steps/seatmaps/containers/MainSeatMapContainer';
+import '../steps/seatmaps/styles/SeatMapAnimations.css';
+import '../steps/seatmaps/styles/SeatMapLayouts.css';
 
 const { Title, Text } = Typography;
 
-const ProfessionalAdminSeatMapRenderer = ({
+const AdminSeatMapRenderer = ({
   seatMapData,
   blockedSeats = [],
   blockedSections = [],
@@ -188,7 +188,7 @@ const ProfessionalAdminSeatMapRenderer = ({
           overflow: 'hidden'
         }}
       >
-        <ProfessionalSeatMapRenderer
+        <MainSeatMapContainer
           seatMapData={seatMapData}
           selectedSeats={[]} // No hay asientos seleccionados en modo admin
           onSeatSelect={handleAdminSeatClick}
@@ -224,4 +224,4 @@ const ProfessionalAdminSeatMapRenderer = ({
   );
 };
 
-export default ProfessionalAdminSeatMapRenderer;
+export default AdminSeatMapRenderer;

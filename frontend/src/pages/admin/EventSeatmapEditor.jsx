@@ -23,7 +23,7 @@ import {
 } from '@ant-design/icons';
 import { COLORS } from '../../components/colorscheme';
 import GenericSeatMapRenderer from '../steps/seatmaps/renderers/GenericSeatRenderer';
-import ProfessionalAdminSeatMapRenderer from './ProfessionalAdminSeatMapRenderer';
+import AdminSeatMapRenderer from './AdminSeatMapRenderer';
 import axios from 'axios';
 
 const { Title, Text } = Typography;
@@ -465,7 +465,7 @@ const EventSeatMapEditor = () => {
                   formatPrice={(price) => `${price}€`}
                 />
               ) : (
-                <ProfessionalAdminSeatMapRenderer
+                <AdminSeatMapRenderer
                   seatMapData={seatMapData}
                   blockedSeats={blockedSeats}
                   blockedSections={blockedSections}

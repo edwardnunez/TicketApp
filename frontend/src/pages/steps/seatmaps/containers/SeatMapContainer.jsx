@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { Typography } from 'antd';
 import { COLORS } from '../../../../components/colorscheme';
-import ProfessionalSeatMapRenderer from './ProfessionalSeatMapRenderer';
+import MainSeatMapContainer from './MainSeatMapContainer';
 
 const { Text } = Typography;
 
@@ -77,7 +77,7 @@ const EnhancedSeatMapContainer = ({
           overflow: 'visible'
         }}
       >
-        <ProfessionalSeatMapRenderer
+        <MainSeatMapContainer
           seatMapData={seatMapData}
           selectedSeats={selectedSeats}
           onSeatSelect={onSeatSelect}
