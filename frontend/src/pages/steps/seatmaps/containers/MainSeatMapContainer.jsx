@@ -6,13 +6,13 @@ import {
   InfoCircleOutlined
 } from '@ant-design/icons';
 import { COLORS, getVenueColors } from '../../../../components/colorscheme';
-import ProfessionalSeatRenderer from '../renderers/ProfessionalSeatRenderer';
-import ProfessionalSeatMapLegend from '../ui/ProfessionalSeatMapLegend';
+import ProSeatRenderer from '../renderers/ProSeatRenderer';
+import AltSeatMapLegend from '../ui/AltSeatMapLegend';
 import VenueStageRenderer from '../renderers/VenueStageRenderer';
 import ZoomControls from '../ui/ZoomControls';
 import AccessibilityFeatures from '../ui/AccessibilityFeatures';
-import '../styles/ProfessionalSeatMapAnimations.css';
-import '../styles/ProfessionalSeatMapLayouts.css';
+import '../styles/SeatMapAnimations.css';
+import '../styles/SeatMapLayouts.css';
 
 const { Title, Text } = Typography;
 
@@ -147,7 +147,6 @@ const ProfessionalSeatMapRenderer = ({
   
   // Estados de accesibilidad
   const [isHighContrast, setIsHighContrast] = useState(false);
-  const [isScreenReaderEnabled, setIsScreenReaderEnabled] = useState(false);
   const [isKeyboardNavigationEnabled, setIsKeyboardNavigationEnabled] = useState(false);
   const [showTooltips, setShowTooltips] = useState(true);
   
@@ -290,7 +289,7 @@ const ProfessionalSeatMapRenderer = ({
         onMouseLeave={() => setHoveredSection(null)}
       >
         {section.hasNumberedSeats ? (
-          <ProfessionalSeatRenderer
+          <ProSeatRenderer
             sectionId={section.id}
             rows={section.rows}
             seatsPerRow={section.seatsPerRow}
@@ -804,11 +803,9 @@ const ProfessionalSeatMapRenderer = ({
       {/* Características de accesibilidad */}
       <AccessibilityFeatures
         onHighContrastToggle={setIsHighContrast}
-        onScreenReaderToggle={setIsScreenReaderEnabled}
         onKeyboardNavigationToggle={setIsKeyboardNavigationEnabled}
         onTooltipToggle={setShowTooltips}
         isHighContrast={isHighContrast}
-        isScreenReaderEnabled={isScreenReaderEnabled}
         isKeyboardNavigationEnabled={isKeyboardNavigationEnabled}
         showTooltips={showTooltips}
         isMobile={isMobile}
@@ -879,7 +876,7 @@ const ProfessionalSeatMapRenderer = ({
               pointerEvents: 'none'
             }}
           >
-            <ProfessionalSeatMapLegend
+            <AltSeatMapLegend
               venueType={type}
               showPremium={true}
               showAccessible={true}
