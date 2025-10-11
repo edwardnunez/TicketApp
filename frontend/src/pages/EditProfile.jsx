@@ -338,7 +338,7 @@ const EditProfile = () => {
                         <ArrowLeftOutlined />
                       </Link>
                     </Tooltip>
-                    <span style={{ color: COLORS.neutral.darker }}>Editar Perfil</span>
+                    <span style={{ color: COLORS.neutral.darker }}>Editar perfil</span>
                   </div>
                 }
                 style={{

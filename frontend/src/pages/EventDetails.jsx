@@ -755,7 +755,7 @@ const EventDetails = () => {
                         boxShadow: `0 4px 8px ${COLORS.primary.light}40`
                       }}
                     >
-                      Comprar Entradas
+                      Comprar entradas
                     </Button>
                   ) : (
                     <Button

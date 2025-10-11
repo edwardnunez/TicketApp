@@ -147,7 +147,7 @@ const HelpCenter = () => {
       <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
         <Title level={2} style={{ marginBottom: '24px', color: COLORS?.primary?.main || '#1890ff' }}>
           <QuestionCircleOutlined style={{ marginRight: '8px' }} />
-          Centro de Ayuda
+          Centro de ayuda
         </Title>
 
         {/* Búsqueda */}
@@ -189,7 +189,7 @@ const HelpCenter = () => {
               title={
                 <span>
                   <MessageOutlined style={{ marginRight: '8px' }} />
-                  Contacta con Nosotros
+                  Contacta con nosotros
                 </span>
               }
               style={{ borderRadius: '8px' }}
@@ -222,7 +222,7 @@ const HelpCenter = () => {
               title={
                 <span>
                   <MailOutlined style={{ marginRight: '8px' }} />
-                  Envíanos un Mensaje
+                  Envíanos un mensaje
                 </span>
               }
               style={{ borderRadius: '8px' }}
@@ -241,7 +241,7 @@ const HelpCenter = () => {
                   disabled={!contactMessage.trim()}
                   style={{ borderRadius: '6px' }}
                 >
-                  Enviar Mensaje
+                  Enviar mensaje
                 </Button>
               </Space>
             </Card>

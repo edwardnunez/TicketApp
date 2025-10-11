@@ -289,7 +289,7 @@ const AdminStatistics = () => {
               </Select>
             </Col>
             <Col xs={24} sm={12} md={6}>
-              <Text strong>Rango de Fechas:</Text>
+              <Text strong>Rango de fechas:</Text>
               <RangePicker
                 value={filters.dateRange}
                 onChange={handleDateRangeChange}

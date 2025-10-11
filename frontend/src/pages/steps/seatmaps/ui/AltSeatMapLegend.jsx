@@ -76,7 +76,6 @@ const ProfessionalSeatMapLegend = ({
       border: `2px solid ${COLORS.seatStates.available.border}`,
       label: 'Disponible',
       description: 'Asiento libre',
-      icon: '🪑'
     },
     {
       color: COLORS.seatStates.selected.background,
@@ -109,17 +108,6 @@ const ProfessionalSeatMapLegend = ({
       description: 'Asiento premium',
       icon: '⭐',
       indicator: COLORS.accent.gold
-    });
-  }
-
-  if (showAccessible) {
-    legendItems.push({
-      color: COLORS.seatStates.accessible.background,
-      border: `2px solid ${COLORS.seatStates.accessible.border}`,
-      label: 'Accesible',
-      description: 'Movilidad reducida',
-      icon: '♿',
-      indicator: COLORS.accent.green
     });
   }
 
