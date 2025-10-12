@@ -582,13 +582,22 @@ const LocationCreation = () => {
       dataIndex: 'rows',
       width: 60,
       render: (text, record) => (
-        <InputNumber 
-          min={1} 
-          max={getSectionLimits(seatMapForm.getFieldValue('type'), record.position).maxRows}
-          value={text}
-          onChange={(value) => updateSection(record.key, 'rows', value)}
-          style={{ width: '100%' }}
-        />
+        record.hasNumberedSeats === false ? (
+          <InputNumber 
+            value={null}
+            disabled={true}
+            placeholder="N/A"
+            style={{ width: '100%' }}
+          />
+        ) : (
+          <InputNumber 
+            min={1} 
+            max={getSectionLimits(seatMapForm.getFieldValue('type'), record.position).maxRows}
+            value={text}
+            onChange={(value) => updateSection(record.key, 'rows', value)}
+            style={{ width: '100%' }}
+          />
+        )
       )
     },
     {
@@ -596,13 +605,22 @@ const LocationCreation = () => {
       dataIndex: 'seatsPerRow',
       width: 80,
       render: (text, record) => (
-        <InputNumber 
-          min={1} 
-          max={getSectionLimits(seatMapForm.getFieldValue('type'), record.position).maxSeatsPerRow}
-          value={text}
-          onChange={(value) => updateSection(record.key, 'seatsPerRow', value)}
-          style={{ width: '100%' }}
-        />
+        record.hasNumberedSeats === false ? (
+          <InputNumber 
+            value={null}
+            disabled={true}
+            placeholder="N/A"
+            style={{ width: '100%' }}
+          />
+        ) : (
+          <InputNumber 
+            min={1} 
+            max={getSectionLimits(seatMapForm.getFieldValue('type'), record.position).maxSeatsPerRow}
+            value={text}
+            onChange={(value) => updateSection(record.key, 'seatsPerRow', value)}
+            style={{ width: '100%' }}
+          />
+        )
       )
     },
     {
@@ -663,7 +681,10 @@ const LocationCreation = () => {
       title: 'Total',
       render: (_, record) => (
         <Tag color="blue">
-          {(record.rows * record.seatsPerRow).toLocaleString()} asientos
+          {record.hasNumberedSeats === false 
+            ? (record.totalCapacity || 0).toLocaleString() + ' asientos'
+            : (record.rows * record.seatsPerRow).toLocaleString() + ' asientos'
+          }
         </Tag>
       )
     },
