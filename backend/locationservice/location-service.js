@@ -75,6 +75,10 @@ app.post("/location", async (req, res) => {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
+    if (capacity<0) {
+      return res.status(400).json({ error: "Capacity cannot be less than 0" });
+    }
+
     let locationDoc = await LocationModel.findOne({ name });
     let repeatedLocation = await LocationModel.findOne({ name, address, category });
 

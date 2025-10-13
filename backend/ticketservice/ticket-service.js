@@ -618,6 +618,14 @@ app.delete('/tickets/:id', validateObjectId, async (req, res) => {
       });
     }
 
+    // Validar que el ticket no esté ya cancelado
+    if (ticket.status === 'cancelled') {
+      return res.status(400).json({
+        error: "Ticket ya cancelado",
+        message: "Este ticket ya ha sido cancelado anteriormente"
+      });
+    }
+
     // En lugar de eliminar, cambiar estado a cancelado
     ticket.status = 'cancelled';
     await ticket.save();

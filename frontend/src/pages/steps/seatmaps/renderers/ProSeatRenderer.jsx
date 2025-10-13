@@ -100,7 +100,7 @@ const ProSeatRenderer = ({
   // Función para obtener las dimensiones correctas según el tipo de sección
   const getSectionDimensions = () => {
     if (isLateralSection()) {
-      // Para secciones laterales: invertir filas y columnas
+      // Para secciones laterales: invertir filas y columnas para rotar 90 grados
       return {
         displayRows: seatsPerRow,    // Las columnas se convierten en filas
         displaySeatsPerRow: rows,    // Las filas se convierten en columnas
@@ -119,7 +119,8 @@ const ProSeatRenderer = ({
   const getSeatId = (row, seat) => {
     const dimensions = getSectionDimensions();
     if (dimensions.isInverted) {
-      // Para secciones laterales: el asiento real está en la posición invertida
+      // Para secciones laterales: las coordenadas están invertidas
+      // row representa la fila original, seat representa el asiento original
       return `${sectionId}-${getRowNumber(seat)}-${row + 1}`;
     } else {
       // Para secciones normales: mantener la lógica original
@@ -176,14 +177,16 @@ const ProSeatRenderer = ({
     if (isSeatOccupied(seatId) || isSeatBlocked(seatId) || sectionBlocked) return;
 
     const dimensions = getSectionDimensions();
-    let actualRow;
+    let actualRow, actualSeat;
     
     if (dimensions.isInverted) {
       // Para secciones laterales: usar las coordenadas invertidas
       actualRow = seat;
+      actualSeat = row;
     } else {
       // Para secciones normales: usar las coordenadas originales
       actualRow = row;
+      actualSeat = seat;
     }
 
     const seatPrice = getSeatPrice(row, seat);
@@ -192,7 +195,7 @@ const ProSeatRenderer = ({
       section: sectionName,
       sectionId,
       row: getRowNumber(actualRow),
-      seat: seat + 1,
+      seat: actualSeat + 1,
       price: seatPrice
     };
 
@@ -271,13 +274,25 @@ const ProSeatRenderer = ({
         if (false) { // isPremium not defined, using false for now
           return <StarOutlined style={{ fontSize: `${seatSize.fontSize * 0.8}px` }} />;
         }
+        
+        // Calcular el número correcto del asiento según el tipo de sección
+        const dimensions = getSectionDimensions();
+        let seatNumber;
+        if (dimensions.isInverted) {
+          // Para secciones laterales: el número del asiento es row + 1 (porque está invertido)
+          seatNumber = row + 1;
+        } else {
+          // Para secciones normales: el número del asiento es seat + 1
+          seatNumber = seat + 1;
+        }
+        
         return (
           <span style={{ 
             fontSize: `${seatSize.fontSize * 0.7}px`, 
             fontWeight: '600',
             lineHeight: 1
           }}>
-            {seat + 1}
+            {seatNumber}
           </span>
         );
     }
@@ -291,35 +306,37 @@ const ProSeatRenderer = ({
                      sectionName.toLowerCase().includes('vip');
     
     const dimensions = getSectionDimensions();
-    let actualRow;
+    let actualRow, actualSeat;
     
     if (dimensions.isInverted) {
       // Para secciones laterales: usar las coordenadas invertidas
       actualRow = seat;
+      actualSeat = row;
     } else {
       // Para secciones normales: usar las coordenadas originales
       actualRow = row;
+      actualSeat = seat;
     }
     
     const tooltips = {
       occupied: {
-        title: 'Asiento Ocupado',
-        content: `${sectionName} - Fila ${getRowNumber(actualRow)}, Asiento ${seat + 1}`,
+        title: 'Asiento ocupado',
+        content: `${sectionName} - Fila ${getRowNumber(actualRow)}, Asiento ${actualSeat + 1}`,
         color: COLORS.neutral.grey500
       },
       blocked: {
-        title: sectionBlocked ? 'Sección Bloqueada' : 'Asiento Bloqueado',
-        content: sectionBlocked ? 'Esta sección no está disponible' : `${sectionName} - Fila ${getRowNumber(actualRow)}, Asiento ${seat + 1}`,
+        title: sectionBlocked ? 'Sección bloqueada' : 'Asiento bloqueado',
+        content: sectionBlocked ? 'Esta sección no está disponible' : `${sectionName} - Fila ${getRowNumber(actualRow)}, Asiento ${actualSeat + 1}`,
         color: COLORS.secondary.main
       },
       selected: {
-        title: 'Asiento Seleccionado',
-        content: `${sectionName} - Fila ${getRowNumber(actualRow)}, Asiento ${seat + 1}${isAdminMode ? '' : ` - ${formattedPrice}`}`,
+        title: 'Asiento seleccionado',
+        content: `${sectionName} - Fila ${getRowNumber(actualRow)}, Asiento ${actualSeat + 1}${isAdminMode ? '' : ` - ${formattedPrice}`}`,
         color: COLORS.primary.main
       },
       available: {
-        title: isPremium ? 'Asiento Premium' : `${sectionName} - Fila ${getRowNumber(actualRow)}, Asiento ${seat + 1}`,
-        content: isAdminMode ? (isPremium ? 'Asiento Premium' : 'Disponible') : `Precio: ${formattedPrice}${isPremium ? ' (Premium)' : ''}`,
+        title: isPremium ? 'Asiento premium' : `${sectionName} - Fila ${getRowNumber(actualRow)}, Asiento ${actualSeat + 1}`,
+        content: isAdminMode ? (isPremium ? 'Asiento premium' : 'Disponible') : `Precio: ${formattedPrice}${isPremium ? ' (Premium)' : ''}`,
         color: isPremium ? COLORS.accent.gold : (color || COLORS.primary.main)
       }
     };
@@ -483,10 +500,10 @@ const ProSeatRenderer = ({
             gap: '1px',
             alignItems: 'center',
             justifyContent: 'start',
-            width: 'fit-content', // Cambiado de 'auto' a 'fit-content'
+            width: 'fit-content',
             minWidth: `${seatTotalWidth}px`,
             position: 'relative',
-            overflow: 'visible' // Asegurar que no se corte
+            overflow: 'visible'
           }}
         >
           {Array.from({ length: dimensions.displaySeatsPerRow }).map((_, seat) => renderSeat(row, seat))}
