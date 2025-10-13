@@ -19,17 +19,5 @@
     "jest": "^29.7.0",
     "supertest": "^6.3.3",
     "@types/jest": "^29.5.5"
-  },
-  "jest": {
-    "testEnvironment": "node",
-    "testMatch": ["**/__tests__/**/*.test.js"],
-    "collectCoverageFrom": [
-      "**/*.js",
-      "!**/node_modules/**",
-      "!**/__tests__/**"
-    ],
-    "coverageDirectory": "coverage",
-    "coverageReporters": ["text", "lcov", "html"],
-    "transform": {}
   }
 }
