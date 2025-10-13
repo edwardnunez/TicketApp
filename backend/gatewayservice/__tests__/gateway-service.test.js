@@ -85,7 +85,7 @@ afterAll(async () => {
 
 describe("Gateway Service - Integration tests", () => {
   
-  describe("Caso de Uso 1: Health Check", () => {
+  describe("Caso de Uso 1: Health check", () => {
     it("debería retornar estado OK", async () => {
       const response = await request(app).get("/health");
 
@@ -94,7 +94,7 @@ describe("Gateway Service - Integration tests", () => {
     });
   });
 
-  describe("Caso de Uso 2: Autenticación de Usuario", () => {
+  describe("Caso de Uso 2: Autenticación de usuario", () => {
     it("debería validar datos de login", async () => {
       const loginData = {
         username: "testuser",
@@ -149,7 +149,7 @@ describe("Gateway Service - Integration tests", () => {
     });
   });
 
-  describe("Caso de Uso 3: Gestión de Tickets", () => {
+  describe("Caso de Uso 3: Gestión de tickets", () => {
     it("debería validar compra de tickets", async () => {
       const purchaseData = {
         eventId: "event1",
@@ -211,7 +211,7 @@ describe("Gateway Service - Integration tests", () => {
     });
   });
 
-  describe("Caso de Uso 4: Gestión de Eventos", () => {
+  describe("Caso de Uso 4: Gestión de eventos", () => {
     it("debería validar creación de evento", async () => {
       const eventData = {
         name: "Concierto de Rock",
@@ -290,7 +290,7 @@ describe("Gateway Service - Integration tests", () => {
     });
   });
 
-  describe("Caso de Uso 5: Gestión de Ubicaciones", () => {
+  describe("Caso de Uso 5: Gestión de ubicaciones", () => {
     it("debería validar creación de ubicación", async () => {
       const locationData = {
         name: "Estadio Principal",
@@ -335,7 +335,7 @@ describe("Gateway Service - Integration tests", () => {
     });
   });
 
-  describe("Caso de Uso 6: Gestión de Mapas de Asientos", () => {
+  describe("Caso de Uso 6: Gestión de mapas de asientos", () => {
     it("debería validar creación de seatmap", async () => {
       const seatMapData = {
         name: "Estadio SeatMap",
@@ -391,7 +391,7 @@ describe("Gateway Service - Integration tests", () => {
     });
   });
 
-  describe("Caso de Uso 7: Búsqueda y Filtrado", () => {
+  describe("Caso de Uso 7: Búsqueda y filtrado", () => {
     it("debería validar búsqueda de usuarios", async () => {
       const searchParams = {
         username: "testuser"
@@ -432,7 +432,7 @@ describe("Gateway Service - Integration tests", () => {
     });
   });
 
-  describe("Caso de Uso 8: Estadísticas y Reportes", () => {
+  describe("Caso de Uso 8: Estadísticas y reportes", () => {
     it("debería validar estadísticas de tickets", async () => {
       const ticketStats = {
         totalTickets: 1000,
@@ -462,7 +462,7 @@ describe("Gateway Service - Integration tests", () => {
     });
   });
 
-  describe("Caso de Uso 9: Manejo de Errores", () => {
+  describe("Caso de Uso 9: Manejo de errores", () => {
     it("debería manejar errores de servicio no disponible", async () => {
       const serviceError = {
         code: "SERVICE_UNAVAILABLE",
@@ -501,7 +501,7 @@ describe("Gateway Service - Integration tests", () => {
     });
   });
 
-  describe("Caso de Uso 10: Integración de Servicios", () => {
+  describe("Caso de Uso 10: Integración de servicios", () => {
     it("debería validar flujo completo de compra", async () => {
       const completePurchaseFlow = {
         step1: "User authentication",
