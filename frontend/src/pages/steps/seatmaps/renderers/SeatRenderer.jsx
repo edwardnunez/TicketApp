@@ -91,7 +91,7 @@ const SeatRenderer = ({
   // Función para obtener las dimensiones correctas según el tipo de sección
   const getSectionDimensions = () => {
     if (isLateralSection()) {
-      // Para secciones laterales: invertir filas y columnas
+      // Para secciones laterales: invertir filas y columnas para rotar 90 grados
       return {
         displayRows: seatsPerRow,    // Las columnas se convierten en filas
         displaySeatsPerRow: rows,    // Las filas se convierten en columnas
@@ -110,7 +110,8 @@ const SeatRenderer = ({
   const getSeatId = (row, seat) => {
     const dimensions = getSectionDimensions();
     if (dimensions.isInverted) {
-      // Para secciones laterales: el asiento real está en la posición invertida
+      // Para secciones laterales: las coordenadas están invertidas
+      // row representa la fila original, seat representa el asiento original
       return `${sectionId}-${getRowNumber(seat)}-${row + 1}`;
     } else {
       // Para secciones normales: mantener la lógica original
@@ -264,17 +265,31 @@ const SeatRenderer = ({
     const seatPrice = getSeatPrice(row, seat);
     const formattedPrice = formatPrice ? formatPrice(seatPrice) : `€${seatPrice}`;
     
+    // Calcular las coordenadas correctas para el tooltip
+    const dimensions = getSectionDimensions();
+    let actualRow, actualSeat;
+    
+    if (dimensions.isInverted) {
+      // Para secciones laterales: usar las coordenadas invertidas
+      actualRow = seat;
+      actualSeat = row;
+    } else {
+      // Para secciones normales: usar las coordenadas originales
+      actualRow = row;
+      actualSeat = seat;
+    }
+    
     if (isSeatOccupied(seatId)) {
       return {
-        title: 'Asiento Ocupado',
-        content: `${sectionName} - Fila ${getRowNumber(row)}, Asiento ${seat + 1}`,
+        title: 'Asiento ocupado',
+        content: `${sectionName} - Fila ${getRowNumber(actualRow)}, Asiento ${actualSeat + 1}`,
         color: '#9CA3AF'
       };
     }
     
     if (sectionBlocked) {
       return {
-        title: 'Sección Bloqueada',
+        title: 'Sección bloqueada',
         content: 'Esta sección no está disponible para la venta',
         color: '#DC2626'
       };
@@ -282,14 +297,14 @@ const SeatRenderer = ({
     
     if (isSeatBlocked(seatId)) {
       return {
-        title: 'Asiento Bloqueado',
-        content: `${sectionName} - Fila ${getRowNumber(row)}, Asiento ${seat + 1}`,
+        title: 'Asiento bloqueado',
+        content: `${sectionName} - Fila ${getRowNumber(actualRow)}, Asiento ${actualSeat + 1}`,
         color: '#DC2626'
       };
     }
     
     return {
-      title: `${sectionName} - Fila ${getRowNumber(row)}, Asiento ${seat + 1}`,
+      title: `${sectionName} - Fila ${getRowNumber(actualRow)}, Asiento ${actualSeat + 1}`,
       content: `Precio: ${formattedPrice}`,
       color: color || COLORS.primary.main
     };
@@ -357,7 +372,7 @@ const SeatRenderer = ({
     const isInteractable = !occupied && !blocked && !sectionBlocked;
     const seatStyle = getSeatStyle(seatId);
     const tooltipInfo = getSeatTooltip(row, seat, seatId);
-    const currentSeatSize = adaptiveSeatSize;
+    const currentSeatSize = seatSize;
 
     // Determinar el icono a mostrar
     const getSeatIcon = () => {
@@ -370,14 +385,24 @@ const SeatRenderer = ({
       if (blocked || sectionBlocked) {
         return <LockOutlined style={{ fontSize: currentSeatSize.fontSize * 0.8 }} />;
       }
-      // Asiento disponible - mostrar número del asiento
+      // Asiento disponible - mostrar número del asiento correcto
+      const dimensions = getSectionDimensions();
+      let seatNumber;
+      if (dimensions.isInverted) {
+        // Para secciones laterales: el número del asiento es row + 1 (porque está invertido)
+        seatNumber = row + 1;
+      } else {
+        // Para secciones normales: el número del asiento es seat + 1
+        seatNumber = seat + 1;
+      }
+      
       return (
         <span style={{ 
           fontSize: currentSeatSize.fontSize * 0.7, 
           fontWeight: '600',
           lineHeight: 1
         }}>
-          {seat + 1}
+          {seatNumber}
         </span>
       );
     };
@@ -466,74 +491,78 @@ const SeatRenderer = ({
     );
   };
 
-  const renderRow = (row) => (
-    <div 
-      key={`row-${row}`} 
-      style={{ 
-        display: 'flex', 
-        alignItems: 'center',
-        marginBottom: responsiveMode && isMobile ? 2 : 4,
-        padding: '2px 0',
-        position: 'relative'
-      }}
-    >
-      {/* Etiqueta de fila mejorada */}
-      <div
-        style={{
-          width: rowLabelWidth,
-          display: 'flex',
+  const renderRow = (row) => {
+    const dimensions = getSectionDimensions();
+    
+    return (
+      <div 
+        key={`row-${row}`} 
+        style={{ 
+          display: 'flex', 
           alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: responsiveMode && isMobile ? 10 : 12,
-          fontWeight: '600',
-          color: getRowLabelColor(color, sectionBlocked),
-          backgroundColor: getContrastInfoBackground(color, sectionBlocked),
-          borderRadius: '4px',
-          padding: '2px 4px',
-          marginRight: '8px',
-          border: `1px solid ${getContrastBorderColor(color, sectionBlocked)}`,
-          transition: 'all 0.2s ease'
+          marginBottom: responsiveMode && isMobile ? 2 : 4,
+          padding: '2px 0',
+          position: 'relative'
         }}
       >
-        {getRowNumber(row)}
-      </div>
-      
-      {/* Contenedor de asientos con separación visual */}
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center',
-        gap: '1px',
-        position: 'relative',
-        overflowX: 'auto',
-        maxWidth: '100%'
-      }}>
-        {Array.from({ length: Math.min(dimensions.displaySeatsPerRow, 25) }).map((_, seat) => renderSeat(row, seat))}
-        {dimensions.displaySeatsPerRow > 25 && (
+        {/* Etiqueta de fila mejorada */}
+        <div
+          style={{
+            width: rowLabelWidth,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: responsiveMode && isMobile ? 10 : 12,
+            fontWeight: '600',
+            color: getRowLabelColor(color, sectionBlocked),
+            backgroundColor: getContrastInfoBackground(color, sectionBlocked),
+            borderRadius: '4px',
+            padding: '2px 4px',
+            marginRight: '8px',
+            border: `1px solid ${getContrastBorderColor(color, sectionBlocked)}`,
+            transition: 'all 0.2s ease'
+          }}
+        >
+          {getRowNumber(row)}
+        </div>
+        
+        {/* Contenedor de asientos con separación visual */}
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center',
+          gap: '1px',
+          position: 'relative',
+          overflowX: 'auto',
+          maxWidth: '100%'
+        }}>
+          {Array.from({ length: Math.min(dimensions.displaySeatsPerRow, 25) }).map((_, seat) => renderSeat(row, seat))}
+          {dimensions.displaySeatsPerRow > 25 && (
+            <div style={{
+              padding: '0 8px',
+              fontSize: '10px',
+              color: '#6B7280',
+              fontStyle: 'italic'
+            }}>
+              +{dimensions.displaySeatsPerRow - 25} más
+            </div>
+          )}
+        </div>
+        
+        {/* Línea de separación sutil entre filas */}
+        {row < dimensions.displayRows - 1 && (
           <div style={{
-            padding: '0 8px',
-            fontSize: '10px',
-            color: '#6B7280',
-            fontStyle: 'italic'
-          }}>
-            +{dimensions.displaySeatsPerRow - 25} más
-          </div>
+            position: 'absolute',
+            bottom: '-2px',
+            left: rowLabelWidth + 8,
+            right: 0,
+            height: '1px',
+            background: 'linear-gradient(90deg, transparent 0%, #E5E7EB 20%, #E5E7EB 80%, transparent 100%)',
+            opacity: 0.5
+          }} />
         )}
       </div>
-      
-      {/* Línea de separación sutil entre filas */}
-      {row < rows - 1 && (
-        <div style={{
-          position: 'absolute',
-          bottom: '-2px',
-          left: rowLabelWidth + 8,
-          right: 0,
-          height: '1px',
-          background: 'linear-gradient(90deg, transparent 0%, #E5E7EB 20%, #E5E7EB 80%, transparent 100%)',
-          opacity: 0.5
-        }} />
-      )}
-    </div>
-  );
+    );
+  };
 
   // Calcular el ancho total del contenedor basado en el contenido
   const getContainerWidth = () => {
