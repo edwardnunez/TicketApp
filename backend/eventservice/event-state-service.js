@@ -4,6 +4,7 @@ import cron from 'node-cron';
 class EventStateService {
   constructor() {
     this.lastUpdate = 0;
+    this.cronJobs = [];
   }
 
   async updateEventStates() {
@@ -14,6 +15,13 @@ class EventStateService {
       tomorrow.setDate(tomorrow.getDate() + 1);
 
       console.log(`[${now.toISOString()}] Actualizando estados de eventos...`);
+
+      // Usar el EventModel del servicio
+      const EventModel = this.EventModel || global.EventModel;
+      if (!EventModel) {
+        console.log('EventModel no disponible, saltando actualización de estados');
+        return { finalizados: 0, activados: 0, timestamp: now.toISOString() };
+      }
 
       // 1. Finalizar eventos pasados (excepto cancelados)
       const finalizadosResult = await EventModel.updateMany(
@@ -52,17 +60,23 @@ class EventStateService {
 
   startCronJobs() {
     // Actualización diaria a las 00:01
-    cron.schedule('1 0 * * *', async () => {
+    const dailyJob = cron.schedule('1 0 * * *', async () => {
       console.log('🕐 Ejecutando actualización diaria de estados...');
       await this.updateEventStates();
     });
 
     // Activación horaria de eventos del día
-    cron.schedule('0 * * * *', async () => {
+    const hourlyJob = cron.schedule('0 * * * *', async () => {
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       const tomorrow = new Date(today);
       tomorrow.setDate(tomorrow.getDate() + 1);
+
+      const EventModel = this.EventModel || global.EventModel;
+      if (!EventModel) {
+        console.log('EventModel no disponible en cron job');
+        return;
+      }
 
       const result = await EventModel.updateMany(
         {
@@ -77,7 +91,21 @@ class EventStateService {
       }
     });
 
+    // Guardar referencias para poder detenerlos
+    this.cronJobs.push(dailyJob, hourlyJob);
+
     console.log('✅ Cron jobs configurados para actualización de estados');
+  }
+
+  stopCronJobs() {
+    console.log('🛑 Deteniendo cron jobs...');
+    this.cronJobs.forEach(job => {
+      if (job && typeof job.stop === 'function') {
+        job.stop();
+      }
+    });
+    this.cronJobs = [];
+    console.log('✅ Cron jobs detenidos');
   }
 
   // Middleware para actualizar estados automáticamente
