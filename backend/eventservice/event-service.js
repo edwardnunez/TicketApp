@@ -8,6 +8,8 @@ import path from 'path';
 import EventStateService from './event-state-service.js';
 import nodemailer from 'nodemailer';
 
+const axiosInstance = global.axios || axios;
+
 const app = express();
 const port = 8003;
 
@@ -92,7 +94,7 @@ async function enviarEmailCancelacion({ to, subject, html }) {
 // Función auxiliar para obtener información del seatmap
 const getSeatMapInfo = async (seatMapId) => {
   try {
-    const response = await axios.get(`${locationServiceUrl}/seatmaps/${seatMapId}`);
+    const response = await axiosInstance.get(`${locationServiceUrl}/seatmaps/${seatMapId}`);
     return response.data;
   } catch (error) {
     console.error(`Error obteniendo seatmap ${seatMapId}:`, error);
@@ -210,6 +212,14 @@ app.post("/event", largePayloadMiddleware, largeUrlEncodedMiddleware, async (req
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+
+    if (eventDay < today) {
+      return res.status(400).json({ 
+        error: "No se pueden crear eventos con fechas pasadas",
+        receivedDate: date,
+        today: today.toISOString()
+      });
+    }
     
     let initialState = state || 'proximo';
     if (!state) {
@@ -464,7 +474,7 @@ app.get("/events", stateService.updateStatesMiddleware.bind(stateService), async
 
     const locationIds = events.map(event => event.location);
     const locationResponses = await Promise.all(
-      locationIds.map(locationId => axios.get(`${locationServiceUrl}/locations/${locationId}`))
+      locationIds.map(locationId => axiosInstance.get(`${locationServiceUrl}/locations/${locationId}`))
     );
 
     const locationMap = {};
@@ -531,8 +541,15 @@ app.get("/events/:eventId", stateService.updateStatesMiddleware.bind(stateServic
     const event = await EventModel.findById(req.params.eventId);
     if (!event) return res.status(404).json({ error: "Event not found" });
 
-    const locationResponse = await axios.get(`${locationServiceUrl}/locations/${event.location}`);
-    const location = locationResponse.data;
+    // Obtener ubicación de forma tolerante a fallos para evitar 500 si el servicio externo falla
+    let location = null;
+    try {
+      const locationResponse = await axiosInstance.get(`${locationServiceUrl}/locations/${event.location}`);
+      location = locationResponse.data;
+    } catch (err) {
+      console.warn(`No se pudo obtener la ubicación ${event.location}:`, err.message);
+      location = null;
+    }
 
     const eventObj = event.toObject();
     eventObj.location = location || null;
@@ -907,7 +924,7 @@ app.put("/events/:eventId/seat-blocks", async (req, res) => {
       event.seatMapConfiguration.blockedSections = blockedSections || [];
       event.seatMapConfiguration.configuredAt = new Date();
     } else {
-      const locationResponse = await axios.get(`${locationServiceUrl}/locations/${event.location}`);
+      const locationResponse = await axiosInstance.get(`${locationServiceUrl}/locations/${event.location}`);
       const location = locationResponse.data;
       
       event.seatMapConfiguration = {
@@ -957,7 +974,7 @@ app.delete("/events/:eventId/cancel", async (req, res) => {
     try {
       // Obtener todos los tickets del evento antes de eliminarlos
       const ticketServiceUrl = process.env.TICKET_SERVICE_URL || 'http://localhost:8002';
-      const ticketsRes = await axios.get(`${ticketServiceUrl}/tickets/event/${eventId}`);
+      const ticketsRes = await axiosInstance.get(`${ticketServiceUrl}/tickets/event/${eventId}`);
       const tickets = ticketsRes.data.tickets || [];
       
       // Usar un Set para evitar emails duplicados
@@ -968,7 +985,7 @@ app.delete("/events/:eventId/cancel", async (req, res) => {
           // Buscar email del usuario en el servicio de usuarios
           try {
             const userServiceUrl = process.env.USER_SERVICE_URL || 'http://localhost:8001';
-            const userRes = await axios.get(`${userServiceUrl}/users/search?userId=${ticket.userId}`);
+            const userRes = await axiosInstance.get(`${userServiceUrl}/users/search?userId=${ticket.userId}`);
             emailDestino = userRes.data.email;
           } catch (err) {
             console.warn('No se pudo obtener el email del usuario:', err.message);
@@ -1000,7 +1017,7 @@ app.delete("/events/:eventId/cancel", async (req, res) => {
     // === FIN EMAILS ===
 
     try {
-      await axios.delete(`${ticketServiceUrl}/tickets/event/${eventId}`);
+      await axiosInstance.delete(`${ticketServiceUrl}/tickets/event/${eventId}`);
       console.log(`Tickets eliminados para el evento ${eventId}`);
     } catch (ticketError) {
       console.warn(`Error eliminando tickets para evento ${eventId}:`, ticketError.message);
@@ -1064,7 +1081,7 @@ app.get("/events/admin/statistics", async (req, res) => {
       events.map(async (event) => {
         try {
           // Obtener estadísticas de tickets del evento
-          const ticketStatsResponse = await axios.get(`${ticketServiceUrl}/tickets/event/${event._id}`);
+          const ticketStatsResponse = await axiosInstance.get(`${ticketServiceUrl}/tickets/event/${event._id}`);
           const ticketStats = ticketStatsResponse.data.statistics || [];
 
           // Calcular estadísticas consolidadas
@@ -1099,7 +1116,7 @@ app.get("/events/admin/statistics", async (req, res) => {
           // Obtener información de ubicación
           let locationInfo = null;
           try {
-            const locationResponse = await axios.get(`${locationServiceUrl}/locations/${event.location}`);
+            const locationResponse = await axiosInstance.get(`${locationServiceUrl}/locations/${event.location}`);
             locationInfo = locationResponse.data;
           } catch (error) {
             console.warn(`No se pudo obtener información de ubicación para evento ${event._id}:`, error.message);
@@ -1175,7 +1192,7 @@ app.delete("/events/:eventId", async (req, res) => {
       return res.status(404).json({ error: "Evento no encontrado" });
     }
     try {
-      await axios.delete(`${ticketServiceUrl}/tickets/event/${eventId}`);
+      await axiosInstance.delete(`${ticketServiceUrl}/tickets/event/${eventId}`);
       console.log(`Tickets eliminados para el evento ${eventId}`);
     } catch (ticketError) {
       console.warn(`Error eliminando tickets para evento ${eventId}:`, ticketError.message);
@@ -1214,7 +1231,14 @@ const server = app.listen(port, async () => {
   }, 2000);
 });
 
+// Exponer stateService en el servidor para las pruebas
+server.stateService = stateService;
+
 server.on("close", () => {
+  // Detener cron jobs antes de cerrar
+  if (stateService && typeof stateService.stopCronJobs === 'function') {
+    stateService.stopCronJobs();
+  }
   eventDbConnection.close();
 });
 

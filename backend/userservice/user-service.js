@@ -224,7 +224,13 @@ app.get("/users/search", async (req, res) => {
     let currentUser;
     
     if (username) {
+      // Buscar por coincidencia exacta primero
       currentUser = await User.findOne({ username: username });
+      
+      // Si no se encuentra coincidencia exacta, buscar por coincidencia parcial
+      if (!currentUser) {
+        currentUser = await User.findOne({ username: { $regex: username, $options: 'i' } });
+      }
     } else if (userId) {
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({ error: "Invalid userId format" });
