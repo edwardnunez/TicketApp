@@ -264,11 +264,11 @@ const Profile = () => {
 
   const renderTicketDetail = (ticket, isExpired) => {
     const canCancel = ticket.status === 'paid' && !isExpired;
-    
+
     return (
-      <div key={ticket._id} style={{ 
-        padding: '16px', 
-        border: `1px solid ${COLORS.neutral.grey2}`, 
+      <div key={ticket._id} data-cy="ticket-item" style={{
+        padding: '16px',
+        border: `1px solid ${COLORS.neutral.grey2}`,
         borderRadius: '8px',
         marginBottom: '12px',
         backgroundColor: COLORS.neutral.white
@@ -596,6 +596,7 @@ const Profile = () => {
                 
                 {/* Profile Info */}
                 <div
+                  data-cy="profile-info"
                   style={{
                     display: "flex",
                     flexDirection: "column",
@@ -613,8 +614,8 @@ const Profile = () => {
                       boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
                     }}
                   />
-                  
-                  <Title level={2} style={{ marginTop: "16px", marginBottom: "4px", color: COLORS.neutral.darker }}>
+
+                  <Title level={2} data-cy="user-name" style={{ marginTop: "16px", marginBottom: "4px", color: COLORS.neutral.darker }}>
                     {getFullName(user)}
                   </Title>
                   
@@ -657,6 +658,7 @@ const Profile = () => {
                     <Button
                       type="primary"
                       icon={<EditOutlined />}
+                      data-cy="edit-profile-button"
                       style={{
                         backgroundColor: COLORS.primary.main,
                         borderColor: COLORS.primary.main,
@@ -678,6 +680,7 @@ const Profile = () => {
                     <span style={{ color: COLORS.neutral.darker }}>Mis Entradas</span>
                   </div>
                 }
+                data-cy="tickets-section"
                 style={{
                   borderRadius: "12px",
                   boxShadow: "0 4px 12px rgba(0,0,0,0.08)",

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Avatar, Typography, Menu, Dropdown } from "antd";
+import { Avatar, Typography, Dropdown } from "antd";
 import { UserOutlined, TagOutlined, BarChartOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 import { COLORS } from "./colorscheme";
 import { ensureAuthFreshness, scheduleAuthExpiryTimer, clearAuthSession } from "../utils/authSession";
@@ -20,10 +20,23 @@ const Navbar = () => {
 
 
   useEffect(() => {
-    ensureAuthFreshness();
-    const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token);
-    scheduleAuthExpiryTimer();
+    // Función para actualizar el estado de login
+    const updateLoginState = () => {
+      ensureAuthFreshness();
+      const token = localStorage.getItem("token");
+      setIsLoggedIn(!!token);
+      scheduleAuthExpiryTimer();
+    };
+
+    // Ejecutar al montar
+    updateLoginState();
+
+    // Escuchar cambios en la autenticación
+    window.addEventListener('authChange', updateLoginState);
+
+    return () => {
+      window.removeEventListener('authChange', updateLoginState);
+    };
   }, []);
 
   useEffect(() => {
@@ -40,16 +53,17 @@ const Navbar = () => {
     navigate("/login");
   };
 
-  const menu = (
-    <Menu>
-      <Menu.Item key="profile">
-        <Link to="/profile">Perfil</Link>
-      </Menu.Item>
-      <Menu.Item key="logout" onClick={handleLogout}>
-        Cerrar sesión
-      </Menu.Item>
-    </Menu>
-  );
+  const menuItems = [
+    {
+      key: 'profile',
+      label: <Link to="/profile" data-cy="profile-link">Perfil</Link>,
+    },
+    {
+      key: 'logout',
+      label: <span data-cy="logout-button">Cerrar sesión</span>,
+      onClick: handleLogout,
+    },
+  ];
 
   return (
     <header
@@ -73,13 +87,13 @@ const Navbar = () => {
       </Link>
 
       <nav style={{ display: "flex", alignItems: "center", gap: isMobile ? 12 : 24 }}>
-        <Link to="/" style={{ color: COLORS.neutral.white, fontWeight: "500", fontSize: isMobile ? 13 : undefined }}>
+        <Link to="/" data-cy="home-link" style={{ color: COLORS.neutral.white, fontWeight: "500", fontSize: isMobile ? 13 : undefined }}>
           Eventos
         </Link>
-        
+
         {/* Opciones para todos los usuarios autenticados */}
         {isLoggedIn && (
-          <Link to="/help" style={{ color: COLORS.neutral.white, fontWeight: "500", fontSize: isMobile ? 13 : undefined }}>
+          <Link to="/help" data-cy="help-link" style={{ color: COLORS.neutral.white, fontWeight: "500", fontSize: isMobile ? 13 : undefined }}>
             <QuestionCircleOutlined style={{ marginRight: 4 }} />
             {!isMobile && "Ayuda"}
           </Link>
@@ -88,10 +102,10 @@ const Navbar = () => {
         {/* Opciones exclusivas para administradores */}
         {isLoggedIn && isAdmin && !isLoading && (
           <>
-            <Link to="/admin" style={{ color: COLORS.neutral.white, fontWeight: "500", fontSize: isMobile ? 13 : undefined }}>
+            <Link to="/admin" data-cy="admin-link" style={{ color: COLORS.neutral.white, fontWeight: "500", fontSize: isMobile ? 13 : undefined }}>
               Panel de administrador
             </Link>
-            <Link to="/admin/statistics" style={{ color: COLORS.neutral.white, fontWeight: "500", fontSize: isMobile ? 13 : undefined }}>
+            <Link to="/admin/statistics" data-cy="statistics-link" style={{ color: COLORS.neutral.white, fontWeight: "500", fontSize: isMobile ? 13 : undefined }}>
               <BarChartOutlined style={{ marginRight: 4 }} />
               {!isMobile && "Estadísticas"}
             </Link>
@@ -99,8 +113,9 @@ const Navbar = () => {
         )}
 
         {isLoggedIn && (
-          <Dropdown overlay={menu} placement="bottomRight" trigger={["click"]}>
+          <Dropdown menu={{ items: menuItems }} placement="bottomRight" trigger={["click"]}>
             <Avatar
+              data-cy="user-menu"
               icon={<UserOutlined />}
               style={{ backgroundColor: COLORS.primary.main, verticalAlign: "middle", cursor: "pointer", width: isMobile ? 28 : 32, height: isMobile ? 28 : 32, fontSize: isMobile ? 16 : 20 }}
             />

@@ -44,8 +44,8 @@ function App() {
 
         <Route path="/admin" element={<AdminRoute element={<AdminDashboard />} />} />
         <Route path="/admin/statistics" element={<AdminRoute element={<AdminStatistics />} />} />
-        <Route path="/create-event" element={<AdminRoute element={<EventCreation />} />} />
-        <Route path="/create-location" element={<AdminRoute element={<LocationCreation />} />} />
+        <Route path="/admin/create-event" element={<AdminRoute element={<EventCreation />} />} />
+        <Route path="/admin/create-location" element={<AdminRoute element={<LocationCreation />} />} />
         <Route path="/admin/event-seatmap-config" element={<AdminRoute element={<EventSeatMapEditor />} />} />
 
         <Route path="*" element={<ErrorPage />} /> 

@@ -1,0 +1,18 @@
+[
+  {
+    "_id": "507f1f77bcf86cd799439012",
+    "name": "Estadio Principal",
+    "category": "stadium",
+    "address": "Calle Principal 123",
+    "capacity": 50000,
+    "seatMapId": "seatmap-stadium-1"
+  },
+  {
+    "_id": "507f1f77bcf86cd799439014",
+    "name": "Teatro Municipal",
+    "category": "theater",
+    "address": "Plaza del Teatro 1",
+    "capacity": 1000,
+    "seatMapId": "seatmap-theater-1"
+  }
+]

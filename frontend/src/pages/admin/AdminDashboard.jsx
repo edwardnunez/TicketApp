@@ -611,7 +611,7 @@ const AdminDashboard = () => {
                   type="primary"
                   size="large"
                   icon={<PlusOutlined />}
-                  onClick={() => window.location.href = '/create-event'}
+                  onClick={() => window.location.href = '/admin/create-event'}
                   style={{ 
                     backgroundColor: COLORS?.primary?.main || "#1890ff",
                     borderColor: COLORS?.primary?.main || "#1890ff",
@@ -625,7 +625,7 @@ const AdminDashboard = () => {
                   type="primary"
                   size="large"
                   icon={<PlusOutlined />}
-                  onClick={() => window.location.href = '/create-location'}
+                  onClick={() => window.location.href = '/admin/create-location'}
                   style={{ 
                     backgroundColor: COLORS?.primary?.main || "#1890ff",
                     borderColor: COLORS?.primary?.main || "#1890ff",

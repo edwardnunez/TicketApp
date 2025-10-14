@@ -625,19 +625,19 @@ const EventDetails = () => {
 
             {/* Información del evento */}
             <Col xs={24} lg={12}>
-              <Space direction="vertical" size={24} style={{ width: '100%' }}>
+              <Space direction="vertical" size={24} style={{ width: '100%' }} data-cy="event-details">
                 {/* Título y categoría */}
                 <div>
                   <div style={{ marginBottom: '12px' }}>
-                    <Tag 
+                    <Tag
                       color={getCategoryColor(event.category)}
                       style={{ fontSize: '14px', padding: '4px 12px' }}
                     >
                       <TagOutlined style={{ marginRight: '4px' }} />
                       {event.category}
                     </Tag>
-                    
-                    <Tag 
+
+                    <Tag
                       color={getStateColor(event.state)}
                       style={{ fontSize: '14px', padding: '4px 12px', marginLeft: '8px' }}
                     >
@@ -649,8 +649,8 @@ const EventDetails = () => {
                       {getStateText(event.state)}
                     </Tag>
                   </div>
-                  
-                  <Title level={1} style={{ 
+
+                  <Title level={1} style={{
                     color: COLORS.neutral.darker,
                     marginBottom: '8px',
                     fontSize: '32px',
@@ -661,14 +661,14 @@ const EventDetails = () => {
                 </div>
 
                 {/* Información clave */}
-                <Card style={{ 
+                <Card style={{
                   backgroundColor: COLORS.neutral.grey1,
                   border: 'none'
                 }}>
                   <Space direction="vertical" size={16} style={{ width: '100%' }}>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <CalendarOutlined style={{ 
-                        fontSize: '18px', 
+                    <div style={{ display: 'flex', alignItems: 'center' }} data-cy="event-date">
+                      <CalendarOutlined style={{
+                        fontSize: '18px',
                         color: COLORS.primary.main,
                         marginRight: '12px'
                       }} />
@@ -685,9 +685,9 @@ const EventDetails = () => {
 
                     <Divider style={{ margin: '12px 0' }} />
 
-                    <div style={{ display: 'flex', alignItems: 'flex-start' }}>
-                      <EnvironmentOutlined style={{ 
-                        fontSize: '18px', 
+                    <div style={{ display: 'flex', alignItems: 'flex-start' }} data-cy="event-location">
+                      <EnvironmentOutlined style={{
+                        fontSize: '18px',
                         color: COLORS.primary.main,
                         marginRight: '12px',
                         marginTop: '2px'
@@ -745,6 +745,7 @@ const EventDetails = () => {
                       size="large"
                       icon={<ShoppingCartOutlined />}
                       onClick={handleBuyTickets}
+                      data-cy="buy-tickets-button"
                       style={{
                         width: '100%',
                         height: '48px',
@@ -807,24 +808,24 @@ const EventDetails = () => {
           {/* Descripción del evento */}
           <Row style={{ marginTop: '48px' }}>
             <Col span={24}>
-              <Card style={{ 
+              <Card style={{
                 borderRadius: '12px',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
               }}>
-                <Title level={3} style={{ 
+                <Title level={3} style={{
                   color: COLORS.neutral.darker,
                   marginBottom: '16px',
                   display: 'flex',
                   alignItems: 'center'
                 }}>
-                  <InfoCircleOutlined style={{ 
-                    marginRight: '8px', 
-                    color: COLORS.primary.main 
+                  <InfoCircleOutlined style={{
+                    marginRight: '8px',
+                    color: COLORS.primary.main
                   }} />
                   Descripción del evento
                 </Title>
-                
-                <Paragraph style={{ 
+
+                <Paragraph data-cy="event-description" style={{
                   fontSize: '16px',
                   lineHeight: '1.6',
                   color: COLORS.neutral.dark,

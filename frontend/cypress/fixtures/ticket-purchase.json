@@ -1,0 +1,36 @@
+{
+  "success": true,
+  "ticket": {
+    "_id": "507f1f77bcf86cd799439020",
+    "ticketNumber": "TKT-12345678",
+    "eventId": "507f1f77bcf86cd799439011",
+    "userId": "507f1f77bcf86cd799439015",
+    "price": 100,
+    "quantity": 2,
+    "status": "paid",
+    "selectedSeats": [
+      {
+        "id": "vip-1-1",
+        "sectionId": "vip",
+        "row": 1,
+        "seat": 1,
+        "price": 50
+      },
+      {
+        "id": "vip-1-2",
+        "sectionId": "vip",
+        "row": 1,
+        "seat": 2,
+        "price": 50
+      }
+    ],
+    "customerInfo": {
+      "name": "Test Buyer",
+      "email": "buyer@example.com",
+      "phone": "123456789"
+    },
+    "purchasedAt": "2025-01-15T10:00:00Z"
+  },
+  "qrCode": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+  "purchaseId": "TKT-12345678"
+}

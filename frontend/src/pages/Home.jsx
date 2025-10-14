@@ -243,6 +243,7 @@ const Home = () => {
     <Card
       hoverable
       className="event-card"
+      data-cy="event-card"
       cover={
         <div style={{ position: 'relative' }}>
           {event.image ? (
@@ -298,7 +299,7 @@ const Home = () => {
       }
       actions={[
         <Link to={`/event/${event._id}`} key="details">
-          <Button type="text" icon={<ArrowRightOutlined />} size={isMobile ? "small" : "default"}>
+          <Button data-cy="view-details-button" type="text" icon={<ArrowRightOutlined />} size={isMobile ? "small" : "default"} >
             {isMobile ? "Ver" : "Ver detalles"}
           </Button>
         </Link>
@@ -317,9 +318,9 @@ const Home = () => {
       <Meta
         title={
           <Tooltip title={event.name}>
-            <div style={{ 
-              whiteSpace: 'nowrap', 
-              overflow: 'hidden', 
+            <div data-cy="event-name" style={{
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
               textOverflow: 'ellipsis',
               fontSize: isMobile ? '14px' : '16px',
               fontWeight: '600',
@@ -332,27 +333,27 @@ const Home = () => {
         description={
           <Space direction="vertical" size={2} style={{ width: '100%' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
+              <Text data-cy="event-date" style={{
+                display: 'flex',
+                alignItems: 'center',
                 color: COLORS.neutral.grey400,
                 fontSize: isMobile ? '12px' : '14px'
               }}>
-                <CalendarOutlined style={{ marginRight: '4px', color: COLORS.neutral.grey400 }} /> 
+                <CalendarOutlined style={{ marginRight: '4px', color: COLORS.neutral.grey400 }} />
                 {dayjs(event.date).format(isMobile ? "DD MMM" : "DD MMM YYYY")}
               </Text>
             </div>
-            <Text style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
+            <Text style={{
+              display: 'flex',
+              alignItems: 'center',
               color: COLORS.neutral.grey400,
               fontSize: isMobile ? '12px' : '14px'
             }}>
-              <EnvironmentOutlined style={{ marginRight: '4px', color: COLORS.neutral.grey400 }} /> 
+              <EnvironmentOutlined style={{ marginRight: '4px', color: COLORS.neutral.grey400 }} />
               <Tooltip title={event.location.name}>
-                <span style={{ 
-                  whiteSpace: 'nowrap', 
-                  overflow: 'hidden', 
+                <span style={{
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   maxWidth: isMobile ? '120px' : '180px',
                   display: 'inline-block'

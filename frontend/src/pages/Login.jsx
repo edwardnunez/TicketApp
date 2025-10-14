@@ -156,7 +156,7 @@ const Login = () => {
                 validateStatus={loginError["username"] ? "error" : ""}
                 help={loginError["username"]}
               >
-                <Input prefix={<UserOutlined style={{ color: COLORS.neutral.grey4 }} />} placeholder="Nombre de usuario" style={{ borderRadius: "6px" }} />
+                <Input data-cy="username-input" prefix={<UserOutlined style={{ color: COLORS.neutral.grey4 }} />} placeholder="Nombre de usuario" style={{ borderRadius: "6px" }} />
               </Form.Item>
 
               <Form.Item
@@ -165,11 +165,12 @@ const Login = () => {
                 validateStatus={loginError["password"] ? "error" : ""}
                 help={loginError["password"]}
               >
-                <Input.Password prefix={<LockOutlined style={{ color: COLORS.neutral.grey4 }} />} placeholder="Contraseña" style={{ borderRadius: "6px" }} />
+                <Input.Password data-cy="password-input" prefix={<LockOutlined style={{ color: COLORS.neutral.grey4 }} />} placeholder="Contraseña" style={{ borderRadius: "6px" }} />
               </Form.Item>
 
               {loginError["general"] && (
                 <Alert
+                  data-cy="error-message"
                   message="Error de inicio de sesión"
                   description={loginError["general"]}
                   type="error"
@@ -184,6 +185,7 @@ const Login = () => {
                   htmlType="submit"
                   block
                   loading={loading}
+                  data-cy="login-button"
                   style={{
                     height: "44px",
                     borderRadius: "6px",
