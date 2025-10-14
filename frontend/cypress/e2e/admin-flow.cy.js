@@ -4,7 +4,7 @@
  *
  * FUNCIONALIDADES REALES DEL ADMIN:
  * 1. Login y acceso al panel de administración
- * 2. Crear ubicaciones con mapas de asientos (LocationCreation)
+ * 2. Crear ubicaciones (LocationCreation)
  * 3. Crear eventos asociados a ubicaciones (EventCreation)
  * 4. Ver estadísticas (si existe la ruta /admin/statistics)
  * 5. Gestión de seguridad y permisos
