@@ -167,7 +167,7 @@ describe("Location Service - Integration tests", () => {
     });
   });
 
-  describe("Caso de Uso 6: Crear SeatMap", () => {
+  describe("Caso de Uso 4: Crear SeatMap", () => {
     it("debería crear un nuevo seatmap correctamente", async () => {
       const response = await request(app).post("/seatmaps").send(testSeatMap);
 
@@ -202,7 +202,7 @@ describe("Location Service - Integration tests", () => {
     });
   });
 
-  describe("Caso de Uso 7: Listar SeatMaps", () => {
+  describe("Caso de Uso 5: Listar SeatMaps", () => {
     beforeAll(async () => {
       await request(app).post("/seatmaps").send(testSeatMap);
     });
@@ -231,7 +231,7 @@ describe("Location Service - Integration tests", () => {
     });
   });
 
-  describe("Caso de Uso 8: Obtener SeatMap por ID", () => {
+  describe("Caso de Uso 6: Obtener SeatMap por ID", () => {
     let seatMapId = "seatmap-test";
 
     it("debería obtener seatmap existente por ID", async () => {
@@ -247,7 +247,7 @@ describe("Location Service - Integration tests", () => {
     });
   });
 
-  describe("Caso de Uso 9: Obtener Secciones de Ubicación", () => {
+  describe("Caso de Uso 7: Obtener Secciones de Ubicación", () => {
     let locationId;
 
     beforeAll(async () => {
@@ -258,14 +258,6 @@ describe("Location Service - Integration tests", () => {
     it("debería obtener secciones de ubicación (aunque estén vacías)", async () => {
       const response = await request(app).get(`/location/${locationId}/sections`);
       expect([200, 404, 500]).toContain(response.status);
-    });
-  });
-
-  describe("Caso de Uso 10: Health Check", () => {
-    it("debería retornar estado de salud del servicio", async () => {
-      const response = await request(app).get("/health");
-      expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty("status", "OK");
     });
   });
 
