@@ -581,10 +581,11 @@ const TicketPurchase = () => {
                 )}
                 
                 {currentStep < 2 && (
-                  <Button 
-                    type="primary" 
+                  <Button
+                    type="primary"
                     size="large"
                     onClick={handleNext}
+                    data-cy="continue-button"
                     style={{
                       backgroundColor: COLORS.primary.main,
                       borderColor: COLORS.primary.main

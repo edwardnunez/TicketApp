@@ -66,6 +66,7 @@ export default function BuyerInfo({
                 >
                   <Input
                     size="large"
+                    data-cy="name-input"
                     prefix={<UserOutlined style={{ color: COLORS.neutral.grey4 }} />}
                     placeholder="Tu nombre"
                     disabled={useAccountData}
@@ -98,6 +99,7 @@ export default function BuyerInfo({
             >
               <Input
                 size="large"
+                data-cy="email-input"
                 prefix={<MailOutlined style={{ color: COLORS.neutral.grey4 }} />}
                 placeholder="tu@email.com"
                 disabled={useAccountData}
@@ -111,6 +113,7 @@ export default function BuyerInfo({
             >
               <Input
                 size="large"
+                data-cy="phone-input"
                 prefix={<PhoneOutlined style={{ color: COLORS.neutral.grey4 }} />}
                 placeholder="Solo números"
                 maxLength={15}
@@ -121,7 +124,7 @@ export default function BuyerInfo({
       </Col>
 
       <Col xs={24} lg={8}>
-        <Card style={{ position: 'sticky', top: '20px' }}>
+        <Card style={{ position: 'sticky', top: '20px' }} data-cy="purchase-summary">
           <Title level={4} style={{ color: COLORS.neutral.darker, marginBottom: '16px' }}>
             Resumen de compra
           </Title>
@@ -129,6 +132,9 @@ export default function BuyerInfo({
           <Space direction="vertical" size={12} style={{ width: '100%' }}>
             {requiresSeatMap() && selectedSeats && selectedSeats.length > 0 ? (
               <>
+                <div data-cy="selected-seats-count">
+                  <Text>{selectedSeats.length} asientos seleccionados</Text>
+                </div>
                 {selectedSeats.map((seat, index) => (
                   <div key={index} style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <Text style={{ color: COLORS.neutral.grey4 }}>
@@ -145,7 +151,7 @@ export default function BuyerInfo({
                   <Title level={4} style={{ color: COLORS.neutral.darker }}>
                     Total:
                   </Title>
-                  <Title level={4} style={{ color: COLORS.primary.main }}>
+                  <Title level={4} style={{ color: COLORS.primary.main }} data-cy="total-price">
                     {formatPrice(getTotalPrice())}
                   </Title>
                 </div>
@@ -153,7 +159,7 @@ export default function BuyerInfo({
             ) : (
               <>
                 {/* Mostrar resumen por tipo de ticket cuando no hay mapa de asientos */}
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }} data-cy="selected-seats-count">
                   <Text>Tickets:</Text>
                   <Text strong>{quantity}</Text>
                 </div>
@@ -166,7 +172,7 @@ export default function BuyerInfo({
                   <Title level={4} style={{ color: COLORS.neutral.darker }}>
                     Total:
                   </Title>
-                  <Title level={4} style={{ color: COLORS.primary.main }}>
+                  <Title level={4} style={{ color: COLORS.primary.main }} data-cy="total-price">
                     {formatPrice(getTotalPrice())}
                   </Title>
                 </div>

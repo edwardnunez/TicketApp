@@ -1,0 +1,38 @@
+[
+  {
+    "_id": "507f1f77bcf86cd799439011",
+    "name": "Concierto de Rock",
+    "type": "concert",
+    "description": "Un increíble concierto de rock con las mejores bandas",
+    "date": "2025-12-31T20:00:00Z",
+    "location": {
+      "_id": "507f1f77bcf86cd799439012",
+      "name": "Estadio Principal",
+      "address": "Calle Principal 123",
+      "capacity": 50000
+    },
+    "capacity": 1000,
+    "price": 50,
+    "state": "proximo",
+    "image": "https://example.com/concert.jpg",
+    "createdBy": "admin1"
+  },
+  {
+    "_id": "507f1f77bcf86cd799439013",
+    "name": "Obra de Teatro",
+    "type": "theater",
+    "description": "Una obra de teatro clásica",
+    "date": "2025-11-15T19:00:00Z",
+    "location": {
+      "_id": "507f1f77bcf86cd799439014",
+      "name": "Teatro Municipal",
+      "address": "Plaza del Teatro 1",
+      "capacity": 1000
+    },
+    "capacity": 500,
+    "price": 30,
+    "state": "proximo",
+    "image": "https://example.com/theater.jpg",
+    "createdBy": "admin1"
+  }
+]

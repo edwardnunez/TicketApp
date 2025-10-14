@@ -16,6 +16,9 @@ export function setAuthSession({ token, roleToken, username, expiryMs = 60 * 60 
   if (username) localStorage.setItem('username', username);
   const expiryAt = Date.now() + expiryMs;
   localStorage.setItem(AUTH_EXPIRY_KEY, String(expiryAt));
+
+  // Disparar evento personalizado para notificar cambios en la autenticación
+  window.dispatchEvent(new Event('authChange'));
 }
 
 /**
@@ -36,6 +39,9 @@ export function clearAuthSession() {
   localStorage.removeItem('roleToken');
   localStorage.removeItem('username');
   localStorage.removeItem(AUTH_EXPIRY_KEY);
+
+  // Disparar evento personalizado para notificar cambios en la autenticación
+  window.dispatchEvent(new Event('authChange'));
 }
 
 /**

@@ -34,7 +34,7 @@ const useUserRole = () => {
         // Verificar el token con el backend
         const response = await axios.post(gatewayUrl + '/verifyToken', { token: roleToken });
         const role = response.data.role;
-        
+
         setUserRole(role);
         setIsAdmin(role === 'admin');
       } catch (error) {
@@ -46,7 +46,15 @@ const useUserRole = () => {
       }
     };
 
+    // Ejecutar al montar
     checkUserRole();
+
+    // Escuchar cambios en la autenticación
+    window.addEventListener('authChange', checkUserRole);
+
+    return () => {
+      window.removeEventListener('authChange', checkUserRole);
+    };
   }, [gatewayUrl]);
 
   return {

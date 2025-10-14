@@ -154,7 +154,7 @@ export default function Confirmation({
 
           {/* Código QR del ticket */}
           {ticketInfo.qrCode && (
-            <Card 
+            <Card
               title={
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <QrcodeOutlined style={{ color: COLORS.primary.main }} />
@@ -171,7 +171,7 @@ export default function Confirmation({
                 style={{ marginBottom: '24px', textAlign: 'left' }}
               />
 
-              <div style={{ 
+              <div style={{
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
@@ -189,7 +189,8 @@ export default function Confirmation({
                     alt="Código QR del ticket"
                     width={200}
                     height={200}
-                    style={{ 
+                    data-cy="ticket-qr"
+                    style={{
                       border: 'none',
                       borderRadius: '8px'
                     }}
@@ -200,7 +201,7 @@ export default function Confirmation({
                 </div>
 
                 <div style={{ textAlign: 'center' }}>
-                  <Text type="secondary" style={{ display: 'block', marginBottom: '8px' }}>
+                  <Text type="secondary" style={{ display: 'block', marginBottom: '8px' }} data-cy="ticket-number">
                     Ticket: {ticketInfo.ticket?.ticketNumber}
                   </Text>
                   <Button
