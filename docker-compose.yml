@@ -24,11 +24,11 @@ services:
       - "8002:8002"
     environment:
       - MONGODB_URI=mongodb://mongo:27017/ticketdb
-      - SMTP_HOST=smtp.gmail.com
-      - SMTP_PORT=587
-      - SMTP_USER=iyan.fdez.riol@gmail.com
-      - SMTP_PASS=kiub kyqf bznf gtft
-      - SMTP_FROM=TicketApp <no-reply@ticketapp.com>
+      - SMTP_HOST=${SMTP_HOST:-smtp.gmail.com}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - SMTP_FROM=${SMTP_FROM:-TicketApp <no-reply@ticketapp.com>}
       - USER_SERVICE_URL=http://userservice:8001
       - EVENT_SERVICE_URL=http://eventservice:8003
       - NODE_TLS_REJECT_UNAUTHORIZED=0
@@ -55,11 +55,11 @@ services:
       - MONGODB_URI=mongodb://mongo:27017/eventdb
       - TICKET_SERVICE_URL=http://ticketservice:8002
       - LOCATION_SERVICE_URL=http://locationservice:8004
-      - SMTP_HOST=smtp.gmail.com
-      - SMTP_PORT=587
-      - SMTP_USER=iyan.fdez.riol@gmail.com
-      - SMTP_PASS=kiub kyqf bznf gtft
-      - SMTP_FROM=TicketApp <no-reply@ticketapp.com>
+      - SMTP_HOST=${SMTP_HOST:-smtp.gmail.com}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - SMTP_FROM=${SMTP_FROM:-TicketApp <no-reply@ticketapp.com>}
       - USER_SERVICE_URL=http://userservice:8001
       - NODE_TLS_REJECT_UNAUTHORIZED=0
     depends_on:
