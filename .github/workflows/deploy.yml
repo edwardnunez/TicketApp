@@ -1,0 +1,120 @@
+name: Deploy to Azure VM
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository_owner }}/ticketapp
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    strategy:
+      matrix:
+        service:
+          - name: userservice
+            context: ./backend/userservice
+          - name: ticketservice
+            context: ./backend/ticketservice
+          - name: eventservice
+            context: ./backend/eventservice
+          - name: locationservice
+            context: ./backend/locationservice
+          - name: gateway
+            context: ./backend/gatewayservice
+          - name: frontend
+            context: ./frontend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service.name }}
+          tags: |
+            type=raw,value=latest
+            type=sha,prefix={{branch}}-
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.service.context }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy to Azure VM via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.AZURE_VM_HOST }}
+          username: ${{ secrets.AZURE_VM_USER }}
+          key: ${{ secrets.AZURE_VM_SSH_KEY }}
+          port: 22
+          script: |
+            # Stop and remove existing containers
+            cd /home/${{ secrets.AZURE_VM_USER }}/ticketapp || mkdir -p /home/${{ secrets.AZURE_VM_USER }}/ticketapp
+            cd /home/${{ secrets.AZURE_VM_USER }}/ticketapp
+
+            # Download latest docker-compose.prod.yml
+            wget -O docker-compose.yml https://raw.githubusercontent.com/${{ github.repository }}/main/docker-compose.prod.yml
+
+            # Create .env file with secrets
+            cat > .env << 'EOF'
+            GITHUB_REPOSITORY_OWNER=${{ github.repository_owner }}
+            SMTP_HOST=${{ secrets.SMTP_HOST }}
+            SMTP_PORT=${{ secrets.SMTP_PORT }}
+            SMTP_USER=${{ secrets.SMTP_USER }}
+            SMTP_PASS=${{ secrets.SMTP_PASS }}
+            SMTP_FROM=${{ secrets.SMTP_FROM }}
+            REACT_APP_API_ENDPOINT=${{ secrets.REACT_APP_API_ENDPOINT }}
+            REACT_APP_PAYPAL_CLIENT_ID=${{ secrets.REACT_APP_PAYPAL_CLIENT_ID }}
+            REACT_APP_PAYPAL_ENVIRONMENT=${{ secrets.REACT_APP_PAYPAL_ENVIRONMENT }}
+            EOF
+
+            # Login to GitHub Container Registry
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            # Pull latest images
+            docker compose pull
+
+            # Stop existing containers
+            docker compose down
+
+            # Start new containers
+            docker compose up -d
+
+            # Clean up old images
+            docker image prune -af
+
+            echo "Deployment completed successfully!"

@@ -2,29 +2,118 @@
 
 A comprehensive ticket management system built with React and Node.js microservices architecture.
 
+## 🚀 Deployment Options
+
+### Option 1: Azure VM with GitHub Actions (Recommended - FREE)
+
+**Fully automated deployment with Azure for Students (FREE for 12 months).**
+
+📖 **See complete guide:** [AZURE_DEPLOYMENT.md](AZURE_DEPLOYMENT.md)
+
+**Summary:**
+1. Create Azure VM (FREE with Azure for Students - $100 credit)
+2. Configure GitHub Secrets
+3. `git push` → GitHub Actions deploys automatically
+
+**Cost:** $0 for 12 months with Azure for Students
+
+---
+
+### Option 2: Local Development
+
 ## Prerequisites
 
-To run the application, you need the following:
-
-- Docker
-- VSCode (or similar editor)
-- MongoDB
-- Node.js
+- Docker and Docker Compose
+- Node.js 18+ (optional, for development without Docker)
 
 ## Setup Instructions
 
-1. Run `npm install` in the project root directory
-2. Execute `docker-compose up --build` in the project root directory
-3. If any errors occur, run `npm install` in the frontend folder and in each service folder respectively
-4. After that, run `docker-compose up --build` again in the project root directory
-5. The application will be available at [http://localhost:3000](http://localhost:3000)
+1. **Clone repository:**
+   ```bash
+   git clone https://github.com/your-username/ticketapp.git
+   cd ticketapp
+   ```
+
+2. **Create `.env` file:**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your credentials
+   ```
+
+3. **Start application:**
+   ```bash
+   docker-compose up -d
+   ```
+
+4. **Access application:**
+   - Frontend: http://localhost:3000
+   - API Gateway: http://localhost:8000
+   - Health Check: http://localhost:8000/health
+
+5. **View logs:**
+   ```bash
+   docker-compose logs -f
+   ```
+
+6. **Stop application:**
+   ```bash
+   docker-compose down
+   ```
+
+---
 
 ## Architecture
 
-- **Frontend**: React application with Ant Design components
+- **Frontend**: React 18.2.0 with Ant Design components
 - **Backend**: Node.js microservices (User, Event, Ticket, Location, Gateway services)
-- **Database**: MongoDB
+- **Database**: MongoDB (5 separate databases)
 - **Containerization**: Docker and Docker Compose
+- **CI/CD**: GitHub Actions with automatic deployment to Azure
+
+## Services and Ports
+
+| Service | Port | Description |
+|---------|------|-------------|
+| Frontend | 3000 | React application |
+| Gateway | 8000 | Central API Gateway |
+| User Service | 8001 | Authentication and user management |
+| Ticket Service | 8002 | Ticket management and QR generation |
+| Event Service | 8003 | Event management |
+| Location Service | 8004 | Venues and seat maps |
+| MongoDB | 27017 | Database |
+
+---
+
+## 🧪 Testing
+
+### E2E Tests (Cypress)
+
+```bash
+cd frontend
+
+# Interactive mode
+npm run cypress:open
+
+# Headless mode
+npm run cypress:run
+```
+
+### Unit Tests (Backend)
+
+```bash
+cd backend/userservice
+npm test
+```
+
+---
+
+## 🔐 Security
+
+**IMPORTANT:** Never commit sensitive credentials.
+
+- Use `.env` file for local development
+- Use GitHub Secrets for production
+- The `.env` file is in `.gitignore`
 
 ## Project Structure Guide
 

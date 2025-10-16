@@ -1,0 +1,128 @@
+version: "3.8"
+
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    restart: always
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - ticketapp-network
+
+  userservice:
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/ticketapp-userservice:latest
+    container_name: userservice
+    restart: always
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/userdb
+      - PORT=8001
+      - NODE_ENV=production
+    depends_on:
+      - mongo
+    networks:
+      - ticketapp-network
+
+  ticketservice:
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/ticketapp-ticketservice:latest
+    container_name: ticketservice
+    restart: always
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/ticketdb
+      - PORT=8002
+      - NODE_ENV=production
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - SMTP_FROM=${SMTP_FROM}
+      - USER_SERVICE_URL=http://userservice:8001
+      - EVENT_SERVICE_URL=http://eventservice:8003
+      - NODE_TLS_REJECT_UNAUTHORIZED=0
+    depends_on:
+      - mongo
+      - userservice
+    networks:
+      - ticketapp-network
+
+  locationservice:
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/ticketapp-locationservice:latest
+    container_name: locationservice
+    restart: always
+    environment:
+      - MONGODB_URI_LOCATION=mongodb://mongo:27017/locationdb
+      - MONGODB_URI_SEATMAP=mongodb://mongo:27017/seatmapdb
+      - PORT=8004
+      - NODE_ENV=production
+    depends_on:
+      - mongo
+    networks:
+      - ticketapp-network
+
+  eventservice:
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/ticketapp-eventservice:latest
+    container_name: eventservice
+    restart: always
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/eventdb
+      - PORT=8003
+      - NODE_ENV=production
+      - TICKET_SERVICE_URL=http://ticketservice:8002
+      - LOCATION_SERVICE_URL=http://locationservice:8004
+      - USER_SERVICE_URL=http://userservice:8001
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - SMTP_FROM=${SMTP_FROM}
+      - NODE_TLS_REJECT_UNAUTHORIZED=0
+    depends_on:
+      - mongo
+      - ticketservice
+      - locationservice
+      - userservice
+    networks:
+      - ticketapp-network
+
+  gateway:
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/ticketapp-gateway:latest
+    container_name: gateway
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - NODE_ENV=production
+      - USER_SERVICE_URL=http://userservice:8001
+      - TICKET_SERVICE_URL=http://ticketservice:8002
+      - EVENT_SERVICE_URL=http://eventservice:8003
+      - LOCATION_SERVICE_URL=http://locationservice:8004
+    depends_on:
+      - userservice
+      - ticketservice
+      - eventservice
+      - locationservice
+    networks:
+      - ticketapp-network
+
+  frontend:
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/ticketapp-frontend:latest
+    container_name: frontend
+    restart: always
+    ports:
+      - "80:3000"
+    environment:
+      - REACT_APP_API_ENDPOINT=${REACT_APP_API_ENDPOINT}
+      - REACT_APP_PAYPAL_CLIENT_ID=${REACT_APP_PAYPAL_CLIENT_ID}
+      - REACT_APP_PAYPAL_ENVIRONMENT=${REACT_APP_PAYPAL_ENVIRONMENT}
+    depends_on:
+      - gateway
+    networks:
+      - ticketapp-network
+
+volumes:
+  mongo-data:
+
+networks:
+  ticketapp-network:
+    driver: bridge
