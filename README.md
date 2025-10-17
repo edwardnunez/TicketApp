@@ -1,295 +1,477 @@
-# TicketApp
+# 🎟️ TicketApp
 
-A comprehensive ticket management system built with React and Node.js microservices architecture.
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![React](https://img.shields.io/badge/React-18.2.0-61dafb.svg)
+![Node.js](https://img.shields.io/badge/Node.js-18+-339933.svg)
+![MongoDB](https://img.shields.io/badge/MongoDB-5.0+-47A248.svg)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED.svg)
 
-## 🚀 Deployment Options
+Una plataforma completa de gestión y venta de tickets desarrollada con arquitectura de microservicios. TicketApp permite crear eventos, gestionar ubicaciones con mapas de asientos interactivos, procesar pagos y generar tickets con códigos QR.
 
-### Option 1: Azure VM with GitHub Actions (Recommended - FREE)
+## 📋 Tabla de Contenidos
 
-**Fully automated deployment with Azure for Students (FREE for 12 months).**
+- [Características](#-características)
+- [Demo](#-demo)
+- [Arquitectura](#-arquitectura)
+- [Tecnologías](#-tecnologías)
+- [Instalación](#-instalación)
+  - [Desarrollo Local](#desarrollo-local-con-docker)
+  - [Despliegue en Azure](#despliegue-en-azure)
+- [Configuración](#-configuración)
+- [Uso](#-uso)
+- [Testing](#-testing)
+- [Estructura del Proyecto](#-estructura-del-proyecto)
+- [API](#-api)
+- [Contribuir](#-contribuir)
+- [Licencia](#-licencia)
 
-📖 **See complete guide:** [AZURE_DEPLOYMENT.md](AZURE_DEPLOYMENT.md)
+## ✨ Características
 
-**Summary:**
-1. Create Azure VM (FREE with Azure for Students - $100 credit)
-2. Configure GitHub Secrets
-3. `git push` → GitHub Actions deploys automatically
+### Para usuarios
+- 🔍 **Búsqueda y filtrado**: Explora eventos por categoría, fecha, ubicación y precio
+- 🎫 **Compra de entradas**: Proceso de compra intuitivo con múltiples métodos de pago (PayPal, tarjeta)
+- 🪑 **Selección interactiva de asientos**: Mapas de asientos visuales con diferentes diseños según el tipo de venue
+- 📱 **Entradas digitales**: Códigos QR únicos enviados por email para cada entradas
+- 👤 **Gestión de perfil**: Historial de compras y personalización de avatar
+- 📧 **Notificaciones por email**: Confirmaciones de compra y recordatorios de eventos
 
-**Cost:** $0 for 12 months with Azure for Students
+### Para administradores
+- 📊 **Panel de control**: Vista completa de ventas, ingresos y estadísticas
+- 🎭 **Gestión de eventos**: Crear, editar y cancelar eventos con imágenes personalizadas
+- 🏟️ **Editor de seatmaps**: Herramienta visual para diseñar mapas de asientos personalizados
+- 📍 **Gestión de ubicaciones**: Administrar venues con capacidades y tipos de configuración
+- 💰 **Análisis de ventas**: Reportes detallados de ingresos por evento y categoría
+- 📈 **Estadísticas en tiempo real**: Monitoreo de ventas y disponibilidad
 
----
+### Características técnicas
+- 🔐 **Autenticación JWT**: Sistema seguro de autenticación y autorización basado en roles
+- 🎨 **Diseño responsive**: Optimizado para móviles, tablets y escritorio
+- ⚡ **Performance optimizado**: Renderizado eficiente de mapas de asientos complejos
+- 🔄 **Actualización de estados**: Sistema automático de actualización de estados de eventos
+- 🖼️ **Gestión de imágenes**: Carga y recorte de imágenes para eventos y avatares
+- 📦 **Arquitectura de microservicios**: Servicios independientes y escalables
 
-### Option 2: Local Development
+## 🏗️ Arquitectura
 
-## Prerequisites
+TicketApp está construida siguiendo una arquitectura de microservicios, donde cada servicio es independiente y se comunica a través de un API Gateway central.
 
-- Docker and Docker Compose
-- Node.js 18+ (optional, for development without Docker)
+```
+┌─────────────────────────────────────────────────────────────┐
+│                         Frontend                            │
+│                    (React + Ant Design)                     │
+└────────────────────────────┬────────────────────────────────┘
+                             │
+                             ▼
+                    ┌─────────────────┐
+                    │   API Gateway   │
+                    │    (Port 8000)  │
+                    └────────┬────────┘
+                             │
+         ┌───────────────────┼───────────────────┐
+         │                   │                   │
+         ▼                   ▼                   ▼
+┌────────────────┐  ┌────────────────┐  ┌────────────────┐
+│  User Service  │  │ Event Service  │  │ Ticket Service │
+│  (Port 8001)   │  │  (Port 8003)   │  │  (Port 8002)   │
+└───────┬────────┘  └───────┬────────┘  └───────┬────────┘
+        │                   │                   │
+        ▼                   ▼                   ▼
+┌─────────────────────────────────────────────────────────┐
+│                      MongoDB                            │
+│      (userdb, eventdb, ticketdb, locationdb)           │
+└─────────────────────────────────────────────────────────┘
+         ▲
+         │
+┌────────┴────────┐
+│Location Service │
+│  (Port 8004)    │
+└─────────────────┘
+```
 
-## Setup Instructions
+### Servicios
 
-1. **Clone repository:**
+| Servicio | Puerto | Responsabilidad |
+|----------|--------|-----------------|
+| **Frontend** | 3000 | Interfaz de usuario React |
+| **Gateway** | 8000 | Enrutamiento y orquestación de APIs |
+| **User Service** | 8001 | Autenticación, registro y gestión de usuarios |
+| **Ticket Service** | 8002 | Compra de tickets, generación de QR y emails |
+| **Event Service** | 8003 | CRUD de eventos y gestión de estados |
+| **Location Service** | 8004 | Gestión de venues y mapas de asientos |
+| **MongoDB** | 27017 | Base de datos (múltiples DBs) |
+
+## 🛠️ Tecnologías
+
+### Frontend
+- **React 18.2.0**: Framework de UI
+- **React Router 6**: Navegación SPA
+- **Ant Design 5**: Biblioteca de componentes UI
+- **Axios**: Cliente HTTP
+- **React Easy Crop**: Recorte de imágenes
+- **PayPal SDK**: Integración de pagos
+
+### Backend
+- **Node.js**: Runtime de JavaScript
+- **Express.js**: Framework web
+- **MongoDB**: Base de datos NoSQL
+- **Mongoose**: ODM para MongoDB
+- **JWT**: Autenticación basada en tokens
+- **Nodemailer**: Envío de emails
+- **QRCode**: Generación de códigos QR
+- **Bcrypt**: Hash de contraseñas
+
+### DevOps
+- **Docker & Docker Compose**: Contenedorización
+- **GitHub Actions**: CI/CD
+- **GitHub Container Registry**: Registro de imágenes Docker
+- **Azure VM**: Hosting en la nube
+
+### Testing
+- **Cypress**: Testing E2E
+- **Jest**: Testing unitario
+
+## 🚀 Instalación
+
+### Prerrequisitos
+
+- **Docker** y **Docker Compose** (recomendado)
+- **Node.js 18+** (opcional, para desarrollo sin Docker)
+- **Git**
+
+### Desarrollo Local con Docker
+
+1. **Clonar el repositorio**
    ```bash
    git clone https://github.com/your-username/ticketapp.git
    cd ticketapp
    ```
 
-2. **Create `.env` file:**
+2. **Configurar variables de entorno**
+
+   Crea un archivo `.env` en la raíz del proyecto:
    ```bash
-   cp .env.example .env
-   # Edit .env with your credentials
+   # SMTP Configuration (para envío de emails)
+   SMTP_HOST=smtp.gmail.com
+   SMTP_PORT=587
+   SMTP_USER=tu-email@gmail.com
+   SMTP_PASS=tu-app-password
+   SMTP_FROM=TicketApp <no-reply@ticketapp.com>
+
+   # PayPal Configuration (opcional)
+   REACT_APP_PAYPAL_CLIENT_ID=tu-paypal-client-id
+   REACT_APP_PAYPAL_ENVIRONMENT=sandbox
    ```
 
-3. **Start application:**
+3. **Iniciar la aplicación**
    ```bash
    docker-compose up -d
    ```
 
-4. **Access application:**
-   - Frontend: http://localhost:3000
-   - API Gateway: http://localhost:8000
-   - Health Check: http://localhost:8000/health
+4. **Acceder a la aplicación**
+   - Frontend: [http://localhost:3000](http://localhost:3000)
+   - API Gateway: [http://localhost:8000](http://localhost:8000)
+   - Health Check: [http://localhost:8000/health](http://localhost:8000/health)
 
-5. **View logs:**
+5. **Ver logs**
    ```bash
    docker-compose logs -f
    ```
 
-6. **Stop application:**
+6. **Detener la aplicación**
    ```bash
    docker-compose down
    ```
 
----
+### Desarrollo sin Docker
 
-## Architecture
+Para cada servicio:
 
-- **Frontend**: React 18.2.0 with Ant Design components
-- **Backend**: Node.js microservices (User, Event, Ticket, Location, Gateway services)
-- **Database**: MongoDB (5 separate databases)
-- **Containerization**: Docker and Docker Compose
-- **CI/CD**: GitHub Actions with automatic deployment to Azure
+```bash
+# Backend - User Service
+cd backend/userservice
+npm install
+npm start
 
-## Services and Ports
+# Repetir para cada servicio (eventservice, ticketservice, locationservice, gatewayservice)
+```
 
-| Service | Port | Description |
-|---------|------|-------------|
-| Frontend | 3000 | React application |
-| Gateway | 8000 | Central API Gateway |
-| User Service | 8001 | Authentication and user management |
-| Ticket Service | 8002 | Ticket management and QR generation |
-| Event Service | 8003 | Event management |
-| Location Service | 8004 | Venues and seat maps |
-| MongoDB | 27017 | Database |
+```bash
+# Frontend
+cd frontend
+npm install
+npm start
+```
 
----
+### Despliegue en Azure
+
+TicketApp incluye configuración completa para despliegue automatizado en Azure VM usando GitHub Actions.
+
+**Opción Gratuita**: Azure for Students ofrece $100 de crédito gratis por 12 meses.
+
+**Resumen:**
+1. Crear una VM en Azure
+2. Configurar GitHub Secrets en tu repositorio
+3. Hacer push a la rama `main` → GitHub Actions despliega automáticamente
+
+**Coste**: $0 durante 12 meses con Azure for Students
+
+## ⚙️ Configuración
+
+### Variables de Entorno
+
+#### Producción (GitHub Secrets)
+
+Para despliegue en producción, configura estos secrets en GitHub:
+
+- `AZURE_VM_HOST`: IP pública de tu VM
+- `AZURE_VM_USER`: Usuario SSH de la VM
+- `AZURE_VM_SSH_KEY`: Clave privada SSH
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`
+- `REACT_APP_API_ENDPOINT`: URL del API Gateway
+- `REACT_APP_PAYPAL_CLIENT_ID`: ID de cliente de PayPal
+- `REACT_APP_PAYPAL_ENVIRONMENT`: `sandbox` o `production`
+
+#### Desarrollo Local
+
+Ver archivo `.env` de ejemplo arriba.
+
+## 📖 Uso
+
+### Usuario Regular
+
+1. **Registrarse/Iniciar Sesión**: Crea una cuenta o inicia sesión
+2. **Explorar Eventos**: Navega por eventos disponibles, filtra por categoría, fecha o precio
+3. **Seleccionar Evento**: Click en un evento para ver detalles completos
+4. **Comprar Tickets**:
+   - Selecciona asientos en el mapa interactivo
+   - Ingresa información del comprador
+   - Selecciona método de pago
+   - Confirma la compra
+5. **Recibir Tickets**: Recibirás un email con los tickets en formato PDF con código QR
+6. **Ver Historial**: Accede a tu perfil para ver tickets comprados
+
+### Administrador
+
+1. **Acceder al Panel**: Navega a `/admin` (requiere rol de administrador)
+2. **Crear Ubicación**: Define un nuevo venue con su capacidad y tipo
+3. **Crear Seatmap**: Usa el editor visual para diseñar el mapa de asientos
+4. **Crear Evento**:
+   - Completa información del evento (título, descripción, fecha, etc.)
+   - Selecciona ubicación y seatmap
+   - Configura precios por sección
+   - Sube imagen del evento
+5. **Gestionar Eventos**: Ver estadísticas, editar o cancelar eventos
+6. **Ver Estadísticas**: Analiza ventas e ingresos en tiempo real
 
 ## 🧪 Testing
 
-### E2E Tests (Cypress)
+### Tests End-to-End (Cypress)
 
 ```bash
 cd frontend
 
-# Interactive mode
+# Modo interactivo
 npm run cypress:open
 
-# Headless mode
+# Modo headless
 npm run cypress:run
+
+# Navegadores específicos
+npm run cypress:run:chrome
+npm run cypress:run:firefox
 ```
 
-### Unit Tests (Backend)
+### Tests Unitarios
 
 ```bash
 cd backend/userservice
 npm test
 ```
 
+## 📁 Estructura del Proyecto
+
+```
+ticketapp/
+├── backend/
+│   ├── gatewayservice/         # API Gateway - Enrutamiento central
+│   │   ├── gateway-service.js
+│   │   ├── Dockerfile
+│   │   └── package.json
+│   ├── userservice/            # Servicio de usuarios
+│   │   ├── user-service.js     # Autenticación y gestión de usuarios
+│   │   ├── user-model.js       # Modelo de datos de usuario
+│   │   ├── Dockerfile
+│   │   └── package.json
+│   ├── eventservice/           # Servicio de eventos
+│   │   ├── event-service.js    # CRUD de eventos
+│   │   ├── event-model.js      # Modelo de datos de evento
+│   │   ├── event-state-service.js  # Actualización automática de estados
+│   │   ├── Dockerfile
+│   │   └── package.json
+│   ├── ticketservice/          # Servicio de tickets
+│   │   ├── ticket-service.js   # Compra y generación de tickets
+│   │   ├── ticket-model.js     # Modelo de datos de ticket
+│   │   ├── Dockerfile
+│   │   └── package.json
+│   └── locationservice/        # Servicio de ubicaciones
+│       ├── location-service.js # Gestión de venues
+│       ├── location-model.js   # Modelo de ubicación
+│       ├── seatmap-model.js    # Modelo de mapa de asientos
+│       ├── Dockerfile
+│       └── package.json
+├── frontend/
+│   ├── src/
+│   │   ├── components/         # Componentes reutilizables
+│   │   │   ├── Navbar.jsx
+│   │   │   ├── Footer.jsx
+│   │   │   ├── ProtectedRoute.jsx
+│   │   │   └── AdminRoute.jsx
+│   │   ├── pages/              # Páginas de la aplicación
+│   │   │   ├── Home.jsx        # Página principal
+│   │   │   ├── Login.jsx
+│   │   │   ├── Register.jsx
+│   │   │   ├── Profile.jsx
+│   │   │   ├── EventDetails.jsx
+│   │   │   ├── TicketPurchase.jsx
+│   │   │   ├── admin/          # Panel de administración
+│   │   │   │   ├── AdminDashboard.jsx
+│   │   │   │   ├── EventCreation.jsx
+│   │   │   │   ├── LocationCreation.jsx
+│   │   │   │   └── AdminStatistics.jsx
+│   │   │   └── steps/          # Pasos del proceso de compra
+│   │   │       ├── TicketSelection.jsx
+│   │   │       ├── BuyerInfo.jsx
+│   │   │       ├── PaymentMethod.jsx
+│   │   │       └── PurchaseConfirmation.jsx
+│   │   ├── hooks/              # Custom React Hooks
+│   │   │   ├── useUserRole.js
+│   │   │   ├── useDeviceDetection.js
+│   │   │   └── useSeatMapPerformance.js
+│   │   ├── utils/              # Utilidades
+│   │   │   └── authSession.js
+│   │   ├── App.jsx             # Componente principal
+│   │   └── index.js            # Punto de entrada
+│   ├── public/
+│   │   ├── avatars/            # Avatares de usuario
+│   │   └── event-images/       # Imágenes de eventos
+│   ├── Dockerfile
+│   └── package.json
+├── .github/
+│   └── workflows/
+│       └── deploy.yml          # GitHub Actions CI/CD
+├── docker-compose.yml          # Orquestación de servicios (desarrollo)
+├── docker-compose.prod.yml     # Configuración de producción
+└── README.md
+```
+
+## 📡 API
+
+### Endpoints Principales
+
+#### User Service (Puerto 8001)
+- `POST /api/users/register` - Registrar nuevo usuario
+- `POST /api/users/login` - Iniciar sesión
+- `GET /api/users/profile` - Obtener perfil (autenticado)
+- `PUT /api/users/profile` - Actualizar perfil (autenticado)
+
+#### Event Service (Puerto 8003)
+- `GET /api/events` - Listar eventos (soporta filtros: category, search, date, price)
+- `GET /api/events/:id` - Obtener detalles de evento
+- `POST /api/events` - Crear evento (admin)
+- `PUT /api/events/:id` - Actualizar evento (admin)
+- `DELETE /api/events/:id` - Eliminar evento (admin)
+- `PUT /api/events/:id/state` - Cambiar estado de evento (admin)
+
+#### Ticket Service (Puerto 8002)
+- `POST /api/tickets/purchase` - Comprar tickets (autenticado)
+- `GET /api/tickets/user/:userId` - Obtener tickets de usuario (autenticado)
+- `GET /api/tickets/:id` - Obtener detalles de ticket
+
+#### Location Service (Puerto 8004)
+- `GET /api/locations` - Listar ubicaciones
+- `GET /api/locations/:id` - Obtener detalles de ubicación
+- `POST /api/locations` - Crear ubicación (admin)
+- `GET /api/seatmaps` - Listar mapas de asientos
+- `GET /api/seatmaps/:id` - Obtener detalles de seatmap
+- `POST /api/seatmaps` - Crear seatmap (admin)
+
+#### Gateway (Puerto 8000)
+El Gateway enruta todas las peticiones a los servicios correspondientes, actuando como punto de entrada único.
+
+### Autenticación
+
+La API utiliza JWT (JSON Web Tokens) para autenticación. Incluye el token en el header `Authorization`:
+
+```
+Authorization: Bearer <tu-token-jwt>
+```
+
+## 🔐 Seguridad
+
+### Mejores Prácticas Implementadas
+
+- **Hash de Contraseñas**: Todas las contraseñas se hashean con bcrypt
+- **JWT Tokens**: Autenticación stateless con tokens firmados
+- **Autorización basada en Roles**: Rutas protegidas según rol de usuario (admin/user)
+- **Variables de Entorno**: Credenciales sensibles nunca se commitean
+- **Validación de Entrada**: Validación en frontend y backend
+- **CORS**: Configurado para permitir solo orígenes autorizados
+- **HTTPS**: Recomendado para producción (configurar en reverse proxy)
+
+### Recomendaciones para Producción
+
+1. Usar HTTPS con certificados SSL/TLS
+2. Configurar rate limiting en el API Gateway
+3. Implementar logging y monitoreo
+4. Regular rotación de secrets
+5. Configurar firewalls y security groups
+6. Mantener dependencias actualizadas
+
+## 🤝 Contribuir
+
+Las contribuciones son bienvenidas. Para contribuir:
+
+1. Fork el proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
+
+### Guidelines
+
+- Seguir las convenciones de código existentes
+- Añadir tests para nuevas funcionalidades
+- Actualizar documentación según sea necesario
+- Asegurar que todos los tests pasen antes de hacer PR
+
+## 📝 Roadmap
+
+- [ ] Implementar sistema de notificaciones push
+- [ ] Añadir soporte para múltiples idiomas (i18n)
+- [ ] Integrar más pasarelas de pago (Stripe, MercadoPago)
+- [ ] Implementar sistema de recomendaciones
+- [ ] App móvil nativa (React Native)
+- [ ] Sistema de verificación de tickets en tiempo real
+- [ ] Dashboard de analíticas avanzadas para admins
+- [ ] Sistema de reseñas y calificaciones de eventos
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
+
+## 👥 Autores
+
+- **Tu Nombre** - *Trabajo Inicial* - [tu-username](https://github.com/tu-username)
+
+## 🙏 Agradecimientos
+
+- Ant Design por los componentes UI
+- React community por las herramientas y libraries
+- MongoDB por la base de datos NoSQL
+- Todos los contribuidores que ayudan a mejorar este proyecto
+
 ---
 
-## 🔐 Security
+**¿Tienes preguntas o necesitas ayuda?** Abre un [issue](https://github.com/your-username/ticketapp/issues) o contacta al equipo de desarrollo.
 
-**IMPORTANT:** Never commit sensitive credentials.
-
-- Use `.env` file for local development
-- Use GitHub Secrets for production
-- The `.env` file is in `.gitignore`
-
-## Project Structure Guide
-
-### Backend Services
-
-#### Gateway Service (`backend/gatewayservice/`)
-
-- **`gateway-service.js`**: API Gateway that routes requests to appropriate microservices
-- **`Dockerfile`**: Container configuration for the gateway service
-- **`package.json`**: Dependencies and scripts for the gateway service
-
-#### User Service (`backend/userservice/`)
-
-- **`user-service.js`**: Handles user authentication, registration, and profile management
-- **`user-model.js`**: MongoDB schema and methods for user data
-- **`Dockerfile`**: Container configuration for the user service
-- **`package.json`**: Dependencies and scripts for the user service
-
-#### Event Service (`backend/eventservice/`)
-
-- **`event-service.js`**: Manages event creation, updates, state changes, and image uploads
-- **`event-model.js`**: MongoDB schema and methods for event data
-- **`event-state-service.js`**: Handles automatic event state updates (active, upcoming, finished, cancelled)
-- **`Dockerfile`**: Container configuration for the event service
-- **`package.json`**: Dependencies and scripts for the event service
-
-#### Ticket Service (`backend/ticketservice/`)
-
-- **`ticket-service.js`**: Handles ticket purchases, QR code generation, and email confirmations
-- **`ticket-model.js`**: MongoDB schema and methods for ticket data
-- **`Dockerfile`**: Container configuration for the ticket service
-- **`package.json`**: Dependencies and scripts for the ticket service
-
-#### Location Service (`backend/locationservice/`)
-
-- **`location-service.js`**: Manages locations and seatmap definitions
-- **`location-model.js`**: MongoDB schema and methods for location data
-- **`seatmap-model.js`**: MongoDB schema and methods for seatmap data
-- **`seed-seatmaps.js`**: Script to populate database with sample seatmaps
-- **`seed.js`**: Database seeding script
-- **`Dockerfile`**: Container configuration for the location service
-- **`package.json`**: Dependencies and scripts for the location service
-
-#### Main Backend Files
-
-- **`server.js`**: Main backend entry point with health check endpoint
-- **`package.json`**: Root backend dependencies and scripts
-- **`docker-compose.yml`**: Docker Compose configuration for all services
-
-### Frontend Application
-
-#### Main Application Files
-
-- **`App.jsx`**: Main React application component with routing configuration
-- **`index.js`**: React application entry point
-- **`index.css`**: Global CSS styles
-- **`reportWebVitals.js`**: Performance monitoring setup
-- **`setupTests.js`**: Test configuration
-
-#### Components (`src/components/`)
-
-- **`AdminRoute.jsx`**: Route protection for admin-only pages
-- **`colorscheme.jsx`**: Color palette and utility functions for dynamic theming
-- **`Footer.jsx`**: Application footer component
-- **`FramedImage.jsx`**: Image display component with frame styling
-- **`ImageCropperModal.jsx`**: Modal for image cropping functionality
-- **`Navbar.jsx`**: Navigation bar with user authentication and role-based menu
-- **`OptimizedSeatNavigation.jsx`**: Optimized seat map navigation component
-- **`PersistentViewSwitcher.jsx`**: View mode persistence component
-- **`ProtectedRoute.jsx`**: Route protection for authenticated users
-- **`SmartSeatFilters.jsx`**: Intelligent seat filtering component
-- **`SmartZoomContainer.jsx`**: Smart zoom functionality for seat maps
-
-#### Custom Hooks (`src/hooks/`)
-
-- **`useDeviceDetection.js`**: Device detection and responsive behavior
-- **`useSeatMapPerformance.js`**: Seat map rendering performance optimization
-- **`useSeatMapViability.js`**: Seat map viability assessment
-- **`useUserRole.js`**: User role and authentication state management
-- **`useViewportManager.js`**: Viewport and zoom functionality management
-
-#### Pages (`src/pages/`)
-
-- **`Home.jsx`**: Main page with event listings, filtering, and search
-- **`Login.jsx`**: User authentication page
-- **`Register.jsx`**: User registration page
-- **`Profile.jsx`**: User profile page with ticket history
-- **`EditProfile.jsx`**: Profile editing page with avatar selection
-- **`EventDetails.jsx`**: Detailed event information page
-- **`TicketPurchase.jsx`**: Multi-step ticket purchase process
-- **`AboutUs.jsx`**: About page with team information
-- **`HelpCenter.jsx`**: Help center with FAQ and support
-- **`ErrorPage.jsx`**: 404 and error handling page
-
-#### Admin Pages (`src/pages/admin/`)
-
-- **`AdminDashboard.jsx`**: Admin dashboard for event management
-- **`AdminStatistics.jsx`**: Detailed sales and revenue analysis
-- **`EditableSeatGrid.jsx`**: Editable seat grid for seat map creation
-- **`EditableSeatRenderer.jsx`**: Seat renderer for editing mode
-- **`EventCreation.jsx`**: Complex event creation form with location, pricing, and image management
-- **`EventSeatmapEditor.jsx`**: Seat map editor for events
-- **`LocationCreation.jsx`**: Location creation form
-- **`ProfessionalAdminSeatMapRenderer.jsx`**: Professional seat map renderer for admin
-
-#### Purchase Steps (`src/pages/steps/`)
-
-- **`BuyerInfo.jsx`**: Buyer information collection step
-- **`PaymentMethod.jsx`**: Payment method selection step
-- **`PurchaseConfirmation.jsx`**: Purchase confirmation step
-- **`TicketSelection.jsx`**: Ticket selection step
-
-#### Seat Map Components (`src/pages/steps/seatmaps/`)
-
-**Containers:**
-
-- **`AdaptiveSeatMapRenderer.jsx`**: Automatically selects best rendering approach
-- **`AlternativeViewRenderer.jsx`**: Alternative view rendering for different devices
-- **`EnhancedSeatMapContainer.jsx`**: Enhanced container with professional rendering
-- **`MobileSeatList.jsx`**: Mobile-optimized seat list view
-- **`ProfessionalSeatMapRenderer.jsx`**: Professional renderer with advanced controls
-
-**Renderers:**
-
-- **`EditableSeatRenderer.jsx`**: Seat renderer for creation and editing
-- **`GenericSeatRenderer.jsx`**: Generic seat map renderer for standard display
-- **`ProfessionalSeatRenderer.jsx`**: Professional seat renderer with advanced features
-- **`ResponsiveSeatRenderer.jsx`**: Responsive seat renderer for different screen sizes
-- **`SeatRenderer.jsx`**: Individual seat renderer for numbered sections
-- **`SectionShapeRenderer.jsx`**: Section shape renderer for different venue types
-- **`VenueStageRenderer.jsx`**: Venue stage renderer for different venue types
-
-**UI Components:**
-
-- **`ZoomControls.jsx`**: Zoom controls for seat map navigation
-- **`SeatFilters.jsx`**: Seat filtering interface
-- **`SeatLegend.jsx`**: Seat map legend component
-- **`ViewModeSelector.jsx`**: View mode selection component
-
-**Styles:**
-
-- **`ProfessionalSeatMapLayouts.css`**: Professional seat map styling
-- **`ResponsiveSeatMap.css`**: Responsive seat map styling
-
-#### Utilities (`src/utils/`)
-
-- **`authSession.js`**: Authentication session management utilities
-
-#### Public Assets (`public/`)
-
-- **`index.html`**: Main HTML template
-- **`manifest.json`**: PWA manifest
-- **`robots.txt`**: SEO robots file
-- **`site.webmanifest`**: Web app manifest
-- **`favicon.ico`**: Site favicon
-- **`android-chrome-*.png`**: Android app icons
-- **`apple-touch-icon.png`**: Apple touch icon
-- **`logo*.png`**: Application logos
-- **`avatars/`**: User avatar images
-- **`event-images/`**: Default event images
-
-#### Build Files (`build/`)
-
-- **`index.html`**: Built HTML file
-- **`static/`**: Compiled CSS and JavaScript assets
-- **`asset-manifest.json`**: Asset manifest for the build
-
-### Configuration Files
-
-- **`docker-compose.yml`**: Docker Compose configuration for all services
-- **`package.json`**: Root project dependencies and scripts
-- **`package-lock.json`**: Dependency lock file
-- **`Dockerfile`**: Frontend container configuration
-
-### Documentation
-
-- **`README.md`**: Project documentation and setup guide
-- **`docs/`**: Additional documentation directory
-- **`fixes.md`**: Bug fixes and improvements log
+**⭐ Si este proyecto te resultó útil, considera darle una estrella en GitHub**
