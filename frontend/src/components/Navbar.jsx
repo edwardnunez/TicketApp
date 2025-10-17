@@ -81,7 +81,7 @@ const Navbar = () => {
         <TagOutlined
           style={{ fontSize: isMobile ? 18 : 24, color: COLORS.primary.main, transform: "rotate(-20deg)" }}
         />
-        <Title level={isMobile ? 5 : 4} style={{ margin: 0, color: COLORS.neutral.white, letterSpacing: "0.5px", fontSize: isMobile ? "1.1rem" : undefined }}>
+        <Title level={isMobile ? 5 : 4} style={{ margin: 0, color: COLORS.neutral.white, letterSpacing: "0.5px", fontSize: isMobile ? "0.9rem" : undefined, whiteSpace: "nowrap" }}>
           TicketApp
         </Title>
       </Link>
@@ -93,21 +93,23 @@ const Navbar = () => {
 
         {/* Opciones para todos los usuarios autenticados */}
         {isLoggedIn && (
-          <Link to="/help" data-cy="help-link" style={{ color: COLORS.neutral.white, fontWeight: "500", fontSize: isMobile ? 13 : undefined }}>
-            <QuestionCircleOutlined style={{ marginRight: 4 }} />
-            {!isMobile && "Ayuda"}
+          <Link to="/help" data-cy="help-link" style={{ color: COLORS.neutral.white, fontWeight: "500", fontSize: isMobile ? 13 : undefined, display: 'flex', alignItems: 'center', gap: 4 }}>
+            <QuestionCircleOutlined />
+            {!isMobile && <span>Ayuda</span>}
           </Link>
         )}
 
         {/* Opciones exclusivas para administradores */}
         {isLoggedIn && isAdmin && !isLoading && (
           <>
-            <Link to="/admin" data-cy="admin-link" style={{ color: COLORS.neutral.white, fontWeight: "500", fontSize: isMobile ? 13 : undefined }}>
-              Panel de administrador
-            </Link>
-            <Link to="/admin/statistics" data-cy="statistics-link" style={{ color: COLORS.neutral.white, fontWeight: "500", fontSize: isMobile ? 13 : undefined }}>
-              <BarChartOutlined style={{ marginRight: 4 }} />
-              {!isMobile && "Estadísticas"}
+            {!isMobile && (
+              <Link to="/admin" data-cy="admin-link" style={{ color: COLORS.neutral.white, fontWeight: "500", fontSize: isMobile ? 13 : undefined }}>
+                Panel de administrador
+              </Link>
+            )}
+            <Link to="/admin/statistics" data-cy="statistics-link" style={{ color: COLORS.neutral.white, fontWeight: "500", fontSize: isMobile ? 13 : undefined, display: 'flex', alignItems: 'center', gap: 4 }}>
+              <BarChartOutlined />
+              {!isMobile && <span>Estadísticas</span>}
             </Link>
           </>
         )}
