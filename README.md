@@ -1,6 +1,5 @@
 # 🎟️ TicketApp
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![React](https://img.shields.io/badge/React-18.2.0-61dafb.svg)
 ![Node.js](https://img.shields.io/badge/Node.js-18+-339933.svg)
 ![MongoDB](https://img.shields.io/badge/MongoDB-5.0+-47A248.svg)
@@ -8,22 +7,17 @@
 
 Una plataforma completa de gestión y venta de tickets desarrollada con arquitectura de microservicios. TicketApp permite crear eventos, gestionar ubicaciones con mapas de asientos interactivos, procesar pagos y generar tickets con códigos QR.
 
-## 📋 Tabla de Contenidos
+## 📋 Tabla de contenidos
 
 - [Características](#-características)
-- [Demo](#-demo)
 - [Arquitectura](#-arquitectura)
 - [Tecnologías](#-tecnologías)
 - [Instalación](#-instalación)
   - [Desarrollo Local](#desarrollo-local-con-docker)
   - [Despliegue en Azure](#despliegue-en-azure)
 - [Configuración](#-configuración)
-- [Uso](#-uso)
-- [Testing](#-testing)
 - [Estructura del Proyecto](#-estructura-del-proyecto)
-- [API](#-api)
-- [Contribuir](#-contribuir)
-- [Licencia](#-licencia)
+- [Autores](#-autores)
 
 ## ✨ Características
 
@@ -67,25 +61,19 @@ TicketApp está construida siguiendo una arquitectura de microservicios, donde c
                     │    (Port 8000)  │
                     └────────┬────────┘
                              │
-         ┌───────────────────┼───────────────────┐
-         │                   │                   │
-         ▼                   ▼                   ▼
-┌────────────────┐  ┌────────────────┐  ┌────────────────┐
-│  User Service  │  │ Event Service  │  │ Ticket Service │
-│  (Port 8001)   │  │  (Port 8003)   │  │  (Port 8002)   │
-└───────┬────────┘  └───────┬────────┘  └───────┬────────┘
-        │                   │                   │
-        ▼                   ▼                   ▼
-┌─────────────────────────────────────────────────────────┐
-│                      MongoDB                            │
-│      (userdb, eventdb, ticketdb, locationdb)           │
-└─────────────────────────────────────────────────────────┘
-         ▲
-         │
-┌────────┴────────┐
-│Location Service │
-│  (Port 8004)    │
-└─────────────────┘
+         ┌───────────────────┼───────────────────┬────────────┐
+         │                   │                   │            │
+         ▼                   ▼                   ▼            ▼
+┌────────────────┐  ┌────────────────┐  ┌────────────────┐  ┌──────────────────┐
+│  User Service  │  │ Event Service  │  │ Ticket Service │  │ Location Service │
+│  (Port 8001)   │  │  (Port 8003)   │  │  (Port 8002)   │  │   (Port 8004)    │
+└───────┬────────┘  └───────┬────────┘  └───────┬────────┘  └────────┬─────────┘
+        │                   │                   │                    │
+        ▼                   ▼                   ▼                    ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                              MongoDB                                         │
+│            (userdb, eventdb, ticketdb, locationdb, seatmapdb)               │
+└──────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Servicios
@@ -217,7 +205,7 @@ TicketApp incluye configuración completa para despliegue automatizado en Azure 
 
 ## ⚙️ Configuración
 
-### Variables de Entorno
+### Variables de entorno
 
 #### Producción (GitHub Secrets)
 
@@ -236,7 +224,7 @@ Para despliegue en producción, configura estos secrets en GitHub:
 Ver archivo `.env` de ejemplo arriba.
 
 
-## 📁 Estructura del Proyecto
+## 📁 Estructura del proyecto
 
 ```
 ticketapp/
@@ -312,13 +300,10 @@ ticketapp/
 └── README.md
 ```
 
-
 ## 👥 Autores
 
 - **Iyán Fernández** - Desarrollador - [iyanfdezz](https://github.com/iyanfdezz)
 - **Edward Núñez** - Tutor - [edwardnunez](https://github.com/edwardnunez)
 - **Xiomarah Guzmán** - Tutora - [xiomarah](https://github.com/xiomarah)
-
-**¿Tienes preguntas o necesitas ayuda?** Abre un [issue](https://github.com/your-username/ticketapp/issues) o contacta al equipo de desarrollo.
 
 **⭐ Si este proyecto te resultó útil, considera darle una estrella en GitHub**
