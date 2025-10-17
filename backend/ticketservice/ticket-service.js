@@ -11,7 +11,7 @@ const app = express();
 const port = 8002;
 
 app.use(express.json());
-app.use(cors({ origin: ["http://localhost:3000", "http://localhost:8000"] }));
+app.use(cors());
 
 const EVENT_SERVICE_URL = process.env.EVENT_SERVICE_URL || "http://localhost:8003";
 

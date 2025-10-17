@@ -12,15 +12,7 @@ const port = 8001;
 const secretKey = 'your-secret-key';
 
 app.use(express.json());
-
-const corsOptions = {
-  origin: [
-    process.env.USER_SERVICE_URL || "http://localhost:8001",
-    process.env.MONGODB_URI || "mongodb://localhost:27017/userdb",
-  ],
-};
-
-app.use(cors(corsOptions));
+app.use(cors());
 app.use(bodyParser.json());
 
 const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/userdb';
