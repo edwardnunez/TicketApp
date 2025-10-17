@@ -667,7 +667,7 @@ const Profile = () => {
                 title={
                   <div style={{ display: "flex", alignItems: "center" }}>
                     <TagOutlined style={{ color: COLORS.primary.main, marginRight: "8px" }} />
-                    <span style={{ color: COLORS.neutral.darker }}>Mis Entradas</span>
+                    <span style={{ color: COLORS.neutral.darker }}>Mis entradas</span>
                   </div>
                 }
                 data-cy="tickets-section"
