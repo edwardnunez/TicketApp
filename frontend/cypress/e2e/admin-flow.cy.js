@@ -14,7 +14,7 @@ describe('Flujo de Administración', () => {
   beforeEach(() => {
     cy.cleanupTestData();
     cy.interceptAPI();
-  });
+  }); 
 
   describe('Login y Acceso de Administrador', () => {
     it('debería permitir login como administrador y acceder al panel', () => {
