@@ -235,58 +235,6 @@ Para despliegue en producción, configura estos secrets en GitHub:
 
 Ver archivo `.env` de ejemplo arriba.
 
-## 📖 Uso
-
-### Usuario Regular
-
-1. **Registrarse/Iniciar Sesión**: Crea una cuenta o inicia sesión
-2. **Explorar Eventos**: Navega por eventos disponibles, filtra por categoría, fecha o precio
-3. **Seleccionar Evento**: Click en un evento para ver detalles completos
-4. **Comprar Tickets**:
-   - Selecciona asientos en el mapa interactivo
-   - Ingresa información del comprador
-   - Selecciona método de pago
-   - Confirma la compra
-5. **Recibir Tickets**: Recibirás un email con los tickets en formato PDF con código QR
-6. **Ver Historial**: Accede a tu perfil para ver tickets comprados
-
-### Administrador
-
-1. **Acceder al Panel**: Navega a `/admin` (requiere rol de administrador)
-2. **Crear Ubicación**: Define un nuevo venue con su capacidad y tipo
-3. **Crear Seatmap**: Usa el editor visual para diseñar el mapa de asientos
-4. **Crear Evento**:
-   - Completa información del evento (título, descripción, fecha, etc.)
-   - Selecciona ubicación y seatmap
-   - Configura precios por sección
-   - Sube imagen del evento
-5. **Gestionar Eventos**: Ver estadísticas, editar o cancelar eventos
-6. **Ver Estadísticas**: Analiza ventas e ingresos en tiempo real
-
-## 🧪 Testing
-
-### Tests End-to-End (Cypress)
-
-```bash
-cd frontend
-
-# Modo interactivo
-npm run cypress:open
-
-# Modo headless
-npm run cypress:run
-
-# Navegadores específicos
-npm run cypress:run:chrome
-npm run cypress:run:firefox
-```
-
-### Tests Unitarios
-
-```bash
-cd backend/userservice
-npm test
-```
 
 ## 📁 Estructura del Proyecto
 
@@ -364,113 +312,12 @@ ticketapp/
 └── README.md
 ```
 
-## 📡 API
-
-### Endpoints Principales
-
-#### User Service (Puerto 8001)
-- `POST /api/users/register` - Registrar nuevo usuario
-- `POST /api/users/login` - Iniciar sesión
-- `GET /api/users/profile` - Obtener perfil (autenticado)
-- `PUT /api/users/profile` - Actualizar perfil (autenticado)
-
-#### Event Service (Puerto 8003)
-- `GET /api/events` - Listar eventos (soporta filtros: category, search, date, price)
-- `GET /api/events/:id` - Obtener detalles de evento
-- `POST /api/events` - Crear evento (admin)
-- `PUT /api/events/:id` - Actualizar evento (admin)
-- `DELETE /api/events/:id` - Eliminar evento (admin)
-- `PUT /api/events/:id/state` - Cambiar estado de evento (admin)
-
-#### Ticket Service (Puerto 8002)
-- `POST /api/tickets/purchase` - Comprar tickets (autenticado)
-- `GET /api/tickets/user/:userId` - Obtener tickets de usuario (autenticado)
-- `GET /api/tickets/:id` - Obtener detalles de ticket
-
-#### Location Service (Puerto 8004)
-- `GET /api/locations` - Listar ubicaciones
-- `GET /api/locations/:id` - Obtener detalles de ubicación
-- `POST /api/locations` - Crear ubicación (admin)
-- `GET /api/seatmaps` - Listar mapas de asientos
-- `GET /api/seatmaps/:id` - Obtener detalles de seatmap
-- `POST /api/seatmaps` - Crear seatmap (admin)
-
-#### Gateway (Puerto 8000)
-El Gateway enruta todas las peticiones a los servicios correspondientes, actuando como punto de entrada único.
-
-### Autenticación
-
-La API utiliza JWT (JSON Web Tokens) para autenticación. Incluye el token en el header `Authorization`:
-
-```
-Authorization: Bearer <tu-token-jwt>
-```
-
-## 🔐 Seguridad
-
-### Mejores Prácticas Implementadas
-
-- **Hash de Contraseñas**: Todas las contraseñas se hashean con bcrypt
-- **JWT Tokens**: Autenticación stateless con tokens firmados
-- **Autorización basada en Roles**: Rutas protegidas según rol de usuario (admin/user)
-- **Variables de Entorno**: Credenciales sensibles nunca se commitean
-- **Validación de Entrada**: Validación en frontend y backend
-- **CORS**: Configurado para permitir solo orígenes autorizados
-- **HTTPS**: Recomendado para producción (configurar en reverse proxy)
-
-### Recomendaciones para Producción
-
-1. Usar HTTPS con certificados SSL/TLS
-2. Configurar rate limiting en el API Gateway
-3. Implementar logging y monitoreo
-4. Regular rotación de secrets
-5. Configurar firewalls y security groups
-6. Mantener dependencias actualizadas
-
-## 🤝 Contribuir
-
-Las contribuciones son bienvenidas. Para contribuir:
-
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
-
-### Guidelines
-
-- Seguir las convenciones de código existentes
-- Añadir tests para nuevas funcionalidades
-- Actualizar documentación según sea necesario
-- Asegurar que todos los tests pasen antes de hacer PR
-
-## 📝 Roadmap
-
-- [ ] Implementar sistema de notificaciones push
-- [ ] Añadir soporte para múltiples idiomas (i18n)
-- [ ] Integrar más pasarelas de pago (Stripe, MercadoPago)
-- [ ] Implementar sistema de recomendaciones
-- [ ] App móvil nativa (React Native)
-- [ ] Sistema de verificación de tickets en tiempo real
-- [ ] Dashboard de analíticas avanzadas para admins
-- [ ] Sistema de reseñas y calificaciones de eventos
-
-## 📄 Licencia
-
-Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
 
 ## 👥 Autores
 
-- **Tu Nombre** - *Trabajo Inicial* - [tu-username](https://github.com/tu-username)
-
-## 🙏 Agradecimientos
-
-- Ant Design por los componentes UI
-- React community por las herramientas y libraries
-- MongoDB por la base de datos NoSQL
-- Todos los contribuidores que ayudan a mejorar este proyecto
-
----
+- **Iyán Fernández** - Desarrollador - [iyanfdezz](https://github.com/iyanfdezz)
+- **Edward Núñez** - Tutor - [edwardnunez](https://github.com/edwardnunez)
+- **Xiomarah Guzmán** - Tutora - [xiomarah](https://github.com/xiomarah)
 
 **¿Tienes preguntas o necesitas ayuda?** Abre un [issue](https://github.com/your-username/ticketapp/issues) o contacta al equipo de desarrollo.
 
