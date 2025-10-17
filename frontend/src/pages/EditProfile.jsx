@@ -74,7 +74,7 @@ const EditProfile = () => {
 
   const navigate = useNavigate();
   
-  const gatewayUrl = process.env.REACT_API_ENDPOINT || "http://localhost:8000";
+  const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
   
   const username = localStorage.getItem("username");
   const token = localStorage.getItem("token");

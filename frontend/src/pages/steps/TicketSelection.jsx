@@ -42,7 +42,7 @@ export default function SelectTickets({
   // Ref para trackear el evento anterior y evitar limpiezas innecesarias
   const previousEventId = useRef(null);
   
-  const gatewayUrl = process.env.REACT_API_ENDPOINT || "http://localhost:8000";
+  const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
 
   // Hook para detectar si es móvil o tablet
   useEffect(() => {
