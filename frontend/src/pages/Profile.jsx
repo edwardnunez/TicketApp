@@ -429,18 +429,6 @@ const Profile = () => {
           </div>
         </div>
 
-        {/* Resumen de tipos de entrada */}
-        <div style={{ marginBottom: "16px" }}>
-          <Text style={{ color: COLORS.neutral.grey4, fontSize: "13px", marginRight: "8px" }}>
-            Tipos de entrada:
-          </Text>
-          {uniqueTypes.map(type => (
-            <Tag key={type} size="small" style={{ margin: "2px" }}>
-              {type}
-            </Tag>
-          ))}
-        </div>
-
         {/* Collapse con detalles de cada ticket */}
         <Collapse 
           size="small"
