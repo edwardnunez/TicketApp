@@ -74,6 +74,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Copy docker-compose file to VM
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.AZURE_VM_HOST }}
+          username: ${{ secrets.AZURE_VM_USER }}
+          key: ${{ secrets.AZURE_VM_SSH_KEY }}
+          port: 22
+          source: "docker-compose.prod.yml"
+          target: "/home/${{ secrets.AZURE_VM_USER }}/ticketapp/"
+          strip_components: 0
+
       - name: Deploy to Azure VM via SSH
         uses: appleboy/ssh-action@v1.0.0
         with:
@@ -82,12 +93,12 @@ jobs:
           key: ${{ secrets.AZURE_VM_SSH_KEY }}
           port: 22
           script: |
-            # Stop and remove existing containers
-            cd /home/${{ secrets.AZURE_VM_USER }}/ticketapp || mkdir -p /home/${{ secrets.AZURE_VM_USER }}/ticketapp
+            # Create directory if it doesn't exist
+            mkdir -p /home/${{ secrets.AZURE_VM_USER }}/ticketapp
             cd /home/${{ secrets.AZURE_VM_USER }}/ticketapp
 
-            # Download latest docker-compose.prod.yml
-            wget -O docker-compose.yml https://raw.githubusercontent.com/${{ github.repository }}/main/docker-compose.prod.yml
+            # Rename docker-compose.prod.yml to docker-compose.yml
+            mv docker-compose.prod.yml docker-compose.yml
 
             # Create .env file with secrets
             cat > .env << 'EOF'
@@ -105,11 +116,11 @@ jobs:
             # Login to GitHub Container Registry
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-            # Pull latest images
-            docker compose pull
-
             # Stop existing containers
             docker compose down
+
+            # Pull latest images
+            docker compose pull
 
             # Start new containers
             docker compose up -d
