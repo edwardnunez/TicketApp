@@ -597,11 +597,12 @@ const Profile = () => {
                 >
                   <Avatar
                     size={120}
-                    src={user.avatar || "/avatars/avatar1.png"}
-                    icon={<UserOutlined />}
+                    src={user.avatar}
+                    icon={!user.avatar && <UserOutlined />}
                     style={{
                       border: `4px solid ${COLORS.neutral.white}`,
                       boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+                      backgroundColor: !user.avatar ? COLORS.primary.light : undefined
                     }}
                   />
 
