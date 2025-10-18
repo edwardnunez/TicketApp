@@ -1,7 +1,7 @@
 import React from 'react';
 import { COLORS, getVenueColors } from '../../../../components/colorscheme';
 
-const ProfessionalSeatMapLegend = ({ 
+const AltSeatMapLegend = ({ 
   venueType = 'concert',
   showPremium = true,
   showAccessible = true,
@@ -253,7 +253,7 @@ const ProfessionalSeatMapLegend = ({
   );
 };
 
-export default ProfessionalSeatMapLegend;
+export default AltSeatMapLegend;
 
 
 

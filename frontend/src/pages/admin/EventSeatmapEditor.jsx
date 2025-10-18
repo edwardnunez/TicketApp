@@ -22,7 +22,7 @@ import {
   TeamOutlined
 } from '@ant-design/icons';
 import { COLORS } from '../../components/colorscheme';
-import GenericSeatMapRenderer from '../steps/seatmaps/renderers/GenericSeatRenderer';
+import GenericSeatRenderer from '../steps/seatmaps/renderers/GenericSeatRenderer';
 import AdminSeatMapRenderer from './AdminSeatMapRenderer';
 import axios from 'axios';
 
@@ -453,7 +453,7 @@ const EventSeatMapEditor = () => {
           ) : seatMapData ? (
             <div style={{ display: 'flex', justifyContent: 'center' }}>
               {previewMode ? (
-                <GenericSeatMapRenderer
+                <GenericSeatRenderer
                   seatMapData={seatMapData}
                   selectedSeats={[]}
                   onSeatSelect={() => {}}

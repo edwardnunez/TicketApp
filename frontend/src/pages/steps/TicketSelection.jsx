@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Card, InputNumber, Typography, Alert, Spin, Button } from "antd";
 import { COLORS } from "../../components/colorscheme";
-import GenericSeatMapRenderer from "./seatmaps/renderers/GenericSeatRenderer";
+import GenericSeatRenderer from "./seatmaps/renderers/GenericSeatRenderer";
 import ResponsiveSeatRenderer from "./seatmaps/renderers/ResponsiveSeatRenderer";
 import axios from 'axios';
 
@@ -436,7 +436,7 @@ export default function SelectTickets({
     }
 
     // Determinar qué renderer usar basado en el tamaño de pantalla
-    const SeatMapComponent = isMobileOrTablet ? ResponsiveSeatRenderer : GenericSeatMapRenderer;
+    const SeatMapComponent = isMobileOrTablet ? ResponsiveSeatRenderer : GenericSeatRenderer;
 
     return (
       <SeatMapComponent

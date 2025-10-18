@@ -121,7 +121,7 @@ const SelectionTopBar = ({ selectedSeats, maxSeats, formatPrice, event, showLege
   );
 };
 
-const ProfessionalSeatMapRenderer = ({
+const MainSeatMapContainer = ({
   seatMapData,
   selectedSeats,
   onSeatSelect,
@@ -1010,4 +1010,4 @@ const ProfessionalGeneralAdmissionRenderer = ({
   );
 };
 
-export default ProfessionalSeatMapRenderer;
+export default MainSeatMapContainer;

@@ -7,7 +7,7 @@ import {
   ReloadOutlined
 } from '@ant-design/icons';
 import { COLORS } from '../../../../components/colorscheme';
-import GenericSeatMapRenderer from '../renderers/GenericSeatRenderer';
+import GenericSeatRenderer from '../renderers/GenericSeatRenderer';
 import ResponsiveSeatRenderer from '../renderers/ResponsiveSeatRenderer';
 import EditableSeatRenderer from '../renderers/EditableSeatRenderer';
 import FallbackViewContainer from './FallbackViewContainer';
@@ -37,7 +37,7 @@ const { Option } = Select;
  * @param {boolean} [props.readOnly=false] - Whether in read-only mode
  * @returns {JSX.Element} Adaptive seat map renderer with automatic view selection
  */
-const AdaptiveSeatMapRenderer = ({
+const SmartSeatMapContainer = ({
   seatMapData,
   selectedSeats,
   onSeatSelect,
@@ -105,7 +105,7 @@ const AdaptiveSeatMapRenderer = ({
 
     // Para vista completa con zoom
     if (currentViewMode === 'zoomed' || currentViewMode === 'full') {
-      const renderer = deviceInfo.isMobile ? ResponsiveSeatRenderer : GenericSeatMapRenderer;
+      const renderer = deviceInfo.isMobile ? ResponsiveSeatRenderer : GenericSeatRenderer;
       
       return (
         <SmartZoomContainer
@@ -362,4 +362,4 @@ const AdaptiveSeatMapRenderer = ({
   );
 };
 
-export default AdaptiveSeatMapRenderer;
+export default SmartSeatMapContainer;

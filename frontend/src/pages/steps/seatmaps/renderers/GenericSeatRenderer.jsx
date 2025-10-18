@@ -21,7 +21,7 @@ const { Text } = Typography;
  * @param {Function} props.calculateSeatPrice - Seat price calculation function
  * @returns {JSX.Element} Generic seat map renderer using enhanced container
  */
-const GenericSeatMapRenderer = ({
+const GenericSeatRenderer = ({
   seatMapData,
   selectedSeats,
   onSeatSelect,
@@ -278,5 +278,5 @@ const GeneralAdmissionRenderer = ({
   );
 };
 
-export default GenericSeatMapRenderer;
+export default GenericSeatRenderer;
 export { GeneralAdmissionRenderer };
