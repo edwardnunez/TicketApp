@@ -46,16 +46,29 @@ const TicketPurchase = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentStep, setCurrentStep] = useState(0);
-  const [quantity, setQuantity] = useState(1);
   const [processing, setProcessing] = useState(false);
   const [purchaseComplete, setPurchaseComplete] = useState(false);
   const [ticketInfo, setTicketInfo] = useState(null);
   const [api, contextHolder] = notification.useNotification();
   const [form] = Form.useForm();
 
-  // Estados para manejo de asientos
-  const [selectedSeats, setSelectedSeats] = useState([]);
+  // Estados para manejo de asientos con persistencia
+  const [selectedSeats, setSelectedSeats] = useState(() => {
+    // Intentar recuperar del sessionStorage al inicializar
+    const saved = sessionStorage.getItem(`selectedSeats_${id}`);
+    return saved ? JSON.parse(saved) : [];
+  });
   const [occupiedSeats, setOccupiedSeats] = useState([]);
+
+  // Inicializar quantity basado en los asientos guardados
+  const [quantity, setQuantity] = useState(() => {
+    const saved = sessionStorage.getItem(`selectedSeats_${id}`);
+    if (saved) {
+      const seats = JSON.parse(saved);
+      return seats.length > 0 ? seats.length : 1;
+    }
+    return 1;
+  });
 
   const [userData, setUserData] = useState(null); // datos reales del usuario
   const [useAccountData, setUseAccountData] = useState(false);
@@ -77,7 +90,7 @@ const TicketPurchase = () => {
           date: dayjs(res.data.date).format("YYYY-MM-DD"),
           image: res.data.imageUrl || res.data.image || "/event-images/default.jpg",
         };
-        
+
         setEvent(eventData);
         setLoading(false);
       })
@@ -92,6 +105,32 @@ const TicketPurchase = () => {
         });
       });
   }, [id, gatewayUrl, api]);
+
+  // Limpiar sessionStorage cuando se completa la compra
+  useEffect(() => {
+    if (purchaseComplete) {
+      sessionStorage.removeItem(`selectedSeats_${id}`);
+    }
+  }, [id, purchaseComplete]);
+
+  // Limpiar sessionStorage si el usuario sale completamente de la página
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      // Solo limpiar si sale navegando a otra URL, no en refresh
+      if (!purchaseComplete) {
+        const currentPath = window.location.pathname;
+        if (!currentPath.includes(`/purchase/${id}`)) {
+          sessionStorage.removeItem(`selectedSeats_${id}`);
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [id, purchaseComplete]);
 
   useEffect(() => {
     const username = localStorage.getItem("username");
@@ -133,10 +172,12 @@ const TicketPurchase = () => {
       });
   }, [event, gatewayUrl]);
 
-  // Función para manejar la selección de asientos
+  // Función para manejar la selección de asientos con persistencia
   const handleSeatSelect = (seats) => {
     setSelectedSeats(seats);
     setQuantity(seats.length);
+    // Guardar en sessionStorage para mantener la selección entre navegaciones
+    sessionStorage.setItem(`selectedSeats_${id}`, JSON.stringify(seats));
   };
 
   const requiresSeatMap = () => {

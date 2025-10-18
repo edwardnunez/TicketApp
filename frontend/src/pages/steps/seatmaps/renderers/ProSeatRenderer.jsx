@@ -213,6 +213,39 @@ const ProSeatRenderer = ({
   const handleSeatClick = (row, seat) => {
     const seatId = getSeatId(row, seat);
 
+    // En modo administrador: permitir toggle de asientos (bloquear/desbloquear)
+    if (isAdminMode) {
+      // En modo admin, incluso los asientos bloqueados se pueden hacer clic
+      // para desbloquearlos. Solo los ocupados no se pueden modificar.
+      if (isSeatOccupied(seatId)) return;
+
+      // Crear el objeto del asiento para pasar al handler
+      const dimensions = getSectionDimensions();
+      let actualRow, actualSeat;
+
+      if (dimensions.isInverted) {
+        actualRow = seat;
+        actualSeat = row;
+      } else {
+        actualRow = row;
+        actualSeat = seat;
+      }
+
+      const seatData = {
+        id: seatId,
+        section: sectionName,
+        sectionId,
+        row: getRowNumber(actualRow),
+        seat: actualSeat + 1,
+        price: 0 // Sin precio en modo admin
+      };
+
+      // El AdminSeatMapRenderer se encargará del toggle
+      onSeatSelect(seatData);
+      return;
+    }
+
+    // Modo usuario: comportamiento normal
     // Permitir deseleccionar asientos ya seleccionados
     if (isSeatSelected(seatId)) {
       onSeatSelect(selectedSeats.filter(s => s.id !== seatId));
@@ -273,7 +306,9 @@ const ProSeatRenderer = ({
       borderRadius: '4px',
       backgroundColor: stateColors.background,
       color: stateColors.color,
-      cursor: (state === 'available' || state === 'selected') ? 'pointer' : 'not-allowed',
+      cursor: isAdminMode
+        ? (state === 'occupied' ? 'not-allowed' : 'pointer')
+        : ((state === 'available' || state === 'selected') ? 'pointer' : 'not-allowed'),
       opacity: stateColors.opacity || 1,
       transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
       display: 'flex',
@@ -299,6 +334,10 @@ const ProSeatRenderer = ({
       baseStyle.backgroundColor = stateColors.hover || stateColors.background;
       baseStyle.borderColor = color || COLORS.primary.main;
       baseStyle.boxShadow = `0 4px 12px ${color || COLORS.primary.main}30`;
+    } else if (isAdminMode && state === 'blocked' && hovered) {
+      // En modo admin, los asientos bloqueados tienen hover feedback
+      baseStyle.transform = 'scale(1.05)';
+      baseStyle.boxShadow = '0 4px 12px rgba(255, 77, 79, 0.3)';
     }
 
     return baseStyle;
@@ -370,7 +409,7 @@ const ProSeatRenderer = ({
         color: COLORS.neutral.grey500
       },
       blocked: {
-        title: sectionBlocked ? 'Sección bloqueada' : 'Asiento bloqueado',
+        title: isAdminMode ? 'Asiento bloqueado - Click para desbloquear' : (sectionBlocked ? 'Sección bloqueada' : 'Asiento bloqueado'),
         content: sectionBlocked ? 'Esta sección no está disponible' : `${sectionName} - Fila ${getRowNumber(actualRow)}, Asiento ${actualSeat + 1}`,
         color: COLORS.secondary.main
       },
@@ -380,8 +419,8 @@ const ProSeatRenderer = ({
         color: COLORS.primary.main
       },
       available: {
-        title: isPremium ? 'Asiento premium' : `${sectionName} - Fila ${getRowNumber(actualRow)}, Asiento ${actualSeat + 1}`,
-        content: isAdminMode ? (isPremium ? 'Asiento premium' : 'Disponible') : `Precio: ${formattedPrice}${isPremium ? ' (Premium)' : ''}`,
+        title: isAdminMode ? `Click para bloquear - Fila ${getRowNumber(actualRow)}, Asiento ${actualSeat + 1}` : (isPremium ? 'Asiento premium' : `${sectionName} - Fila ${getRowNumber(actualRow)}, Asiento ${actualSeat + 1}`),
+        content: isAdminMode ? (isPremium ? 'Asiento premium disponible' : `${sectionName}`) : `Precio: ${formattedPrice}${isPremium ? ' (Premium)' : ''}`,
         color: isPremium ? COLORS.accent.gold : (color || COLORS.primary.main)
       }
     };
@@ -392,7 +431,11 @@ const ProSeatRenderer = ({
   const renderSeat = (row, seat) => {
     const seatId = getSeatId(row, seat);
     const state = getSeatState(seatId);
-    const isInteractable = state === 'available' || state === 'selected';
+    // En modo admin, todos los asientos menos ocupados son interactuables
+    // En modo usuario, solo disponibles y seleccionados son interactuables
+    const isInteractable = isAdminMode
+      ? state !== 'occupied'
+      : (state === 'available' || state === 'selected');
     const seatStyle = getSeatStyle(seatId);
     const tooltipInfo = getSeatTooltip(row, seat, seatId);
 

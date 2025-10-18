@@ -304,14 +304,19 @@ export default function SelectTickets({
   useEffect(() => {
     const currentEventId = memoizedEvent?._id;
 
-    // Solo limpiar si el evento realmente cambió
-    if (currentEventId && currentEventId !== previousEventId.current) {
+    // Solo limpiar si el evento realmente cambió (y no es la primera carga)
+    if (currentEventId && previousEventId.current !== null && currentEventId !== previousEventId.current) {
       console.log('🔄 Event changed, clearing selected seats');
       onSeatSelect([]);
       setQuantity(0);
       previousEventId.current = currentEventId;
 
       // Cargar disponibilidad de tickets cuando cambia el evento
+      fetchTicketAvailability();
+    } else if (currentEventId && previousEventId.current === null) {
+      // Primera carga: solo actualizar el ref sin limpiar
+      previousEventId.current = currentEventId;
+      // Cargar disponibilidad de tickets en la primera carga
       fetchTicketAvailability();
     }
   }, [memoizedEvent?._id, memoizedEvent?.usesRowPricing, onSeatSelect, setQuantity]);

@@ -85,11 +85,11 @@ const AdminSeatMapRenderer = ({
       style={{
         position: 'relative',
         width: '100%',
-        height: isFullscreen ? '100vh' : 'auto',
-        minHeight: '150vh',
+        height: isFullscreen ? '100vh' : '800px',
+        maxHeight: isFullscreen ? '100vh' : '800px',
         backgroundColor: COLORS.neutral.grey1,
         borderRadius: '12px',
-        overflow: 'visible',
+        overflow: 'hidden',
         border: `2px solid ${COLORS.neutral.grey2}`,
         boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
       }}
