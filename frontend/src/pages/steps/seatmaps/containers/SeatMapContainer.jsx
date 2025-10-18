@@ -54,14 +54,16 @@ const EnhancedSeatMapContainer = ({
       className="enhanced-seatmap-container"
       style={{
         position: 'relative',
-        width: '100%',
+        width: '91vw',
+        maxWidth: '2400px',
         height: 'auto',
         minHeight: '150vh',
         backgroundColor: COLORS.neutral.grey1,
         borderRadius: '12px',
         overflow: 'visible',
         border: `2px solid ${COLORS.neutral.grey2}`,
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+        margin: '0 auto'
       }}
     >
       {/* Header con controles - ELIMINADO */}
@@ -71,10 +73,13 @@ const EnhancedSeatMapContainer = ({
         className="seatmap-content"
         style={{
           position: 'relative',
-          width: '100%',
+          width: 'max-content',
+          minWidth: '100%',
+          maxWidth: '100vw',
           minHeight: '140vh',
           paddingTop: '20px',
-          overflow: 'visible'
+          overflow: 'visible',
+          margin: '0 auto'
         }}
       >
         <MainSeatMapContainer

@@ -57,9 +57,10 @@ const SectionShapeRenderer = ({
         padding: isMobile ? '12px' : '16px',
         border: `2px solid ${sectionBlocked ? COLORS.neutral.grey300 : (sectionColor || COLORS.categories.conciertos)}`,
         boxShadow: `0 4px 12px rgba(0,0,0,0.1)`,
-        // transform: 'perspective(100px) rotateX(5deg)',
-        // transformOrigin: 'bottom center',
-        marginBottom: '8px'
+        marginBottom: '8px',
+        width: '100%',
+        maxWidth: '100%',
+        overflow: 'auto'
       }}
     >
       {children}
@@ -76,7 +77,10 @@ const SectionShapeRenderer = ({
         padding: isMobile ? '12px' : '16px',
         border: `2px solid ${sectionBlocked ? COLORS.neutral.grey300 : (sectionColor || COLORS.categories.teatro)}`,
         boxShadow: `0 6px 16px rgba(0,0,0,0.12)`,
-        marginBottom: '6px'
+        marginBottom: '6px',
+        width: '100%',
+        maxWidth: '100%',
+        overflow: 'auto'
       }}
     >
       {children}
@@ -93,9 +97,10 @@ const SectionShapeRenderer = ({
         padding: isMobile ? '12px' : '16px',
         border: `2px solid ${sectionBlocked ? COLORS.neutral.grey300 : (sectionColor || COLORS.categories.deportes)}`,
         boxShadow: `0 8px 20px rgba(102, 187, 106, 0.2)`,
-        // transform: 'perspective(100px) rotateX(-3deg)',
-        // transformOrigin: 'top center',
-        marginBottom: '4px'
+        marginBottom: '4px',
+        width: '100%',
+        maxWidth: '100%',
+        overflow: 'auto'
       }}
     >
       {children}
@@ -112,11 +117,13 @@ const SectionShapeRenderer = ({
         padding: isMobile ? '20px' : '24px',
         border: `3px solid ${sectionBlocked ? COLORS.neutral.grey300 : (sectionColor || COLORS.secondary.dark)}`,
         boxShadow: `0 8px 24px rgba(220, 38, 38, 0.3)`,
-        minWidth: isMobile ? '280px' : '400px',
+        width: '100%',
+        maxWidth: '100%',
         minHeight: isMobile ? '160px' : '240px',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        overflow: 'auto'
       }}
     >
       {children}
@@ -133,10 +140,10 @@ const SectionShapeRenderer = ({
         padding: isMobile ? '10px' : '14px',
         border: `2px solid ${sectionBlocked ? COLORS.neutral.grey300 : (sectionColor || COLORS.categories.festivales)}`,
         boxShadow: `0 4px 12px rgba(0,0,0,0.08)`,
-        // transform: 'skewY(-2deg)',
         marginBottom: '6px',
-        maxWidth: isMobile ? '300px' : '350px',
-        minWidth: isMobile ? '150px' : '200px'
+        width: '100%',
+        maxWidth: '100%',
+        overflow: 'auto'
       }}
     >
       {children}
@@ -153,7 +160,9 @@ const SectionShapeRenderer = ({
         padding: isMobile ? '16px' : '20px',
         border: `3px solid ${sectionBlocked ? COLORS.neutral.grey300 : (sectionColor || COLORS.accent.gold)}`,
         boxShadow: `0 12px 32px rgba(245, 158, 11, 0.4)`,
-        overflow: 'hidden'
+        overflow: 'auto',
+        width: '100%',
+        maxWidth: '100%'
       }}
     >
       {/* Efecto de brillo VIP */}
@@ -183,7 +192,10 @@ const SectionShapeRenderer = ({
         padding: isMobile ? '12px' : '16px',
         border: `2px solid ${sectionBlocked ? COLORS.neutral.grey300 : (sectionColor || COLORS.accent.gold)}`,
         boxShadow: `0 6px 16px rgba(245, 158, 11, 0.2)`,
-        marginBottom: '8px'
+        marginBottom: '8px',
+        width: '100%',
+        maxWidth: '100%',
+        overflow: 'auto'
       }}
     >
       {children}
@@ -200,7 +212,10 @@ const SectionShapeRenderer = ({
         padding: isMobile ? '10px' : '14px',
         border: `2px solid ${sectionBlocked ? COLORS.neutral.grey300 : (sectionColor || COLORS.categories.cine)}`,
         boxShadow: `0 4px 12px rgba(77, 182, 172, 0.2)`,
-        marginBottom: '6px'
+        marginBottom: '6px',
+        width: '100%',
+        maxWidth: '100%',
+        overflow: 'auto'
       }}
     >
       {children}
@@ -217,9 +232,10 @@ const SectionShapeRenderer = ({
         padding: isMobile ? '10px' : '14px',
         border: `2px solid ${sectionBlocked ? COLORS.neutral.grey300 : (sectionColor || COLORS.primary.light)}`,
         boxShadow: `0 6px 16px rgba(0,0,0,0.1)`,
-        // transform: 'perspective(120px) rotateX(8deg)',
-        // transformOrigin: 'bottom center',
-        marginBottom: '10px'
+        marginBottom: '10px',
+        width: '100%',
+        maxWidth: '100%',
+        overflow: 'auto'
       }}
     >
       {children}
@@ -236,7 +252,10 @@ const SectionShapeRenderer = ({
         padding: isMobile ? '12px' : '16px',
         border: `2px solid ${sectionBlocked ? COLORS.neutral.grey300 : (sectionColor || COLORS.primary.main)}`,
         boxShadow: `0 4px 12px rgba(0,0,0,0.08)`,
-        marginBottom: '6px'
+        marginBottom: '6px',
+        width: '100%',
+        maxWidth: '100%',
+        overflow: 'auto'
       }}
     >
       {children}

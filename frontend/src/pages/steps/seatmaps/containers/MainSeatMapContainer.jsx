@@ -772,18 +772,20 @@ const ProfessionalSeatMapRenderer = ({
   };
 
   return (
-    <div 
+    <div
       ref={containerRef}
       className={`professional-seatmap-container ${isFullscreen ? 'fullscreen' : ''} ${isHighContrast ? 'high-contrast' : ''}`}
       style={{
         position: 'relative',
-        width: '100%',
+        width: isFullscreen ? '100%' : '90vw',
+        maxWidth: isFullscreen ? '100%' : '2400px',
         height: isFullscreen ? '100vh' : 'auto',
         minHeight: isMobile ? '150vh' : '150vh',
         backgroundColor: COLORS.neutral.grey50,
         borderRadius: isFullscreen ? '0' : '16px',
         overflow: 'visible', // Restored to 'visible' to prevent content cutoff
-        boxShadow: isFullscreen ? 'none' : COLORS.shadows.xl
+        boxShadow: isFullscreen ? 'none' : COLORS.shadows.xl,
+        margin: '0 auto'
       }}
     >
       {/* Barra superior de selección de asientos - Solo en modo usuario y no en vista previa */}

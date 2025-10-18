@@ -303,20 +303,18 @@ export default function SelectTickets({
   // FIXED: Solo limpiar asientos cuando realmente cambia el evento, no cuando cambia la selección
   useEffect(() => {
     const currentEventId = memoizedEvent?._id;
-    
+
     // Solo limpiar si el evento realmente cambió
     if (currentEventId && currentEventId !== previousEventId.current) {
       console.log('🔄 Event changed, clearing selected seats');
-      if (selectedSeats.length > 0) {
-        onSeatSelect([]);
-        setQuantity(0);
-      }
+      onSeatSelect([]);
+      setQuantity(0);
       previousEventId.current = currentEventId;
-      
+
       // Cargar disponibilidad de tickets cuando cambia el evento
       fetchTicketAvailability();
     }
-  }, [memoizedEvent?._id, memoizedEvent?.usesRowPricing, onSeatSelect, setQuantity, selectedSeats.length]);
+  }, [memoizedEvent?._id, memoizedEvent?.usesRowPricing, onSeatSelect, setQuantity]);
 
   // Configurar actualización automática de disponibilidad cada 30 segundos
   useEffect(() => {

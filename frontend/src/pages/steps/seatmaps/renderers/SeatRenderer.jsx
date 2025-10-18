@@ -172,13 +172,19 @@ const SeatRenderer = ({
 
   const handleSeatClick = (row, seat) => {
     const seatId = getSeatId(row, seat);
-    
+
+    // Permitir deseleccionar asientos ya seleccionados
+    if (isSeatSelected(seatId)) {
+      onSeatSelect(selectedSeats.filter(s => s.id !== seatId));
+      return;
+    }
+
     // No permitir interacción si el asiento está ocupado, bloqueado, o la sección está bloqueada
     if (isSeatOccupied(seatId) || isSeatBlocked(seatId) || sectionBlocked) return;
 
     const dimensions = getSectionDimensions();
     let actualRow, actualSeat;
-    
+
     if (dimensions.isInverted) {
       // Para secciones laterales: usar las coordenadas invertidas
       actualRow = seat;
@@ -199,9 +205,8 @@ const SeatRenderer = ({
       price: seatPrice
     };
 
-    if (isSeatSelected(seatId)) {
-      onSeatSelect(selectedSeats.filter(s => s.id !== seatId));
-    } else if (selectedSeats.length < maxSeats) {
+    // Solo agregar si no se excede el máximo
+    if (selectedSeats.length < maxSeats) {
       onSeatSelect([...selectedSeats, seatData]);
     }
   };
@@ -369,7 +374,7 @@ const SeatRenderer = ({
     const occupied = isSeatOccupied(seatId);
     const blocked = isSeatBlocked(seatId);
     const selected = isSeatSelected(seatId);
-    const isInteractable = !occupied && !blocked && !sectionBlocked;
+    const isInteractable = (!occupied && !blocked && !sectionBlocked) || selected;
     const seatStyle = getSeatStyle(seatId);
     const tooltipInfo = getSeatTooltip(row, seat, seatId);
     const currentSeatSize = seatSize;

@@ -40,18 +40,57 @@ const ProSeatRenderer = ({
   useEffect(() => {
     const calculateSeatSize = () => {
       const totalSeats = rows * seatsPerRow;
-      let baseSize = 24;
-      let fontSize = 10;
+      let baseSize = 32;
+      let fontSize = 11;
 
       if (isMobile) {
-        baseSize = totalSeats > 100 ? 14 : 18;
-        fontSize = totalSeats > 100 ? 7 : 8;
+        // Mobile: más espacio para tocar
+        if (totalSeats > 150) {
+          baseSize = 20;
+          fontSize = 8;
+        } else if (totalSeats > 100) {
+          baseSize = 24;
+          fontSize = 9;
+        } else if (totalSeats > 50) {
+          baseSize = 28;
+          fontSize = 10;
+        } else {
+          baseSize = 32;
+          fontSize = 11;
+        }
       } else if (isTablet) {
-        baseSize = totalSeats > 150 ? 16 : 20;
-        fontSize = totalSeats > 150 ? 8 : 9;
+        // Tablet: tamaños intermedios
+        if (totalSeats > 200) {
+          baseSize = 24;
+          fontSize = 9;
+        } else if (totalSeats > 150) {
+          baseSize = 28;
+          fontSize = 10;
+        } else if (totalSeats > 100) {
+          baseSize = 32;
+          fontSize = 11;
+        } else {
+          baseSize = 36;
+          fontSize = 12;
+        }
       } else {
-        baseSize = totalSeats > 200 ? 18 : 22;
-        fontSize = totalSeats > 200 ? 9 : 10;
+        // Desktop: aprovechar espacio disponible
+        if (totalSeats > 300) {
+          baseSize = 26;
+          fontSize = 10;
+        } else if (totalSeats > 200) {
+          baseSize = 30;
+          fontSize = 11;
+        } else if (totalSeats > 100) {
+          baseSize = 34;
+          fontSize = 12;
+        } else if (totalSeats > 50) {
+          baseSize = 38;
+          fontSize = 13;
+        } else {
+          baseSize = 42;
+          fontSize = 14;
+        }
       }
 
       setSeatSize({ width: baseSize, height: baseSize, fontSize });
@@ -173,12 +212,19 @@ const ProSeatRenderer = ({
 
   const handleSeatClick = (row, seat) => {
     const seatId = getSeatId(row, seat);
-    
+
+    // Permitir deseleccionar asientos ya seleccionados
+    if (isSeatSelected(seatId)) {
+      onSeatSelect(selectedSeats.filter(s => s.id !== seatId));
+      return;
+    }
+
+    // Bloquear asientos ocupados o bloqueados
     if (isSeatOccupied(seatId) || isSeatBlocked(seatId) || sectionBlocked) return;
 
     const dimensions = getSectionDimensions();
     let actualRow, actualSeat;
-    
+
     if (dimensions.isInverted) {
       // Para secciones laterales: usar las coordenadas invertidas
       actualRow = seat;
@@ -199,9 +245,8 @@ const ProSeatRenderer = ({
       price: seatPrice
     };
 
-    if (isSeatSelected(seatId)) {
-      onSeatSelect(selectedSeats.filter(s => s.id !== seatId));
-    } else if (selectedSeats.length < maxSeats) {
+    // Solo agregar si no se excede el máximo
+    if (selectedSeats.length < maxSeats) {
       onSeatSelect([...selectedSeats, seatData]);
     }
   };
@@ -228,7 +273,7 @@ const ProSeatRenderer = ({
       borderRadius: '4px',
       backgroundColor: stateColors.background,
       color: stateColors.color,
-      cursor: state === 'available' ? 'pointer' : 'not-allowed',
+      cursor: (state === 'available' || state === 'selected') ? 'pointer' : 'not-allowed',
       opacity: stateColors.opacity || 1,
       transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
       display: 'flex',
@@ -287,9 +332,9 @@ const ProSeatRenderer = ({
         }
         
         return (
-          <span style={{ 
-            fontSize: `${seatSize.fontSize * 0.7}px`, 
-            fontWeight: '600',
+          <span style={{
+            fontSize: `${seatSize.fontSize * 1.1}px`,
+            fontWeight: '700',
             lineHeight: 1
           }}>
             {seatNumber}
@@ -347,7 +392,7 @@ const ProSeatRenderer = ({
   const renderSeat = (row, seat) => {
     const seatId = getSeatId(row, seat);
     const state = getSeatState(seatId);
-    const isInteractable = state === 'available';
+    const isInteractable = state === 'available' || state === 'selected';
     const seatStyle = getSeatStyle(seatId);
     const tooltipInfo = getSeatTooltip(row, seat, seatId);
 
@@ -593,20 +638,20 @@ const ProSeatRenderer = ({
       </div>
 
       {/* Contenedor principal de asientos - Mejorado para secciones laterales */}
-      <div 
+      <div
         className="section-seats-container"
         style={{
           position: 'relative',
-          padding: '4px',
-          width: '100%',
+          padding: isMobile ? '8px' : '12px',
+          width: 'fit-content',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'flex-start',
-          gap: '1px',
+          gap: isMobile ? '2px' : '3px',
           backgroundColor: sectionBlocked ? 'rgba(0,0,0,0.02)' : 'transparent',
-          borderRadius: '6px',
-          overflow: 'visible', // Cambiado de 'hidden' a 'visible'
-          minWidth: 'fit-content' // Asegurar que el contenedor se ajuste al contenido
+          borderRadius: '8px',
+          overflow: 'visible',
+          minWidth: 'fit-content'
         }}
       >
         {Array.from({ length: dimensions.displayRows }).map((_, row) => renderRow(row))}

@@ -492,7 +492,7 @@ const TicketPurchase = () => {
       {contextHolder}
       
       <Content style={{ padding: isMobile ? "18px 4px" : "40px 20px" }}>
-        <div style={{ maxWidth: isMobile ? "100%" : "1000px", margin: "0 auto" }}>
+        <div style={{ maxWidth: isMobile ? "100%" : "1200px", margin: "0 auto" }}>
           <Link to={`/event/${id}`}>
             <Button 
               type="text" 
@@ -558,7 +558,7 @@ const TicketPurchase = () => {
         </div>
 
         {/* Contenido principal */}
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px 40px' }}>
+        <div style={{ maxWidth: 'none', margin: '0 auto', padding: '0 20px 40px', width: '100%' }}>
           {renderStepContent()}
           
           {/* Botones de navegación */}
