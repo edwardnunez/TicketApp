@@ -652,16 +652,17 @@ const SeatRenderer = ({
             boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
           }} />
           <span style={{
-            fontSize: '14px',
-            fontWeight: '600',
+            fontSize: `${seatSize.fontSize * 1.5}px`,
+            fontWeight: '700',
             color: sectionBlocked ? '#9CA3AF' : (COLORS?.neutral?.darker || '#1F2937')
           }}>
             {sectionName}
           </span>
         </div>
-        
+
         <div style={{
-          fontSize: '12px',
+          fontSize: `${seatSize.fontSize * 1.5}px`,
+          fontWeight: '700',
           color: sectionBlocked ? '#9CA3AF' : (COLORS?.neutral?.grey4 || '#6B7280'),
           backgroundColor: sectionBlocked ? '#F3F4F6' : '#F9FAFB',
           padding: '2px 8px',

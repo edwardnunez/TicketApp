@@ -608,11 +608,11 @@ const ProSeatRenderer = ({
               boxShadow: COLORS.shadows.sm
             }} 
           />
-          <span 
+          <span
             className="section-name"
             style={{
-              fontSize: isMobile ? '12px' : '13px',
-              fontWeight: '600',
+              fontSize: `${seatSize.fontSize * 1.5}px`,
+              fontWeight: '700',
               // Detección automática: texto negro para fondos claros, blanco para fondos oscuros
               color: getSectionLabelColor(color, sectionBlocked)
             }}
@@ -620,11 +620,12 @@ const ProSeatRenderer = ({
             {sectionName}
           </span>
         </div>
-        
-        <div 
+
+        <div
           className="section-info"
           style={{
-            fontSize: isMobile ? '10px' : '11px',
+            fontSize: `${seatSize.fontSize * 1.5}px`,
+            fontWeight: '700',
             // Detección automática: texto negro para fondos claros, blanco para fondos oscuros
             color: getSectionDimensionColor(color, sectionBlocked),
             backgroundColor: getContrastInfoBackground(color, sectionBlocked),

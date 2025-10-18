@@ -99,11 +99,11 @@
 .tribuna-oeste {
   grid-area: west;
   display: flex;
-  justify-content: center;
+  justify-content: flex-end; /* Alinear al final (derecha) para acercarse al centro */
   align-items: center;
   z-index: 1;
   overflow: visible; /* Restored to 'visible' to prevent content cutoff */
-  min-width: 300px; /* Aumentar ancho mínimo */
+  min-width: fit-content; /* Adaptarse al contenido */
   max-width: none; /* Sin límite máximo */
   padding: 0 8px; /* Reducir padding para más espacio */
   width: 100%; /* Ocupar todo el ancho de la columna */
@@ -112,11 +112,11 @@
 .tribuna-este {
   grid-area: east;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start; /* Alinear al inicio (izquierda) para acercarse al centro */
   align-items: center;
   z-index: 1;
   overflow: visible; /* Restored to 'visible' to prevent content cutoff */
-  min-width: 300px; /* Aumentar ancho mínimo */
+  min-width: fit-content; /* Adaptarse al contenido */
   max-width: none; /* Sin límite máximo */
   padding: 0 8px; /* Reducir padding para más espacio */
   width: 100%; /* Ocupar todo el ancho de la columna */
@@ -193,23 +193,33 @@
 }
 
 /* Estilos específicos para secciones laterales en conciertos */
-.concert-stadium-layout .tribuna-oeste,
-.concert-stadium-layout .tribuna-este {
-  min-width: 300px; /* Aumentar ancho mínimo */
+.concert-stadium-layout .tribuna-oeste {
+  min-width: fit-content; /* Adaptarse al contenido */
   max-width: none; /* Eliminar restricción de max-width */
   padding: 0 8px; /* Reducir padding interno para más espacio */
   margin: 0; /* Eliminar margen */
   overflow: visible; /* Asegurar que nada se corte */
   width: 100%; /* Ocupar todo el ancho de la columna */
+  justify-content: flex-end; /* Alinear al final (derecha) para acercarse al centro */
+}
+
+.concert-stadium-layout .tribuna-este {
+  min-width: fit-content; /* Adaptarse al contenido */
+  max-width: none; /* Eliminar restricción de max-width */
+  padding: 0 8px; /* Reducir padding interno para más espacio */
+  margin: 0; /* Eliminar margen */
+  overflow: visible; /* Asegurar que nada se corte */
+  width: 100%; /* Ocupar todo el ancho de la columna */
+  justify-content: flex-start; /* Alinear al inicio (izquierda) para acercarse al centro */
 }
 
 /* Asegurar que las secciones laterales tengan suficiente espacio para los números */
 .concert-stadium-layout .tribuna-oeste .professional-section,
 .concert-stadium-layout .tribuna-este .professional-section {
-  min-width: 300px; /* Aumentar ancho mínimo */
+  min-width: fit-content; /* Adaptarse al contenido */
   max-width: none; /* Eliminar restricción de max-width */
   overflow: visible; /* Asegurar que nada se corte */
-  width: 100%; /* Ocupar todo el ancho disponible */
+  width: fit-content; /* Ajustar al ancho del contenido */
 }
 
 /* Layout de venue de concierto tipo teatro */
