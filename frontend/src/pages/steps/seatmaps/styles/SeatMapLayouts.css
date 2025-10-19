@@ -6,13 +6,15 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  width: 98vw; /* Ocupar 98% del viewport */
-  max-width: 2400px; /* Máximo 2400px para pantallas muy grandes */
-  margin: 0 auto; /* Centrar horizontalmente */
-  padding: 20px 40px; /* Aumentar padding horizontal para evitar cortes */
+  width: 98vw;
+  max-width: 2400px;
+  margin: 0 auto;
+  padding: 20px 40px;
   box-sizing: border-box;
-  overflow: visible; /* Restored to 'visible' to prevent content cutoff */
-  min-height: 150vh; /* Usar altura de viewport más grande */
+  overflow: hidden;
+  min-height: 100vh;
+  max-height: 100vh;
+  position: relative;
 }
 
 /* Contenido del mapa de asientos */
@@ -20,13 +22,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: max-content; /* Ajustar al contenido, permitiendo expansión */
-  min-width: 100%; /* Mínimo el ancho del padre */
-  max-width: 89vw; /* Máximo 89% del viewport */
-  min-height: 120vh; /* Altura mínima más grande */
-  overflow: visible; /* Restored to 'visible' to prevent content cutoff */
-  box-sizing: border-box; /* Incluir cualquier padding en el cálculo del ancho */
-  margin: 0 auto; /* Centrar horizontalmente */
+  width: 100%;
+  height: 100%;
+  overflow: auto; /* Permitir scroll si es necesario */
+  box-sizing: border-box;
+  margin: 0 auto;
+  padding: 0;
 }
 
 /* Transformación del mapa */
@@ -34,10 +35,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  min-height: 100%;
-  overflow: visible; /* Restored to 'visible' to prevent content cutoff */
-  position: relative; /* Ensure proper positioning for transforms */
+  width: fit-content;
+  height: fit-content;
+  overflow: visible;
+  position: relative;
+  max-height: none;
 }
 
 /* Contenedor del renderizador responsivo */
@@ -60,18 +62,21 @@
     "west center east"
     "south south south"
     "vip vip vip";
-  grid-template-columns: 2fr 1.5fr 2fr; /* Más espacio para laterales */
-  grid-template-rows: auto 2fr auto auto;
-  gap: 20px;
-  padding: 20px 40px; /* Aumentar padding horizontal */
-  min-height: 130vh; /* Usar altura de viewport más grande */
-  width: 100%;
-  max-width: none; /* Sin límite de ancho máximo */
+  grid-template-columns: minmax(auto, 1fr) auto minmax(auto, 1fr); /* Laterales flexibles, centro fijo */
+  grid-template-rows: auto auto auto auto;
+  gap: 16px;
+  padding: 24px;
+  min-height: auto;
+  width: fit-content;
+  max-width: none;
   box-sizing: border-box;
   background: linear-gradient(135deg, #1a4d1a 0%, #2d5a2d 50%, #1a4d1a 100%);
   borderRadius: 16px;
   position: relative;
-  overflow: visible; /* Restored to 'visible' to prevent content cutoff */
+  overflow: visible;
+  margin: 0 auto;
+  place-items: stretch; /* Permitir que las celdas se estiren */
+  justify-items: center; /* Centrar contenido horizontalmente */
 }
 
 .football-stadium-layout::before {
@@ -94,32 +99,38 @@
   justify-content: center;
   align-items: center;
   z-index: 1;
+  width: fit-content;
+  padding: 0;
+  margin: 0;
+  grid-column: 1 / -1; /* Ocupar todas las columnas */
 }
 
 .tribuna-oeste {
   grid-area: west;
   display: flex;
-  justify-content: flex-end; /* Alinear al final (derecha) para acercarse al centro */
+  justify-content: center;
   align-items: center;
   z-index: 1;
-  overflow: visible; /* Restored to 'visible' to prevent content cutoff */
-  min-width: fit-content; /* Adaptarse al contenido */
-  max-width: none; /* Sin límite máximo */
-  padding: 0 8px; /* Reducir padding para más espacio */
-  width: 100%; /* Ocupar todo el ancho de la columna */
+  overflow: visible;
+  min-width: fit-content;
+  max-width: none;
+  padding: 0;
+  width: fit-content;
+  margin: 0;
 }
 
 .tribuna-este {
   grid-area: east;
   display: flex;
-  justify-content: flex-start; /* Alinear al inicio (izquierda) para acercarse al centro */
+  justify-content: center;
   align-items: center;
   z-index: 1;
-  overflow: visible; /* Restored to 'visible' to prevent content cutoff */
-  min-width: fit-content; /* Adaptarse al contenido */
-  max-width: none; /* Sin límite máximo */
-  padding: 0 8px; /* Reducir padding para más espacio */
-  width: 100%; /* Ocupar todo el ancho de la columna */
+  overflow: visible;
+  min-width: fit-content;
+  max-width: none;
+  padding: 0;
+  width: fit-content;
+  margin: 0;
 }
 
 .tribuna-sur {
@@ -128,6 +139,10 @@
   justify-content: center;
   align-items: center;
   z-index: 1;
+  width: fit-content;
+  padding: 0;
+  margin: 0;
+  grid-column: 1 / -1; /* Ocupar todas las columnas */
 }
 
 .field-container {
@@ -136,6 +151,9 @@
   justify-content: center;
   align-items: center;
   z-index: 1;
+  width: fit-content;
+  padding: 0;
+  margin: 0;
 }
 
 .vip-section {
@@ -144,6 +162,30 @@
   justify-content: center;
   align-items: center;
   z-index: 1;
+  width: fit-content;
+  max-width: none;
+  min-width: fit-content;
+  overflow: visible;
+  padding: 0;
+  box-sizing: border-box;
+  margin: 0;
+  grid-column: 1 / -1; /* Ocupar todas las columnas */
+}
+
+/* Asegurar que los contenidos de VIP tengan espacio suficiente */
+.vip-section .professional-section {
+  width: fit-content;
+  max-width: none;
+  min-width: fit-content;
+  overflow: visible;
+}
+
+.vip-section .seats-container {
+  max-width: none;
+  min-width: fit-content;
+  width: fit-content;
+  overflow: visible;
+  padding: 0;
 }
 
 .premium-boxes-section {
@@ -153,6 +195,9 @@
   align-items: center;
   z-index: 1;
   margin-top: 20px; /* Separación adicional para palcos premium */
+  width: 100%; /* Ocupar todo el ancho disponible */
+  max-width: none; /* Sin límite de ancho máximo */
+  overflow: visible; /* Asegurar que nada se corte */
 }
 
 /* Estilos para secciones de gradas */
@@ -177,40 +222,42 @@
     "pit pit pit"
     "south south south"
     "vip vip vip";
-  grid-template-columns: 1.5fr 1fr 1.5fr; /* Más espacio para laterales */
-  grid-template-rows: auto 2fr auto auto auto;
-  gap: 25px; /* Reducir separación para mejor balance */
-  padding: 30px 40px; /* Reducir padding horizontal */
-  min-height: 130vh; /* Usar altura de viewport más grande */
-  max-width: none; /* Sin límite de ancho máximo */
-  width: 100%;
-  margin: 0 auto; /* Centrar el layout */
+  grid-template-columns: minmax(auto, 1fr) auto minmax(auto, 1fr);
+  grid-template-rows: auto auto auto auto auto;
+  gap: 16px;
+  padding: 24px;
+  min-height: auto;
+  max-width: none;
+  width: fit-content;
+  margin: 0 auto;
   box-sizing: border-box;
   background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
   border-radius: 16px;
   position: relative;
-  overflow: visible; /* Restored to 'visible' to prevent content cutoff */
+  overflow: visible;
+  place-items: stretch;
+  justify-items: center;
 }
 
 /* Estilos específicos para secciones laterales en conciertos */
 .concert-stadium-layout .tribuna-oeste {
-  min-width: fit-content; /* Adaptarse al contenido */
-  max-width: none; /* Eliminar restricción de max-width */
-  padding: 0 8px; /* Reducir padding interno para más espacio */
-  margin: 0; /* Eliminar margen */
-  overflow: visible; /* Asegurar que nada se corte */
-  width: 100%; /* Ocupar todo el ancho de la columna */
-  justify-content: flex-end; /* Alinear al final (derecha) para acercarse al centro */
+  min-width: fit-content;
+  max-width: none;
+  padding: 0; /* Sin padding para alineación perfecta */
+  margin: 0 auto; /* Centrar */
+  overflow: visible;
+  width: 100%;
+  justify-content: center; /* Centrar en lugar de flex-end */
 }
 
 .concert-stadium-layout .tribuna-este {
-  min-width: fit-content; /* Adaptarse al contenido */
-  max-width: none; /* Eliminar restricción de max-width */
-  padding: 0 8px; /* Reducir padding interno para más espacio */
-  margin: 0; /* Eliminar margen */
-  overflow: visible; /* Asegurar que nada se corte */
-  width: 100%; /* Ocupar todo el ancho de la columna */
-  justify-content: flex-start; /* Alinear al inicio (izquierda) para acercarse al centro */
+  min-width: fit-content;
+  max-width: none;
+  padding: 0; /* Sin padding para alineación perfecta */
+  margin: 0 auto; /* Centrar */
+  overflow: visible;
+  width: 100%;
+  justify-content: center; /* Centrar en lugar de flex-start */
 }
 
 /* Asegurar que las secciones laterales tengan suficiente espacio para los números */
@@ -227,16 +274,17 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 35px; /* Aumentar separación */
-  padding: 40px 60px; /* Aumentar padding horizontal para más ancho */
-  min-height: 150vh; /* Usar altura de viewport más grande */
-  max-width: 1500px; /* Ancho máximo más grande */
-  width: 100%;
-  margin: 0 auto; /* Centrar el layout */
+  justify-content: center;
+  gap: 16px;
+  padding: 24px;
+  min-height: auto;
+  max-width: none;
+  width: fit-content;
+  margin: 0 auto;
   background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
   border-radius: 16px;
   position: relative;
-  overflow: visible; /* Restored to 'visible' to prevent content cutoff */
+  overflow: visible;
 }
 
 .concert-venue-layout::before {
@@ -257,7 +305,10 @@
   justify-content: center;
   align-items: center;
   z-index: 1;
-  margin-bottom: 20px;
+  margin-bottom: 0;
+  width: fit-content;
+  padding: 0;
+  margin: 0;
 }
 
 .pista-section {
@@ -265,7 +316,10 @@
   justify-content: center;
   align-items: center;
   z-index: 1;
-  margin-bottom: 20px;
+  margin-bottom: 0;
+  width: fit-content;
+  padding: 0;
+  margin: 0;
 }
 
 .pit-area {
@@ -274,6 +328,10 @@
   justify-content: center;
   align-items: center;
   z-index: 1;
+  width: fit-content;
+  padding: 0;
+  margin: 0;
+  grid-column: 1 / -1; /* Ocupar todas las columnas */
 }
 
 .gradas-container {
@@ -323,53 +381,49 @@
   width: 100%; /* Ocupar todo el ancho del contenedor */
 }
 
+/* Asegurar que todas las secciones profesionales tengan suficiente espacio */
+.professional-section {
+  max-width: none; /* Sin límite de ancho máximo */
+  min-width: fit-content; /* Adaptarse al contenido */
+  overflow: visible; /* Asegurar que nada se corte */
+  width: 100%; /* Ocupar todo el ancho disponible */
+  box-sizing: border-box; /* Incluir padding en el cálculo del ancho */
+}
+
+.professional-section .seats-container {
+  max-width: none; /* Sin límite de ancho máximo */
+  overflow: visible; /* Asegurar que nada se corte */
+  width: 100%; /* Ocupar todo el ancho disponible */
+  box-sizing: border-box; /* Incluir padding en el cálculo del ancho */
+}
+
 .pit-section .seats-container {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
   gap: 4px;
-  max-width: 300px;
+  max-width: 600px; /* Aumentar ancho máximo para pista */
 }
 
-.vip-section .seats-container {
-  position: relative;
-  overflow: hidden;
-}
-
-.vip-section .seats-container::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%);
-  animation: vipShimmer 3s ease-in-out infinite;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.vip-section .seats-container > * {
-  position: relative;
-  z-index: 2;
-}
+/* Eliminados los efectos de brillo VIP para evitar transformaciones raras */
 
 /* Layout de cine */
 .cinema-layout {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 25px; /* Aumentar separación */
-  padding: 40px 60px; /* Aumentar padding horizontal para más ancho */
-  min-height: 120vh; /* Usar altura de viewport más grande */
-  max-width: 1400px; /* Ancho máximo más grande */
-  width: 100%;
-  margin: 0 auto; /* Centrar el layout */
+  justify-content: center;
+  gap: 16px;
+  padding: 24px;
+  min-height: auto;
+  max-width: none;
+  width: fit-content;
+  margin: 0 auto;
   background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
   border-radius: 16px;
   position: relative;
-  overflow: visible; /* Restored to 'visible' to prevent content cutoff */
+  overflow: visible;
 }
 
 .cinema-layout::before {
@@ -389,7 +443,10 @@
   justify-content: center;
   align-items: center;
   z-index: 1;
-  margin-bottom: 20px;
+  margin-bottom: 0;
+  width: fit-content;
+  padding: 0;
+  margin: 0;
 }
 
 .seats-container {
@@ -408,9 +465,9 @@
   justify-content: center;
   align-items: center;
   z-index: 1;
-  margin-bottom: 18px; /* Aumentar separación */
-  width: 100%;
-  max-width: 1000px; /* Ancho máximo para secciones */
+  margin-bottom: 0;
+  width: fit-content;
+  max-width: none;
 }
 
 .front-section {
@@ -418,9 +475,9 @@
   justify-content: center;
   align-items: center;
   z-index: 1;
-  margin-bottom: 15px; /* Aumentar separación */
-  width: 100%;
-  max-width: 1000px; /* Ancho máximo para secciones */
+  margin-bottom: 0;
+  width: fit-content;
+  max-width: none;
 }
 
 .middle-section {
@@ -428,9 +485,9 @@
   justify-content: center;
   align-items: center;
   z-index: 1;
-  margin-bottom: 15px; /* Aumentar separación */
-  width: 100%;
-  max-width: 1000px; /* Ancho máximo para secciones */
+  margin-bottom: 0;
+  width: fit-content;
+  max-width: none;
 }
 
 .back-section {
@@ -438,9 +495,9 @@
   justify-content: center;
   align-items: center;
   z-index: 1;
-  margin-bottom: 12px; /* Aumentar separación */
-  width: 100%;
-  max-width: 1000px; /* Ancho máximo para secciones */
+  margin-bottom: 0;
+  width: fit-content;
+  max-width: none;
 }
 
 /* Layout de teatro */
@@ -448,16 +505,17 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 30px; /* Aumentar separación entre secciones */
-  padding: 40px 60px; /* Aumentar padding horizontal para más ancho */
-  min-height: 120vh; /* Usar altura de viewport más grande */
-  max-width: 1400px; /* Ancho máximo más grande */
-  width: 100%;
-  margin: 0 auto; /* Centrar el layout */
+  justify-content: center;
+  gap: 16px;
+  padding: 24px;
+  min-height: auto;
+  max-width: none;
+  width: fit-content;
+  margin: 0 auto;
   background: linear-gradient(135deg, #2c1810 0%, #3d2817 50%, #2c1810 100%);
   border-radius: 16px;
   position: relative;
-  overflow: visible; /* Restored to 'visible' to prevent content cutoff */
+  overflow: visible;
 }
 
 /* Secciones específicas de teatro */
@@ -466,9 +524,9 @@
   justify-content: center;
   align-items: center;
   z-index: 1;
-  margin-bottom: 15px;
-  width: 100%;
-  max-width: 1200px; /* Ancho máximo para secciones */
+  margin-bottom: 0;
+  width: fit-content;
+  max-width: none;
 }
 
 .orchestra-section {
@@ -476,9 +534,9 @@
   justify-content: center;
   align-items: center;
   z-index: 1;
-  margin-bottom: 20px;
-  width: 100%;
-  max-width: 1200px; /* Ancho máximo para secciones */
+  margin-bottom: 0;
+  width: fit-content;
+  max-width: none;
 }
 
 .mezzanine-section {
@@ -486,9 +544,9 @@
   justify-content: center;
   align-items: center;
   z-index: 1;
-  margin-bottom: 15px;
-  width: 100%;
-  max-width: 1200px; /* Ancho máximo para secciones */
+  margin-bottom: 0;
+  width: fit-content;
+  max-width: none;
 }
 
 .balcony-section {
@@ -496,9 +554,9 @@
   justify-content: center;
   align-items: center;
   z-index: 1;
-  margin-bottom: 15px;
-  width: 100%;
-  max-width: 1200px; /* Ancho máximo para secciones */
+  margin-bottom: 0;
+  width: fit-content;
+  max-width: none;
 }
 
 .theater-layout::before {
@@ -530,37 +588,46 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
-  padding: 30px;
-  min-height: 120vh; /* Usar altura de viewport más grande */
+  justify-content: center;
+  gap: 16px;
+  padding: 24px;
+  min-height: auto;
+  width: fit-content;
+  margin: 0 auto;
   background: linear-gradient(135deg, #374151 0%, #4B5563 100%);
   border-radius: 16px;
   position: relative;
-  overflow: visible; /* Restored to 'visible' to prevent content cutoff */
+  overflow: visible;
 }
 
 .vip-container {
   display: flex;
-  gap: 15px;
+  gap: 12px;
   flex-wrap: wrap;
   justify-content: center;
+  align-items: center;
   z-index: 1;
+  width: fit-content;
 }
 
 .upper-sections {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
   justify-content: center;
+  align-items: center;
   z-index: 1;
+  width: fit-content;
 }
 
 .lower-sections {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
   justify-content: center;
+  align-items: center;
   z-index: 1;
+  width: fit-content;
 }
 
 /* Layout genérico */
@@ -568,10 +635,14 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
-  padding: 20px;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  width: fit-content;
+  margin: 0 auto;
   background: #F5F5F5;
   border-radius: 12px;
+  overflow: visible;
 }
 
 /* Estilos para entrada general */

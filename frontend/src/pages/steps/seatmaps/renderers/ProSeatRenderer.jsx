@@ -627,75 +627,79 @@ const ProSeatRenderer = ({
       sectionBlocked={sectionBlocked}
       sectionColor={color}
     >
-      {/* Header de la sección */}
-      <div 
+      {/* Header de la sección - Ahora arriba y centrado */}
+      <div
         className="section-header"
         style={{
           display: 'flex',
-          justifyContent: 'space-between',
+          flexDirection: 'column',
           alignItems: 'center',
-          marginBottom: '8px',
-          paddingBottom: '6px',
-          borderBottom: `1px solid ${COLORS.neutral.grey100}`
+          gap: '4px',
+          marginBottom: '12px',
+          paddingBottom: '8px',
+          borderBottom: `2px solid ${COLORS.neutral.grey100}`,
+          width: '100%'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <div 
+        {/* Nombre de la sección con indicador de color */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div
             className="section-color-indicator"
             style={{
-              width: '10px',
-              height: '10px',
+              width: '12px',
+              height: '12px',
               backgroundColor: sectionBlocked ? COLORS.neutral.grey300 : (color || COLORS.primary.main),
               borderRadius: '50%',
               border: '2px solid white',
               boxShadow: COLORS.shadows.sm
-            }} 
+            }}
           />
           <span
             className="section-name"
             style={{
-              fontSize: `${seatSize.fontSize * 1.5}px`,
+              fontSize: `${seatSize.fontSize * 1.6}px`,
               fontWeight: '700',
-              // Detección automática: texto negro para fondos claros, blanco para fondos oscuros
-              color: getSectionLabelColor(color, sectionBlocked)
+              color: getSectionLabelColor(color, sectionBlocked),
+              textAlign: 'center'
             }}
           >
             {sectionName}
           </span>
         </div>
 
+        {/* Info de dimensiones - Ahora debajo del nombre */}
         <div
           className="section-info"
           style={{
-            fontSize: `${seatSize.fontSize * 1.5}px`,
-            fontWeight: '700',
-            // Detección automática: texto negro para fondos claros, blanco para fondos oscuros
+            fontSize: `${seatSize.fontSize * 1.3}px`,
+            fontWeight: '600',
             color: getSectionDimensionColor(color, sectionBlocked),
             backgroundColor: getContrastInfoBackground(color, sectionBlocked),
-            padding: '2px 6px',
-            borderRadius: '8px',
-            border: `1px solid ${getContrastBorderColor(color, sectionBlocked)}`
+            padding: '4px 10px',
+            borderRadius: '12px',
+            border: `1px solid ${getContrastBorderColor(color, sectionBlocked)}`,
+            textAlign: 'center'
           }}
         >
-          {dimensions.displayRows}×{dimensions.displaySeatsPerRow}
+          {dimensions.displayRows} filas × {dimensions.displaySeatsPerRow} asientos
         </div>
       </div>
 
-      {/* Contenedor principal de asientos - Mejorado para secciones laterales */}
+      {/* Contenedor principal de asientos - Optimizado sin padding innecesario */}
       <div
         className="section-seats-container"
         style={{
           position: 'relative',
-          padding: isMobile ? '8px' : '12px',
+          padding: '0',
           width: 'fit-content',
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'flex-start',
+          alignItems: 'center',
           gap: isMobile ? '2px' : '3px',
-          backgroundColor: sectionBlocked ? 'rgba(0,0,0,0.02)' : 'transparent',
-          borderRadius: '8px',
+          backgroundColor: 'transparent',
+          borderRadius: '0',
           overflow: 'visible',
-          minWidth: 'fit-content'
+          margin: '0 auto'
         }}
       >
         {Array.from({ length: dimensions.displayRows }).map((_, row) => renderRow(row))}

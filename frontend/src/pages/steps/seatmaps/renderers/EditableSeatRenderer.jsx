@@ -2,10 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Card, Button, Typography, Space, Modal, Form, Input, InputNumber, ColorPicker, Select, Switch, Popconfirm, message, Tooltip, Row, Col, Badge } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, SaveOutlined, EyeOutlined, EyeInvisibleOutlined, SettingOutlined } from '@ant-design/icons';
 import { COLORS } from '../../../../components/colorscheme';
-import SeatRenderer from './SeatRenderer';
-import SeatMapLegend from '../ui/SeatMapLegend';
+import MainSeatMapContainer from '../containers/MainSeatMapContainer';
 import useDeviceDetection from '../../../../hooks/useDeviceDetection';
-import './SeatMapAnimations.css';
+import '../styles/SeatMapAnimations.css';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -22,10 +21,10 @@ const { Option } = Select;
 const EditableSeatRenderer = ({ seatMapData, onSeatMapUpdate, initialData = null, readOnly = false }) => {
   const deviceInfo = useDeviceDetection();
   const [form] = Form.useForm();
-  
+
   const [sections, setSections] = useState([]);
   const [selectedSection, setSelectedSection] = useState(null);
-  const [showPreview, setShowPreview] = useState(false);
+  const [showPreview, setShowPreview] = useState(true); // Cambiado a true por defecto para mostrar vista previa
   const [sectionModalVisible, setSectionModalVisible] = useState(false);
   const [settingsModalVisible, setSettingsModalVisible] = useState(false);
   const [seatMapConfig, setSeatMapConfig] = useState({ name: '', type: 'generic', venueName: '', description: '' });
@@ -88,9 +87,17 @@ const EditableSeatRenderer = ({ seatMapData, onSeatMapUpdate, initialData = null
 
   const formatPrice = (price) => `€${price}`;
 
+  // Construir datos del mapa de asientos para el preview
+  const previewSeatMapData = {
+    sections: sections,
+    config: seatMapConfig,
+    type: seatMapConfig.type || 'generic'
+  };
+
   return (
-    <div style={{ padding: '20px' }}>
-      <Card style={{ marginBottom: '20px' }}>
+    <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      {/* Header con controles principales */}
+      <Card>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <Title level={3} style={{ margin: 0 }}>Editor de Mapa de Asientos</Title>
@@ -98,101 +105,183 @@ const EditableSeatRenderer = ({ seatMapData, onSeatMapUpdate, initialData = null
           </div>
           {!readOnly && (
             <Space>
-              <Button icon={showPreview ? <EyeInvisibleOutlined /> : <EyeOutlined />} onClick={() => setShowPreview(!showPreview)} />
-              <Button icon={<SettingOutlined />} onClick={() => setSettingsModalVisible(true)} />
-              <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>Guardar</Button>
+              <Button
+                icon={showPreview ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+                onClick={() => setShowPreview(!showPreview)}
+              >
+                {showPreview ? 'Ocultar Vista Previa' : 'Mostrar Vista Previa'}
+              </Button>
+              <Button icon={<SettingOutlined />} onClick={() => setSettingsModalVisible(true)}>
+                Configuración
+              </Button>
+              <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>
+                Guardar
+              </Button>
             </Space>
           )}
         </div>
       </Card>
 
+      {/* Panel de gestión de secciones */}
       {!readOnly && (
-        <Card style={{ marginBottom: '20px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Card>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
             <Title level={4} style={{ margin: 0 }}>Secciones ({sections.length})</Title>
-            <Button type="primary" icon={<PlusOutlined />} onClick={addSection}>Añadir Sección</Button>
+            <Button type="primary" icon={<PlusOutlined />} onClick={addSection}>
+              Añadir Sección
+            </Button>
+          </div>
+
+          {/* Lista de secciones en formato compacto */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: deviceInfo.isMobile ? '1fr' : 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '12px'
+          }}>
+            {sections.map(section => (
+              <Card
+                key={section.id}
+                size="small"
+                style={{
+                  border: selectedSection?.id === section.id ? `2px solid ${COLORS.primary.main}` : '1px solid #E5E7EB',
+                  borderRadius: '8px',
+                  backgroundColor: selectedSection?.id === section.id ? `${COLORS.primary.main}05` : 'white',
+                  transition: 'all 0.3s ease'
+                }}
+                hoverable={!readOnly}
+                onClick={() => !readOnly && setSelectedSection(section)}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{
+                      width: '10px',
+                      height: '10px',
+                      backgroundColor: section.color,
+                      borderRadius: '50%'
+                    }} />
+                    <Text strong style={{ fontSize: '13px' }}>{section.name}</Text>
+                    {!section.hasNumberedSeats && (
+                      <Badge count="GA" style={{ backgroundColor: '#10B981', fontSize: '9px' }} />
+                    )}
+                  </div>
+                  {!readOnly && (
+                    <Space size="small">
+                      <Tooltip title="Editar">
+                        <Button
+                          type="text"
+                          icon={<EditOutlined />}
+                          size="small"
+                          onClick={(e) => { e.stopPropagation(); editSection(section); }}
+                        />
+                      </Tooltip>
+                      <Popconfirm
+                        title="¿Eliminar sección?"
+                        description="Esta acción no se puede deshacer"
+                        onConfirm={() => deleteSection(section.id)}
+                        okText="Sí"
+                        cancelText="No"
+                      >
+                        <Tooltip title="Eliminar">
+                          <Button
+                            type="text"
+                            icon={<DeleteOutlined />}
+                            size="small"
+                            danger
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </Tooltip>
+                      </Popconfirm>
+                    </Space>
+                  )}
+                </div>
+                <div>
+                  <Row gutter={[8, 8]}>
+                    <Col span={14}>
+                      <Text style={{ fontSize: '11px', color: COLORS.neutral.grey4 }}>
+                        {section.hasNumberedSeats
+                          ? `${section.rows} filas × ${section.seatsPerRow} asientos`
+                          : `Capacidad: ${section.totalCapacity}`}
+                      </Text>
+                    </Col>
+                    <Col span={10} style={{ textAlign: 'right' }}>
+                      <Text strong style={{ color: COLORS.primary.main, fontSize: '12px' }}>
+                        {formatPrice(section.defaultPrice)}
+                      </Text>
+                    </Col>
+                  </Row>
+                </div>
+              </Card>
+            ))}
           </div>
         </Card>
       )}
 
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: deviceInfo.isMobile ? '1fr' : 'repeat(auto-fit, minmax(300px, 1fr))',
-        gap: '16px',
-        marginBottom: '20px'
-      }}>
-        {sections.map(section => (
-          <Card
-            key={section.id}
-            style={{
-              margin: '8px',
-              border: selectedSection?.id === section.id ? `2px solid ${COLORS.primary.main}` : '1px solid #E5E7EB',
-              borderRadius: '12px',
-              backgroundColor: selectedSection?.id === section.id ? `${COLORS.primary.main}05` : 'white',
-              transition: 'all 0.3s ease'
-            }}
-            hoverable={!readOnly}
-            onClick={() => !readOnly && setSelectedSection(section)}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid #F3F4F6' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{ width: '12px', height: '12px', backgroundColor: section.color, borderRadius: '50%' }} />
-                <Text strong>{section.name}</Text>
-                {!section.hasNumberedSeats && <Badge count="GA" style={{ backgroundColor: '#10B981', fontSize: '10px' }} />}
-              </div>
-              {!readOnly && (
-                <Space>
-                  <Tooltip title="Editar">
-                    <Button type="text" icon={<EditOutlined />} size="small" onClick={(e) => { e.stopPropagation(); editSection(section); }} />
-                  </Tooltip>
-                  <Popconfirm title="¿Eliminar sección?" description="Esta acción no se puede deshacer" onConfirm={() => deleteSection(section.id)} okText="Sí" cancelText="No">
-                    <Tooltip title="Eliminar">
-                      <Button type="text" icon={<DeleteOutlined />} size="small" danger onClick={(e) => e.stopPropagation()} />
-                    </Tooltip>
-                  </Popconfirm>
-                </Space>
-              )}
-            </div>
-            <div style={{ marginBottom: '12px' }}>
-              <Row gutter={[8, 8]}>
-                <Col span={12}>
-                  <Text style={{ fontSize: '12px', color: COLORS.neutral.grey4 }}>
-                    {section.hasNumberedSeats ? `${section.rows} filas × ${section.seatsPerRow} asientos` : `Capacidad: ${section.totalCapacity}`}
-                  </Text>
-                </Col>
-                <Col span={12} style={{ textAlign: 'right' }}>
-                  <Text strong style={{ color: COLORS.primary.main }}>{formatPrice(section.defaultPrice)}</Text>
-                </Col>
-              </Row>
-            </div>
-            {showPreview && (
-              <div style={{ backgroundColor: '#F9FAFB', borderRadius: '8px', padding: '8px', border: '1px solid #E5E7EB' }}>
-                <SeatRenderer
-                  sectionId={section.id}
-                  rows={section.rows}
-                  seatsPerRow={section.seatsPerRow}
-                  price={section.defaultPrice}
-                  color={section.color}
-                  name={section.name}
-                  selectedSeats={[]}
-                  occupiedSeats={[]}
-                  blockedSeats={[]}
-                  sectionBlocked={false}
-                  maxSeats={0}
-                  onSeatSelect={() => {}}
-                  formatPrice={formatPrice}
-                  compactMode={true}
-                  responsiveMode={deviceInfo.isMobile}
-                />
-              </div>
-            )}
-          </Card>
-        ))}
-      </div>
+      {/* Vista previa integrada usando MainSeatMapContainer */}
+      {showPreview && sections.length > 0 && (
+        <Card
+          title="Vista Previa del Mapa"
+          style={{
+            backgroundColor: '#F9FAFB',
+            border: '2px solid #E5E7EB'
+          }}
+        >
+          <div style={{
+            minHeight: '600px',
+            backgroundColor: 'white',
+            borderRadius: '8px',
+            overflow: 'visible',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: '20px',
+            position: 'relative'
+          }}>
+            <MainSeatMapContainer
+              seatMapData={previewSeatMapData}
+              selectedSeats={[]}
+              onSeatSelect={() => {}} // No selección en modo preview
+              maxSeats={0}
+              occupiedSeats={[]}
+              blockedSeats={[]}
+              blockedSections={[]}
+              formatPrice={formatPrice}
+              event={{}}
+              calculateSeatPrice={(seat) => seat.price || 0}
+              isAdminMode={true}
+              isPreviewMode={true} // Modo preview para ocultar controles innecesarios
+            />
+          </div>
+        </Card>
+      )}
 
-      <SeatMapLegend theme="default" showPremium={true} showAccessible={false} className="depth-2" />
+      {sections.length === 0 && (
+        <Card style={{ textAlign: 'center', padding: '40px' }}>
+          <Title level={4} style={{ color: COLORS.neutral.grey4 }}>
+            No hay secciones creadas
+          </Title>
+          <Text style={{ color: COLORS.neutral.grey4 }}>
+            Añade una sección para comenzar a diseñar tu mapa de asientos
+          </Text>
+          {!readOnly && (
+            <div style={{ marginTop: '20px' }}>
+              <Button type="primary" icon={<PlusOutlined />} onClick={addSection} size="large">
+                Añadir Primera Sección
+              </Button>
+            </div>
+          )}
+        </Card>
+      )}
 
-      <Modal title="Editar Sección" open={sectionModalVisible} onOk={handleSectionSave} onCancel={() => { setSectionModalVisible(false); setSelectedSection(null); }} width={600} okText="Guardar" cancelText="Cancelar">
+      {/* Modal de edición de sección */}
+      <Modal
+        title="Editar Sección"
+        open={sectionModalVisible}
+        onOk={handleSectionSave}
+        onCancel={() => { setSectionModalVisible(false); setSelectedSection(null); }}
+        width={600}
+        okText="Guardar"
+        cancelText="Cancelar"
+      >
         <Form form={form} layout="vertical">
           <Row gutter={16}>
             <Col span={12}>
@@ -257,14 +346,33 @@ const EditableSeatRenderer = ({ seatMapData, onSeatMapUpdate, initialData = null
         </Form>
       </Modal>
 
-      <Modal title="Configuración del Mapa" open={settingsModalVisible} onOk={() => setSettingsModalVisible(false)} onCancel={() => setSettingsModalVisible(false)} width={500} okText="Guardar" cancelText="Cancelar">
-        <Form layout="vertical" initialValues={seatMapConfig}>
+      {/* Modal de configuración */}
+      <Modal
+        title="Configuración del Mapa"
+        open={settingsModalVisible}
+        onOk={(values) => {
+          setSeatMapConfig(prev => ({ ...prev, ...values }));
+          setSettingsModalVisible(false);
+        }}
+        onCancel={() => setSettingsModalVisible(false)}
+        width={500}
+        okText="Guardar"
+        cancelText="Cancelar"
+      >
+        <Form
+          layout="vertical"
+          initialValues={seatMapConfig}
+          onFinish={(values) => {
+            setSeatMapConfig(prev => ({ ...prev, ...values }));
+            setSettingsModalVisible(false);
+          }}
+        >
           <Form.Item name="name" label="Nombre del mapa" rules={[{ required: true, message: 'El nombre es requerido' }]}>
             <Input placeholder="Ej: Estadio Principal" />
           </Form.Item>
           <Form.Item name="type" label="Tipo de venue" rules={[{ required: true, message: 'El tipo es requerido' }]}>
             <Select placeholder="Seleccionar tipo">
-              <Option value="stadium">Estadio</Option>
+              <Option value="football">Estadio de Fútbol</Option>
               <Option value="theater">Teatro</Option>
               <Option value="cinema">Cine</Option>
               <Option value="concert">Concierto</Option>

@@ -42,16 +42,6 @@
   }
 }
 
-/* Animación de brillo VIP */
-@keyframes vipShimmer {
-  0% {
-    transform: translateX(-100%) translateY(-100%) rotate(45deg);
-  }
-  100% {
-    transform: translateX(100%) translateY(100%) rotate(45deg);
-  }
-}
-
 /* Efecto de pulso para elementos importantes */
 @keyframes pulse {
   0%, 100% {
