@@ -451,28 +451,32 @@ const MainSeatMapContainer = ({
 
   // Layout de concierto tipo estadio
   const renderConcertStadiumLayout = () => {
-    const tribunaNorte = sections.find(s => 
+    const tribunaNorte = sections.find(s =>
       s.id.includes('norte') || s.name.toLowerCase().includes('norte') ||
       s.id.includes('north') || s.name.toLowerCase().includes('north')
     );
-    const tribunaEste = sections.find(s => 
+    const tribunaEste = sections.find(s =>
       s.id.includes('este') || s.name.toLowerCase().includes('este') ||
       s.id.includes('east') || s.name.toLowerCase().includes('east')
     );
-    const tribunaOeste = sections.find(s => 
+    const tribunaOeste = sections.find(s =>
       s.id.includes('oeste') || s.name.toLowerCase().includes('oeste') ||
       s.id.includes('west') || s.name.toLowerCase().includes('west')
     );
-    const tribunaSur = sections.find(s => 
+    const tribunaSur = sections.find(s =>
       s.id.includes('sur') || s.name.toLowerCase().includes('sur') ||
       s.id.includes('south') || s.name.toLowerCase().includes('south')
     );
-    const pistaSection = sections.find(s => 
-      !s.hasNumberedSeats || 
+    const pistaSection = sections.find(s =>
+      !s.hasNumberedSeats ||
       s.id.includes('pista') || s.name.toLowerCase().includes('pista') ||
       s.id.includes('general') || s.name.toLowerCase().includes('general')
     );
-    const vipSection = sections.find(s => s.id.includes('vip') || s.name.toLowerCase().includes('vip'));
+    const vipPremiumSections = sections.filter(s =>
+      s.id.includes('vip') || s.name.toLowerCase().includes('vip') ||
+      s.id.includes('palco') || s.name.toLowerCase().includes('palco') ||
+      s.id.includes('premium') || s.name.toLowerCase().includes('premium')
+    );
 
     return (
       <div className="concert-stadium-layout">
@@ -520,10 +524,14 @@ const MainSeatMapContainer = ({
           </div>
         )}
 
-        {/* VIP */}
-        {vipSection && (
-          <div className="vip-section">
-            {renderProfessionalSection(vipSection, { gridArea: 'vip' })}
+        {/* VIP y Palcos Premium */}
+        {vipPremiumSections.length > 0 && (
+          <div className="vip-premium-sections">
+            {vipPremiumSections.map(section => (
+              <div key={section.id} className="vip-section">
+                {renderProfessionalSection(section, { gridArea: 'vip' })}
+              </div>
+            ))}
           </div>
         )}
       </div>
@@ -532,13 +540,25 @@ const MainSeatMapContainer = ({
 
   // Layout de concierto tipo teatro
   const renderConcertTheaterLayout = () => {
-    const pistaSection = sections.find(s => 
-      !s.hasNumberedSeats || 
+    const pistaSection = sections.find(s =>
+      !s.hasNumberedSeats ||
       s.id.includes('pista') || s.name.toLowerCase().includes('pista') ||
       s.id.includes('general') || s.name.toLowerCase().includes('general')
     );
-    const gradas = sections.filter(s => s.hasNumberedSeats && !s.id.includes('vip'));
-    const vipSection = sections.find(s => s.id.includes('vip'));
+    const vipPremiumSections = sections.filter(s =>
+      s.id.includes('vip') || s.name.toLowerCase().includes('vip') ||
+      s.id.includes('palco') || s.name.toLowerCase().includes('palco') ||
+      s.id.includes('premium') || s.name.toLowerCase().includes('premium')
+    );
+    const gradas = sections.filter(s =>
+      s.hasNumberedSeats &&
+      !s.id.includes('vip') &&
+      !s.id.includes('palco') &&
+      !s.id.includes('premium') &&
+      !s.name.toLowerCase().includes('vip') &&
+      !s.name.toLowerCase().includes('palco') &&
+      !s.name.toLowerCase().includes('premium')
+    );
 
     return (
       <div className="concert-theater-layout">
@@ -563,10 +583,14 @@ const MainSeatMapContainer = ({
           {gradas.map(section => renderProfessionalSection(section))}
         </div>
 
-        {/* VIP */}
-        {vipSection && (
-          <div className="vip-section">
-            {renderProfessionalSection(vipSection)}
+        {/* VIP y Palcos Premium */}
+        {vipPremiumSections.length > 0 && (
+          <div className="vip-premium-sections">
+            {vipPremiumSections.map(section => (
+              <div key={section.id} className="vip-section">
+                {renderProfessionalSection(section)}
+              </div>
+            ))}
           </div>
         )}
       </div>

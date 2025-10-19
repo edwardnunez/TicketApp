@@ -172,6 +172,25 @@
   grid-column: 1 / -1; /* Ocupar todas las columnas */
 }
 
+/* Contenedor para múltiples secciones VIP/Premium */
+.vip-premium-sections {
+  grid-area: vip;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  z-index: 1;
+  width: 100%;
+  max-width: none;
+  overflow: visible;
+  padding: 0;
+  box-sizing: border-box;
+  margin: 0;
+  grid-column: 1 / -1; /* Ocupar todas las columnas como norte/sur */
+}
+
 /* Asegurar que los contenidos de VIP tengan espacio suficiente */
 .vip-section .professional-section {
   width: fit-content;
