@@ -463,7 +463,7 @@ const AdminStatistics = () => {
                   </Text>
                 ),
                 width: 120,
-                align: 'right',
+                align: 'center',
               },
               {
                 title: 'Tickets disponibles',

@@ -45,6 +45,7 @@ const avatars = [
   "/avatars/avatar3.png",
   "/avatars/avatar4.png",
   "/avatars/avatar5.png",
+  "/avatars/avatar6.png",
 ];
 
 /**
@@ -350,17 +351,19 @@ const EditProfile = () => {
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
                   {/* Sección de Avatar */}
                   <div style={{ textAlign: "center", marginBottom: "24px" }}>
-                    <Avatar 
-                      size={100} 
-                      src={selectedAvatar} 
+                    <Avatar
+                      size={100}
+                      src={selectedAvatar}
+                      icon={!selectedAvatar && <UserOutlined />}
                       style={{
                         border: `2px solid ${COLORS.primary.light}`,
-                        boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                        backgroundColor: !selectedAvatar ? COLORS.primary.light : undefined
                       }}
                     />
                     <br />
-                    <Button 
-                      type="link" 
+                    <Button
+                      type="link"
                       onClick={() => setShowAvatarSelection(!showAvatarSelection)}
                       style={{ color: COLORS.primary.main, marginTop: "8px" }}
                     >

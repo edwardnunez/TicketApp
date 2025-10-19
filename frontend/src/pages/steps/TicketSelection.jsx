@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Card, InputNumber, Typography, Alert, Spin, Button } from "antd";
 import { COLORS } from "../../components/colorscheme";
-import GenericSeatMapRenderer from "./seatmaps/renderers/GenericSeatRenderer";
+import GenericSeatRenderer from "./seatmaps/renderers/GenericSeatRenderer";
 import ResponsiveSeatRenderer from "./seatmaps/renderers/ResponsiveSeatRenderer";
 import axios from 'axios';
 
@@ -303,20 +303,23 @@ export default function SelectTickets({
   // FIXED: Solo limpiar asientos cuando realmente cambia el evento, no cuando cambia la selección
   useEffect(() => {
     const currentEventId = memoizedEvent?._id;
-    
-    // Solo limpiar si el evento realmente cambió
-    if (currentEventId && currentEventId !== previousEventId.current) {
+
+    // Solo limpiar si el evento realmente cambió (y no es la primera carga)
+    if (currentEventId && previousEventId.current !== null && currentEventId !== previousEventId.current) {
       console.log('🔄 Event changed, clearing selected seats');
-      if (selectedSeats.length > 0) {
-        onSeatSelect([]);
-        setQuantity(0);
-      }
+      onSeatSelect([]);
+      setQuantity(0);
       previousEventId.current = currentEventId;
-      
+
       // Cargar disponibilidad de tickets cuando cambia el evento
       fetchTicketAvailability();
+    } else if (currentEventId && previousEventId.current === null) {
+      // Primera carga: solo actualizar el ref sin limpiar
+      previousEventId.current = currentEventId;
+      // Cargar disponibilidad de tickets en la primera carga
+      fetchTicketAvailability();
     }
-  }, [memoizedEvent?._id, memoizedEvent?.usesRowPricing, onSeatSelect, setQuantity, selectedSeats.length]);
+  }, [memoizedEvent?._id, memoizedEvent?.usesRowPricing, onSeatSelect, setQuantity]);
 
   // Configurar actualización automática de disponibilidad cada 30 segundos
   useEffect(() => {
@@ -438,7 +441,7 @@ export default function SelectTickets({
     }
 
     // Determinar qué renderer usar basado en el tamaño de pantalla
-    const SeatMapComponent = isMobileOrTablet ? ResponsiveSeatRenderer : GenericSeatMapRenderer;
+    const SeatMapComponent = isMobileOrTablet ? ResponsiveSeatRenderer : GenericSeatRenderer;
 
     return (
       <SeatMapComponent

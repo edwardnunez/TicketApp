@@ -72,11 +72,11 @@ app.post("/location", async (req, res) => {
     const { name, category, address, seatMapId, capacity } = req.body;
 
     if (!name || !category || !address) {
-      return res.status(400).json({ error: "Missing required fields" });
+      return res.status(400).json({ error: "Faltan campos requeridos" });
     }
 
     if (capacity<0) {
-      return res.status(400).json({ error: "Capacity cannot be less than 0" });
+      return res.status(400).json({ error: "La capacidad no puede ser menor a 0" });
     }
 
     let locationDoc = await LocationModel.findOne({ name });
@@ -92,7 +92,7 @@ app.post("/location", async (req, res) => {
       await locationDoc.save();
       return res.status(200).json(locationDoc);
     } else if (repeatedLocation) {
-      return res.status(400).json({ error: "Location already exists" });
+      return res.status(400).json({ error: "La ubicación ya existe" });
     } else {
       locationDoc = new LocationModel({
         name,
@@ -106,7 +106,7 @@ app.post("/location", async (req, res) => {
     }
   } catch (error) {
     console.error("Error creating/updating location:", error);
-    res.status(500).json({ error: "Internal Server Error", details: error.message });
+    res.status(500).json({ error: "Error interno del servidor", details: error.message });
   }
 });
 
@@ -116,18 +116,18 @@ app.get("/locations", async (req, res) => {
     res.status(200).json(locations || []);
   } catch (error) {
     console.error("Error fetching locations:", error);
-    res.status(500).json({ error: "Internal Server Error", details: error.message });
+    res.status(500).json({ error: "Error interno del servidor", details: error.message });
   }
 });
 
 app.get("/locations/:locationId", async (req, res) => {
   try {
     const location = await LocationModel.findById(req.params.locationId);
-    if (!location) return res.status(404).json({ error: "Location not found" });
+    if (!location) return res.status(404).json({ error: "Ubicación no encontrada" });
     res.status(200).json(location);
   } catch (error) {
     console.error("Error fetching location details:", error);
-    res.status(500).json({ error: "Internal Server Error", details: error.message });
+    res.status(500).json({ error: "Error interno del servidor", details: error.message });
   }
 });
 
@@ -235,9 +235,9 @@ app.get('/seatmaps', async (req, res) => {
     res.status(200).json(transformed);
   } catch (error) {
     console.error('Error fetching seatmaps:', error);
-    res.status(500).json({ 
-      error: 'Internal Server Error',
-      message: error.message 
+    res.status(500).json({
+      error: 'Error interno del servidor',
+      message: error.message
     });
   }
 });
@@ -250,18 +250,18 @@ app.get('/seatmaps/:id', async (req, res) => {
     const seatMap = await SeatMapModel.findOne({ id }).select('-__v');
     
     if (!seatMap) {
-      return res.status(404).json({ 
-        error: 'SeatMap not found',
-        message: `No seatmap found with ID: ${id}` 
+      return res.status(404).json({
+        error: 'Mapa de asientos no encontrado',
+        message: `No se encontró ningún mapa de asientos con ID: ${id}`
       });
     }
 
     res.status(200).json(mapSeatMapForApi(seatMap));
   } catch (error) {
     console.error('Error fetching seatmap:', error);
-    res.status(500).json({ 
-      error: 'Internal Server Error',
-      message: error.message 
+    res.status(500).json({
+      error: 'Error interno del servidor',
+      message: error.message
     });
   }
 });
@@ -274,9 +274,9 @@ app.post('/seatmaps', async (req, res) => {
     // Verificar que no exista un seatmap con el mismo id
     const existingSeatMap = await SeatMapModel.findOne({ id: seatMapData.id });
     if (existingSeatMap) {
-      return res.status(400).json({ 
-        error: 'SeatMap already exists',
-        message: `A seatmap with ID ${seatMapData.id} already exists` 
+      return res.status(400).json({
+        error: 'El mapa de asientos ya existe',
+        message: `Ya existe un mapa de asientos con ID ${seatMapData.id}`
       });
     }
 
@@ -293,9 +293,9 @@ app.post('/seatmaps', async (req, res) => {
     res.status(201).json(mapSeatMapForApi(newSeatMap));
   } catch (error) {
     console.error('Error creating seatmap:', error);
-    res.status(500).json({ 
-      error: 'Internal Server Error',
-      message: error.message 
+    res.status(500).json({
+      error: 'Error interno del servidor',
+      message: error.message
     });
   }
 });
@@ -318,18 +318,18 @@ app.put('/seatmaps/:id', async (req, res) => {
     );
     
     if (!seatMap) {
-      return res.status(404).json({ 
-        error: 'SeatMap not found',
-        message: `No seatmap found with ID: ${id}` 
+      return res.status(404).json({
+        error: 'Mapa de asientos no encontrado',
+        message: `No se encontró ningún mapa de asientos con ID: ${id}`
       });
     }
 
     res.status(200).json(mapSeatMapForApi(seatMap));
   } catch (error) {
     console.error('Error updating seatmap:', error);
-    res.status(500).json({ 
-      error: 'Internal Server Error',
-      message: error.message 
+    res.status(500).json({
+      error: 'Error interno del servidor',
+      message: error.message
     });
   }
 });
@@ -342,21 +342,21 @@ app.delete('/seatmaps/:id', async (req, res) => {
     const seatMap = await SeatMapModel.findOneAndDelete({ id });
     
     if (!seatMap) {
-      return res.status(404).json({ 
-        error: 'SeatMap not found',
-        message: `No seatmap found with ID: ${id}` 
+      return res.status(404).json({
+        error: 'Mapa de asientos no encontrado',
+        message: `No se encontró ningún mapa de asientos con ID: ${id}`
       });
     }
 
-    res.status(200).json({ 
-      message: 'SeatMap deleted successfully',
-      deletedSeatMap: seatMap 
+    res.status(200).json({
+      message: 'Mapa de asientos eliminado exitosamente',
+      deletedSeatMap: seatMap
     });
   } catch (error) {
     console.error('Error deleting seatmap:', error);
-    res.status(500).json({ 
-      error: 'Internal Server Error',
-      message: error.message 
+    res.status(500).json({
+      error: 'Error interno del servidor',
+      message: error.message
     });
   }
 });
@@ -367,9 +367,9 @@ app.get('/seatmaps/type/:type', async (req, res) => {
     const { type } = req.params;
     
     if (!['football', 'cinema', 'theater', 'concert'].includes(type)) {
-      return res.status(400).json({ 
-        error: 'Invalid type',
-        message: 'Type must be one of: football, cinema, theater, concert' 
+      return res.status(400).json({
+        error: 'Tipo inválido',
+        message: 'El tipo debe ser uno de: football, cinema, theater, concert'
       });
     }
     
@@ -381,9 +381,9 @@ app.get('/seatmaps/type/:type', async (req, res) => {
     res.status(200).json(transformed);
   } catch (error) {
     console.error('Error fetching seatmaps by type:', error);
-    res.status(500).json({ 
-      error: 'Internal Server Error',
-      message: error.message 
+    res.status(500).json({
+      error: 'Error interno del servidor',
+      message: error.message
     });
   }
 });
@@ -395,26 +395,26 @@ app.get('/location/:locationId/sections', async (req, res) => {
     // Buscar la ubicación
     const location = await LocationModel.findById(locationId);
     if (!location) {
-      return res.status(404).json({ 
-        error: 'Location not found',
-        message: `No location found with ID: ${locationId}` 
+      return res.status(404).json({
+        error: 'Ubicación no encontrada',
+        message: `No se encontró ninguna ubicación con ID: ${locationId}`
       });
     }
 
     // Si la ubicación no tiene seatMapId, retornar array vacío
     if (!location.seatMapId) {
-      return res.status(200).json({ 
+      return res.status(200).json({
         sections: [],
-        message: 'Location has no seat map configured'
+        message: 'La ubicación no tiene un mapa de asientos configurado'
       });
     }
 
     // Buscar el seatmap correspondiente
     const seatMap = await SeatMapModel.findOne({ id: location.seatMapId });
     if (!seatMap) {
-      return res.status(404).json({ 
-        error: 'SeatMap not found',
-        message: `No seatmap found with ID: ${location.seatMapId}` 
+      return res.status(404).json({
+        error: 'Mapa de asientos no encontrado',
+        message: `No se encontró ningún mapa de asientos con ID: ${location.seatMapId}`
       });
     }
 
@@ -449,9 +449,9 @@ app.get('/location/:locationId/sections', async (req, res) => {
 
   } catch (error) {
     console.error('Error fetching location sections:', error);
-    res.status(500).json({ 
-      error: 'Internal Server Error',
-      message: error.message 
+    res.status(500).json({
+      error: 'Error interno del servidor',
+      message: error.message
     });
   }
 });

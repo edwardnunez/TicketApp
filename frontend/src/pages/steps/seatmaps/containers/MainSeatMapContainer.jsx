@@ -121,7 +121,7 @@ const SelectionTopBar = ({ selectedSeats, maxSeats, formatPrice, event, showLege
   );
 };
 
-const ProfessionalSeatMapRenderer = ({
+const MainSeatMapContainer = ({
   seatMapData,
   selectedSeats,
   onSeatSelect,
@@ -772,18 +772,20 @@ const ProfessionalSeatMapRenderer = ({
   };
 
   return (
-    <div 
+    <div
       ref={containerRef}
       className={`professional-seatmap-container ${isFullscreen ? 'fullscreen' : ''} ${isHighContrast ? 'high-contrast' : ''}`}
       style={{
         position: 'relative',
-        width: '100%',
+        width: isPreviewMode ? '100%' : (isFullscreen ? '100%' : '90vw'),
+        maxWidth: isPreviewMode ? '100%' : (isFullscreen ? '100%' : '2400px'),
         height: isFullscreen ? '100vh' : 'auto',
-        minHeight: isMobile ? '150vh' : '150vh',
+        minHeight: isPreviewMode ? '600px' : (isMobile ? '150vh' : '150vh'),
         backgroundColor: COLORS.neutral.grey50,
-        borderRadius: isFullscreen ? '0' : '16px',
+        borderRadius: isFullscreen ? '0' : (isPreviewMode ? '0' : '16px'),
         overflow: 'visible', // Restored to 'visible' to prevent content cutoff
-        boxShadow: isFullscreen ? 'none' : COLORS.shadows.xl
+        boxShadow: isFullscreen ? 'none' : (isPreviewMode ? 'none' : COLORS.shadows.xl),
+        margin: isPreviewMode ? '0' : '0 auto'
       }}
     >
       {/* Barra superior de selección de asientos - Solo en modo usuario y no en vista previa */}
@@ -813,9 +815,9 @@ const ProfessionalSeatMapRenderer = ({
         {/* Controles de zoom */}
         <div style={{
           position: 'absolute',
-          top: (!isAdminMode && !isPreviewMode) ? '70px' : '10px',
-          right: '10px',
-          zIndex: 50
+          top: isAdminMode ? '250px' : ((!isAdminMode && !isPreviewMode) ? '70px' : '10px'),
+          right: isAdminMode ? '120px' : '10px',
+          zIndex: 150
         }}>
           <ZoomControls
             zoomLevel={zoomLevel}
@@ -829,17 +831,20 @@ const ProfessionalSeatMapRenderer = ({
         </div>
 
         {/* Contenedor principal del mapa */}
-        <div 
+        <div
           ref={seatMapRef}
           className="seatmap-content"
           style={{
-            position: 'absolute',
-            top: (!isAdminMode && !isPreviewMode) ? '60px' : '0px', // Espacio para la cabecera en modo usuario
-            left: 0,
-            right: 0,
-            bottom: 0,
-            overflow: 'hidden', // Prevent zoom overflow while allowing content to scale
-            cursor: isDragging ? 'grabbing' : 'grab'
+            position: 'relative',
+            width: '100%',
+            height: '100%',
+            overflow: 'auto',
+            cursor: isDragging ? 'grabbing' : 'grab',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: 0,
+            flex: 1
           }}
           onWheel={handleWheel}
           onMouseDown={handleMouseDown}
@@ -850,13 +855,13 @@ const ProfessionalSeatMapRenderer = ({
               transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`,
               transformOrigin: 'center center',
               transition: isDragging ? 'none' : 'transform 0.3s ease',
-              width: '100%',
-              height: '100%',
+              width: 'fit-content',
+              height: 'fit-content',
               position: 'relative',
-              minWidth: '100%', // Ensure minimum width
-              minHeight: '100%', // Ensure minimum height
-              maxWidth: 'none', // Allow content to scale
-              maxHeight: 'none' // Allow content to scale
+              minWidth: 'auto',
+              minHeight: 'auto',
+              maxWidth: 'none',
+              maxHeight: 'none'
             }}
           >
             {renderVenueLayout()}
@@ -1008,4 +1013,4 @@ const ProfessionalGeneralAdmissionRenderer = ({
   );
 };
 
-export default ProfessionalSeatMapRenderer;
+export default MainSeatMapContainer;

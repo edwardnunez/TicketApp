@@ -6,7 +6,7 @@ import {
   LockOutlined,
   StarOutlined,
 } from '@ant-design/icons';
-import { COLORS, getSeatStateColors, getContrastTextColor, getContrastBorderColor, getContrastInfoBackground, getSectionLabelColor, getSectionDimensionColor, getRowLabelColor } from '../../../../components/colorscheme';
+import { COLORS, getSeatStateColors, getContrastBorderColor, getContrastInfoBackground, getSectionLabelColor, getSectionDimensionColor, getRowLabelColor } from '../../../../components/colorscheme';
 import SectionShapeRenderer from './SectionShapeRenderer';
 
 const ProSeatRenderer = ({
@@ -40,18 +40,57 @@ const ProSeatRenderer = ({
   useEffect(() => {
     const calculateSeatSize = () => {
       const totalSeats = rows * seatsPerRow;
-      let baseSize = 24;
-      let fontSize = 10;
+      let baseSize = 32;
+      let fontSize = 11;
 
       if (isMobile) {
-        baseSize = totalSeats > 100 ? 14 : 18;
-        fontSize = totalSeats > 100 ? 7 : 8;
+        // Mobile: más espacio para tocar
+        if (totalSeats > 150) {
+          baseSize = 20;
+          fontSize = 8;
+        } else if (totalSeats > 100) {
+          baseSize = 24;
+          fontSize = 9;
+        } else if (totalSeats > 50) {
+          baseSize = 28;
+          fontSize = 10;
+        } else {
+          baseSize = 32;
+          fontSize = 11;
+        }
       } else if (isTablet) {
-        baseSize = totalSeats > 150 ? 16 : 20;
-        fontSize = totalSeats > 150 ? 8 : 9;
+        // Tablet: tamaños intermedios
+        if (totalSeats > 200) {
+          baseSize = 24;
+          fontSize = 9;
+        } else if (totalSeats > 150) {
+          baseSize = 28;
+          fontSize = 10;
+        } else if (totalSeats > 100) {
+          baseSize = 32;
+          fontSize = 11;
+        } else {
+          baseSize = 36;
+          fontSize = 12;
+        }
       } else {
-        baseSize = totalSeats > 200 ? 18 : 22;
-        fontSize = totalSeats > 200 ? 9 : 10;
+        // Desktop: aprovechar espacio disponible
+        if (totalSeats > 300) {
+          baseSize = 26;
+          fontSize = 10;
+        } else if (totalSeats > 200) {
+          baseSize = 30;
+          fontSize = 11;
+        } else if (totalSeats > 100) {
+          baseSize = 34;
+          fontSize = 12;
+        } else if (totalSeats > 50) {
+          baseSize = 38;
+          fontSize = 13;
+        } else {
+          baseSize = 42;
+          fontSize = 14;
+        }
       }
 
       setSeatSize({ width: baseSize, height: baseSize, fontSize });
@@ -173,12 +212,52 @@ const ProSeatRenderer = ({
 
   const handleSeatClick = (row, seat) => {
     const seatId = getSeatId(row, seat);
-    
+
+    // En modo administrador: permitir toggle de asientos (bloquear/desbloquear)
+    if (isAdminMode) {
+      // En modo admin, incluso los asientos bloqueados se pueden hacer clic
+      // para desbloquearlos. Solo los ocupados no se pueden modificar.
+      if (isSeatOccupied(seatId)) return;
+
+      // Crear el objeto del asiento para pasar al handler
+      const dimensions = getSectionDimensions();
+      let actualRow, actualSeat;
+
+      if (dimensions.isInverted) {
+        actualRow = seat;
+        actualSeat = row;
+      } else {
+        actualRow = row;
+        actualSeat = seat;
+      }
+
+      const seatData = {
+        id: seatId,
+        section: sectionName,
+        sectionId,
+        row: getRowNumber(actualRow),
+        seat: actualSeat + 1,
+        price: 0 // Sin precio en modo admin
+      };
+
+      // El AdminSeatMapRenderer se encargará del toggle
+      onSeatSelect(seatData);
+      return;
+    }
+
+    // Modo usuario: comportamiento normal
+    // Permitir deseleccionar asientos ya seleccionados
+    if (isSeatSelected(seatId)) {
+      onSeatSelect(selectedSeats.filter(s => s.id !== seatId));
+      return;
+    }
+
+    // Bloquear asientos ocupados o bloqueados
     if (isSeatOccupied(seatId) || isSeatBlocked(seatId) || sectionBlocked) return;
 
     const dimensions = getSectionDimensions();
     let actualRow, actualSeat;
-    
+
     if (dimensions.isInverted) {
       // Para secciones laterales: usar las coordenadas invertidas
       actualRow = seat;
@@ -199,9 +278,8 @@ const ProSeatRenderer = ({
       price: seatPrice
     };
 
-    if (isSeatSelected(seatId)) {
-      onSeatSelect(selectedSeats.filter(s => s.id !== seatId));
-    } else if (selectedSeats.length < maxSeats) {
+    // Solo agregar si no se excede el máximo
+    if (selectedSeats.length < maxSeats) {
       onSeatSelect([...selectedSeats, seatData]);
     }
   };
@@ -228,7 +306,9 @@ const ProSeatRenderer = ({
       borderRadius: '4px',
       backgroundColor: stateColors.background,
       color: stateColors.color,
-      cursor: state === 'available' ? 'pointer' : 'not-allowed',
+      cursor: isAdminMode
+        ? (state === 'occupied' ? 'not-allowed' : 'pointer')
+        : ((state === 'available' || state === 'selected') ? 'pointer' : 'not-allowed'),
       opacity: stateColors.opacity || 1,
       transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
       display: 'flex',
@@ -254,6 +334,10 @@ const ProSeatRenderer = ({
       baseStyle.backgroundColor = stateColors.hover || stateColors.background;
       baseStyle.borderColor = color || COLORS.primary.main;
       baseStyle.boxShadow = `0 4px 12px ${color || COLORS.primary.main}30`;
+    } else if (isAdminMode && state === 'blocked' && hovered) {
+      // En modo admin, los asientos bloqueados tienen hover feedback
+      baseStyle.transform = 'scale(1.05)';
+      baseStyle.boxShadow = '0 4px 12px rgba(255, 77, 79, 0.3)';
     }
 
     return baseStyle;
@@ -287,9 +371,9 @@ const ProSeatRenderer = ({
         }
         
         return (
-          <span style={{ 
-            fontSize: `${seatSize.fontSize * 0.7}px`, 
-            fontWeight: '600',
+          <span style={{
+            fontSize: `${seatSize.fontSize * 1.1}px`,
+            fontWeight: '700',
             lineHeight: 1
           }}>
             {seatNumber}
@@ -325,7 +409,7 @@ const ProSeatRenderer = ({
         color: COLORS.neutral.grey500
       },
       blocked: {
-        title: sectionBlocked ? 'Sección bloqueada' : 'Asiento bloqueado',
+        title: isAdminMode ? 'Asiento bloqueado - Click para desbloquear' : (sectionBlocked ? 'Sección bloqueada' : 'Asiento bloqueado'),
         content: sectionBlocked ? 'Esta sección no está disponible' : `${sectionName} - Fila ${getRowNumber(actualRow)}, Asiento ${actualSeat + 1}`,
         color: COLORS.secondary.main
       },
@@ -335,8 +419,8 @@ const ProSeatRenderer = ({
         color: COLORS.primary.main
       },
       available: {
-        title: isPremium ? 'Asiento premium' : `${sectionName} - Fila ${getRowNumber(actualRow)}, Asiento ${actualSeat + 1}`,
-        content: isAdminMode ? (isPremium ? 'Asiento premium' : 'Disponible') : `Precio: ${formattedPrice}${isPremium ? ' (Premium)' : ''}`,
+        title: isAdminMode ? `Click para bloquear - Fila ${getRowNumber(actualRow)}, Asiento ${actualSeat + 1}` : (isPremium ? 'Asiento premium' : `${sectionName} - Fila ${getRowNumber(actualRow)}, Asiento ${actualSeat + 1}`),
+        content: isAdminMode ? (isPremium ? 'Asiento premium disponible' : `${sectionName}`) : `Precio: ${formattedPrice}${isPremium ? ' (Premium)' : ''}`,
         color: isPremium ? COLORS.accent.gold : (color || COLORS.primary.main)
       }
     };
@@ -347,7 +431,11 @@ const ProSeatRenderer = ({
   const renderSeat = (row, seat) => {
     const seatId = getSeatId(row, seat);
     const state = getSeatState(seatId);
-    const isInteractable = state === 'available';
+    // En modo admin, todos los asientos menos ocupados son interactuables
+    // En modo usuario, solo disponibles y seleccionados son interactuables
+    const isInteractable = isAdminMode
+      ? state !== 'occupied'
+      : (state === 'available' || state === 'selected');
     const seatStyle = getSeatStyle(seatId);
     const tooltipInfo = getSeatTooltip(row, seat, seatId);
 
@@ -539,74 +627,79 @@ const ProSeatRenderer = ({
       sectionBlocked={sectionBlocked}
       sectionColor={color}
     >
-      {/* Header de la sección */}
-      <div 
+      {/* Header de la sección - Ahora arriba y centrado */}
+      <div
         className="section-header"
         style={{
           display: 'flex',
-          justifyContent: 'space-between',
+          flexDirection: 'column',
           alignItems: 'center',
-          marginBottom: '8px',
-          paddingBottom: '6px',
-          borderBottom: `1px solid ${COLORS.neutral.grey100}`
+          gap: '4px',
+          marginBottom: '12px',
+          paddingBottom: '8px',
+          borderBottom: `2px solid ${COLORS.neutral.grey100}`,
+          width: '100%'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <div 
+        {/* Nombre de la sección con indicador de color */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div
             className="section-color-indicator"
             style={{
-              width: '10px',
-              height: '10px',
+              width: '12px',
+              height: '12px',
               backgroundColor: sectionBlocked ? COLORS.neutral.grey300 : (color || COLORS.primary.main),
               borderRadius: '50%',
               border: '2px solid white',
               boxShadow: COLORS.shadows.sm
-            }} 
+            }}
           />
-          <span 
+          <span
             className="section-name"
             style={{
-              fontSize: isMobile ? '12px' : '13px',
-              fontWeight: '600',
-              // Detección automática: texto negro para fondos claros, blanco para fondos oscuros
-              color: getSectionLabelColor(color, sectionBlocked)
+              fontSize: `${seatSize.fontSize * 1.6}px`,
+              fontWeight: '700',
+              color: getSectionLabelColor(color, sectionBlocked),
+              textAlign: 'center'
             }}
           >
             {sectionName}
           </span>
         </div>
-        
-        <div 
+
+        {/* Info de dimensiones - Ahora debajo del nombre */}
+        <div
           className="section-info"
           style={{
-            fontSize: isMobile ? '10px' : '11px',
-            // Detección automática: texto negro para fondos claros, blanco para fondos oscuros
+            fontSize: `${seatSize.fontSize * 1.3}px`,
+            fontWeight: '600',
             color: getSectionDimensionColor(color, sectionBlocked),
             backgroundColor: getContrastInfoBackground(color, sectionBlocked),
-            padding: '2px 6px',
-            borderRadius: '8px',
-            border: `1px solid ${getContrastBorderColor(color, sectionBlocked)}`
+            padding: '4px 10px',
+            borderRadius: '12px',
+            border: `1px solid ${getContrastBorderColor(color, sectionBlocked)}`,
+            textAlign: 'center'
           }}
         >
-          {dimensions.displayRows}×{dimensions.displaySeatsPerRow}
+          {dimensions.displayRows} filas × {dimensions.displaySeatsPerRow} asientos
         </div>
       </div>
 
-      {/* Contenedor principal de asientos - Mejorado para secciones laterales */}
-      <div 
+      {/* Contenedor principal de asientos - Optimizado sin padding innecesario */}
+      <div
         className="section-seats-container"
         style={{
           position: 'relative',
-          padding: '4px',
-          width: '100%',
+          padding: '0',
+          width: 'fit-content',
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'flex-start',
-          gap: '1px',
-          backgroundColor: sectionBlocked ? 'rgba(0,0,0,0.02)' : 'transparent',
-          borderRadius: '6px',
-          overflow: 'visible', // Cambiado de 'hidden' a 'visible'
-          minWidth: 'fit-content' // Asegurar que el contenedor se ajuste al contenido
+          alignItems: 'center',
+          gap: isMobile ? '2px' : '3px',
+          backgroundColor: 'transparent',
+          borderRadius: '0',
+          overflow: 'visible',
+          margin: '0 auto'
         }}
       >
         {Array.from({ length: dimensions.displayRows }).map((_, row) => renderRow(row))}

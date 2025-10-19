@@ -191,37 +191,41 @@ const ResponsiveSeatRenderer = ({
 
         {isExpanded && !availability.isFullyBooked && (
           <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #f0f0f0' }}>
-            {section.hasNumberedSeats ? (
-              <SeatRenderer
-                sectionId={section.id}
-                rows={section.rows}
-                seatsPerRow={section.seatsPerRow}
-                price={sectionPrice}
-                color={section.color}
-                name={section.name}
-                selectedSeats={selectedSeats}
-                occupiedSeats={filterOccupiedBySection(section.id)}
-                blockedSeats={filterBlockedBySection(section.id)}
-                sectionBlocked={isSectionBlocked(section.id)}
-                maxSeats={maxSeats}
-                onSeatSelect={onSeatSelect}
-                formatPrice={formatPrice}
-                event={event}
-                calculateSeatPrice={calculateSeatPrice}
-                responsiveMode={true}
-              />
-            ) : (
-              <GeneralAdmissionRenderer
-                section={section}
-                sectionBlocked={isSectionBlocked(section.id)}
-                occupiedSeats={filterOccupiedBySection(section.id)}
-                formatPrice={formatPrice}
-                selectedSeats={selectedSeats}
-                onSeatSelect={onSeatSelect}
-                maxSeats={maxSeats}
-                event={event}
-              />
-            )}
+            <div style={{ width: '100%', overflow: 'auto' }}>
+              {section.hasNumberedSeats ? (
+                <SeatRenderer
+                  sectionId={section.id}
+                  rows={section.rows}
+                  seatsPerRow={section.seatsPerRow}
+                  price={sectionPrice}
+                  color={section.color}
+                  name={section.name}
+                  selectedSeats={selectedSeats}
+                  occupiedSeats={filterOccupiedBySection(section.id)}
+                  blockedSeats={filterBlockedBySection(section.id)}
+                  sectionBlocked={isSectionBlocked(section.id)}
+                  maxSeats={maxSeats}
+                  onSeatSelect={onSeatSelect}
+                  formatPrice={formatPrice}
+                  event={event}
+                  calculateSeatPrice={calculateSeatPrice}
+                  responsiveMode={true}
+                  isMobile={deviceInfo.isMobile}
+                  isTablet={deviceInfo.isTablet}
+                />
+              ) : (
+                <GeneralAdmissionRenderer
+                  section={section}
+                  sectionBlocked={isSectionBlocked(section.id)}
+                  occupiedSeats={filterOccupiedBySection(section.id)}
+                  formatPrice={formatPrice}
+                  selectedSeats={selectedSeats}
+                  onSeatSelect={onSeatSelect}
+                  maxSeats={maxSeats}
+                  event={event}
+                />
+              )}
+            </div>
           </div>
         )}
       </Card>

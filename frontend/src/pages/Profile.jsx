@@ -273,17 +273,17 @@ const Profile = () => {
         marginBottom: '12px',
         backgroundColor: COLORS.neutral.white
       }}>
-        <Row gutter={[16, 8]} align="middle">
-          <Col span={18}>
+        <Row gutter={[8, 8]} align="middle">
+          <Col xs={24} sm={18}>
             <Space direction="vertical" size={4} style={{ width: '100%' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                 <Text strong style={{ color: COLORS.neutral.darker }}>
                   ID: {formatTicketId(ticket._id)}
                 </Text>
                 {getTicketStatusTag(ticket.status)}
               </div>
-              
-              <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                 <Tag color="blue" icon={<TagOutlined />}>
                   {ticket.ticketType}
                 </Tag>
@@ -296,36 +296,38 @@ const Profile = () => {
               </div>
 
               {renderSeatsList(ticket.selectedSeats)}
-              
+
               <Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
                 Comprado el {dayjs(ticket.purchasedAt).format('DD/MM/YYYY HH:mm')}
               </Text>
             </Space>
           </Col>
-          
-          <Col span={6} style={{ textAlign: 'right' }}>
-            <Space direction="vertical" size={8}>
+
+          <Col xs={24} sm={6} style={{ textAlign: isMobile ? 'left' : 'right' }}>
+            <Space direction={isMobile ? 'horizontal' : 'vertical'} size={8} style={{ width: '100%' }}>
               {ticket.status === 'paid' && (
-                <Button 
-                  type="text" 
+                <Button
+                  type="text"
                   size="small"
-                  icon={<QrcodeOutlined />} 
+                  icon={<QrcodeOutlined />}
                   onClick={() => handleShowQR(ticket)}
-                  style={{ 
+                  style={{
                     color: COLORS.primary.main,
-                    borderColor: COLORS.primary.main
+                    borderColor: COLORS.primary.main,
+                    width: isMobile ? 'auto' : '100%'
                   }}
                 >
-                  Ver QR
+                  {isMobile ? 'QR' : 'Ver QR'}
                 </Button>
               )}
               {canCancel && (
-                <Button 
-                  type="text" 
-                  danger 
+                <Button
+                  type="text"
+                  danger
                   size="small"
                   icon={<DeleteOutlined />}
                   onClick={() => handleCancelTicket(ticket)}
+                  style={{ width: isMobile ? 'auto' : '100%' }}
                 >
                   Cancelar
                 </Button>
@@ -340,10 +342,9 @@ const Profile = () => {
   const renderEventGroup = (eventId, eventGroup) => {
     const { event, tickets: eventTickets } = eventGroup;
     const isExpired = event.date && dayjs(event.date).isBefore(dayjs());
-    
+
     const totalTickets = eventTickets.reduce((sum, ticket) => sum + ticket.quantity, 0);
     const totalPrice = eventTickets.reduce((sum, ticket) => sum + (ticket.price * ticket.quantity), 0);
-    const uniqueTypes = [...new Set(eventTickets.map(t => t.ticketType))];
 
     return (
       <Card 
@@ -427,18 +428,6 @@ const Profile = () => {
               </Space>
             </div>
           </div>
-        </div>
-
-        {/* Resumen de tipos de entrada */}
-        <div style={{ marginBottom: "16px" }}>
-          <Text style={{ color: COLORS.neutral.grey4, fontSize: "13px", marginRight: "8px" }}>
-            Tipos de entrada:
-          </Text>
-          {uniqueTypes.map(type => (
-            <Tag key={type} size="small" style={{ margin: "2px" }}>
-              {type}
-            </Tag>
-          ))}
         </div>
 
         {/* Collapse con detalles de cada ticket */}
@@ -607,11 +596,12 @@ const Profile = () => {
                 >
                   <Avatar
                     size={120}
-                    src={user.avatar || "/avatars/avatar1.png"}
-                    icon={<UserOutlined />}
+                    src={user.avatar}
+                    icon={!user.avatar && <UserOutlined />}
                     style={{
                       border: `4px solid ${COLORS.neutral.white}`,
                       boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+                      backgroundColor: !user.avatar ? COLORS.primary.light : undefined
                     }}
                   />
 
@@ -677,7 +667,7 @@ const Profile = () => {
                 title={
                   <div style={{ display: "flex", alignItems: "center" }}>
                     <TagOutlined style={{ color: COLORS.primary.main, marginRight: "8px" }} />
-                    <span style={{ color: COLORS.neutral.darker }}>Mis Entradas</span>
+                    <span style={{ color: COLORS.neutral.darker }}>Mis entradas</span>
                   </div>
                 }
                 data-cy="tickets-section"

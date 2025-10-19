@@ -1,24 +1,22 @@
 import React, { useState, useEffect } from "react";
-import { 
-  Layout, 
-  Typography, 
-  Button, 
-  Card, 
-  Row, 
-  Col, 
-  Space, 
-  Avatar, 
-  Divider
+import {
+  Layout,
+  Typography,
+  Button,
+  Card,
+  Row,
+  Col,
+  Space,
+  Avatar
 } from "antd";
 import {
-  useNavigate 
+  useNavigate
 } from "react-router-dom";
-import { 
-  UserOutlined, 
-  GithubOutlined, 
-  MailOutlined, 
-  HomeOutlined, 
-  TeamOutlined,
+import {
+  UserOutlined,
+  GithubOutlined,
+  MailOutlined,
+  HomeOutlined,
   IdcardOutlined
 } from "@ant-design/icons";
 

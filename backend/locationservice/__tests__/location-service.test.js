@@ -163,7 +163,7 @@ describe("Location Service - Integration tests", () => {
       const fakeLocationId = "507f1f77bcf86cd799439011";
       const response = await request(app).get(`/locations/${fakeLocationId}`);
       expect(response.status).toBe(404);
-      expect(response.body).toHaveProperty("error", "Location not found");
+      expect(response.body).toHaveProperty("error", "Ubicación no encontrada");
     });
   });
 
@@ -243,7 +243,7 @@ describe("Location Service - Integration tests", () => {
       const fakeSeatMapId = "seatmap-noexiste";
       const response = await request(app).get(`/seatmaps/${fakeSeatMapId}`);
       expect(response.status).toBe(404);
-      expect(response.body).toHaveProperty("error", "SeatMap not found");
+      expect(response.body).toHaveProperty("error", "Mapa de asientos no encontrado");
     });
   });
 

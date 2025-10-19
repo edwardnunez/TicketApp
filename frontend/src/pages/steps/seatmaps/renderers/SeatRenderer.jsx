@@ -172,13 +172,19 @@ const SeatRenderer = ({
 
   const handleSeatClick = (row, seat) => {
     const seatId = getSeatId(row, seat);
-    
+
+    // Permitir deseleccionar asientos ya seleccionados
+    if (isSeatSelected(seatId)) {
+      onSeatSelect(selectedSeats.filter(s => s.id !== seatId));
+      return;
+    }
+
     // No permitir interacción si el asiento está ocupado, bloqueado, o la sección está bloqueada
     if (isSeatOccupied(seatId) || isSeatBlocked(seatId) || sectionBlocked) return;
 
     const dimensions = getSectionDimensions();
     let actualRow, actualSeat;
-    
+
     if (dimensions.isInverted) {
       // Para secciones laterales: usar las coordenadas invertidas
       actualRow = seat;
@@ -199,9 +205,8 @@ const SeatRenderer = ({
       price: seatPrice
     };
 
-    if (isSeatSelected(seatId)) {
-      onSeatSelect(selectedSeats.filter(s => s.id !== seatId));
-    } else if (selectedSeats.length < maxSeats) {
+    // Solo agregar si no se excede el máximo
+    if (selectedSeats.length < maxSeats) {
       onSeatSelect([...selectedSeats, seatData]);
     }
   };
@@ -369,7 +374,7 @@ const SeatRenderer = ({
     const occupied = isSeatOccupied(seatId);
     const blocked = isSeatBlocked(seatId);
     const selected = isSeatSelected(seatId);
-    const isInteractable = !occupied && !blocked && !sectionBlocked;
+    const isInteractable = (!occupied && !blocked && !sectionBlocked) || selected;
     const seatStyle = getSeatStyle(seatId);
     const tooltipInfo = getSeatTooltip(row, seat, seatId);
     const currentSeatSize = seatSize;
@@ -582,26 +587,8 @@ const SeatRenderer = ({
     return seatTotalWidth + labelWidth + 32; // 32px de padding extra
   };
 
-  // Función para calcular el tamaño de asiento adaptativo para gradas
-  const getAdaptiveSeatSize = () => {
-    const baseSize = getSeatSize();
-    
-    // Para gradas, hacer los asientos más pequeños si hay muchas filas
-    if (rows > 15) {
-      return {
-        ...baseSize,
-        width: Math.max(baseSize.width * 0.8, 16),
-        height: Math.max(baseSize.height * 0.8, 16),
-        fontSize: Math.max(baseSize.fontSize * 0.8, 8)
-      };
-    }
-    
-    return baseSize;
-  };
-
   const containerWidth = getContainerWidth();
   const maxWidth = getMaxWidth();
-  const adaptiveSeatSize = getAdaptiveSeatSize();
   const dimensions = getSectionDimensions();
 
   return (
@@ -647,16 +634,17 @@ const SeatRenderer = ({
             boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
           }} />
           <span style={{
-            fontSize: '14px',
-            fontWeight: '600',
+            fontSize: `${seatSize.fontSize * 1.5}px`,
+            fontWeight: '700',
             color: sectionBlocked ? '#9CA3AF' : (COLORS?.neutral?.darker || '#1F2937')
           }}>
             {sectionName}
           </span>
         </div>
-        
+
         <div style={{
-          fontSize: '12px',
+          fontSize: `${seatSize.fontSize * 1.5}px`,
+          fontWeight: '700',
           color: sectionBlocked ? '#9CA3AF' : (COLORS?.neutral?.grey4 || '#6B7280'),
           backgroundColor: sectionBlocked ? '#F3F4F6' : '#F9FAFB',
           padding: '2px 8px',
