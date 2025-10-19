@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Typography, Button, Space } from 'antd';
+import { Typography, Button, Space, Collapse } from 'antd';
 import {
   FullscreenOutlined,
   CompressOutlined,
   LockOutlined,
-  UnlockOutlined
+  UnlockOutlined,
+  DownOutlined
 } from '@ant-design/icons';
 import { COLORS } from '../../components/colorscheme';
 import MainSeatMapContainer from '../steps/seatmaps/containers/MainSeatMapContainer';
@@ -12,6 +13,7 @@ import '../steps/seatmaps/styles/SeatMapAnimations.css';
 import '../steps/seatmaps/styles/SeatMapLayouts.css';
 
 const { Title, Text } = Typography;
+const { Panel } = Collapse;
 
 const AdminSeatMapRenderer = ({
   seatMapData,
@@ -23,6 +25,7 @@ const AdminSeatMapRenderer = ({
   onCapacityChange
 }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showSectionControls, setShowSectionControls] = useState(true);
   const containerRef = useRef(null);
 
   // Función para manejar clic en asiento (adaptada para administración)
@@ -57,17 +60,17 @@ const AdminSeatMapRenderer = ({
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
     };
-    
+
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
   if (!seatMapData) {
     return (
-      <div style={{ 
-        textAlign: 'center', 
+      <div style={{
+        textAlign: 'center',
         padding: '40px',
-        color: COLORS.neutral.grey4 
+        color: COLORS.neutral.grey4
       }}>
         <Text>No hay datos del mapa de asientos disponibles</Text>
       </div>
@@ -84,29 +87,26 @@ const AdminSeatMapRenderer = ({
         position: 'relative',
         width: '100%',
         height: isFullscreen ? '100vh' : '800px',
-        maxHeight: isFullscreen ? '100vh' : '800px',
         backgroundColor: COLORS.neutral.grey1,
         borderRadius: '12px',
         overflow: 'hidden',
         border: `2px solid ${COLORS.neutral.grey2}`,
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+        display: 'flex',
+        flexDirection: 'column'
       }}
     >
       {/* Header con controles */}
       <div
         style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 100,
           backgroundColor: 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(10px)',
           padding: '12px 16px',
           borderBottom: `1px solid ${COLORS.neutral.grey2}`,
           display: 'flex',
           justifyContent: 'space-between',
-          alignItems: 'center'
+          alignItems: 'center',
+          flexShrink: 0
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -114,10 +114,10 @@ const AdminSeatMapRenderer = ({
             {name} - Modo Administración
           </Title>
           <Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
-            Haz clic en asientos o usa los botones para bloquear secciones completas
+            Haz clic en asientos o usa los botones para bloquear secciones
           </Text>
         </div>
-        
+
         <Space>
           <Button
             size="small"
@@ -129,75 +129,72 @@ const AdminSeatMapRenderer = ({
         </Space>
       </div>
 
-      {/* Controles de sección */}
-      <div
+      {/* Controles de sección - Colapsables */}
+      <Collapse
+        defaultActiveKey={['1']}
+        ghost
         style={{
-          position: 'absolute',
-          top: '60px',
-          left: 0,
-          right: 0,
-          zIndex: 90,
           backgroundColor: 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(10px)',
-          padding: '12px 16px',
           borderBottom: `1px solid ${COLORS.neutral.grey2}`,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '8px'
+          flexShrink: 0
         }}
+        expandIconPosition="end"
       >
-        <Text style={{ color: COLORS.neutral.grey6, fontSize: '12px', fontWeight: 'bold' }}>
-          Control de Secciones:
-        </Text>
-        <Space wrap size="small">
-          {seatMapData.sections.map(section => (
-            <Button
-              key={section.id}
-              size="small"
-              type={blockedSections.includes(section.id) ? "primary" : "default"}
-              danger={blockedSections.includes(section.id)}
-              icon={blockedSections.includes(section.id) ? <UnlockOutlined /> : <LockOutlined />}
-              onClick={() => handleSectionClick(section.id)}
-              style={{
-                borderColor: blockedSections.includes(section.id) ? '#ff4d4f' : section.color,
-                color: blockedSections.includes(section.id) ? '#fff' : '#fff',
-                ...(blockedSections.includes(section.id) ? {} : {
-                  backgroundColor: section.color
-                })
-              }}
-            >
-              {section.name}
-              {blockedSections.includes(section.id) && ' (Bloqueada)'}
-            </Button>
-          ))}
-        </Space>
-      </div>
+        <Panel
+          header={
+            <Text style={{ color: COLORS.neutral.grey6, fontSize: '13px', fontWeight: 'bold' }}>
+              Control de secciones ({blockedSections.length} bloqueadas)
+            </Text>
+          }
+          key="1"
+        >
+          <Space wrap size="small" style={{ padding: '0 16px 12px 16px' }}>
+            {seatMapData.sections.map(section => (
+              <Button
+                key={section.id}
+                size="small"
+                type={blockedSections.includes(section.id) ? "primary" : "default"}
+                danger={blockedSections.includes(section.id)}
+                icon={blockedSections.includes(section.id) ? <UnlockOutlined /> : <LockOutlined />}
+                onClick={() => handleSectionClick(section.id)}
+                style={{
+                  borderColor: blockedSections.includes(section.id) ? '#ff4d4f' : section.color,
+                  color: blockedSections.includes(section.id) ? '#fff' : '#fff',
+                  ...(blockedSections.includes(section.id) ? {} : {
+                    backgroundColor: section.color
+                  })
+                }}
+              >
+                {section.name}
+                {blockedSections.includes(section.id) && ' (Bloqueada)'}
+              </Button>
+            ))}
+          </Space>
+        </Panel>
+      </Collapse>
 
-
-      {/* Contenedor principal del mapa - Usar exactamente el mismo renderizador que los compradores */}
+      {/* Contenedor principal del mapa */}
       <div
         className="seatmap-content"
         style={{
-          position: 'absolute',
-          top: '140px', // Ajustado para dar espacio a los controles de sección
-          left: 0,
-          right: 0,
-          bottom: 0,
-          overflow: 'hidden'
+          position: 'relative',
+          flex: 1,
+          overflow: 'hidden',
+          display: 'flex'
         }}
       >
         <MainSeatMapContainer
           seatMapData={seatMapData}
-          selectedSeats={[]} // No hay asientos seleccionados en modo admin
+          selectedSeats={[]}
           onSeatSelect={handleAdminSeatClick}
-          maxSeats={999} // Sin límite en modo admin
-          occupiedSeats={[]} // No hay asientos ocupados en modo admin
-          blockedSeats={blockedSeats.filter(id => id && typeof id === 'string')} // Los IDs ya están en el formato correcto
+          maxSeats={999}
+          occupiedSeats={[]}
+          blockedSeats={blockedSeats.filter(id => id && typeof id === 'string')}
           blockedSections={blockedSections}
-          formatPrice={() => ''} // Sin precio en modo admin
+          formatPrice={() => ''}
           event={null}
           calculateSeatPrice={null}
-          isAdminMode={true} // Indicar que es modo admin
+          isAdminMode={true}
         />
       </div>
 
@@ -206,13 +203,14 @@ const AdminSeatMapRenderer = ({
         style={{
           position: 'absolute',
           bottom: '16px',
-          right: '16px',
+          left: '16px',
           backgroundColor: 'rgba(255, 255, 255, 0.95)',
           padding: '8px 12px',
           borderRadius: '8px',
           fontSize: '12px',
           color: COLORS.neutral.grey6,
-          zIndex: 50
+          zIndex: 50,
+          backdropFilter: 'blur(10px)'
         }}
       >
         <div>Secciones bloqueadas: {blockedSections.length} de {seatMapData.sections.length}</div>

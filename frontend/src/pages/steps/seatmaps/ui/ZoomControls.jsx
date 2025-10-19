@@ -60,13 +60,9 @@ const ZoomControls = ({
   ];
 
   return (
-    <div 
+    <div
       className="zoom-controls"
       style={{
-        position: 'absolute',
-        top: '120px', /* Mover más abajo para evitar superposición con header */
-        right: '16px',
-        zIndex: 1000,
         display: 'flex',
         flexDirection: 'column',
         gap: '8px'

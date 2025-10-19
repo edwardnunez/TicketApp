@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { 
-  Card, 
-  Button, 
-  Typography, 
-  Alert, 
-  Spin, 
-  Space, 
-  Switch, 
+import {
+  Card,
+  Button,
+  Typography,
+  Alert,
+  Spin,
+  Space,
   message,
   Modal,
   Divider,
@@ -15,14 +14,12 @@ import {
   Row,
   Col,
 } from 'antd';
-import { 
-  SaveOutlined, 
-  ArrowLeftOutlined, 
-  EyeOutlined,
+import {
+  SaveOutlined,
+  ArrowLeftOutlined,
   TeamOutlined
 } from '@ant-design/icons';
 import { COLORS } from '../../components/colorscheme';
-import GenericSeatRenderer from '../steps/seatmaps/renderers/GenericSeatRenderer';
 import AdminSeatMapRenderer from './AdminSeatMapRenderer';
 import axios from 'axios';
 
@@ -43,7 +40,6 @@ const EventSeatMapEditor = () => {
   const [blockedSeats, setBlockedSeats] = useState([]);
   const [blockedSections, setBlockedSections] = useState([]);
   const [generalAdmissionCapacities, setGeneralAdmissionCapacities] = useState({});
-  const [previewMode, setPreviewMode] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -57,7 +53,7 @@ const EventSeatMapEditor = () => {
   }, []);
 
   useEffect(() => {
-    
+
     if (!eventData) {
       message.error('No se encontraron datos del evento');
       navigate('/admin');
@@ -75,7 +71,7 @@ const EventSeatMapEditor = () => {
   }, [eventData?.seatMapConfiguration]);
 
   const requiresSeatMap = useCallback(() => {
-    
+
     if (!eventData?.type) return false;
     const seatMapTypes = ['football', 'cinema', 'concert', 'theater'];
     const requires = seatMapTypes.includes(eventData.type.toLowerCase());
@@ -88,7 +84,7 @@ const EventSeatMapEditor = () => {
 
       console.log('Loading location data for:', eventData.location);
       setLoading(true);
-      
+
       try {
         const response = await axios.get(`${gatewayUrl}/locations/${eventData.location}`);
         console.log('Location data loaded:', response.data);
@@ -107,9 +103,9 @@ const EventSeatMapEditor = () => {
   useEffect(() => {
     const loadSeatMapData = async () => {
       if (!requiresSeatMap() || !locationData?.seatMapId) {
-        console.log('Not loading seatmap:', { 
-          requiresSeatMap: requiresSeatMap(), 
-          seatMapId: locationData?.seatMapId 
+        console.log('Not loading seatmap:', {
+          requiresSeatMap: requiresSeatMap(),
+          seatMapId: locationData?.seatMapId
         });
         return;
       }
@@ -122,7 +118,7 @@ const EventSeatMapEditor = () => {
         const response = await axios.get(`${gatewayUrl}/seatmaps/${locationData.seatMapId}`);
         console.log('Seatmap data loaded:', response.data);
         setSeatMapData(response.data);
-        
+
         const initialCapacities = {};
         response.data.sections.forEach(section => {
           if (!section.hasNumberedSeats && section.totalCapacity) {
@@ -130,7 +126,7 @@ const EventSeatMapEditor = () => {
           }
         });
         setGeneralAdmissionCapacities(initialCapacities);
-        
+
       } catch (err) {
         console.error('Error loading seatmap:', err);
         setError('No se pudo cargar el mapa de asientos');
@@ -162,7 +158,7 @@ const EventSeatMapEditor = () => {
   // Move getAllSeatsInSection BEFORE handleSectionToggle
   const getAllSeatsInSection = useCallback((sectionId) => {
     if (!seatMapData) return [];
-    
+
     const section = seatMapData.sections.find(s => s.id === sectionId);
     if (!section || !section.hasNumberedSeats) return [];
 
@@ -183,7 +179,7 @@ const EventSeatMapEditor = () => {
       if (prev.includes(sectionId)) {
         if (section.hasNumberedSeats) {
           const sectionSeats = getAllSeatsInSection(sectionId);
-          setBlockedSeats(currentBlocked => 
+          setBlockedSeats(currentBlocked =>
             currentBlocked.filter(seatId => !sectionSeats.includes(seatId))
           );
         } else {
@@ -196,7 +192,7 @@ const EventSeatMapEditor = () => {
       } else {
         if (section.hasNumberedSeats) {
           const sectionSeats = getAllSeatsInSection(sectionId);
-          setBlockedSeats(currentBlocked => 
+          setBlockedSeats(currentBlocked =>
             [...new Set([...currentBlocked, ...sectionSeats])]
           );
         } else {
@@ -237,7 +233,7 @@ const EventSeatMapEditor = () => {
         await axios.post(`${gatewayUrl}/events`, eventPayload);
         message.success('Evento creado exitosamente');
       }
-      
+
       navigate('/admin');
     } catch (err) {
       console.error('Error saving event:', err);
@@ -261,13 +257,13 @@ const EventSeatMapEditor = () => {
 
   const getBlockedSeatsCount = () => {
     let blockedCount = blockedSeats.length;
-    
+
     seatMapData?.sections.forEach(section => {
       if (!section.hasNumberedSeats && blockedSections.includes(section.id)) {
         blockedCount += (section.totalCapacity || 0);
       }
     });
-    
+
     return blockedCount;
   };
 
@@ -294,8 +290,8 @@ const EventSeatMapEditor = () => {
             <Text>El evento se creará automáticamente con la configuración de tickets estándar.</Text>
             <div style={{ marginTop: '24px' }}>
               <Space>
-                <Button 
-                  icon={<ArrowLeftOutlined />} 
+                <Button
+                  icon={<ArrowLeftOutlined />}
                   onClick={() => navigate(-1)}
                 >
                   Volver
@@ -305,7 +301,7 @@ const EventSeatMapEditor = () => {
                   icon={<SaveOutlined />}
                   loading={saving}
                   onClick={handleSaveEvent}
-                  style={{ 
+                  style={{
                     backgroundColor: COLORS?.primary?.main || "#1890ff",
                     borderColor: COLORS?.primary?.main || "#1890ff"
                   }}
@@ -347,25 +343,19 @@ const EventSeatMapEditor = () => {
               )}
             </div>
             <Space>
-              <Button 
-                icon={<ArrowLeftOutlined />} 
+              <Button
+                icon={<ArrowLeftOutlined />}
                 onClick={() => navigate(-1)}
               >
                 Volver
               </Button>
-              <Switch
-                checkedChildren={<EyeOutlined />}
-                unCheckedChildren="Editar"
-                checked={previewMode}
-                onChange={setPreviewMode}
-              />
               <Button
                 type="primary"
                 icon={<SaveOutlined />}
                 loading={saving}
                 onClick={() => setShowConfirmModal(true)}
                 disabled={!seatMapData && requiresSeatMap()}
-                style={{ 
+                style={{
                   backgroundColor: COLORS?.primary?.main || "#1890ff",
                   borderColor: COLORS?.primary?.main || "#1890ff"
                 }}
@@ -413,13 +403,13 @@ const EventSeatMapEditor = () => {
         )}
 
         {/* Instrucciones */}
-        {!previewMode && seatMapData && (
+        {seatMapData && (
           <Alert
-            message={isConcertVenue() ? "Modo de edición activo - Concierto" : "Modo de edición activo"}
+            message={isConcertVenue() ? "Modo de edición - Concierto" : "Modo de edición"}
             description={
-              isConcertVenue() 
-                ? "Ajusta las capacidades de entrada general, bloquea secciones completas, o haz clic en asientos numerados para bloquearlos individualmente."
-                : "Haz clic en los asientos para bloquearlos/desbloquearlos individualmente, o usa los controles de sección arriba para bloquear secciones completas."
+              isConcertVenue()
+                ? "Ajusta las capacidades de entrada general, bloquea secciones completas, o haz clic en asientos numerados para bloquearlos individualmente. Usa los controles de zoom para navegar por el mapa."
+                : "Haz clic en los asientos para bloquearlos/desbloquearlos individualmente, o usa los controles de sección para bloquear secciones completas. Usa los controles de zoom para navegar por el mapa."
             }
             type="info"
             showIcon
@@ -452,29 +442,15 @@ const EventSeatMapEditor = () => {
             />
           ) : seatMapData ? (
             <div style={{ display: 'flex', justifyContent: 'center' }}>
-              {previewMode ? (
-                <GenericSeatRenderer
-                  seatMapData={seatMapData}
-                  selectedSeats={[]}
-                  onSeatSelect={() => {}}
-                  maxSeats={0}
-                  occupiedSeats={[]}
-                  blockedSeats={blockedSeats}
-                  blockedSections={blockedSections}
-                  generalAdmissionCapacities={generalAdmissionCapacities}
-                  formatPrice={(price) => `${price}€`}
-                />
-              ) : (
-                <AdminSeatMapRenderer
-                  seatMapData={seatMapData}
-                  blockedSeats={blockedSeats}
-                  blockedSections={blockedSections}
-                  generalAdmissionCapacities={generalAdmissionCapacities}
-                  onSeatToggle={handleSeatToggle}
-                  onSectionToggle={handleSectionToggle}
-                  onCapacityChange={handleCapacityChange}
-                />
-              )}
+              <AdminSeatMapRenderer
+                seatMapData={seatMapData}
+                blockedSeats={blockedSeats}
+                blockedSections={blockedSections}
+                generalAdmissionCapacities={generalAdmissionCapacities}
+                onSeatToggle={handleSeatToggle}
+                onSectionToggle={handleSectionToggle}
+                onCapacityChange={handleCapacityChange}
+              />
             </div>
           ) : requiresSeatMap() ? (
             <div style={{ textAlign: 'center', padding: '40px' }}>
@@ -488,12 +464,12 @@ const EventSeatMapEditor = () => {
 
         {/* Modal de confirmación */}
         <Modal
-          title="Confirmar Creación del Evento"
+          title="Confirmar creación del evento"
           open={showConfirmModal}
           onOk={handleSaveEvent}
           onCancel={() => setShowConfirmModal(false)}
           confirmLoading={saving}
-          okText="Crear Evento"
+          okText="Crear evento"
           cancelText="Cancelar"
           okButtonProps={{
             style: {
@@ -541,7 +517,7 @@ const EventSeatMapEditor = () => {
               <Alert
                 message="Configuración de bloqueos aplicada"
                 description={
-                  isConcertVenue() 
+                  isConcertVenue()
                     ? "Las secciones y entradas bloqueadas no estarán disponibles para la venta"
                     : "Los asientos y secciones bloqueados no estarán disponibles para la venta"
                 }
