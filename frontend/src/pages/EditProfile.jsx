@@ -375,17 +375,31 @@ const EditProfile = () => {
                   {showAvatarSelection && (
                     <div style={{ textAlign: "center", marginBottom: "24px" }}>
                       <Radio.Group value={selectedAvatar} onChange={handleAvatarChange}>
-                        <Space size={12}>
+                        <Space size={12} wrap>
+                          {/* Opción "Ninguno" */}
+                          <Radio value={null} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                            <Avatar
+                              size={60}
+                              icon={<UserOutlined />}
+                              style={{
+                                border: !selectedAvatar ? `2px solid ${COLORS.primary.main}` : "1px solid " + COLORS.neutral.grey3,
+                                boxShadow: !selectedAvatar ? `0 0 0 2px ${COLORS.primary.light}` : "none",
+                                transition: "all 0.2s ease",
+                                backgroundColor: COLORS.primary.light
+                              }}
+                            />
+                          </Radio>
+
                           {avatars.map((avatar, index) => (
                             <Radio key={index} value={avatar} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                              <Avatar 
-                                size={60} 
-                                src={avatar} 
+                              <Avatar
+                                size={60}
+                                src={avatar}
                                 style={{
-                                  border: selectedAvatar === avatar ? `2px solid ${COLORS.primary.main}` : "none",
+                                  border: selectedAvatar === avatar ? `2px solid ${COLORS.primary.main}` : "1px solid " + COLORS.neutral.grey3,
                                   boxShadow: selectedAvatar === avatar ? `0 0 0 2px ${COLORS.primary.light}` : "none",
                                   transition: "all 0.2s ease"
-                                }} 
+                                }}
                               />
                             </Radio>
                           ))}
