@@ -202,8 +202,8 @@ app.post("/event", largePayloadMiddleware, largeUrlEncodedMiddleware, async (req
 
     // Verificar si faltan campos obligatorios
     if (!name || !date || !location || !type) {
-      return res.status(400).json({ 
-        error: "Missing required fields: name, date, location, type",
+      return res.status(400).json({
+        error: "Faltan campos requeridos: nombre, fecha, ubicación, tipo",
         received: req.body
       });
     }
@@ -252,29 +252,29 @@ app.post("/event", largePayloadMiddleware, largeUrlEncodedMiddleware, async (req
     if (usesSectionPricing && sectionPricing && sectionPricing.length > 0) {
       for (const section of sectionPricing) {
         if (!section.sectionId || !section.sectionName || section.defaultPrice === undefined) {
-          return res.status(400).json({ 
-            error: "Invalid section pricing data. All sections must have sectionId, sectionName, and defaultPrice" 
+          return res.status(400).json({
+            error: "Datos de precios de sección inválidos. Todas las secciones deben tener sectionId, sectionName y defaultPrice"
           });
         }
-        
+
         if (section.defaultPrice < 0) {
-          return res.status(400).json({ 
-            error: `Default price for section ${section.sectionName} cannot be negative` 
+          return res.status(400).json({
+            error: `El precio predeterminado para la sección ${section.sectionName} no puede ser negativo`
           });
         }
-        
+
         // Validar rowPricing si existe
         if (section.rowPricing && Array.isArray(section.rowPricing)) {
           for (const rowPrice of section.rowPricing) {
             if (rowPrice.row === undefined || rowPrice.price === undefined) {
-              return res.status(400).json({ 
-                error: `Invalid row pricing for section ${section.sectionName}. Row and price are required` 
+              return res.status(400).json({
+                error: `Precios de fila inválidos para la sección ${section.sectionName}. Se requiere fila y precio`
               });
             }
-            
+
             if (rowPrice.price < 0) {
-              return res.status(400).json({ 
-                error: `Row ${rowPrice.row} price in section ${section.sectionName} cannot be negative` 
+              return res.status(400).json({
+                error: `El precio de la fila ${rowPrice.row} en la sección ${section.sectionName} no puede ser negativo`
               });
             }
           }
@@ -374,7 +374,7 @@ app.post("/event", largePayloadMiddleware, largeUrlEncodedMiddleware, async (req
     res.status(201).json(eventObj);
   } catch (error) {
     console.error("Error creating event:", error);
-    res.status(500).json({ error: "Internal Server Error", details: error.message });
+    res.status(500).json({ error: "Error interno del servidor", details: error.message });
   }
 });
 
@@ -390,7 +390,7 @@ app.patch("/events/:eventId/image", largePayloadMiddleware, largeUrlEncodedMiddl
     const { eventId } = req.params;
     
     if (!req.file) {
-      return res.status(400).json({ error: "No image file provided" });
+      return res.status(400).json({ error: "No se proporcionó archivo de imagen" });
     }
 
     // Convertir buffer a base64
@@ -416,17 +416,17 @@ app.patch("/events/:eventId/image", largePayloadMiddleware, largeUrlEncodedMiddl
     ).populate('location');
 
     if (!updatedEvent) {
-      return res.status(404).json({ error: "Event not found" });
+      return res.status(404).json({ error: "Evento no encontrado" });
     }
 
-    res.json({ 
+    res.json({
       ...updatedEvent.toObject(),
       imageUrl: updatedEvent.getImageDataUrl(),
       hasCustomImage: true
     });
   } catch (error) {
     console.error("Error updating event image:", error);
-    res.status(500).json({ error: "Internal Server Error", details: error.message });
+    res.status(500).json({ error: "Error interno del servidor", details: error.message });
   }
 });
 
@@ -442,11 +442,11 @@ app.get("/events/:eventId/image", async (req, res) => {
     
     const event = await EventModel.findById(eventId);
     if (!event) {
-      return res.status(404).json({ error: "Event not found" });
+      return res.status(404).json({ error: "Evento no encontrado" });
     }
 
     if (!event.hasImage()) {
-      return res.status(404).json({ error: "Event has no custom image" });
+      return res.status(404).json({ error: "El evento no tiene imagen personalizada" });
     }
 
     // Devolver la imagen como data URL
@@ -460,7 +460,7 @@ app.get("/events/:eventId/image", async (req, res) => {
 
   } catch (error) {
     console.error("Error fetching event image:", error);
-    res.status(500).json({ error: "Internal Server Error", details: error.message });
+    res.status(500).json({ error: "Error interno del servidor", details: error.message });
   }
 });
 
@@ -527,7 +527,7 @@ app.get("/events", stateService.updateStatesMiddleware.bind(stateService), async
     res.status(200).json(eventsWithLocations);
   } catch (error) {
     console.error("Error fetching events:", error);
-    res.status(500).json({ error: "Internal Server Error", details: error.message });
+    res.status(500).json({ error: "Error interno del servidor", details: error.message });
   }
 });
 
@@ -540,7 +540,7 @@ app.get("/events", stateService.updateStatesMiddleware.bind(stateService), async
 app.get("/events/:eventId", stateService.updateStatesMiddleware.bind(stateService), async (req, res) => {
   try {
     const event = await EventModel.findById(req.params.eventId);
-    if (!event) return res.status(404).json({ error: "Event not found" });
+    if (!event) return res.status(404).json({ error: "Evento no encontrado" });
 
     // Obtener ubicación de forma tolerante a fallos para evitar 500 si el servicio externo falla
     let location = null;
@@ -609,7 +609,7 @@ app.get("/events/:eventId", stateService.updateStatesMiddleware.bind(stateServic
     res.status(200).json(eventObj);
   } catch (error) {
     console.error("Error fetching event details:", error);
-    res.status(500).json({ error: "Internal Server Error", details: error.message });
+    res.status(500).json({ error: "Error interno del servidor", details: error.message });
   }
 });
 
@@ -625,9 +625,9 @@ app.get("/events/:eventId", stateService.updateStatesMiddleware.bind(stateServic
 app.get("/events/:eventId/seat-price/:sectionId/:row/:seat", async (req, res) => {
   try {
     const { eventId, sectionId, row, seat } = req.params;
-    
+
     const event = await EventModel.findById(eventId);
-    if (!event) return res.status(404).json({ error: "Event not found" });
+    if (!event) return res.status(404).json({ error: "Evento no encontrado" });
 
     const seatId = `${sectionId}-${parseInt(row) + 1}-${parseInt(seat) + 1}`;
     const price = event.getSeatPrice(sectionId, parseInt(row), parseInt(seat));
@@ -645,7 +645,7 @@ app.get("/events/:eventId/seat-price/:sectionId/:row/:seat", async (req, res) =>
     });
   } catch (error) {
     console.error("Error fetching seat price:", error);
-    res.status(500).json({ error: "Internal Server Error", details: error.message });
+    res.status(500).json({ error: "Error interno del servidor", details: error.message });
   }
 });
 
@@ -663,11 +663,11 @@ app.post("/events/:eventId/seats-pricing", async (req, res) => {
     const { seats } = req.body; // Array de objetos { sectionId, row, seat }
     
     if (!seats || !Array.isArray(seats)) {
-      return res.status(400).json({ error: "seats array is required" });
+      return res.status(400).json({ error: "Se requiere un array de asientos" });
     }
 
     const event = await EventModel.findById(eventId);
-    if (!event) return res.status(404).json({ error: "Event not found" });
+    if (!event) return res.status(404).json({ error: "Evento no encontrado" });
 
     const seatsPricing = seats.map(seatInfo => {
       const { sectionId, row, seat } = seatInfo;
@@ -699,7 +699,7 @@ app.post("/events/:eventId/seats-pricing", async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching seats pricing:", error);
-    res.status(500).json({ error: "Internal Server Error", details: error.message });
+    res.status(500).json({ error: "Error interno del servidor", details: error.message });
   }
 });
 
@@ -918,7 +918,7 @@ app.put("/events/:eventId/seat-blocks", async (req, res) => {
     const { blockedSeats, blockedSections } = req.body;
 
     const event = await EventModel.findById(eventId);
-    if (!event) return res.status(404).json({ error: "Event not found" });
+    if (!event) return res.status(404).json({ error: "Evento no encontrado" });
 
     if (event.seatMapConfiguration) {
       event.seatMapConfiguration.blockedSeats = blockedSeats || [];
@@ -946,13 +946,13 @@ app.put("/events/:eventId/seat-blocks", async (req, res) => {
     });
 
     res.status(200).json({
-      message: "Seat blocks updated successfully",
+      message: "Bloqueos de asientos actualizados exitosamente",
       blockedSeats: event.seatMapConfiguration?.blockedSeats?.length || 0,
       blockedSections: event.seatMapConfiguration?.blockedSections?.length || 0
     });
   } catch (error) {
     console.error("Error updating seat blocks:", error);
-    res.status(500).json({ error: "Internal Server Error", details: error.message });
+    res.status(500).json({ error: "Error interno del servidor", details: error.message });
   }
 });
 

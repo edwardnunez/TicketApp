@@ -69,7 +69,7 @@ app.post("/adduser", async (req, res) => {
 
     if (password !== confirmPassword) {
       return res.status(400).json({
-        error: "Passwords do not match.",
+        error: "Las contraseñas no coinciden.",
         field: "confirmPassword"
       });
     }
@@ -77,7 +77,7 @@ app.post("/adduser", async (req, res) => {
     const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
     if (!passwordRegex.test(password)) {
       return res.status(400).json({
-        error: "Password must be at least 8 characters long, contain at least one uppercase letter, and at least one number.",
+        error: "La contraseña debe tener al menos 8 caracteres, una letra mayúscula y un número.",
         field: "password"
       });
     }
@@ -85,7 +85,7 @@ app.post("/adduser", async (req, res) => {
     const existingUser = await User.findOne({ username });
     if (existingUser) {
       return res.status(400).json({
-        error: "Username already exists. Please choose a different username.",
+        error: "El nombre de usuario ya existe. Por favor elige otro nombre de usuario.",
         field: "username"
       });
     }
@@ -93,7 +93,7 @@ app.post("/adduser", async (req, res) => {
     const existingEmail = await User.findOne({ email: email });
     if (existingEmail) {
       return res.status(400).json({
-        error: "Email already exists. Please choose a different email.",
+        error: "El email ya existe. Por favor elige otro email.",
         field: "email"
       });
     }
@@ -127,13 +127,13 @@ app.post("/adduser", async (req, res) => {
     });
   } catch (error) {
     if (error.message.includes('Invalid email format')) {
-      return res.status(400).json({ 
-        error: 'Invalid email format',
+      return res.status(400).json({
+        error: 'Formato de email inválido',
         field: 'email'
       });
     }
-    
-    res.status(400).json({ 
+
+    res.status(400).json({
       error: error.message,
       field: 'general'
     });
@@ -168,10 +168,10 @@ app.post('/login', async (req, res) => {
   
       res.json({ token: token, roleToken:roleToken, username: username, createdAt: user.createdAt });
     } else {
-      res.status(401).json({ error: 'Invalid credentials' });
+      res.status(401).json({ error: 'Credenciales inválidas' });
     }
   } catch (error) {
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
@@ -198,7 +198,7 @@ app.get("/users", async (req, res) => {
     const users = await User.find({}, { password: 0});
     res.status(200).json(users);
   } catch (error) {
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: "Error interno del servidor" });
   }
 });
 
@@ -225,25 +225,25 @@ app.get("/users/search", async (req, res) => {
       }
     } else if (userId) {
     if (!mongoose.Types.ObjectId.isValid(userId)) {
-      return res.status(400).json({ error: "Invalid userId format" });
+      return res.status(400).json({ error: "Formato de userId inválido" });
     }
       currentUser = await User.findById(userId);
     } else {
-      return res.status(400).json({ error: "Username or userId is required" });
+      return res.status(400).json({ error: "Se requiere nombre de usuario o userId" });
     }
     
     console.log(currentUser);
     console.log(username || userId);
     
     if (!currentUser) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error: "Usuario no encontrado" });
     }
 
     const { password, ...userWithoutPassword } = currentUser.toObject();
     res.status(200).json(userWithoutPassword);
   } catch (error) {
     console.error("Error in /users/search:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: "Error interno del servidor" });
   }
 });
 
@@ -263,8 +263,8 @@ app.put("/edit-user/:userId", async (req, res) => {
 
     const currentUser = await User.findById(userId);
     if (!currentUser) {
-      return res.status(404).json({ 
-        error: "User not found",
+      return res.status(404).json({
+        error: "Usuario no encontrado",
         field: "general"
       });
     }
@@ -274,7 +274,7 @@ app.put("/edit-user/:userId", async (req, res) => {
     if (password) {
       if (!currentPassword) {
         return res.status(400).json({
-          error: "Current password is required to change password",
+          error: "Se requiere la contraseña actual para cambiar la contraseña",
           field: "currentPassword"
         });
       }
@@ -282,7 +282,7 @@ app.put("/edit-user/:userId", async (req, res) => {
       const isCurrentPasswordValid = await bcrypt.compare(currentPassword, currentUser.password);
       if (!isCurrentPasswordValid) {
         return res.status(400).json({
-          error: "Current password is incorrect",
+          error: "La contraseña actual es incorrecta",
           field: "currentPassword"
         });
       }
@@ -290,7 +290,7 @@ app.put("/edit-user/:userId", async (req, res) => {
       const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
       if (!passwordRegex.test(password)) {
         return res.status(400).json({
-          error: "Password must be at least 8 characters long, contain at least one uppercase letter, and at least one number.",
+          error: "La contraseña debe tener al menos 8 caracteres, una letra mayúscula y un número.",
           field: "password"
         });
       }
@@ -298,7 +298,7 @@ app.put("/edit-user/:userId", async (req, res) => {
       const isSamePassword = await bcrypt.compare(password, currentUser.password);
       if (isSamePassword) {
         return res.status(400).json({
-          error: "New password must be different from current password",
+          error: "La nueva contraseña debe ser diferente de la contraseña actual",
           field: "password"
         });
       }
@@ -310,33 +310,33 @@ app.put("/edit-user/:userId", async (req, res) => {
     if (otherFields.email) {
       if (!validateEmailFormat(otherFields.email)) {
         return res.status(400).json({
-          error: "Invalid email format",
+          error: "Formato de email inválido",
           field: "email"
         });
       }
 
-      const existingEmailUser = await User.findOne({ 
+      const existingEmailUser = await User.findOne({
         email: otherFields.email,
         _id: { $ne: userId }
       });
-      
+
       if (existingEmailUser) {
         return res.status(400).json({
-          error: "Email already exists. Please choose a different email.",
+          error: "El email ya existe. Por favor elige otro email.",
           field: "email"
         });
       }
     }
 
     if (otherFields.username) {
-      const existingUsernameUser = await User.findOne({ 
+      const existingUsernameUser = await User.findOne({
         username: otherFields.username,
         _id: { $ne: userId }
       });
-      
+
       if (existingUsernameUser) {
         return res.status(400).json({
-          error: "Username already exists. Please choose a different username.",
+          error: "El nombre de usuario ya existe. Por favor elige otro nombre de usuario.",
           field: "username"
         });
       }
@@ -349,14 +349,14 @@ app.put("/edit-user/:userId", async (req, res) => {
     );
 
     res.status(200).json({
-      message: password ? "Profile and password updated successfully" : "Profile updated successfully",
+      message: password ? "Perfil y contraseña actualizados exitosamente" : "Perfil actualizado exitosamente",
       user: updatedUser
     });
 
   } catch (err) {
     console.error("Error updating user:", err);
-    res.status(500).json({ 
-      error: "Failed to update user",
+    res.status(500).json({
+      error: "Error al actualizar el usuario",
       field: "general"
     });
   }
@@ -373,7 +373,7 @@ app.post('/verifyToken', (req, res) => {
   const { token } = req.body;
 
   if (!token) {
-    return res.status(400).json({ error: 'Token is required' });
+    return res.status(400).json({ error: 'Se requiere un token' });
   }
 
   try {
@@ -382,10 +382,10 @@ app.post('/verifyToken', (req, res) => {
     if (role === 'admin') {
       res.status(200).json({ role });
     } else {
-      res.status(403).json({ error: 'Forbidden' });
+      res.status(403).json({ error: 'Prohibido' });
     }
   } catch (error) {
-    res.status(401).json({ error: 'Invalid or expired token' });
+    res.status(401).json({ error: 'Token inválido o expirado' });
   }
 });
 

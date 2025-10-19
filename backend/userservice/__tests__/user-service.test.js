@@ -66,7 +66,7 @@ describe("User Service - Integration tests", () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty("error");
-      expect(response.body.error).toContain("Password must be");
+      expect(response.body.error).toContain("La contraseña debe tener");
     });
 
     it("debería rechazar registro sin campos requeridos", async () => {
@@ -89,7 +89,7 @@ describe("User Service - Integration tests", () => {
         .send(testUser);
 
       expect(response.status).toBe(400);
-      expect(response.body.error).toContain("Username already exists");
+      expect(response.body.error).toContain("El nombre de usuario ya existe");
     });
 
     it("debería rechazar contraseñas que no coinciden", async () => {
@@ -107,7 +107,7 @@ describe("User Service - Integration tests", () => {
         .send(userWithMismatchedPasswords);
 
       expect(response.status).toBe(400);
-      expect(response.body.error).toContain("Passwords do not match");
+      expect(response.body.error).toContain("Las contraseñas no coinciden");
     });
   });
 
@@ -139,7 +139,7 @@ describe("User Service - Integration tests", () => {
         .send(loginData);
 
       expect(response.status).toBe(401);
-      expect(response.body).toHaveProperty("error", "Invalid credentials");
+      expect(response.body).toHaveProperty("error", "Credenciales inválidas");
     });
 
     it("debería rechazar autenticación de usuario inexistente", async () => {
@@ -153,7 +153,7 @@ describe("User Service - Integration tests", () => {
         .send(loginData);
 
       expect(response.status).toBe(401);
-      expect(response.body).toHaveProperty("error", "Invalid credentials");
+      expect(response.body).toHaveProperty("error", "Credenciales inválidas");
     });
   });
 
@@ -175,7 +175,7 @@ describe("User Service - Integration tests", () => {
         .query({ username: "nonexistentuser" });
 
       expect(response.status).toBe(404);
-      expect(response.body).toHaveProperty("error", "User not found");
+      expect(response.body).toHaveProperty("error", "Usuario no encontrado");
     });
 
     it("debería retornar error cuando no se proporciona username o userId", async () => {
@@ -183,7 +183,7 @@ describe("User Service - Integration tests", () => {
         .get("/users/search");
 
       expect(response.status).toBe(400);
-      expect(response.body).toHaveProperty("error", "Username or userId is required");
+      expect(response.body).toHaveProperty("error", "Se requiere nombre de usuario o userId");
     });
   });
 
@@ -221,7 +221,7 @@ describe("User Service - Integration tests", () => {
         .query({ username: "nonexistentxyz123" });
 
       expect(response.status).toBe(404);
-      expect(response.body).toHaveProperty("error", "User not found");
+      expect(response.body).toHaveProperty("error", "Usuario no encontrado");
     });
   });
 
@@ -276,7 +276,7 @@ describe("User Service - Integration tests", () => {
         .send({ token: "invalid-token" });
 
       expect(response.status).toBe(401);
-      expect(response.body).toHaveProperty("error", "Invalid or expired token");
+      expect(response.body).toHaveProperty("error", "Token inválido o expirado");
     });
 
     it("debería rechazar token de usuario no admin", async () => {
@@ -285,7 +285,7 @@ describe("User Service - Integration tests", () => {
         .send({ token: validToken });
 
       expect(response.status).toBe(403);
-      expect(response.body).toHaveProperty("error", "Forbidden");
+      expect(response.body).toHaveProperty("error", "Prohibido");
     });
 
     it("debería rechazar request sin token", async () => {
@@ -294,7 +294,7 @@ describe("User Service - Integration tests", () => {
         .send({});
 
       expect(response.status).toBe(400);
-      expect(response.body).toHaveProperty("error", "Token is required");
+      expect(response.body).toHaveProperty("error", "Se requiere un token");
     });
   });
 
@@ -319,7 +319,7 @@ describe("User Service - Integration tests", () => {
         .send(updateData);
 
       expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty("message", "Profile updated successfully");
+      expect(response.body).toHaveProperty("message", "Perfil actualizado exitosamente");
       expect(response.body.user.name).toBe("UpdatedName");
       expect(response.body.user.surname).toBe("UpdatedSurname");
     });
@@ -335,7 +335,7 @@ describe("User Service - Integration tests", () => {
         .send(updateData);
 
       expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty("message", "Profile and password updated successfully");
+      expect(response.body).toHaveProperty("message", "Perfil y contraseña actualizados exitosamente");
     });
 
     it("debería rechazar actualización de contraseña sin contraseña actual", async () => {
@@ -348,7 +348,7 @@ describe("User Service - Integration tests", () => {
         .send(updateData);
 
       expect(response.status).toBe(400);
-      expect(response.body.error).toContain("Current password is required");
+      expect(response.body.error).toContain("Se requiere la contraseña actual");
     });
 
     it("debería rechazar actualización de contraseña con contraseña actual incorrecta", async () => {
@@ -362,7 +362,7 @@ describe("User Service - Integration tests", () => {
         .send(updateData);
 
       expect(response.status).toBe(400);
-      expect(response.body.error).toContain("Current password is incorrect");
+      expect(response.body.error).toContain("La contraseña actual es incorrecta");
     });
 
     it("debería rechazar actualización de email con formato inválido", async () => {
@@ -375,7 +375,7 @@ describe("User Service - Integration tests", () => {
         .send(updateData);
 
       expect(response.status).toBe(400);
-      expect(response.body.error).toContain("Invalid email format");
+      expect(response.body.error).toContain("Formato de email inválido");
     });
 
     it("debería retornar 404 para usuario inexistente", async () => {

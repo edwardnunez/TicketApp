@@ -261,7 +261,7 @@ describe("Event Service - Integration tests", () => {
         .get(`/events/${fakeEventId}`);
 
       expect(response.status).toBe(404);
-      expect(response.body).toHaveProperty("error", "Event not found");
+      expect(response.body).toHaveProperty("error", "Evento no encontrado");
     });
   });
 
@@ -408,7 +408,7 @@ describe("Event Service - Integration tests", () => {
         .get(`/events/${eventId}`);
 
       expect(response.status).toBe(404);
-      expect(response.body).toHaveProperty("error", "Event not found");
+      expect(response.body).toHaveProperty("error", "Evento no encontrado");
     });
   });
 

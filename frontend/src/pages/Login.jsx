@@ -75,7 +75,7 @@ const Login = () => {
         expiryMs: 60 * 60 * 1000,
       });
       scheduleAuthExpiryTimer();
-      message.success("Login successful!");
+      message.success("¡Inicio de sesión exitoso!");
       navigate("/");
     } catch (error) {
       setLoading(false);
