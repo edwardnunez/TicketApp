@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Tooltip, Switch, Space, Typography } from 'antd';
-import { 
-  EyeOutlined, 
-  SoundOutlined, 
+import {
+  EyeOutlined,
   BulbOutlined,
   InfoCircleOutlined,
   QuestionCircleOutlined

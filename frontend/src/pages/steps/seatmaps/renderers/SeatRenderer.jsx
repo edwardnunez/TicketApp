@@ -587,26 +587,8 @@ const SeatRenderer = ({
     return seatTotalWidth + labelWidth + 32; // 32px de padding extra
   };
 
-  // Función para calcular el tamaño de asiento adaptativo para gradas
-  const getAdaptiveSeatSize = () => {
-    const baseSize = getSeatSize();
-    
-    // Para gradas, hacer los asientos más pequeños si hay muchas filas
-    if (rows > 15) {
-      return {
-        ...baseSize,
-        width: Math.max(baseSize.width * 0.8, 16),
-        height: Math.max(baseSize.height * 0.8, 16),
-        fontSize: Math.max(baseSize.fontSize * 0.8, 8)
-      };
-    }
-    
-    return baseSize;
-  };
-
   const containerWidth = getContainerWidth();
   const maxWidth = getMaxWidth();
-  const adaptiveSeatSize = getAdaptiveSeatSize();
   const dimensions = getSectionDimensions();
 
   return (

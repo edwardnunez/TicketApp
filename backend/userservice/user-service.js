@@ -176,19 +176,6 @@ app.post('/login', async (req, res) => {
 });
 
 /**
- * Validates and sanitizes string input
- * @param {*} input - Input to validate
- * @returns {string} Trimmed string
- * @throws {Error} If input is not a string
- */
-function checkInput(input) {
-  if (typeof input !== "string") {
-    throw new Error("Input debe ser una cadena de texto");
-  }
-  return input.trim();
-}
-
-/**
  * Retrieves all users (excluding passwords)
  * @route GET /users
  * @returns {Object[]} Array of user objects without passwords

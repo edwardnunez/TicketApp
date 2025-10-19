@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Typography, Button, Space } from 'antd';
-import { 
+import {
   FullscreenOutlined,
   CompressOutlined,
   LockOutlined,
-  UnlockOutlined,
-  InfoCircleOutlined
+  UnlockOutlined
 } from '@ant-design/icons';
 import { COLORS } from '../../components/colorscheme';
 import MainSeatMapContainer from '../steps/seatmaps/containers/MainSeatMapContainer';
@@ -24,7 +23,6 @@ const AdminSeatMapRenderer = ({
   onCapacityChange
 }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [showLegend, setShowLegend] = useState(true);
   const containerRef = useRef(null);
 
   // Función para manejar clic en asiento (adaptada para administración)

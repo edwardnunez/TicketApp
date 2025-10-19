@@ -342,10 +342,9 @@ const Profile = () => {
   const renderEventGroup = (eventId, eventGroup) => {
     const { event, tickets: eventTickets } = eventGroup;
     const isExpired = event.date && dayjs(event.date).isBefore(dayjs());
-    
+
     const totalTickets = eventTickets.reduce((sum, ticket) => sum + ticket.quantity, 0);
     const totalPrice = eventTickets.reduce((sum, ticket) => sum + (ticket.price * ticket.quantity), 0);
-    const uniqueTypes = [...new Set(eventTickets.map(t => t.ticketType))];
 
     return (
       <Card 
