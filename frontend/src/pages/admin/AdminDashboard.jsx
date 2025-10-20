@@ -848,7 +848,7 @@ const AdminDashboard = () => {
               dataSource={filteredEvents}
               rowKey="_id"
               loading={loading}
-              pagination={{ 
+              pagination={{
                 pageSize: 10,
                 showSizeChanger: true,
                 showTotal: (total, range) => `${range[0]}-${range[1]} de ${total} elementos`,
@@ -856,7 +856,8 @@ const AdminDashboard = () => {
                   marginTop: '16px'
                 }
               }}
-              style={{ 
+              scroll={{ x: 1000 }}
+              style={{
                 borderRadius: '8px',
                 overflow: 'hidden'
               }}

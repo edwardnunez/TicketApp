@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Avatar, Typography, Dropdown } from "antd";
-import { UserOutlined, TagOutlined, BarChartOutlined, QuestionCircleOutlined } from "@ant-design/icons";
+import { UserOutlined, TagOutlined, BarChartOutlined, QuestionCircleOutlined, DashboardOutlined } from "@ant-design/icons";
 import { COLORS } from "./colorscheme";
 import { ensureAuthFreshness, scheduleAuthExpiryTimer, clearAuthSession } from "../utils/authSession";
 import useUserRole from "../hooks/useUserRole";
@@ -102,11 +102,10 @@ const Navbar = () => {
         {/* Opciones exclusivas para administradores */}
         {isLoggedIn && isAdmin && !isLoading && (
           <>
-            {!isMobile && (
-              <Link to="/admin" data-cy="admin-link" style={{ color: COLORS.neutral.white, fontWeight: "500", fontSize: isMobile ? 13 : undefined }}>
-                Panel de administrador
-              </Link>
-            )}
+            <Link to="/admin" data-cy="admin-link" style={{ color: COLORS.neutral.white, fontWeight: "500", fontSize: isMobile ? 13 : undefined, display: 'flex', alignItems: 'center', gap: 4 }}>
+              <DashboardOutlined />
+              {!isMobile && <span>Panel de administrador</span>}
+            </Link>
             <Link to="/admin/statistics" data-cy="statistics-link" style={{ color: COLORS.neutral.white, fontWeight: "500", fontSize: isMobile ? 13 : undefined, display: 'flex', alignItems: 'center', gap: 4 }}>
               <BarChartOutlined />
               {!isMobile && <span>Estadísticas</span>}
