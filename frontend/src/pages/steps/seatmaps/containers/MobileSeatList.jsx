@@ -22,7 +22,7 @@ import {
   LockOutlined,
   StarOutlined
 } from '@ant-design/icons';
-import { COLORS } from '../../../../components/colorscheme';
+import { COLORS, getContrastTextColor } from '../../../../components/colorscheme';
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -428,34 +428,92 @@ const MobileSeatList = ({
         }}
         style={{ marginBottom: '16px' }}
       >
-        {Object.values(groupedSeats).map(({ section, seats }) => (
-          <Panel
-            key={section.id}
-            header={
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{
-                    width: '12px',
-                    height: '12px',
-                    backgroundColor: section.isBlocked ? '#D1D5DB' : section.color,
-                    borderRadius: '50%'
-                  }} />
-                  <Text strong>{section.name}</Text>
-                  <Badge count={seats.length} style={{ backgroundColor: section.color }} />
+        {Object.values(groupedSeats).map(({ section, seats }) => {
+          // Calcular rango de precios de la sección
+          const sectionPrices = seats.map(s => s.price);
+          const minPrice = Math.min(...sectionPrices);
+          const maxPrice = Math.max(...sectionPrices);
+          const hasRangePrice = minPrice !== maxPrice;
+
+          // Determinar colores
+          const sectionColor = section.isBlocked ? COLORS.neutral.grey3 : (section.color || COLORS.primary.main);
+          const textColor = getContrastTextColor(sectionColor, 1, false);
+          const secondaryTextColor = getContrastTextColor(sectionColor, 0.85, false);
+
+          return (
+            <Panel
+              key={section.id}
+              header={
+                <div style={{
+                  background: section.isBlocked
+                    ? `linear-gradient(135deg, ${COLORS.neutral.grey3} 0%, ${COLORS.neutral.grey4} 100%)`
+                    : `linear-gradient(135deg, ${sectionColor} 0%, ${sectionColor}dd 100%)`,
+                  padding: '12px 16px',
+                  margin: '-12px -16px',
+                  borderRadius: '8px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                        <Text strong style={{ color: textColor, fontSize: '15px' }}>
+                          {section.name}
+                        </Text>
+                        {section.isBlocked && (
+                          <LockOutlined style={{ color: textColor, fontSize: '12px' }} />
+                        )}
+                        <Badge count={seats.length} style={{ backgroundColor: 'rgba(255,255,255,0.3)', color: textColor }} />
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                        {/* Precio o rango */}
+                        <Text style={{
+                          color: textColor,
+                          fontSize: '13px',
+                          fontWeight: '600',
+                          padding: '3px 8px',
+                          backgroundColor: 'rgba(255, 255, 255, 0.25)',
+                          borderRadius: '4px'
+                        }}>
+                          {hasRangePrice
+                            ? `${formatPrice(minPrice)} - ${formatPrice(maxPrice)}`
+                            : formatPrice(minPrice)
+                          }
+                        </Text>
+
+                        {/* Disponibilidad */}
+                        <Text style={{
+                          color: secondaryTextColor,
+                          fontSize: '12px',
+                          padding: '3px 8px',
+                          backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                          borderRadius: '4px'
+                        }}>
+                          {seats.filter(s => !s.isOccupied && !s.isBlocked && !s.isSectionBlocked).length} disponibles
+                        </Text>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
-                  {seats.filter(s => !s.isOccupied && !s.isBlocked && !s.isSectionBlocked).length} disponibles
-                </Text>
+              }
+              style={{ marginBottom: '12px', borderRadius: '8px', overflow: 'hidden' }}
+            >
+              <div style={{
+                background: `linear-gradient(135deg, ${sectionColor}15 0%, ${sectionColor}08 100%)`,
+                padding: '12px'
+              }}>
+                <List
+                  dataSource={seats}
+                  renderItem={renderSeatItem}
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    borderRadius: '8px',
+                    padding: '8px'
+                  }}
+                />
               </div>
-            }
-          >
-            <List
-              dataSource={seats}
-              renderItem={renderSeatItem}
-              style={{ backgroundColor: 'transparent' }}
-            />
-          </Panel>
-        ))}
+            </Panel>
+          );
+        })}
       </Collapse>
 
       {/* Resumen de selección */}

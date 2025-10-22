@@ -36,61 +36,42 @@ const ProSeatRenderer = ({
   const [hoveredSeat, setHoveredSeat] = useState(null);
   const [seatSize, setSeatSize] = useState({ width: 24, height: 24, fontSize: 10 });
 
-  // Calcular tamaño de asiento basado en dispositivo y número de asientos
+  // Calcular tamaño de asiento basado en número de asientos
+  // Mantenemos tamaños más consistentes entre dispositivos
+  // El zoom se encarga de la adaptación visual
   useEffect(() => {
     const calculateSeatSize = () => {
       const totalSeats = rows * seatsPerRow;
-      let baseSize = 32;
-      let fontSize = 11;
+      let baseSize = 36;
+      let fontSize = 12;
 
-      if (isMobile) {
-        // Mobile: más espacio para tocar
-        if (totalSeats > 150) {
-          baseSize = 20;
-          fontSize = 8;
-        } else if (totalSeats > 100) {
-          baseSize = 24;
-          fontSize = 9;
-        } else if (totalSeats > 50) {
-          baseSize = 28;
-          fontSize = 10;
-        } else {
-          baseSize = 32;
-          fontSize = 11;
-        }
-      } else if (isTablet) {
-        // Tablet: tamaños intermedios
-        if (totalSeats > 200) {
-          baseSize = 24;
-          fontSize = 9;
-        } else if (totalSeats > 150) {
-          baseSize = 28;
-          fontSize = 10;
-        } else if (totalSeats > 100) {
-          baseSize = 32;
-          fontSize = 11;
-        } else {
-          baseSize = 36;
-          fontSize = 12;
-        }
+      // Ajuste basado en densidad de asientos, no en tipo de dispositivo
+      // Esto mantiene la misma apariencia visual en todos los dispositivos
+      if (totalSeats > 300) {
+        baseSize = 28;
+        fontSize = 10;
+      } else if (totalSeats > 200) {
+        baseSize = 32;
+        fontSize = 11;
+      } else if (totalSeats > 100) {
+        baseSize = 36;
+        fontSize = 12;
+      } else if (totalSeats > 50) {
+        baseSize = 40;
+        fontSize = 13;
       } else {
-        // Desktop: aprovechar espacio disponible
-        if (totalSeats > 300) {
-          baseSize = 26;
-          fontSize = 10;
-        } else if (totalSeats > 200) {
-          baseSize = 30;
-          fontSize = 11;
-        } else if (totalSeats > 100) {
-          baseSize = 34;
-          fontSize = 12;
-        } else if (totalSeats > 50) {
-          baseSize = 38;
-          fontSize = 13;
-        } else {
-          baseSize = 42;
-          fontSize = 14;
-        }
+        baseSize = 44;
+        fontSize = 14;
+      }
+
+      // Ajuste mínimo para touch en móviles (pero mantener proporciones similares)
+      if (isMobile) {
+        // Solo reducción ligera para móviles, el zoom hace el resto
+        baseSize = Math.max(26, baseSize - 4);
+        fontSize = Math.max(9, fontSize - 1);
+      } else if (isTablet) {
+        baseSize = Math.max(28, baseSize - 2);
+        fontSize = Math.max(10, fontSize - 1);
       }
 
       setSeatSize({ width: baseSize, height: baseSize, fontSize });
@@ -297,13 +278,16 @@ const ProSeatRenderer = ({
     const hovered = hoveredSeat === seatId;
     // Determinar categoría basada en el nombre de la sección, no en el precio
 
+    // Aumentar área de touch en móviles para mejor interacción
+    const touchPadding = isMobile ? 2 : 1;
+
     const baseStyle = {
       width: `${seatSize.width}px`,
       height: `${seatSize.height}px`,
       minWidth: `${seatSize.width}px`,
       minHeight: `${seatSize.height}px`,
       border: `2px solid ${stateColors.border}`,
-      borderRadius: '4px',
+      borderRadius: isMobile ? '6px' : '4px', // Bordes ligeramente más redondeados en móvil
       backgroundColor: stateColors.background,
       color: stateColors.color,
       cursor: isAdminMode
@@ -321,7 +305,10 @@ const ProSeatRenderer = ({
       transform: hovered && state === 'available' ? 'scale(1.05)' : 'scale(1)',
       fontFamily: 'system-ui, -apple-system, sans-serif',
       outline: 'none',
-      margin: '1px'
+      margin: `${touchPadding}px`,
+      // Mejoras para touch en móviles
+      WebkitTapHighlightColor: 'transparent',
+      touchAction: 'manipulation'
     };
 
     // Efectos especiales para estados

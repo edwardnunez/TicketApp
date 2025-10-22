@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Typography, Button, Space, notification } from 'antd';
-import { 
+import {
   FullscreenOutlined,
   CompressOutlined,
   InfoCircleOutlined
@@ -11,6 +11,7 @@ import AltSeatMapLegend from '../ui/AltSeatMapLegend';
 import VenueStageRenderer from '../renderers/VenueStageRenderer';
 import ZoomControls from '../ui/ZoomControls';
 import AccessibilityFeatures from '../ui/AccessibilityFeatures';
+import useAdvancedZoomPan from '../../../../hooks/useAdvancedZoomPan';
 import '../styles/SeatMapAnimations.css';
 import '../styles/SeatMapLayouts.css';
 
@@ -137,21 +138,38 @@ const MainSeatMapContainer = ({
 }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
-  const [zoomLevel, setZoomLevel] = useState(0.7);
-  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showLegend, setShowLegend] = useState(false);
   const [hoveredSection, setHoveredSection] = useState(null);
-  
+
   // Estados de accesibilidad
   const [isHighContrast, setIsHighContrast] = useState(false);
   const [isKeyboardNavigationEnabled, setIsKeyboardNavigationEnabled] = useState(false);
   const [showTooltips, setShowTooltips] = useState(true);
-  
+
   const containerRef = useRef(null);
   const seatMapRef = useRef(null);
+
+  // Hook avanzado de zoom y pan con soporte táctil completo
+  const {
+    zoomLevel,
+    panOffset,
+    isDragging,
+    isTouching,
+    isInteracting,
+    zoomIn: handleZoomIn,
+    zoomOut: handleZoomOut,
+    reset: handleResetZoom,
+    handlers: zoomPanHandlers
+  } = useAdvancedZoomPan({
+    minZoom: 0.3,
+    maxZoom: 2.5,
+    initialZoom: isMobile ? 0.5 : 0.7, // Zoom inicial más bajo en móvil
+    zoomStep: 0.2,
+    enableMouseWheel: true,
+    enablePinch: true,
+    enablePan: true
+  });
 
   // Detectar tipo de dispositivo
   useEffect(() => {
@@ -160,69 +178,14 @@ const MainSeatMapContainer = ({
       setIsMobile(width < 768);
       setIsTablet(width >= 768 && width < 1024);
     };
-    
+
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Manejar zoom con rueda del mouse
-  const handleWheel = useCallback((e) => {
-    e.preventDefault();
-    const delta = e.deltaY > 0 ? -0.1 : 0.1;
-    const newZoom = Math.max(0.3, Math.min(2.5, zoomLevel + delta)); // Reduced max zoom from 3 to 2.5
-    setZoomLevel(newZoom);
-  }, [zoomLevel]);
-
-  // Manejar arrastre del mapa
-  const handleMouseDown = useCallback((e) => {
-    if (e.target === seatMapRef.current || seatMapRef.current?.contains(e.target)) {
-      setIsDragging(true);
-      setDragStart({ x: e.clientX - panOffset.x, y: e.clientY - panOffset.y });
-    }
-  }, [panOffset]);
-
-  const handleMouseMove = useCallback((e) => {
-    if (isDragging) {
-      setPanOffset({
-        x: e.clientX - dragStart.x,
-        y: e.clientY - dragStart.y
-      });
-    }
-  }, [isDragging, dragStart]);
-
-  const handleMouseUp = useCallback(() => {
-    setIsDragging(false);
-  }, []);
-
-  // Event listeners para arrastre
-  useEffect(() => {
-    if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-      return () => {
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
-      };
-    }
-  }, [isDragging, handleMouseMove, handleMouseUp]);
-
-  // Controles de zoom
-  const handleZoomIn = () => {
-    setZoomLevel(prev => Math.min(2.5, prev + 0.2)); // Reduced max zoom from 3 to 2.5
-  };
-
-  const handleZoomOut = () => {
-    setZoomLevel(prev => Math.max(0.3, prev - 0.2)); // Reduced min zoom from 0.5 to 0.3
-  };
-
-  const handleResetZoom = () => {
-    setZoomLevel(0.7);
-    setPanOffset({ x: 0, y: 0 });
-  };
-
   // Función para alternar pantalla completa
-  const toggleFullscreen = () => {
+  const toggleFullscreen = useCallback(() => {
     if (!document.fullscreenElement) {
       containerRef.current?.requestFullscreen();
       setIsFullscreen(true);
@@ -230,14 +193,14 @@ const MainSeatMapContainer = ({
       document.exitFullscreen();
       setIsFullscreen(false);
     }
-  };
+  }, []);
 
   // Manejar cambios de pantalla completa
   useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
     };
-    
+
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
@@ -863,29 +826,36 @@ const MainSeatMapContainer = ({
             width: '100%',
             height: '100%',
             overflow: 'auto',
-            cursor: isDragging ? 'grabbing' : 'grab',
+            cursor: isInteracting ? 'grabbing' : 'grab',
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
             padding: 0,
-            flex: 1
+            flex: 1,
+            touchAction: 'none', // Importante para gestos táctiles
+            WebkitUserSelect: 'none',
+            userSelect: 'none'
           }}
-          onWheel={handleWheel}
-          onMouseDown={handleMouseDown}
+          onWheel={zoomPanHandlers.onWheel}
+          onMouseDown={zoomPanHandlers.onMouseDown}
+          onTouchStart={zoomPanHandlers.onTouchStart}
+          onTouchMove={zoomPanHandlers.onTouchMove}
+          onTouchEnd={zoomPanHandlers.onTouchEnd}
         >
           <div
             className="seatmap-transform"
             style={{
               transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`,
               transformOrigin: 'center center',
-              transition: isDragging ? 'none' : 'transform 0.3s ease',
+              transition: isInteracting ? 'none' : 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
               width: 'fit-content',
               height: 'fit-content',
               position: 'relative',
               minWidth: 'auto',
               minHeight: 'auto',
               maxWidth: 'none',
-              maxHeight: 'none'
+              maxHeight: 'none',
+              willChange: isInteracting ? 'transform' : 'auto'
             }}
           >
             {renderVenueLayout()}

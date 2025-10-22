@@ -931,19 +931,19 @@
 
 @media (max-width: 768px) {
   .professional-seatmap-container {
-    padding: 12px 20px; /* Ajustar padding horizontal para móvil */
+    padding: 16px 20px; /* Mantener padding más consistente con desktop */
     min-height: 150vh; /* Usar altura más grande en móvil */
   }
-  
+
   .seatmap-content {
     min-height: 120vh; /* Usar altura más grande en móvil */
   }
-  
+
   .responsive-seatmap-container {
-    padding: 12px;
+    padding: 16px; /* Mantener consistente con desktop */
   }
   .football-stadium-layout {
-    grid-template-areas: 
+    grid-template-areas:
       "north"
       "center"
       "west"
@@ -952,8 +952,8 @@
       "vip";
     grid-template-columns: 1fr;
     grid-template-rows: auto auto auto auto auto auto;
-    gap: 12px;
-    padding: 12px;
+    gap: 14px; /* Mantener gap similar a desktop (era 16px) */
+    padding: 18px; /* Mantener padding más cercano a desktop (era 24px) */
   }
   
   /* Secciones laterales sin rotación - se maneja por lógica de renderizado */
@@ -966,7 +966,7 @@
   }
   
   .concert-stadium-layout {
-    grid-template-areas: 
+    grid-template-areas:
       "north"
       "center"
       "west"
@@ -976,8 +976,8 @@
       "vip";
     grid-template-columns: 1fr;
     grid-template-rows: auto auto auto auto auto auto auto;
-    gap: 12px;
-    padding: 12px;
+    gap: 14px; /* Mantener gap consistente */
+    padding: 18px; /* Mantener padding consistente */
   }
   
   .concert-theater-layout {
@@ -1021,36 +1021,36 @@
 
 @media (max-width: 480px) {
   .professional-seatmap-container {
-    padding: 8px 15px; /* Ajustar padding horizontal para móvil pequeño */
+    padding: 12px 16px; /* Mantener padding razonable para móvil pequeño */
     min-height: 100vh; /* Usar altura completa en móvil pequeño */
   }
-  
+
   .seatmap-content {
     min-height: 80vh; /* Usar altura de viewport en móvil pequeño */
   }
-  
+
   .responsive-seatmap-container {
-    padding: 8px;
+    padding: 12px; /* Mantener consistente */
   }
-  
+
   /* Ajustar controles de zoom para móviles */
   .zoom-controls {
     top: 70px;
     right: 12px;
   }
-  
+
   .zoom-controls .ant-btn {
-    width: 32px;
-    height: 32px;
-    min-width: 32px;
+    width: 44px; /* Botones más grandes para touch (actualizado desde ZoomControls) */
+    height: 44px;
+    min-width: 44px;
   }
   .football-stadium-layout,
   .concert-venue-layout,
   .cinema-layout,
   .theater-layout,
   .arena-layout {
-    padding: 8px;
-    gap: 8px;
+    padding: 14px; /* Mantener padding más consistente */
+    gap: 12px; /* Mantener gap más consistente */
   }
   
   .venue-title {

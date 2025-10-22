@@ -63,6 +63,31 @@ const ResponsiveSeatRenderer = ({
     return section.defaultPrice || 0;
   };
 
+  // Obtener el rango de precios para una sección (si usa pricing por filas)
+  const getSectionPriceRange = (section) => {
+    if (event && event.usesRowPricing && event.usesSectionPricing && event.sectionPricing?.length > 0) {
+      const eventSectionPricing = event.sectionPricing.find(sp => sp.sectionId === section.id);
+      if (eventSectionPricing && eventSectionPricing.rowPricing && eventSectionPricing.rowPricing.length > 0) {
+        const prices = eventSectionPricing.rowPricing.map(rp => rp.price);
+        const minPrice = Math.min(...prices);
+        const maxPrice = Math.max(...prices);
+
+        if (minPrice !== maxPrice) {
+          return {
+            hasRange: true,
+            minPrice,
+            maxPrice
+          };
+        }
+      }
+    }
+
+    return {
+      hasRange: false,
+      price: getSectionPrice(section)
+    };
+  };
+
   const getSectionAvailability = (section) => {
     if (section.hasNumberedSeats) {
       const totalSeats = section.rows * section.seatsPerRow;
@@ -108,27 +133,43 @@ const ResponsiveSeatRenderer = ({
   const renderSectionCard = (section) => {
     const availability = getSectionAvailability(section);
     const sectionPrice = getSectionPrice(section);
+    const priceRange = getSectionPriceRange(section);
     const isExpanded = expandedSections.has(section.id);
     const sectionSelectedSeats = selectedSeats.filter(s => s.sectionId === section.id);
     const hasSelectedSeats = sectionSelectedSeats.length > 0;
+
+    // Determinar colores - usar gris si está bloqueado, color de la sección si no
+    const backgroundColor = availability.isFullyBooked
+      ? COLORS.neutral.grey3
+      : (section.color || COLORS.primary.main);
+
+    // Color del texto debe contrastar con el fondo
+    const textColor = availability.isFullyBooked
+      ? COLORS.neutral.darker
+      : getContrastTextColor(backgroundColor, 1, false);
+
+    const secondaryTextColor = availability.isFullyBooked
+      ? COLORS.neutral.grey6
+      : getContrastTextColor(backgroundColor, 0.85, false);
 
     return (
       <Card
         key={section.id}
         style={{
           marginBottom: '16px',
-          border: hasSelectedSeats 
-            ? `2px solid ${COLORS.primary.main}` 
-            : `1px solid ${COLORS.neutral.grey2}`,
+          border: hasSelectedSeats
+            ? `3px solid ${COLORS.primary.main}`
+            : `1px solid ${backgroundColor}`,
           borderRadius: '12px',
-          backgroundColor: hasSelectedSeats ? `${COLORS.primary.light}10` : COLORS.neutral.white,
+          backgroundColor: COLORS.neutral.white,
           transition: 'all 0.3s ease',
           cursor: 'pointer',
-          opacity: availability.isFullyBooked ? 0.6 : 1,
+          opacity: 1,
           transform: hoveredSection === section.id ? 'scale(1.02)' : 'scale(1)',
-          boxShadow: hoveredSection === section.id 
-            ? '0 8px 24px rgba(0,0,0,0.12)' 
-            : '0 2px 8px rgba(0,0,0,0.08)'
+          boxShadow: hoveredSection === section.id
+            ? `0 8px 24px ${backgroundColor}40`
+            : '0 2px 8px rgba(0,0,0,0.08)',
+          overflow: 'hidden'
         }}
         onMouseEnter={() => setHoveredSection(section.id)}
         onMouseLeave={() => setHoveredSection(null)}
@@ -137,62 +178,100 @@ const ResponsiveSeatRenderer = ({
             handleSectionToggle(section.id);
           }
         }}
+        bodyStyle={{ padding: 0 }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-              <Title level={5} style={{ 
-                margin: 0, 
-                color: availability.isFullyBooked ? COLORS.neutral.grey4 : getSectionLabelColor(section.color, availability.isFullyBooked),
-                textDecoration: availability.isFullyBooked ? 'line-through' : 'none'
-              }}>
-                {section.name}
-                {availability.isFullyBooked && ' (BLOQUEADO)'}
-                {!section.hasNumberedSeats && ' (Entrada General)'}
-              </Title>
-              
-              {hasSelectedSeats && (
-                <Badge 
-                  count={sectionSelectedSeats.length} 
-                  style={{ 
-                    backgroundColor: COLORS.primary.main,
-                    color: 'white'
-                  }} 
-                />
-              )}
+        {/* Cabecera con color de la sección */}
+        <div style={{
+          background: availability.isFullyBooked
+            ? `linear-gradient(135deg, ${COLORS.neutral.grey3} 0%, ${COLORS.neutral.grey4} 100%)`
+            : `linear-gradient(135deg, ${backgroundColor} 0%, ${backgroundColor}dd 100%)`,
+          padding: '16px',
+          borderBottom: `2px solid ${backgroundColor}30`
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                <Title level={5} style={{
+                  margin: 0,
+                  color: textColor,
+                  textDecoration: availability.isFullyBooked ? 'line-through' : 'none'
+                }}>
+                  {section.name}
+                  {availability.isFullyBooked && ' (BLOQUEADO)'}
+                  {!section.hasNumberedSeats && !availability.isFullyBooked && ' (Entrada General)'}
+                </Title>
+
+                {hasSelectedSeats && (
+                  <Badge
+                    count={sectionSelectedSeats.length}
+                    style={{
+                      backgroundColor: COLORS.primary.main,
+                      color: 'white'
+                    }}
+                  />
+                )}
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+                <Text style={{ color: secondaryTextColor, fontSize: '12px' }}>
+                  {section.hasNumberedSeats
+                    ? `${section.rows} filas × ${section.seatsPerRow} asientos`
+                    : `Capacidad: ${section.totalCapacity} personas`
+                  }
+                </Text>
+
+                {/* Precio o rango de precios */}
+                <Text strong style={{
+                  color: textColor,
+                  fontSize: '14px',
+                  padding: '4px 10px',
+                  backgroundColor: 'rgba(255, 255, 255, 0.25)',
+                  borderRadius: '6px'
+                }}>
+                  {priceRange.hasRange
+                    ? `${formatPrice(priceRange.minPrice)} - ${formatPrice(priceRange.maxPrice)}`
+                    : formatPrice(sectionPrice)
+                  }
+                </Text>
+
+                <Text style={{
+                  color: textColor,
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  padding: '4px 10px',
+                  backgroundColor: 'rgba(255, 255, 255, 0.25)',
+                  borderRadius: '6px'
+                }}>
+                  {availability.isFullyBooked ? 'Bloqueado' : `${availability.availableSeats} disponibles`}
+                </Text>
+              </div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
-              <Text style={{ color: getContrastTextColor(section.color, 0.8, availability.isFullyBooked), fontSize: '12px' }}>
-                {section.hasNumberedSeats 
-                  ? `${section.rows} filas × ${section.seatsPerRow} asientos`
-                  : `Capacidad: ${section.totalCapacity} personas`
-                }
-              </Text>
-              
-              <Text strong style={{ color: getSectionTextColor(section.color, availability.isFullyBooked) }}>
-                {formatPrice(sectionPrice)}
-              </Text>
-              
-              <Text style={{ 
-                color: availability.isFullyBooked ? '#ff4d4f' : '#52c41a',
-                fontSize: '12px',
-                fontWeight: '500'
-              }}>
-                {availability.availableSeats} disponibles
-              </Text>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: textColor }}>
+              {isExpanded ? <UpOutlined /> : <DownOutlined />}
             </div>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {isExpanded ? <UpOutlined /> : <DownOutlined />}
           </div>
         </div>
-
+        {/* Contenido expandido - TARJETA MOVIL*/}
         {isExpanded && !availability.isFullyBooked && (
-          <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #f0f0f0' }}>
-            <div style={{ width: '100%', overflow: 'auto' }}>
+          <div style={{
+            padding: '16px',
+            background: backgroundColor,
+            borderTop: `2px solid ${backgroundColor}30`
+          }}>
+            <div style={{
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'stretch',
+              alignItems: 'stretch',
+              backgroundColor: 'white',
+              borderRadius: '8px',
+              padding: '12px',
+            }}>
               {section.hasNumberedSeats ? (
+                <div style={{ flex: 1, width: '100%' }}>
                 <SeatRenderer
                   sectionId={section.id}
                   rows={section.rows}
@@ -212,7 +291,9 @@ const ResponsiveSeatRenderer = ({
                   responsiveMode={true}
                   isMobile={deviceInfo.isMobile}
                   isTablet={deviceInfo.isTablet}
+                  style={{ width: '100%', height: '100%' }}
                 />
+                </div>
               ) : (
                 <GeneralAdmissionRenderer
                   section={section}
@@ -232,38 +313,20 @@ const ResponsiveSeatRenderer = ({
     );
   };
 
+  // ...existing code...
   const renderLayout = () => {
     const sortedSections = [...sections].sort((a, b) => (a.order || 0) - (b.order || 0));
+
+    const seatContainerStyle = {
+      padding: '20px',
+      backgroundColor: COLORS.neutral.grey1,
+      minHeight: '400px'
+    };
 
     // Vista de navegación optimizada (móvil y tablet)
     if (currentView === 'navigation') {
       return (
-        <OptimizedSeatNavigation
-          sections={sortedSections}
-          selectedSeats={selectedSeats}
-          onSeatSelect={onSeatSelect}
-          formatPrice={formatPrice}
-          maxSeats={maxSeats}
-          event={event}
-        />
-      );
-    }
-
-    // Vista de filtros inteligentes
-    if (currentView === 'filters') {
-      return (
-        <div>
-          <SmartSeatFilters
-            sections={sortedSections}
-            selectedSeats={selectedSeats}
-            onFilterChange={setFilters}
-            onSmartSelect={(mode, filteredSections) => {
-              // Implementar selección inteligente
-              console.log('Smart select:', mode, filteredSections);
-            }}
-            formatPrice={formatPrice}
-            event={event}
-          />
+        <div style={seatContainerStyle}>
           <OptimizedSeatNavigation
             sections={sortedSections}
             selectedSeats={selectedSeats}
@@ -276,28 +339,60 @@ const ResponsiveSeatRenderer = ({
       );
     }
 
+    if (currentView === 'filters') {
+      return (
+        <div style={seatContainerStyle}>
+          <SmartSeatFilters
+            sections={sortedSections}
+            selectedSeats={selectedSeats}
+            onFilterChange={setFilters}
+            onSmartSelect={(mode, filteredSections) => {
+              // Implementar selección inteligente
+              console.log('Smart select:', mode, filteredSections);
+            }}
+            formatPrice={formatPrice}
+            event={event}
+          />
+          <div style={{ marginTop: 16 }}>
+            <OptimizedSeatNavigation
+              sections={sortedSections}
+              selectedSeats={selectedSeats}
+              onSeatSelect={onSeatSelect}
+              formatPrice={formatPrice}
+              maxSeats={maxSeats}
+              event={event}
+            />
+          </div>
+        </div>
+      );
+    }
+
     // Vista de lista tradicional (fallback)
     if (currentView === 'list') {
       return (
-        <MobileSeatList
-          seatMapData={seatMapData}
-          selectedSeats={selectedSeats}
-          onSeatSelect={onSeatSelect}
-          maxSeats={maxSeats}
-          occupiedSeats={occupiedSeats}
-          blockedSeats={blockedSeats}
-          blockedSections={blockedSections}
-          formatPrice={formatPrice}
-          event={event}
-          calculateSeatPrice={calculateSeatPrice}
-        />
+        <div style={seatContainerStyle}>
+          <MobileSeatList
+            seatMapData={seatMapData}
+            selectedSeats={selectedSeats}
+            onSeatSelect={onSeatSelect}
+            maxSeats={maxSeats}
+            occupiedSeats={occupiedSeats}
+            blockedSeats={blockedSeats}
+            blockedSections={blockedSections}
+            formatPrice={formatPrice}
+            event={event}
+            calculateSeatPrice={calculateSeatPrice}
+          />
+        </div>
       );
     }
 
     // Vista de mapa (por defecto)
     return (
       <div style={{ 
+        width: '100%',
         display: 'flex', 
+        flex:1,
         flexDirection: 'column',
         gap: '16px',
         padding: '20px',
@@ -449,20 +544,30 @@ const GeneralAdmissionRenderer = ({
     );
   }
 
+  // Determinar colores según estado
+  const sectionColor = section.color || COLORS.primary.main;
+  const backgroundColor = isSelected
+    ? sectionColor
+    : `${sectionColor}15`;
+
+  const textColor = isSelected
+    ? getContrastTextColor(sectionColor, 1, false)
+    : getSectionTextColor(sectionColor, false);
+
   return (
     <div
       style={{
         minWidth: '160px',
         padding: '16px',
-        background: isSelected 
-          ? `linear-gradient(135deg, ${section.color} 0%, ${section.color}dd 100%)`
-          : 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%)',
-        border: `2px solid ${isSelected ? section.color : section.color + '40'}`,
+        background: isSelected
+          ? `linear-gradient(135deg, ${sectionColor} 0%, ${sectionColor}dd 100%)`
+          : `linear-gradient(135deg, ${backgroundColor} 0%, ${backgroundColor}dd 100%)`,
+        border: `2px solid ${sectionColor}`,
         borderRadius: '12px',
         cursor: 'pointer',
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        boxShadow: isSelected 
-          ? `0 6px 24px ${section.color}30, 0 0 0 3px ${section.color}20`
+        boxShadow: isSelected
+          ? `0 6px 24px ${sectionColor}30, 0 0 0 3px ${sectionColor}20`
           : '0 3px 12px rgba(0,0,0,0.08)',
         transform: isSelected ? 'scale(1.02)' : 'scale(1)',
         backdropFilter: 'blur(10px)',
@@ -472,16 +577,16 @@ const GeneralAdmissionRenderer = ({
       onClick={handleSectionClick}
     >
       <div style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
-        <div style={{ 
-          fontSize: '18px', 
+        <div style={{
+          fontSize: '18px',
           marginBottom: '6px',
           filter: isSelected ? 'brightness(0) invert(1)' : 'none'
         }}>
           {isSelected ? '✓' : '🎫'}
         </div>
-        
-        <Text strong style={{ 
-          color: isSelected ? 'white' : getSectionTextColor(section.color),
+
+        <Text strong style={{
+          color: textColor,
           display: 'block',
           marginBottom: '6px',
           fontSize: '12px',
@@ -494,7 +599,7 @@ const GeneralAdmissionRenderer = ({
         <div style={{
           width: '100%',
           height: '3px',
-          backgroundColor: isSelected ? 'rgba(255,255,255,0.3)' : section.color + '20',
+          backgroundColor: isSelected ? 'rgba(255,255,255,0.3)' : `${sectionColor}20`,
           borderRadius: '2px',
           marginBottom: '6px',
           overflow: 'hidden'
@@ -502,14 +607,14 @@ const GeneralAdmissionRenderer = ({
           <div style={{
             height: '100%',
             width: `${capacityPercentage}%`,
-            backgroundColor: isSelected ? 'rgba(255,255,255,0.8)' : (isNearCapacity ? '#ff4d4f' : section.color),
+            backgroundColor: isSelected ? 'rgba(255,255,255,0.8)' : (isNearCapacity ? '#ff4d4f' : sectionColor),
             borderRadius: '2px',
             transition: 'width 0.3s ease'
           }}></div>
         </div>
-        
-        <Text style={{ 
-          color: isSelected ? 'rgba(255,255,255,0.9)' : '#666',
+
+        <Text style={{
+          color: isSelected ? 'rgba(255,255,255,0.95)' : textColor,
           fontSize: '10px',
           display: 'block',
           marginBottom: '8px'
@@ -524,12 +629,13 @@ const GeneralAdmissionRenderer = ({
 
         <div style={{
           padding: '6px 12px',
-          background: isSelected ? 'rgba(255,255,255,0.2)' : section.color + '10',
+          background: isSelected ? 'rgba(255,255,255,0.25)' : `${sectionColor}15`,
           borderRadius: '16px',
-          display: 'inline-block'
+          display: 'inline-block',
+          border: `1px solid ${isSelected ? 'rgba(255,255,255,0.4)' : `${sectionColor}40`}`
         }}>
-          <Text style={{ 
-            color: isSelected ? 'white' : getSectionTextColor(section.color),
+          <Text style={{
+            color: textColor,
             fontSize: '14px',
             fontWeight: 'bold'
           }}>
@@ -552,17 +658,18 @@ const GeneralAdmissionRenderer = ({
             position: 'absolute',
             top: '-8px',
             right: '-8px',
-            width: '20px',
-            height: '20px',
-            backgroundColor: section.color,
+            width: '24px',
+            height: '24px',
+            backgroundColor: sectionColor,
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: 'white',
-            fontSize: '10px',
+            color: getContrastTextColor(sectionColor, 1, false),
+            fontSize: '11px',
             fontWeight: 'bold',
-            boxShadow: '0 2px 6px rgba(0,0,0,0.2)'
+            boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
+            border: '2px solid white'
           }}>
             {sameSectionSelected.length}
           </div>

@@ -311,7 +311,7 @@ const SeatRenderer = ({
     return {
       title: `${sectionName} - Fila ${getRowNumber(actualRow)}, Asiento ${actualSeat + 1}`,
       content: `Precio: ${formattedPrice}`,
-      color: color || COLORS.primary.main
+      color: 'white' || COLORS.primary.main
     };
   };
 
@@ -403,9 +403,11 @@ const SeatRenderer = ({
       
       return (
         <span style={{ 
-          fontSize: currentSeatSize.fontSize * 0.7, 
+          fontSize: currentSeatSize.fontSize * 1.2, 
           fontWeight: '600',
-          lineHeight: 1
+          lineHeight: 1,
+          width: '100%',
+          whiteSpace: 'nowrap', 
         }}>
           {seatNumber}
         </span>
@@ -437,11 +439,10 @@ const SeatRenderer = ({
       >
         <button
           style={{
-            width: currentSeatSize.width,
-            height: currentSeatSize.height,
-            margin: currentSeatSize.margin,
+            width: '100%',
+            aspectRatio: '1 / 1',
             border: `2px solid ${seatStyle.borderColor}`,
-            borderRadius: currentSeatSize.borderRadius,
+            borderRadius: seatSize.borderRadius,
             backgroundColor: seatStyle.backgroundColor,
             cursor: seatStyle.cursor,
             opacity: seatStyle.opacity,
@@ -450,12 +451,14 @@ const SeatRenderer = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: currentSeatSize.fontSize,
+            fontSize: seatSize.fontSize,
             color: seatStyle.color,
-            position: 'relative',
             boxShadow: seatStyle.boxShadow,
             fontFamily: 'system-ui, -apple-system, sans-serif',
             outline: 'none',
+            overflow: 'hidden',
+            flex: 1,
+            textAlign: 'center',
             // Efecto de profundidad
             background: selected 
               ? `linear-gradient(135deg, ${seatStyle.backgroundColor} 0%, ${seatStyle.backgroundColor}dd 100%)`
@@ -531,15 +534,13 @@ const SeatRenderer = ({
           {getRowNumber(row)}
         </div>
         
-        {/* Contenedor de asientos con separación visual */}
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center',
-          gap: '1px',
-          position: 'relative',
-          overflowX: 'auto',
-          maxWidth: '100%'
-        }}>
+          {/* Contenedor de asientos con separación visual */}
+          <div style={{ 
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            width: '100%', // ocupa todo el ancho del contenedor
+          }}>
           {Array.from({ length: Math.min(dimensions.displaySeatsPerRow, 25) }).map((_, seat) => renderSeat(row, seat))}
           {dimensions.displaySeatsPerRow > 25 && (
             <div style={{
@@ -571,6 +572,7 @@ const SeatRenderer = ({
 
   // Calcular el ancho total del contenedor basado en el contenido
   const getContainerWidth = () => {
+    if(isMobile) return '100%';
     if (responsiveMode) {
       const seatTotalWidth = (seatSize.width + (seatSize.margin * 2)) * seatsPerRow;
       const labelWidth = rowLabelWidth;
@@ -581,6 +583,7 @@ const SeatRenderer = ({
 
   // Calcular el ancho máximo permitido para evitar overflow
   const getMaxWidth = () => {
+    if(isMobile) return '100%';
     const maxSeatsPerRow = Math.min(seatsPerRow, 25); // Límite máximo de 25 asientos por fila
     const seatTotalWidth = (seatSize.width + (seatSize.margin * 2)) * maxSeatsPerRow;
     const labelWidth = rowLabelWidth;
@@ -599,10 +602,10 @@ const SeatRenderer = ({
         padding: responsiveMode && isMobile ? '8px' : '12px',
         overflowX: responsiveMode ? 'auto' : 'hidden',
         WebkitOverflowScrolling: responsiveMode ? 'touch' : undefined,
-        width: responsiveMode ? containerWidth : 'auto',
-        maxWidth: maxWidth,
+        width: '100%',
+        maxWidth: '100%',
         minWidth: responsiveMode ? 'fit-content' : undefined,
-        backgroundColor: sectionBlocked ? '#F9FAFB' : 'white',
+        backgroundColor: color,
         borderRadius: '8px',
         border: sectionBlocked ? '2px dashed #D1D5DB' : '1px solid #E5E7EB',
         boxShadow: sectionBlocked 
@@ -628,7 +631,7 @@ const SeatRenderer = ({
           <div style={{
             width: '12px',
             height: '12px',
-            backgroundColor: sectionBlocked ? '#D1D5DB' : (color || COLORS.primary.main),
+            backgroundColor: 'white' || COLORS.primary.main,
             borderRadius: '50%',
             border: '2px solid white',
             boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
@@ -636,7 +639,7 @@ const SeatRenderer = ({
           <span style={{
             fontSize: `${seatSize.fontSize * 1.5}px`,
             fontWeight: '700',
-            color: sectionBlocked ? '#9CA3AF' : (COLORS?.neutral?.darker || '#1F2937')
+            color: sectionBlocked ? '#9CA3AF' : ('black' || '#1F2937')
           }}>
             {sectionName}
           </span>
@@ -646,7 +649,7 @@ const SeatRenderer = ({
           fontSize: `${seatSize.fontSize * 1.5}px`,
           fontWeight: '700',
           color: sectionBlocked ? '#9CA3AF' : (COLORS?.neutral?.grey4 || '#6B7280'),
-          backgroundColor: sectionBlocked ? '#F3F4F6' : '#F9FAFB',
+          backgroundColor: sectionBlocked ? '#F3F4F6' : 'white',
           padding: '2px 8px',
           borderRadius: '12px',
           border: '1px solid #E5E7EB'
@@ -658,7 +661,8 @@ const SeatRenderer = ({
       {/* Contenedor de asientos */}
       <div style={{
         position: 'relative',
-        padding: '8px 0'
+        padding: '8px 0',
+        backgroundColor: color,
       }}>
         {Array.from({ length: dimensions.displayRows }).map((_, row) => renderRow(row))}
       </div>
