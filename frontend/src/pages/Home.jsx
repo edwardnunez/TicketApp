@@ -378,7 +378,7 @@ const Home = () => {
         color: COLORS.neutral.grey700 
       }}>
         <TagOutlined style={{ marginRight: '8px', color: COLORS.primary.main }} />
-        Categorías {!isMobile && "Destacadas"}
+        Categorías {!isMobile && "destacadas"}
       </Title>
       <Flex wrap="wrap" gap="small">
         <Button 

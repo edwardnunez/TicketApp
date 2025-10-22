@@ -55,7 +55,7 @@ const avatars = [
 const EditProfile = () => {
   const [form] = Form.useForm();
   const [passwordForm] = Form.useForm();
-  const [selectedAvatar, setSelectedAvatar] = useState(avatars[0]);
+  const [selectedAvatar, setSelectedAvatar] = useState(null);
   const [showAvatarSelection, setShowAvatarSelection] = useState(false);
   const [userData, setUserData] = useState({ name: "", surname: "", email: "", username: "" });
   const [userId, setUserId] = useState(null);
@@ -128,7 +128,9 @@ const EditProfile = () => {
               username: u.username,
             });
             setUserId(u._id);
-            setSelectedAvatar(u.avatar || avatars[0]);
+            // Usar el avatar del usuario tal como está, sin asignar un valor por defecto
+            // Si el usuario no tiene avatar (null), mantener null para que aparezca "Ninguno" seleccionado
+            setSelectedAvatar(u.avatar ?? null);
           } else {
             message.error("Usuario no encontrado.");
           }

@@ -1,4 +1,5 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -26,6 +27,13 @@ import LocationCreation from "./pages/admin/LocationCreation";
  * @returns {JSX.Element} The main app component with routing configuration
  */
 function App() {
+  const location = useLocation();
+
+  // Scroll to top when route changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
   return (
     <div className="min-h-screen bg-gray-100">
       <Navbar />
@@ -34,7 +42,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        <Route path="/" element={<ProtectedRoute element={<Home />} />} />
+        <Route path="/" element={<Home />} />
         <Route path="/event/:id" element={<ProtectedRoute element={<EventDetails />} />} />
         <Route path="/about-us" element={<ProtectedRoute element={<AboutUs />} />} />
         <Route path="/profile" element={<ProtectedRoute element={<Profile />} />} />
