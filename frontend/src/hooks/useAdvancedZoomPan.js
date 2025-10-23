@@ -5,13 +5,13 @@ import { useState, useEffect, useCallback, useRef } from 'react';
  * Incluye pinch-to-zoom, touch drag, mouse wheel zoom, y mouse drag
  *
  * @param {Object} options - Opciones de configuración
- * @param {number} options.minZoom - Nivel mínimo de zoom (default: 0.3)
- * @param {number} options.maxZoom - Nivel máximo de zoom (default: 2.5)
- * @param {number} options.initialZoom - Nivel inicial de zoom (default: 0.7)
- * @param {number} options.zoomStep - Paso de zoom para botones (default: 0.2)
- * @param {boolean} options.enableMouseWheel - Habilitar zoom con rueda del mouse (default: true)
- * @param {boolean} options.enablePinch - Habilitar pinch-to-zoom (default: true)
- * @param {boolean} options.enablePan - Habilitar pan/drag (default: true)
+ * @param {number} options.minZoom - Nivel mínimo de zoom (por defecto: 0.3)
+ * @param {number} options.maxZoom - Nivel máximo de zoom (por defecto: 2.5)
+ * @param {number} options.initialZoom - Nivel inicial de zoom (por defecto: 0.7)
+ * @param {number} options.zoomStep - Paso de zoom para botones (por defecto: 0.2)
+ * @param {boolean} options.enableMouseWheel - Habilitar zoom con rueda del mouse (por defecto: true)
+ * @param {boolean} options.enablePinch - Habilitar pinch-to-zoom (por defecto: true)
+ * @param {boolean} options.enablePan - Habilitar pan/drag (por defecto: true)
  * @returns {Object} Estado y funciones de control
  */
 const useAdvancedZoomPan = ({

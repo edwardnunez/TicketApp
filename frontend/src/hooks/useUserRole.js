@@ -3,12 +3,12 @@ import { ensureAuthFreshness } from '../utils/authSession';
 import axios from 'axios';
 
 /**
- * Custom hook to manage user role and authentication state
- * @returns {Object} User role information and authentication status
- * @returns {string|null} userRole - Current user role (admin, user, null)
- * @returns {boolean} isAdmin - Whether user has admin privileges
- * @returns {boolean} isLoading - Loading state for role verification
- * @returns {boolean} isAuthenticated - Whether user is authenticated
+ * Hook personalizado para gestionar el rol del usuario y estado de autenticación
+ * @returns {Object} Información del rol del usuario y estado de autenticación
+ * @returns {string|null} userRole - Rol actual del usuario (admin, user, null)
+ * @returns {boolean} isAdmin - Si el usuario tiene privilegios de administrador
+ * @returns {boolean} isLoading - Estado de carga para verificación del rol
+ * @returns {boolean} isAuthenticated - Si el usuario está autenticado
  */
 const useUserRole = () => {
   const [userRole, setUserRole] = useState(null);

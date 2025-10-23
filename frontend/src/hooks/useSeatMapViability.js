@@ -1,6 +1,30 @@
+/**
+ * @file Hook personalizado para determinar viabilidad de renderizado de mapa de asientos
+ * @module hooks/useSeatMapViability
+ * @description Analiza complejidad del mapa de asientos, capacidades del dispositivo y determina estrategia óptima de renderizado
+ */
+
 import { useState, useEffect, useMemo } from 'react';
 import useDeviceDetection from './useDeviceDetection';
 
+/**
+ * Hook para determinar si un mapa de asientos es viable de renderizar basado en dispositivo y complejidad
+ * @param {Object} seatMapData - Datos de configuración del mapa de asientos
+ * @param {Array} seatMapData.sections - Array de secciones del lugar
+ * @param {string} seatMapData.type - Tipo de lugar (stadium, cinema, theater, concert)
+ * @param {Object} [containerDimensions=null] - Dimensiones opcionales del contenedor
+ * @param {number} containerDimensions.width - Ancho del contenedor en píxeles
+ * @param {number} containerDimensions.height - Alto del contenedor en píxeles
+ * @returns {Object} Resultados del análisis de viabilidad
+ * @returns {boolean} isViable - Si el mapa de asientos puede renderizarse efectivamente
+ * @returns {string|null} reason - Razón si no es viable
+ * @returns {string} recommendedView - Modo de vista recomendado (full, list, simplified, blocks, zoomed)
+ * @returns {number} scaleFactor - Factor de escala calculado para el renderizado
+ * @returns {boolean} hasOverlaps - Si las secciones se superponen
+ * @returns {number} overlapCount - Número de superposiciones detectadas
+ * @returns {number} minRequiredWidth - Ancho mínimo necesario para renderizado óptimo
+ * @returns {number} minRequiredHeight - Alto mínimo necesario para renderizado óptimo
+ */
 const useSeatMapViability = (seatMapData, containerDimensions = null) => {
   const deviceInfo = useDeviceDetection();
   const [viability, setViability] = useState({
@@ -98,11 +122,11 @@ const useSeatMapViability = (seatMapData, containerDimensions = null) => {
 
     // Para layouts específicos, verificar superposiciones lógicas
     if (type === 'stadium') {
-      const tribunas = sections.filter(s => 
-        s.position === 'north' || s.position === 'south' || 
+      const tribunas = sections.filter(s =>
+        s.position === 'north' || s.position === 'south' ||
         s.position === 'east' || s.position === 'west'
       );
-      
+
       // Verificar si hay demasiadas tribunas para el espacio disponible
       if (tribunas.length > 4) {
         overlaps += tribunas.length - 4;
@@ -113,7 +137,7 @@ const useSeatMapViability = (seatMapData, containerDimensions = null) => {
     sections.forEach(section => {
       const sectionArea = section.rows * section.seatsPerRow;
       const maxReasonableArea = 500; // Área máxima razonable para una sección
-      
+
       if (sectionArea > maxReasonableArea) {
         overlaps += 1;
       }
@@ -143,7 +167,7 @@ const useSeatMapViability = (seatMapData, containerDimensions = null) => {
     const { width: requiredWidth, height: requiredHeight } = calculateRequiredDimensions;
     const availableWidth = containerDimensions?.width || deviceInfo.screenWidth;
     const availableHeight = containerDimensions?.height || deviceInfo.screenHeight - 200;
-    
+
     const { hasOverlaps, overlapCount } = detectOverlaps;
     const scaleFactor = calculateScaleFactor;
 

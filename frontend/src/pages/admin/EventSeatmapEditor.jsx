@@ -227,7 +227,7 @@ const EventSeatMapEditor = () => {
       if (eventData._id) {
         console.log('Actualizando evento existente:', eventData._id);
         await axios.put(`${gatewayUrl}/events/${eventData._id}`, eventPayload);
-        message.success('Evento actualizado exitosamente');
+        message.success('Mapa de asientos guardado exitosamente');
       } else {
         console.log('Creando nuevo evento');
         await axios.post(`${gatewayUrl}/events`, eventPayload);
