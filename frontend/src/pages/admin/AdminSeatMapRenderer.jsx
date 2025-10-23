@@ -238,6 +238,7 @@ const AdminSeatMapRenderer = ({
               event={null}
               calculateSeatPrice={null}
               isAdminMode={true}
+              onSectionToggle={handleSectionClick}
             />
           </div>
 

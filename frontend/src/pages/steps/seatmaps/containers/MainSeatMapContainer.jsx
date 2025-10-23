@@ -200,7 +200,8 @@ const MainSeatMapContainer = ({
   event,
   calculateSeatPrice,
   isAdminMode = false,
-  isPreviewMode = false
+  isPreviewMode = false,
+  onSectionToggle = null
 }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
@@ -298,7 +299,7 @@ const MainSeatMapContainer = ({
   // Renderizar sección profesional
   const renderProfessionalSection = (section, customProps = {}) => {
     const sectionBlocked = isSectionBlocked(section.id);
-    
+
     return (
       <div
         key={section.id}
@@ -339,6 +340,7 @@ const MainSeatMapContainer = ({
             isTablet={isTablet}
             showTooltips={showTooltips}
             isHighContrast={isHighContrast}
+            onSectionToggle={onSectionToggle}
           />
         ) : (
           <ProfessionalGeneralAdmissionRenderer
