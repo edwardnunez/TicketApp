@@ -1,3 +1,13 @@
+/**
+ * @file Servicio de Usuario - Gestiona autenticación y administración de perfiles
+ * @module services/UserService
+ * @description Microservicio para registro de usuarios, login, actualización de perfiles y autenticación JWT
+ * @requires express
+ * @requires mongoose
+ * @requires bcrypt
+ * @requires jsonwebtoken
+ */
+
 import express from 'express';
 import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
@@ -7,7 +17,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 
 const app = express();
-const port = 8001; 
+const port = 8001;
 
 const secretKey = 'your-secret-key';
 
@@ -19,9 +29,9 @@ const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/userdb';
 mongoose.connect(mongoUri);
 
 /**
- * Validates email format using regex pattern
- * @param {string} email - Email address to validate
- * @returns {boolean} True if email format is valid
+ * Valida el formato del correo electrónico usando patrón regex
+ * @param {string} email - Dirección de correo electrónico a validar
+ * @returns {boolean} Verdadero si el formato del correo es válido
  */
 function validateEmailFormat(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -29,10 +39,10 @@ function validateEmailFormat(email) {
 }
 
 /**
- * Validates that all required fields are present in request body
- * @param {Object} req - Express request object
- * @param {string[]} requiredFields - Array of required field names
- * @throws {Error} If any required field is missing or email format is invalid
+ * Valida que todos los campos requeridos estén presentes en el cuerpo de la solicitud
+ * @param {Object} req - Objeto de solicitud de Express
+ * @param {string[]} requiredFields - Array de nombres de campos requeridos
+ * @throws {Error} Si falta algún campo requerido o el formato del email es inválido
  */
 function validateRequiredFields(req, requiredFields) {
     for (const field of requiredFields) {
@@ -40,7 +50,7 @@ function validateRequiredFields(req, requiredFields) {
         throw new Error(`Missing required field: ${field}`);
       }
     }
-    
+
     if (requiredFields.includes('email') && req.body.email) {
       if (!validateEmailFormat(req.body.email)) {
         throw new Error('Invalid email format');
@@ -49,17 +59,17 @@ function validateRequiredFields(req, requiredFields) {
 }
 
 /**
- * Creates a new user account
+ * Crea una nueva cuenta de usuario
  * @route POST /adduser
- * @param {Object} req.body - User registration data
- * @param {string} req.body.username - Unique username
- * @param {string} req.body.name - User first name
- * @param {string} req.body.surname - User last name
- * @param {string} req.body.email - User email address
- * @param {string} req.body.password - User password
- * @param {string} req.body.confirmPassword - Password confirmation
- * @param {string} [req.body.role="user"] - User role (default: user)
- * @returns {Object} User data with authentication tokens
+ * @param {Object} req.body - Datos de registro del usuario
+ * @param {string} req.body.username - Nombre de usuario único
+ * @param {string} req.body.name - Nombre del usuario
+ * @param {string} req.body.surname - Apellido del usuario
+ * @param {string} req.body.email - Dirección de correo del usuario
+ * @param {string} req.body.password - Contraseña del usuario
+ * @param {string} req.body.confirmPassword - Confirmación de contraseña
+ * @param {string} [req.body.role="user"] - Rol del usuario (por defecto: user)
+ * @returns {Object} Datos del usuario con tokens de autenticación
  */
 app.post("/adduser", async (req, res) => {
   try {
@@ -115,7 +125,7 @@ app.post("/adduser", async (req, res) => {
 
     const roleToken = jwt.sign(
       { userId: newUser._id, role: newUser.role },
-      secretKey, 
+      secretKey,
       { expiresIn: '1h' }
     );
 
@@ -141,12 +151,12 @@ app.post("/adduser", async (req, res) => {
 });
 
 /**
- * Authenticates user and returns JWT tokens
+ * Autentica al usuario y retorna tokens JWT
  * @route POST /login
- * @param {Object} req.body - Login credentials
- * @param {string} req.body.username - User username
- * @param {string} req.body.password - User password
- * @returns {Object} Authentication tokens and user data
+ * @param {Object} req.body - Credenciales de inicio de sesión
+ * @param {string} req.body.username - Nombre de usuario
+ * @param {string} req.body.password - Contraseña del usuario
+ * @returns {Object} Tokens de autenticación y datos del usuario
  */
 app.post('/login', async (req, res) => {
   try {
@@ -162,10 +172,10 @@ app.post('/login', async (req, res) => {
 
       const roleToken = jwt.sign(
         { userId: user._id, role: user.role },
-       secretKey, 
+       secretKey,
         { expiresIn: '1h' }
       );
-  
+
       res.json({ token: token, roleToken:roleToken, username: username, createdAt: user.createdAt });
     } else {
       res.status(401).json({ error: 'Credenciales inválidas' });
@@ -176,9 +186,9 @@ app.post('/login', async (req, res) => {
 });
 
 /**
- * Retrieves all users (excluding passwords)
+ * Obtiene todos los usuarios (excluyendo contraseñas)
  * @route GET /users
- * @returns {Object[]} Array of user objects without passwords
+ * @returns {Object[]} Array de objetos de usuario sin contraseñas
  */
 app.get("/users", async (req, res) => {
   try {
@@ -190,22 +200,22 @@ app.get("/users", async (req, res) => {
 });
 
 /**
- * Searches for a specific user by username or userId
+ * Busca un usuario específico por nombre de usuario o userId
  * @route GET /users/search
- * @param {string} [req.query.username] - Username to search for
- * @param {string} [req.query.userId] - User ID to search for
- * @returns {Object} User data without password
+ * @param {string} [req.query.username] - Nombre de usuario a buscar
+ * @param {string} [req.query.userId] - ID de usuario a buscar
+ * @returns {Object} Datos del usuario sin contraseña
  */
 app.get("/users/search", async (req, res) => {
   try {
     const { username, userId } = req.query;
-    
+
     let currentUser;
-    
+
     if (username) {
       // Buscar por coincidencia exacta primero
       currentUser = await User.findOne({ username: username });
-      
+
       // Si no se encuentra coincidencia exacta, buscar por coincidencia parcial
       if (!currentUser) {
         currentUser = await User.findOne({ username: { $regex: username, $options: 'i' } });
@@ -218,10 +228,7 @@ app.get("/users/search", async (req, res) => {
     } else {
       return res.status(400).json({ error: "Se requiere nombre de usuario o userId" });
     }
-    
-    console.log(currentUser);
-    console.log(username || userId);
-    
+
     if (!currentUser) {
       return res.status(404).json({ error: "Usuario no encontrado" });
     }
@@ -235,13 +242,13 @@ app.get("/users/search", async (req, res) => {
 });
 
 /**
- * Updates user profile information
+ * Actualiza la información del perfil del usuario
  * @route PUT /edit-user/:userId
- * @param {string} req.params.userId - User ID to update
- * @param {Object} req.body - Updated user data
- * @param {string} [req.body.password] - New password (requires currentPassword)
- * @param {string} [req.body.currentPassword] - Current password for verification
- * @returns {Object} Updated user data
+ * @param {string} req.params.userId - ID del usuario a actualizar
+ * @param {Object} req.body - Datos actualizados del usuario
+ * @param {string} [req.body.password] - Nueva contraseña (requiere currentPassword)
+ * @param {string} [req.body.currentPassword] - Contraseña actual para verificación
+ * @returns {Object} Datos actualizados del usuario
  */
 app.put("/edit-user/:userId", async (req, res) => {
   try {
@@ -330,8 +337,8 @@ app.put("/edit-user/:userId", async (req, res) => {
     }
 
     const updatedUser = await User.findByIdAndUpdate(
-      userId, 
-      updateData, 
+      userId,
+      updateData,
       { new: true, select: '-password' }
     );
 
@@ -350,11 +357,11 @@ app.put("/edit-user/:userId", async (req, res) => {
 });
 
 /**
- * Verifies JWT token and returns user role
+ * Verifica el token JWT y retorna el rol del usuario
  * @route POST /verifyToken
- * @param {Object} req.body - Token verification data
- * @param {string} req.body.token - JWT token to verify
- * @returns {Object} User role information
+ * @param {Object} req.body - Datos de verificación del token
+ * @param {string} req.body.token - Token JWT a verificar
+ * @returns {Object} Información del rol del usuario
  */
 app.post('/verifyToken', (req, res) => {
   const { token } = req.body;
@@ -376,13 +383,20 @@ app.post('/verifyToken', (req, res) => {
   }
 });
 
-
+/**
+ * Inicia el servidor del Servicio de Usuario
+ * @listens {port} 8001
+ */
 const server = app.listen(port, () => {
   console.log(`User Service listening at http://localhost:${port}`);
 });
 
+/**
+ * Manejador de limpieza para el cierre del servidor
+ * Cierra la conexión de MongoDB cuando el servidor se detiene
+ */
 server.on('close', () => {
     mongoose.connection.close();
-  });
+});
 
-  export default server;
+export default server;

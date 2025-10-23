@@ -1,5 +1,16 @@
+/**
+ * @file Modelo de datos de Evento para MongoDB con configuración de precios y mapa de asientos
+ * @module models/Event
+ */
+
 import mongoose from 'mongoose';
 
+/**
+ * Schema para precios individuales por fila dentro de una sección
+ * @typedef {Object} RowPricingSchema
+ * @property {number} row - Número de fila
+ * @property {number} price - Precio para esta fila específica (mínimo 0)
+ */
 const rowPricingSchema = new mongoose.Schema({
   row: { 
     type: Number, 
@@ -12,6 +23,17 @@ const rowPricingSchema = new mongoose.Schema({
   }
 });
 
+/**
+ * Schema para configuración de precios por sección
+ * @typedef {Object} SectionPricingSchema
+ * @property {string} sectionId - Identificador único de la sección
+ * @property {string} sectionName - Nombre para mostrar de la sección
+ * @property {RowPricingSchema[]} rowPricing - Array de precios específicos por fila
+ * @property {number} defaultPrice - Precio por defecto para filas no configuradas
+ * @property {number} capacity - Capacidad total de la sección
+ * @property {number} rows - Número de filas en la sección
+ * @property {number} seatsPerRow - Número de asientos por fila
+ */
 const sectionPricingSchema = new mongoose.Schema({
   sectionId: { 
     type: String, 
@@ -34,9 +56,17 @@ const sectionPricingSchema = new mongoose.Schema({
   capacity: { type: Number, required: true },
   rows: { type: Number, required: true },
   seatsPerRow: { type: Number, required: true },
-  
+
 });
 
+/**
+ * Schema para configuración del mapa de asientos incluyendo asientos y secciones bloqueadas
+ * @typedef {Object} SeatMapConfigurationSchema
+ * @property {string} seatMapId - Referencia al diseño del mapa de asientos
+ * @property {string[]} blockedSeats - Array de IDs de asientos bloqueados
+ * @property {string[]} blockedSections - Array de IDs de secciones bloqueadas
+ * @property {Date} configuredAt - Fecha y hora de configuración
+ */
 const seatMapConfigurationSchema = new mongoose.Schema({
   seatMapId: {
     type: String,
@@ -54,6 +84,25 @@ const seatMapConfigurationSchema = new mongoose.Schema({
   }
 });
 
+/**
+ * Schema principal del evento con todos los detalles, precios y configuración
+ * @typedef {Object} EventSchema
+ * @property {string} name - Nombre del evento
+ * @property {string} type - Tipo de evento (football, cinema, concert, theater, festival)
+ * @property {string} description - Descripción del evento
+ * @property {Date} date - Fecha y hora del evento
+ * @property {mongoose.Schema.Types.ObjectId} location - Referencia al modelo Location
+ * @property {string} state - Estado del evento (activo, proximo, finalizado, cancelado)
+ * @property {number} capacity - Capacidad total del evento
+ * @property {number} price - Precio base (para compatibilidad hacia atrás)
+ * @property {SectionPricingSchema[]} sectionPricing - Configuración de precios por sección
+ * @property {boolean} usesSectionPricing - Bandera que indica si el evento usa precios por sección
+ * @property {boolean} usesRowPricing - Bandera que indica si el evento usa precios por fila
+ * @property {SeatMapConfigurationSchema} seatMapConfiguration - Configuración de bloqueo del mapa de asientos
+ * @property {Object} imageData - Datos de imagen del evento
+ * @property {boolean} hasCustomImage - Bandera que indica si el evento tiene imagen personalizada
+ * @property {string} createdBy - ID del administrador que creó el evento
+ */
 const eventSchema = new mongoose.Schema({
   name: { type: String, required: true },
   type: { 
@@ -106,7 +155,11 @@ const eventSchema = new mongoose.Schema({
   
 }, { timestamps: true });
 
-// Middleware para calcular capacidad total basada en sectionPricing
+/**
+ * Middleware pre-guardado para calcular la capacidad total basada en precios por sección
+ * @function
+ * @param {Function} next - Callback para continuar al siguiente middleware
+ */
 eventSchema.pre('save', function(next) {
   if (this.usesSectionPricing && this.sectionPricing && this.sectionPricing.length > 0) {
     // Calcular capacidad total sumando todas las secciones
@@ -117,6 +170,11 @@ eventSchema.pre('save', function(next) {
   next();
 });
 
+/**
+ * Obtiene la URL de datos para la imagen del evento
+ * @method
+ * @returns {string|null} Cadena de URL de datos o null si no existe imagen
+ */
 eventSchema.methods.getImageDataUrl = function() {
   if (this.imageData && this.imageData.data && this.imageData.contentType) {
     return `data:${this.imageData.contentType};base64,${this.imageData.data}`;
@@ -124,12 +182,23 @@ eventSchema.methods.getImageDataUrl = function() {
   return null;
 };
 
-// Método para verificar si tiene imagen personalizada
+/**
+ * Verifica si el evento tiene una imagen personalizada
+ * @method
+ * @returns {boolean} Verdadero si el evento tiene datos de imagen personalizada
+ */
 eventSchema.methods.hasImage = function() {
   return this.hasCustomImage && this.imageData && this.imageData.data;
 };
 
-// Método para calcular el precio de un asiento específico
+/**
+ * Calcula el precio para un asiento específico
+ * @method
+ * @param {string} sectionId - Identificador de la sección
+ * @param {number} row - Número de fila
+ * @param {number} seat - Número de asiento
+ * @returns {number} Precio para el asiento especificado
+ */
 eventSchema.methods.getSeatPrice = function(sectionId, row, seat) {
   if (!this.usesSectionPricing) {
     return this.price;
@@ -150,6 +219,11 @@ eventSchema.methods.getSeatPrice = function(sectionId, row, seat) {
   return section.defaultPrice || this.price;
 };
 
+/**
+ * Obtiene el precio mínimo del evento
+ * @method
+ * @returns {number} Precio mínimo entre todas las secciones y filas
+ */
 eventSchema.methods.getMinPrice = function() {
   if (!this.usesSectionPricing || !this.sectionPricing || this.sectionPricing.length === 0) {
     return this.price;
@@ -173,7 +247,11 @@ eventSchema.methods.getMinPrice = function() {
   return minPrice === Infinity ? this.price : minPrice;
 };
 
-// Método para obtener el precio máximo del evento
+/**
+ * Obtiene el precio máximo del evento
+ * @method
+ * @returns {number} Precio máximo entre todas las secciones y filas
+ */
 eventSchema.methods.getMaxPrice = function() {
   if (!this.usesSectionPricing || !this.sectionPricing || this.sectionPricing.length === 0) {
     return this.price;
@@ -197,7 +275,11 @@ eventSchema.methods.getMaxPrice = function() {
   return maxPrice;
 };
 
-// Método para obtener el rango de precios como string
+/**
+ * Obtiene el rango de precios como una cadena formateada
+ * @method
+ * @returns {string} Cadena de rango de precios (ej: "€20" o "€20 - €50")
+ */
 eventSchema.methods.getPriceRange = function() {
   if (!this.usesSectionPricing || !this.sectionPricing || this.sectionPricing.length === 0) {
     return `€${this.price}`;
@@ -213,7 +295,11 @@ eventSchema.methods.getPriceRange = function() {
   return `€${minPrice} - €${maxPrice}`;
 };
 
-// Método para obtener información detallada de precios por sección
+/**
+ * Obtiene información detallada de precios para todas las secciones
+ * @method
+ * @returns {Array<Object>} Array de objetos con información de precios por sección
+ */
 eventSchema.methods.getSectionPricingInfo = function() {
   if (!this.usesSectionPricing || !this.sectionPricing) {
     return [];
@@ -253,7 +339,12 @@ eventSchema.methods.getSectionPricingInfo = function() {
   });
 };
 
-// Método para verificar si un asiento está bloqueado
+/**
+ * Verifica si un asiento específico está bloqueado
+ * @method
+ * @param {string} seatId - Identificador del asiento en formato "sectionId-row-seat"
+ * @returns {boolean} Verdadero si el asiento está bloqueado individualmente o por bloqueo de sección
+ */
 eventSchema.methods.isSeatBlocked = function(seatId) {
   // Verificar si el asiento está bloqueado individualmente
   if (this.seatMapConfiguration && this.seatMapConfiguration.blockedSeats && 
@@ -267,12 +358,14 @@ eventSchema.methods.isSeatBlocked = function(seatId) {
     const sectionId = seatId.split('-')[0]; // Extraer sectionId del formato "sectionId-row-seat"
     return this.seatMapConfiguration.blockedSections.includes(sectionId);
   }
-  
 
-  
   return false;
 };
 
+/**
+ * Modelo de Evento para operaciones de base de datos
+ * @type {mongoose.Model}
+ */
 const Event = mongoose.model("Event", eventSchema);
 
 export default Event;
