@@ -856,8 +856,6 @@ const EventCreation = () => {
           const createEventResponse = await axios.post(`${gatewayUrl}/events`, eventData);
           const createdEvent = createEventResponse.data;
           
-          message.success('Evento creado correctamente');
-          
           // Redirigir a la página de configuración del seatmap
           navigate('/admin/event-seatmap-config', { 
             state: { 
