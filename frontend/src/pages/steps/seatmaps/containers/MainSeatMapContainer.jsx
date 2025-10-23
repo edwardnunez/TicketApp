@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Typography, Button, Space, notification } from 'antd';
-import { 
+import {
   FullscreenOutlined,
   CompressOutlined,
   InfoCircleOutlined
@@ -11,6 +11,7 @@ import AltSeatMapLegend from '../ui/AltSeatMapLegend';
 import VenueStageRenderer from '../renderers/VenueStageRenderer';
 import ZoomControls from '../ui/ZoomControls';
 import AccessibilityFeatures from '../ui/AccessibilityFeatures';
+import useAdvancedZoomPan from '../../../../hooks/useAdvancedZoomPan';
 import '../styles/SeatMapAnimations.css';
 import '../styles/SeatMapLayouts.css';
 
@@ -31,7 +32,17 @@ const { Title, Text } = Typography;
  */
 const SelectionTopBar = ({ selectedSeats, maxSeats, formatPrice, event, showLegend, setShowLegend, isFullscreen, toggleFullscreen }) => {
   const totalPrice = selectedSeats.reduce((total, seat) => total + (seat.price || 0), 0);
-  
+  const [isMobile, setIsMobile] = React.useState(false);
+
+  React.useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <div
       style={{
@@ -42,80 +53,136 @@ const SelectionTopBar = ({ selectedSeats, maxSeats, formatPrice, event, showLege
         zIndex: 100,
         backgroundColor: 'rgba(255, 255, 255, 0.95)',
         backdropFilter: 'blur(10px)',
-        padding: '12px 16px',
+        padding: isMobile ? '10px 12px' : '12px 16px',
         borderBottom: `1px solid ${COLORS.neutral.grey2}`,
         display: 'flex',
+        flexDirection: isMobile ? 'column' : 'row',
         justifyContent: 'space-between',
-        alignItems: 'center'
+        alignItems: isMobile ? 'stretch' : 'center',
+        gap: isMobile ? '10px' : '0'
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <Title level={4} style={{ margin: 0, color: COLORS.neutral.darker }}>
+      <div style={{
+        display: 'flex',
+        flexDirection: isMobile ? 'column' : 'row',
+        alignItems: isMobile ? 'flex-start' : 'center',
+        gap: isMobile ? '4px' : '12px',
+        minWidth: 0,
+        flex: isMobile ? 'none' : 1
+      }}>
+        <Title level={4} style={{
+          margin: 0,
+          color: COLORS.neutral.darker,
+          fontSize: isMobile ? '16px' : '20px',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis'
+        }}>
           Selección de asientos
         </Title>
-        <Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
+        <Text style={{
+          color: COLORS.neutral.grey4,
+          fontSize: isMobile ? '11px' : '12px',
+          whiteSpace: isMobile ? 'normal' : 'nowrap',
+          lineHeight: '1.3'
+        }}>
           Selecciona hasta {maxSeats} asiento(s) para continuar
         </Text>
       </div>
-      
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+
+      <div style={{
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: isMobile ? '8px' : '16px',
+        flexWrap: isMobile ? 'wrap' : 'nowrap',
+        justifyContent: isMobile ? 'space-between' : 'flex-end',
+        width: isMobile ? '100%' : 'auto'
+      }}>
         {/* Información de selección */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: isMobile ? '8px' : '16px',
+          flex: isMobile ? '1 1 auto' : 'none'
+        }}>
           <div style={{ textAlign: 'center' }}>
-            <Text style={{ 
-              fontSize: '12px',
+            <Text style={{
+              fontSize: isMobile ? '10px' : '12px',
               color: COLORS.neutral.grey4,
-              display: 'block'
+              display: 'block',
+              whiteSpace: 'nowrap'
             }}>
-              Asientos seleccionados
+              Asientos
             </Text>
-            <Text style={{ 
-              fontSize: '16px',
+            <Text style={{
+              fontSize: isMobile ? '14px' : '16px',
               fontWeight: 'bold',
-              color: COLORS.primary.main
+              color: COLORS.primary.main,
+              whiteSpace: 'nowrap'
             }}>
               {selectedSeats.length} / {maxSeats}
             </Text>
           </div>
-          
+
           {selectedSeats.length > 0 && (
             <div style={{ textAlign: 'center' }}>
-              <Text style={{ 
-                fontSize: '12px',
+              <Text style={{
+                fontSize: isMobile ? '10px' : '12px',
                 color: COLORS.neutral.grey4,
-                display: 'block'
+                display: 'block',
+                whiteSpace: 'nowrap'
               }}>
                 Total
               </Text>
-              <Text style={{ 
-                fontSize: '16px',
+              <Text style={{
+                fontSize: isMobile ? '14px' : '16px',
                 fontWeight: 'bold',
-                color: COLORS.primary.main
+                color: COLORS.primary.main,
+                whiteSpace: 'nowrap'
               }}>
                 {formatPrice(totalPrice)}
               </Text>
             </div>
           )}
         </div>
-        
+
         {/* Botones de control */}
-        <Space>
-          <Button
-            size="small"
-            icon={<InfoCircleOutlined />}
-            onClick={() => setShowLegend(!showLegend)}
-            type={showLegend ? 'primary' : 'default'}
-          >
-            Leyenda
-          </Button>
-          <Button
-            size="small"
-            icon={isFullscreen ? <CompressOutlined /> : <FullscreenOutlined />}
-            onClick={toggleFullscreen}
-          >
-            {isFullscreen ? 'Salir' : 'Pantalla completa'}
-          </Button>
-        </Space>
+        {!isMobile && (
+          <Space>
+            <Button
+              size="small"
+              icon={<InfoCircleOutlined />}
+              onClick={() => setShowLegend(!showLegend)}
+              type={showLegend ? 'primary' : 'default'}
+            >
+              Leyenda
+            </Button>
+            <Button
+              size="small"
+              icon={isFullscreen ? <CompressOutlined /> : <FullscreenOutlined />}
+              onClick={toggleFullscreen}
+            >
+              {isFullscreen ? 'Salir' : 'Pantalla completa'}
+            </Button>
+          </Space>
+        )}
+        {/* En móvil, solo mostrar iconos sin texto */}
+        {isMobile && (
+          <Space size="small">
+            <Button
+              size="small"
+              icon={<InfoCircleOutlined />}
+              onClick={() => setShowLegend(!showLegend)}
+              type={showLegend ? 'primary' : 'default'}
+            />
+            <Button
+              size="small"
+              icon={isFullscreen ? <CompressOutlined /> : <FullscreenOutlined />}
+              onClick={toggleFullscreen}
+            />
+          </Space>
+        )}
       </div>
     </div>
   );
@@ -137,21 +204,36 @@ const MainSeatMapContainer = ({
 }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
-  const [zoomLevel, setZoomLevel] = useState(0.7);
-  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showLegend, setShowLegend] = useState(false);
   const [hoveredSection, setHoveredSection] = useState(null);
-  
+
   // Estados de accesibilidad
   const [isHighContrast, setIsHighContrast] = useState(false);
   const [isKeyboardNavigationEnabled, setIsKeyboardNavigationEnabled] = useState(false);
   const [showTooltips, setShowTooltips] = useState(true);
-  
+
   const containerRef = useRef(null);
   const seatMapRef = useRef(null);
+
+  // Hook avanzado de zoom y pan con soporte táctil completo
+  const {
+    zoomLevel,
+    panOffset,
+    isInteracting,
+    zoomIn: handleZoomIn,
+    zoomOut: handleZoomOut,
+    reset: handleResetZoom,
+    handlers: zoomPanHandlers
+  } = useAdvancedZoomPan({
+    minZoom: 0.15,
+    maxZoom: 2.5,
+    initialZoom: isMobile ? 0.25 : 0.7, // Zoom inicial más bajo en móvil para ver todo el mapa amplio
+    zoomStep: 0.15,
+    enableMouseWheel: true,
+    enablePinch: true,
+    enablePan: true
+  });
 
   // Detectar tipo de dispositivo
   useEffect(() => {
@@ -160,69 +242,14 @@ const MainSeatMapContainer = ({
       setIsMobile(width < 768);
       setIsTablet(width >= 768 && width < 1024);
     };
-    
+
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Manejar zoom con rueda del mouse
-  const handleWheel = useCallback((e) => {
-    e.preventDefault();
-    const delta = e.deltaY > 0 ? -0.1 : 0.1;
-    const newZoom = Math.max(0.3, Math.min(2.5, zoomLevel + delta)); // Reduced max zoom from 3 to 2.5
-    setZoomLevel(newZoom);
-  }, [zoomLevel]);
-
-  // Manejar arrastre del mapa
-  const handleMouseDown = useCallback((e) => {
-    if (e.target === seatMapRef.current || seatMapRef.current?.contains(e.target)) {
-      setIsDragging(true);
-      setDragStart({ x: e.clientX - panOffset.x, y: e.clientY - panOffset.y });
-    }
-  }, [panOffset]);
-
-  const handleMouseMove = useCallback((e) => {
-    if (isDragging) {
-      setPanOffset({
-        x: e.clientX - dragStart.x,
-        y: e.clientY - dragStart.y
-      });
-    }
-  }, [isDragging, dragStart]);
-
-  const handleMouseUp = useCallback(() => {
-    setIsDragging(false);
-  }, []);
-
-  // Event listeners para arrastre
-  useEffect(() => {
-    if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-      return () => {
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
-      };
-    }
-  }, [isDragging, handleMouseMove, handleMouseUp]);
-
-  // Controles de zoom
-  const handleZoomIn = () => {
-    setZoomLevel(prev => Math.min(2.5, prev + 0.2)); // Reduced max zoom from 3 to 2.5
-  };
-
-  const handleZoomOut = () => {
-    setZoomLevel(prev => Math.max(0.3, prev - 0.2)); // Reduced min zoom from 0.5 to 0.3
-  };
-
-  const handleResetZoom = () => {
-    setZoomLevel(0.7);
-    setPanOffset({ x: 0, y: 0 });
-  };
-
   // Función para alternar pantalla completa
-  const toggleFullscreen = () => {
+  const toggleFullscreen = useCallback(() => {
     if (!document.fullscreenElement) {
       containerRef.current?.requestFullscreen();
       setIsFullscreen(true);
@@ -230,14 +257,14 @@ const MainSeatMapContainer = ({
       document.exitFullscreen();
       setIsFullscreen(false);
     }
-  };
+  }, []);
 
   // Manejar cambios de pantalla completa
   useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
     };
-    
+
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
@@ -801,13 +828,11 @@ const MainSeatMapContainer = ({
       className={`professional-seatmap-container ${isFullscreen ? 'fullscreen' : ''} ${isHighContrast ? 'high-contrast' : ''}`}
       style={{
         position: 'relative',
-        width: isPreviewMode ? '100%' : (isFullscreen ? '100%' : '90vw'),
         maxWidth: isPreviewMode ? '100%' : (isFullscreen ? '100%' : '2400px'),
-        height: isFullscreen ? '100vh' : 'auto',
-        minHeight: isPreviewMode ? '600px' : (isMobile ? '150vh' : '150vh'),
+        minHeight: isPreviewMode ? '600px' : (isMobile ? '80vh' : '150vh'),
         backgroundColor: COLORS.neutral.grey50,
         borderRadius: isFullscreen ? '0' : (isPreviewMode ? '0' : '16px'),
-        overflow: 'visible', // Restored to 'visible' to prevent content cutoff
+        overflow: 'hidden', // Cambiar a hidden para contener el contenido
         boxShadow: isFullscreen ? 'none' : (isPreviewMode ? 'none' : COLORS.shadows.xl),
         margin: isPreviewMode ? '0' : '0 auto'
       }}
@@ -839,8 +864,8 @@ const MainSeatMapContainer = ({
         {/* Controles de zoom */}
         <div style={{
           position: 'absolute',
-          top: isAdminMode ? '250px' : ((!isAdminMode && !isPreviewMode) ? '70px' : '10px'),
-          right: isAdminMode ? '120px' : '10px',
+          top: isAdminMode ? (isMobile ? '10px' : '250px') : ((!isAdminMode && !isPreviewMode) ? '70px' : '10px'),
+          right: isMobile ? '10px' : (isAdminMode ? '120px' : '10px'),
           zIndex: 150
         }}>
           <ZoomControls
@@ -862,30 +887,39 @@ const MainSeatMapContainer = ({
             position: 'relative',
             width: '100%',
             height: '100%',
-            overflow: 'auto',
-            cursor: isDragging ? 'grabbing' : 'grab',
+            overflow: isMobile ? 'auto' : 'hidden', // En móvil permitir scroll, en desktop usar pan
+            cursor: !isMobile && isInteracting ? 'grabbing' : (isMobile ? 'auto' : 'grab'),
             display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
+            justifyContent: isMobile ? 'flex-start' : 'center',
+            alignItems: isMobile ? 'flex-start' : 'center',
             padding: 0,
-            flex: 1
+            flex: 1,
+            touchAction: isMobile ? 'pan-x pan-y pinch-zoom' : 'none', // En móvil permitir scroll nativo + pinch zoom
+            WebkitUserSelect: 'none',
+            userSelect: 'none',
+            WebkitOverflowScrolling: 'touch', // Scroll suave en iOS
+            minHeight: isMobile ? 'calc(80vh - 100px)' : '100%' // Restar espacio para top bar en móvil
           }}
-          onWheel={handleWheel}
-          onMouseDown={handleMouseDown}
+          onWheel={!isMobile ? zoomPanHandlers.onWheel : undefined}
+          onMouseDown={!isMobile ? zoomPanHandlers.onMouseDown : undefined}
+          onTouchStart={zoomPanHandlers.onTouchStart}
+          onTouchMove={zoomPanHandlers.onTouchMove}
+          onTouchEnd={zoomPanHandlers.onTouchEnd}
         >
           <div
             className="seatmap-transform"
             style={{
-              transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`,
-              transformOrigin: 'center center',
-              transition: isDragging ? 'none' : 'transform 0.3s ease',
+              transform: isMobile ? `scale(${zoomLevel})` : `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`,
+              transformOrigin: isMobile ? 'top left' : 'center center',
+              transition: isInteracting ? 'none' : 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
               width: 'fit-content',
               height: 'fit-content',
               position: 'relative',
-              minWidth: 'auto',
+              minWidth: isMobile ? '1400px' : 'auto', // En móvil mantener tamaño AMPLIO para evitar apelotonamiento
               minHeight: 'auto',
               maxWidth: 'none',
-              maxHeight: 'none'
+              maxHeight: 'none',
+              willChange: isInteracting ? 'transform' : 'auto'
             }}
           >
             {renderVenueLayout()}

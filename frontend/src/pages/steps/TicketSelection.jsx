@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { Card, InputNumber, Typography, Alert, Spin, Button } from "antd";
 import { COLORS } from "../../components/colorscheme";
 import GenericSeatRenderer from "./seatmaps/renderers/GenericSeatRenderer";
-import ResponsiveSeatRenderer from "./seatmaps/renderers/ResponsiveSeatRenderer";
+import ManualSeatSelection from "./seatmaps/components/ManualSeatSelection";
+import SeatSelectionViewSwitcher from "./seatmaps/components/SeatSelectionViewSwitcher";
 import axios from 'axios';
 
 const { Title, Text } = Typography;
@@ -37,8 +38,9 @@ export default function SelectTickets({
   const [isMobileOrTablet, setIsMobileOrTablet] = useState(false);
   const [ticketAvailability, setTicketAvailability] = useState(null);
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
+  const [currentView, setCurrentView] = useState('map'); // 'map' o 'manual'
   const memoizedEvent = useMemo(() => event, [event]);
-  
+
   // Ref para trackear el evento anterior y evitar limpiezas innecesarias
   const previousEventId = useRef(null);
   
@@ -440,11 +442,10 @@ export default function SelectTickets({
       );
     }
 
-    // Determinar qué renderer usar basado en el tamaño de pantalla
-    const SeatMapComponent = isMobileOrTablet ? ResponsiveSeatRenderer : GenericSeatRenderer;
-
+    // Siempre usar GenericSeatRenderer (que usa MainSeatMapContainer) tanto en móvil como en desktop
+    // El mapa se adapta automáticamente al tamaño de pantalla con zoom/pan
     return (
-      <SeatMapComponent
+      <GenericSeatRenderer
         seatMapData={seatMapData}
         selectedSeats={selectedSeats}
         onSeatSelect={handleSeatSelection}
@@ -456,7 +457,7 @@ export default function SelectTickets({
         event={memoizedEvent} // Pasar el evento para el cálculo de precios
       />
     );
-  }, [loading, error, seatMapData, selectedSeats, handleSeatSelection, occupiedSeats, blockedSeats, blockedSections, formatPrice, memoizedEvent, maxSelectableTickets, isMobileOrTablet]);
+  }, [loading, error, seatMapData, selectedSeats, handleSeatSelection, occupiedSeats, blockedSeats, blockedSections, formatPrice, memoizedEvent, maxSelectableTickets]);
 
 
 
@@ -492,16 +493,37 @@ export default function SelectTickets({
         <>
           <Alert
             message="Selección de asientos"
-            description={`Haz clic en los asientos que deseas comprar. Puedes seleccionar hasta ${maxSelectableTickets} asientos. ${selectedSeats.length > 0 ? `Total: ${formatPrice(totalFromSeats)}` : ''}`}
+            description={`${currentView === 'map' ? 'Haz clic en los asientos que deseas comprar.' : 'Selecciona tus asientos usando el formulario.'} Puedes seleccionar hasta ${maxSelectableTickets} asientos. ${selectedSeats.length > 0 ? `Total: ${formatPrice(totalFromSeats)}` : ''}`}
             type="info"
             showIcon
             style={{ marginBottom: '24px' }}
           />
 
-          {renderSeatMap()}
+          {/* Switcher de vistas */}
+          <SeatSelectionViewSwitcher
+            currentView={currentView}
+            onViewChange={setCurrentView}
+          />
 
-          {/* Mostrar resumen de asientos seleccionados solo en desktop cuando no usa ResponsiveSeatRenderer */}
-          {!isMobileOrTablet && selectedSeats.length > 0 && (
+          {/* Renderizar vista según selección */}
+          {currentView === 'map' ? (
+            renderSeatMap()
+          ) : (
+            <ManualSeatSelection
+              seatMapData={seatMapData}
+              selectedSeats={selectedSeats}
+              onSeatSelect={handleSeatSelection}
+              maxSeats={maxSelectableTickets}
+              occupiedSeats={occupiedSeats}
+              blockedSeats={blockedSeats}
+              blockedSections={blockedSections}
+              formatPrice={formatPrice}
+              event={memoizedEvent}
+            />
+          )}
+
+          {/* Mostrar resumen de asientos seleccionados solo en desktop y cuando está en vista de mapa */}
+          {!isMobileOrTablet && selectedSeats.length > 0 && currentView === 'map' && (
             <Card style={{ marginTop: '24px', backgroundColor: COLORS.neutral.grey1 }}>
               <Title level={4} style={{ color: COLORS.neutral.darker, marginBottom: '16px' }}>
                 Resumen de asientos seleccionados

@@ -54,7 +54,7 @@ const SeatMapContainer = ({
       className="enhanced-seatmap-container"
       style={{
         position: 'relative',
-        width: '91vw',
+        width: '100%',
         maxWidth: '2400px',
         height: 'auto',
         minHeight: '150vh',
@@ -73,10 +73,7 @@ const SeatMapContainer = ({
         className="seatmap-content"
         style={{
           position: 'relative',
-          width: 'max-content',
           minWidth: '100%',
-          maxWidth: '100vw',
-          minHeight: '140vh',
           paddingTop: '20px',
           overflow: 'visible',
           margin: '0 auto'
