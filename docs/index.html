@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Home</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Home</h1>
+
+    
+
+
+
+    
+
+
+    <h3> </h3>
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+    <section>
+        <article><h1>🎟️ TicketApp</h1>
+<p><img src="https://img.shields.io/badge/React-18.2.0-61dafb.svg" alt="React">
+<img src="https://img.shields.io/badge/Node.js-18+-339933.svg" alt="Node.js">
+<img src="https://img.shields.io/badge/MongoDB-5.0+-47A248.svg" alt="MongoDB">
+<img src="https://img.shields.io/badge/Docker-Compose-2496ED.svg" alt="Docker"></p>
+<p>Una plataforma completa de gestión y venta de tickets desarrollada con arquitectura de microservicios. TicketApp permite crear eventos, gestionar ubicaciones con mapas de asientos interactivos, procesar pagos y generar tickets con códigos QR.</p>
+<h2>📋 Tabla de contenidos</h2>
+<ul>
+<li><a href="#-caracter%C3%ADsticas">Características</a></li>
+<li><a href="#-arquitectura">Arquitectura</a></li>
+<li><a href="#-tecnolog%C3%ADas">Tecnologías</a></li>
+<li><a href="#-instalaci%C3%B3n">Instalación</a>
+<ul>
+<li><a href="#desarrollo-local-con-docker">Desarrollo Local</a></li>
+<li><a href="#despliegue-en-azure">Despliegue en Azure</a></li>
+</ul>
+</li>
+<li><a href="#-configuraci%C3%B3n">Configuración</a></li>
+<li><a href="#-estructura-del-proyecto">Estructura del Proyecto</a></li>
+<li><a href="#-autores">Autores</a></li>
+</ul>
+<h2>✨ Características</h2>
+<h3>Para usuarios</h3>
+<ul>
+<li>🔍 <strong>Búsqueda y filtrado</strong>: Explora eventos por categoría, fecha, ubicación y precio</li>
+<li>🎫 <strong>Compra de entradas</strong>: Proceso de compra intuitivo con múltiples métodos de pago (PayPal, tarjeta)</li>
+<li>🪑 <strong>Selección interactiva de asientos</strong>: Mapas de asientos visuales con diferentes diseños según el tipo de venue</li>
+<li>📱 <strong>Entradas digitales</strong>: Códigos QR únicos enviados por email para cada entradas</li>
+<li>👤 <strong>Gestión de perfil</strong>: Historial de compras y personalización de avatar</li>
+<li>📧 <strong>Notificaciones por email</strong>: Confirmaciones de compra y recordatorios de eventos</li>
+</ul>
+<h3>Para administradores</h3>
+<ul>
+<li>📊 <strong>Panel de control</strong>: Vista completa de ventas, ingresos y estadísticas</li>
+<li>🎭 <strong>Gestión de eventos</strong>: Crear, editar y cancelar eventos con imágenes personalizadas</li>
+<li>🏟️ <strong>Editor de seatmaps</strong>: Herramienta visual para diseñar mapas de asientos personalizados</li>
+<li>📍 <strong>Gestión de ubicaciones</strong>: Administrar venues con capacidades y tipos de configuración</li>
+<li>💰 <strong>Análisis de ventas</strong>: Reportes detallados de ingresos por evento y categoría</li>
+<li>📈 <strong>Estadísticas en tiempo real</strong>: Monitoreo de ventas y disponibilidad</li>
+</ul>
+<h3>Características técnicas</h3>
+<ul>
+<li>🔐 <strong>Autenticación JWT</strong>: Sistema seguro de autenticación y autorización basado en roles</li>
+<li>🎨 <strong>Diseño responsive</strong>: Optimizado para móviles, tablets y escritorio</li>
+<li>⚡ <strong>Performance optimizado</strong>: Renderizado eficiente de mapas de asientos complejos</li>
+<li>🔄 <strong>Actualización de estados</strong>: Sistema automático de actualización de estados de eventos</li>
+<li>🖼️ <strong>Gestión de imágenes</strong>: Carga y recorte de imágenes para eventos y avatares</li>
+<li>📦 <strong>Arquitectura de microservicios</strong>: Servicios independientes y escalables</li>
+</ul>
+<h2>🏗️ Arquitectura</h2>
+<p>TicketApp está construida siguiendo una arquitectura de microservicios, donde cada servicio es independiente y se comunica a través de un API Gateway central.</p>
+<pre class="prettyprint source"><code>┌─────────────────────────────────────────────────────────────┐
+│                         Frontend                            │
+│                    (React + Ant Design)                     │
+└────────────────────────────┬────────────────────────────────┘
+                             │
+                             ▼
+                    ┌─────────────────┐
+                    │   API Gateway   │
+                    │    (Port 8000)  │
+                    └────────┬────────┘
+                             │
+         ┌───────────────────┼───────────────────┬────────────┐
+         │                   │                   │            │
+         ▼                   ▼                   ▼            ▼
+┌────────────────┐  ┌────────────────┐  ┌────────────────┐  ┌──────────────────┐
+│  User Service  │  │ Event Service  │  │ Ticket Service │  │ Location Service │
+│  (Port 8001)   │  │  (Port 8003)   │  │  (Port 8002)   │  │   (Port 8004)    │
+└───────┬────────┘  └───────┬────────┘  └───────┬────────┘  └────────┬─────────┘
+        │                   │                   │                    │
+        ▼                   ▼                   ▼                    ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                              MongoDB                                         │
+│            (userdb, eventdb, ticketdb, locationdb, seatmapdb)               │
+└──────────────────────────────────────────────────────────────────────────────┘
+</code></pre>
+<h3>Servicios</h3>
+<table>
+<thead>
+<tr>
+<th>Servicio</th>
+<th>Puerto</th>
+<th>Responsabilidad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Frontend</strong></td>
+<td>3000</td>
+<td>Interfaz de usuario React</td>
+</tr>
+<tr>
+<td><strong>Gateway</strong></td>
+<td>8000</td>
+<td>Enrutamiento y orquestación de APIs</td>
+</tr>
+<tr>
+<td><strong>User Service</strong></td>
+<td>8001</td>
+<td>Autenticación, registro y gestión de usuarios</td>
+</tr>
+<tr>
+<td><strong>Ticket Service</strong></td>
+<td>8002</td>
+<td>Compra de tickets, generación de QR y emails</td>
+</tr>
+<tr>
+<td><strong>Event Service</strong></td>
+<td>8003</td>
+<td>CRUD de eventos y gestión de estados</td>
+</tr>
+<tr>
+<td><strong>Location Service</strong></td>
+<td>8004</td>
+<td>Gestión de venues y mapas de asientos</td>
+</tr>
+<tr>
+<td><strong>MongoDB</strong></td>
+<td>27017</td>
+<td>Base de datos (múltiples DBs)</td>
+</tr>
+</tbody>
+</table>
+<h2>🛠️ Tecnologías</h2>
+<h3>Frontend</h3>
+<ul>
+<li><strong>React 18.2.0</strong>: Framework de UI</li>
+<li><strong>React Router 6</strong>: Navegación SPA</li>
+<li><strong>Ant Design 5</strong>: Biblioteca de componentes UI</li>
+<li><strong>Axios</strong>: Cliente HTTP</li>
+<li><strong>React Easy Crop</strong>: Recorte de imágenes</li>
+<li><strong>PayPal SDK</strong>: Integración de pagos</li>
+</ul>
+<h3>Backend</h3>
+<ul>
+<li><strong>Node.js</strong>: Runtime de JavaScript</li>
+<li><strong>Express.js</strong>: Framework web</li>
+<li><strong>MongoDB</strong>: Base de datos NoSQL</li>
+<li><strong>Mongoose</strong>: ODM para MongoDB</li>
+<li><strong>JWT</strong>: Autenticación basada en tokens</li>
+<li><strong>Nodemailer</strong>: Envío de emails</li>
+<li><strong>QRCode</strong>: Generación de códigos QR</li>
+<li><strong>Bcrypt</strong>: Hash de contraseñas</li>
+</ul>
+<h3>DevOps</h3>
+<ul>
+<li><strong>Docker &amp; Docker Compose</strong>: Contenedorización</li>
+<li><strong>GitHub Actions</strong>: CI/CD</li>
+<li><strong>GitHub Container Registry</strong>: Registro de imágenes Docker</li>
+<li><strong>Azure VM</strong>: Hosting en la nube</li>
+</ul>
+<h3>Testing</h3>
+<ul>
+<li><strong>Cypress</strong>: Testing E2E</li>
+<li><strong>Jest</strong>: Testing unitario</li>
+</ul>
+<h2>🚀 Instalación</h2>
+<h3>Prerrequisitos</h3>
+<ul>
+<li><strong>Docker</strong> y <strong>Docker Compose</strong> (recomendado)</li>
+<li><strong>Node.js 18+</strong> (opcional, para desarrollo sin Docker)</li>
+<li><strong>Git</strong></li>
+</ul>
+<h3>Desarrollo Local con Docker</h3>
+<ol>
+<li>
+<p><strong>Clonar el repositorio</strong></p>
+<pre class="prettyprint source lang-bash"><code>git clone https://github.com/your-username/ticketapp.git
+cd ticketapp
+</code></pre>
+</li>
+<li>
+<p><strong>Configurar variables de entorno</strong></p>
+<p>Crea un archivo <code>.env</code> en la raíz del proyecto:</p>
+<pre class="prettyprint source lang-bash"><code># SMTP Configuration (para envío de emails)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=tu-email@gmail.com
+SMTP_PASS=tu-app-password
+SMTP_FROM=TicketApp &lt;no-reply@ticketapp.com>
+
+# PayPal Configuration (opcional)
+REACT_APP_PAYPAL_CLIENT_ID=tu-paypal-client-id
+REACT_APP_PAYPAL_ENVIRONMENT=sandbox
+</code></pre>
+</li>
+<li>
+<p><strong>Iniciar la aplicación</strong></p>
+<pre class="prettyprint source lang-bash"><code>docker-compose up -d
+</code></pre>
+</li>
+<li>
+<p><strong>Acceder a la aplicación</strong></p>
+<ul>
+<li>Frontend: <a href="http://localhost:3000">http://localhost:3000</a></li>
+<li>API Gateway: <a href="http://localhost:8000">http://localhost:8000</a></li>
+<li>Health Check: <a href="http://localhost:8000/health">http://localhost:8000/health</a></li>
+</ul>
+</li>
+<li>
+<p><strong>Ver logs</strong></p>
+<pre class="prettyprint source lang-bash"><code>docker-compose logs -f
+</code></pre>
+</li>
+<li>
+<p><strong>Detener la aplicación</strong></p>
+<pre class="prettyprint source lang-bash"><code>docker-compose down
+</code></pre>
+</li>
+</ol>
+<h3>Desarrollo sin Docker</h3>
+<p>Para cada servicio:</p>
+<pre class="prettyprint source lang-bash"><code># Backend - User Service
+cd backend/userservice
+npm install
+npm start
+
+# Repetir para cada servicio (eventservice, ticketservice, locationservice, gatewayservice)
+</code></pre>
+<pre class="prettyprint source lang-bash"><code># Frontend
+cd frontend
+npm install
+npm start
+</code></pre>
+<h3>Despliegue en Azure</h3>
+<p>TicketApp incluye configuración completa para despliegue automatizado en Azure VM usando GitHub Actions.</p>
+<p><strong>Opción Gratuita</strong>: Azure for Students ofrece $100 de crédito gratis por 12 meses.</p>
+<p><strong>Resumen:</strong></p>
+<ol>
+<li>Crear una VM en Azure</li>
+<li>Configurar GitHub Secrets en tu repositorio</li>
+<li>Hacer push a la rama <code>main</code> → GitHub Actions despliega automáticamente</li>
+</ol>
+<p><strong>Coste</strong>: $0 durante 12 meses con Azure for Students</p>
+<h2>⚙️ Configuración</h2>
+<h3>Variables de entorno</h3>
+<h4>Producción (GitHub Secrets)</h4>
+<p>Para despliegue en producción, configura estos secrets en GitHub:</p>
+<ul>
+<li><code>AZURE_VM_HOST</code>: IP pública de tu VM</li>
+<li><code>AZURE_VM_USER</code>: Usuario SSH de la VM</li>
+<li><code>AZURE_VM_SSH_KEY</code>: Clave privada SSH</li>
+<li><code>SMTP_HOST</code>, <code>SMTP_PORT</code>, <code>SMTP_USER</code>, <code>SMTP_PASS</code>, <code>SMTP_FROM</code></li>
+<li><code>REACT_APP_API_ENDPOINT</code>: URL del API Gateway</li>
+<li><code>REACT_APP_PAYPAL_CLIENT_ID</code>: ID de cliente de PayPal</li>
+<li><code>REACT_APP_PAYPAL_ENVIRONMENT</code>: <code>sandbox</code> o <code>production</code></li>
+</ul>
+<h4>Desarrollo Local</h4>
+<p>Ver archivo <code>.env</code> de ejemplo arriba.</p>
+<h2>📁 Estructura del proyecto</h2>
+<pre class="prettyprint source"><code>ticketapp/
+├── backend/
+│   ├── gatewayservice/         # API Gateway - Enrutamiento central
+│   │   ├── gateway-service.js
+│   │   ├── Dockerfile
+│   │   └── package.json
+│   ├── userservice/            # Servicio de usuarios
+│   │   ├── user-service.js     # Autenticación y gestión de usuarios
+│   │   ├── user-model.js       # Modelo de datos de usuario
+│   │   ├── Dockerfile
+│   │   └── package.json
+│   ├── eventservice/           # Servicio de eventos
+│   │   ├── event-service.js    # CRUD de eventos
+│   │   ├── event-model.js      # Modelo de datos de evento
+│   │   ├── event-state-service.js  # Actualización automática de estados
+│   │   ├── Dockerfile
+│   │   └── package.json
+│   ├── ticketservice/          # Servicio de tickets
+│   │   ├── ticket-service.js   # Compra y generación de tickets
+│   │   ├── ticket-model.js     # Modelo de datos de ticket
+│   │   ├── Dockerfile
+│   │   └── package.json
+│   └── locationservice/        # Servicio de ubicaciones
+│       ├── location-service.js # Gestión de venues
+│       ├── location-model.js   # Modelo de ubicación
+│       ├── seatmap-model.js    # Modelo de mapa de asientos
+│       ├── Dockerfile
+│       └── package.json
+├── frontend/
+│   ├── src/
+│   │   ├── components/         # Componentes reutilizables
+│   │   │   ├── Navbar.jsx
+│   │   │   ├── Footer.jsx
+│   │   │   ├── ProtectedRoute.jsx
+│   │   │   └── AdminRoute.jsx
+│   │   ├── pages/              # Páginas de la aplicación
+│   │   │   ├── Home.jsx        # Página principal
+│   │   │   ├── Login.jsx
+│   │   │   ├── Register.jsx
+│   │   │   ├── Profile.jsx
+│   │   │   ├── EventDetails.jsx
+│   │   │   ├── TicketPurchase.jsx
+│   │   │   ├── admin/          # Panel de administración
+│   │   │   │   ├── AdminDashboard.jsx
+│   │   │   │   ├── EventCreation.jsx
+│   │   │   │   ├── LocationCreation.jsx
+│   │   │   │   └── AdminStatistics.jsx
+│   │   │   └── steps/          # Pasos del proceso de compra
+│   │   │       ├── TicketSelection.jsx
+│   │   │       ├── BuyerInfo.jsx
+│   │   │       ├── PaymentMethod.jsx
+│   │   │       └── PurchaseConfirmation.jsx
+│   │   ├── hooks/              # Custom React Hooks
+│   │   │   ├── useUserRole.js
+│   │   │   ├── useDeviceDetection.js
+│   │   │   └── useSeatMapPerformance.js
+│   │   ├── utils/              # Utilidades
+│   │   │   └── authSession.js
+│   │   ├── App.jsx             # Componente principal
+│   │   └── index.js            # Punto de entrada
+│   ├── public/
+│   │   ├── avatars/            # Avatares de usuario
+│   │   └── event-images/       # Imágenes de eventos
+│   ├── Dockerfile
+│   └── package.json
+├── .github/
+│   └── workflows/
+│       └── deploy.yml          # GitHub Actions CI/CD
+├── docker-compose.yml          # Orquestación de servicios (desarrollo)
+├── docker-compose.prod.yml     # Configuración de producción
+└── README.md
+</code></pre>
+<h2>👥 Autores</h2>
+<ul>
+<li><strong>Iyán Fernández</strong> - Desarrollador - <a href="https://github.com/iyanfdezz">iyanfdezz</a></li>
+<li><strong>Edward Núñez</strong> - Tutor - <a href="https://github.com/edwardnunez">edwardnunez</a></li>
+<li><strong>Xiomarah Guzmán</strong> - Tutora - <a href="https://github.com/xiomarah">xiomarah</a></li>
+</ul>
+<p><strong>⭐ Si este proyecto te resultó útil, considera darle una estrella en GitHub</strong></p></article>
+    </section>
+
+
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-components_colorscheme.html">components/colorscheme</a></li><li><a href="module-hooks_useSeatMapViability.html">hooks/useSeatMapViability</a></li><li><a href="module-models_Event.html">models/Event</a></li><li><a href="module-models_Location.html">models/Location</a></li><li><a href="module-models_SeatMap.html">models/SeatMap</a></li><li><a href="module-models_Ticket.html">models/Ticket</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-services_UserService.html">services/UserService</a></li><li><a href="module-utils_authSession.html">utils/authSession</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AboutUs">AboutUs</a></li><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#AdminStatistics">AdminStatistics</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#BlockingViewSwitcher">BlockingViewSwitcher</a></li><li><a href="global.html#EditProfile">EditProfile</a></li><li><a href="global.html#EditableSeatRenderer">EditableSeatRenderer</a></li><li><a href="global.html#ErrorPage">ErrorPage</a></li><li><a href="global.html#EventCreation">EventCreation</a></li><li><a href="global.html#EventDetails">EventDetails</a></li><li><a href="global.html#FramedImage">FramedImage</a></li><li><a href="global.html#GeneralAdmissionRenderer">GeneralAdmissionRenderer</a></li><li><a href="global.html#GenericSeatRenderer">GenericSeatRenderer</a></li><li><a href="global.html#HelpCenter">HelpCenter</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#ManualBlockingSelection">ManualBlockingSelection</a></li><li><a href="global.html#ManualSeatSelection">ManualSeatSelection</a></li><li><a href="global.html#Navbar">Navbar</a></li><li><a href="global.html#Profile">Profile</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#RowPricingTable">RowPricingTable</a></li><li><a href="global.html#SeatMapContainer">SeatMapContainer</a></li><li><a href="global.html#SeatRenderer">SeatRenderer</a></li><li><a href="global.html#SeatSelectionViewSwitcher">SeatSelectionViewSwitcher</a></li><li><a href="global.html#SectionShapeRenderer">SectionShapeRenderer</a></li><li><a href="global.html#SelectionTopBar">SelectionTopBar</a></li><li><a href="global.html#TicketPurchase">TicketPurchase</a></li><li><a href="global.html#VenueStageRenderer">VenueStageRenderer</a></li><li><a href="global.html#ZoomControls">ZoomControls</a></li><li><a href="global.html#enviarEmailConfirmacionCompra">enviarEmailConfirmacionCompra</a></li><li><a href="global.html#generateTicketNumber">generateTicketNumber</a></li><li><a href="global.html#generateValidationCode">generateValidationCode</a></li><li><a href="global.html#returnError">returnError</a></li><li><a href="global.html#transporter">transporter</a></li><li><a href="global.html#useAdvancedZoomPan">useAdvancedZoomPan</a></li><li><a href="global.html#useDeviceDetection">useDeviceDetection</a></li><li><a href="global.html#useUserRole">useUserRole</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu Oct 23 2025 19:08:08 GMT+0200 (hora de verano de Europa central)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

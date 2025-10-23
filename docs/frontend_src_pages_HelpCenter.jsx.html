@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: frontend/src/pages/HelpCenter.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: frontend/src/pages/HelpCenter.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import React, { useState } from 'react';
+import { 
+  Layout, 
+  Card, 
+  Typography, 
+  Collapse, 
+  Input, 
+  Button, 
+  Space, 
+  Row,
+  Col,
+  Divider,
+  Alert
+} from 'antd';
+import { 
+  QuestionCircleOutlined, 
+  SearchOutlined,
+  MailOutlined,
+  MessageOutlined,
+  BookOutlined,
+  ExclamationCircleOutlined
+} from '@ant-design/icons';
+import { COLORS } from '../components/colorscheme';
+
+const { Content } = Layout;
+const { Title, Text, Paragraph } = Typography;
+const { TextArea } = Input;
+
+/**
+ * Help center page component with FAQ and support information
+ * @returns {JSX.Element} Help center page with searchable FAQ and contact options
+ */
+const HelpCenter = () => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [contactMessage, setContactMessage] = useState('');
+
+  const faqData = [
+    {
+      key: '1',
+      label: '¿Cómo puedo comprar tickets?',
+      children: (
+        &lt;div>
+          &lt;Paragraph>
+            Para comprar tickets, sigue estos pasos:
+          &lt;/Paragraph>
+          &lt;ol>
+            &lt;li>Navega a la página de eventos&lt;/li>
+            &lt;li>Selecciona el evento que te interesa&lt;/li>
+            &lt;li>Haz clic en "Comprar tickets"&lt;/li>
+            &lt;li>Selecciona tus asientos preferidos&lt;/li>
+            &lt;li>Completa la información de pago&lt;/li>
+            &lt;li>Confirma tu compra&lt;/li>
+          &lt;/ol>
+        &lt;/div>
+      ),
+    },
+    {
+      key: '2',
+      label: '¿Puedo cancelar mi compra?',
+      children: (
+        &lt;div>
+          &lt;Paragraph>
+            Las políticas de cancelación varían según el evento. En general:
+          &lt;/Paragraph>
+          &lt;ul>
+            &lt;li>Cancelaciones hasta 48 horas antes: Reembolso completo&lt;/li>
+            &lt;li>Cancelaciones entre 24-48 horas: Reembolso del 50%&lt;/li>
+            &lt;li>Cancelaciones menos de 24 horas: Sin reembolso&lt;/li>
+          &lt;/ul>
+          &lt;Text type="secondary">
+            Contacta con nuestro soporte para casos especiales.
+          &lt;/Text>
+        &lt;/div>
+      ),
+    },
+    {
+      key: '3',
+      label: '¿Cómo puedo cambiar mi perfil?',
+      children: (
+        &lt;div>
+          &lt;Paragraph>
+            Para modificar tu perfil:
+          &lt;/Paragraph>
+          &lt;ol>
+            &lt;li>Haz clic en tu avatar en la esquina superior derecha&lt;/li>
+            &lt;li>Selecciona "Perfil"&lt;/li>
+            &lt;li>Haz clic en "Editar perfil"&lt;/li>
+            &lt;li>Modifica la información que desees&lt;/li>
+            &lt;li>Guarda los cambios&lt;/li>
+          &lt;/ol>
+        &lt;/div>
+      ),
+    },
+    {
+      key: '4',
+      label: '¿Qué métodos de pago aceptan?',
+      children: (
+        &lt;div>
+          &lt;Paragraph>
+            Aceptamos los siguientes métodos de pago:
+          &lt;/Paragraph>
+          &lt;ul>
+            &lt;li>Tarjetas de crédito (Visa, MasterCard, American Express)&lt;/li>
+            &lt;li>Tarjetas de débito&lt;/li>
+            &lt;li>PayPal&lt;/li>
+            &lt;li>Transferencia bancaria&lt;/li>
+          &lt;/ul>
+        &lt;/div>
+      ),
+    },
+    {
+      key: '5',
+      label: '¿Cómo contacto con soporte técnico?',
+      children: (
+        &lt;div>
+          &lt;Paragraph>
+            Puedes contactar con nuestro equipo de soporte:
+          &lt;/Paragraph>
+          &lt;ul>
+            &lt;li>Email: soporte@ticketapp.com&lt;/li>
+            &lt;li>Teléfono: +34 900 123 456&lt;/li>
+            &lt;li>Formulario de contacto (abajo)&lt;/li>
+          &lt;/ul>
+        &lt;/div>
+      ),
+    },
+  ];
+
+  const filteredFAQ = faqData.filter(item =>
+    item.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.children.props.children.some(child => 
+      typeof child === 'string' ? child.toLowerCase().includes(searchTerm.toLowerCase()) : false
+    )
+  );
+
+  const handleContactSubmit = () => {
+    if (contactMessage.trim()) {
+      // Aquí se enviaría el mensaje al backend
+      console.log('Mensaje enviado:', contactMessage);
+      setContactMessage('');
+      // Mostrar mensaje de éxito
+    }
+  };
+
+  return (
+    &lt;Content style={{ padding: '24px', background: '#f5f5f5', minHeight: 'calc(100vh - 64px)' }}>
+      &lt;div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+        &lt;Title level={2} style={{ marginBottom: '24px', color: COLORS?.primary?.main || '#1890ff' }}>
+          &lt;QuestionCircleOutlined style={{ marginRight: '8px' }} />
+          Centro de ayuda
+        &lt;/Title>
+
+        {/* Búsqueda */}
+        &lt;Card style={{ marginBottom: '24px', borderRadius: '8px' }}>
+          &lt;Space direction="vertical" style={{ width: '100%' }}>
+            &lt;Title level={4}>¿En qué podemos ayudarte?&lt;/Title>
+            &lt;Input
+              placeholder="Buscar en preguntas frecuentes..."
+              prefix={&lt;SearchOutlined />}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              size="large"
+              style={{ borderRadius: '6px' }}
+            />
+          &lt;/Space>
+        &lt;/Card>
+
+        {/* Preguntas frecuentes */}
+        &lt;Card 
+          title={
+            &lt;span>
+              &lt;BookOutlined style={{ marginRight: '8px' }} />
+              Preguntas Frecuentes
+            &lt;/span>
+          }
+          style={{ marginBottom: '24px', borderRadius: '8px' }}
+        >
+          &lt;Collapse
+            items={filteredFAQ}
+            expandIconPosition="right"
+            size="large"
+          />
+        &lt;/Card>
+
+        {/* Información de contacto */}
+        &lt;Row gutter={[16, 16]}>
+          &lt;Col xs={24} md={12}>
+            &lt;Card 
+              title={
+                &lt;span>
+                  &lt;MessageOutlined style={{ marginRight: '8px' }} />
+                  Contacta con nosotros
+                &lt;/span>
+              }
+              style={{ borderRadius: '8px' }}
+            >
+              &lt;Space direction="vertical" style={{ width: '100%' }}>
+                &lt;div>
+                  &lt;Text strong>Email:&lt;/Text>
+                  &lt;br />
+                  &lt;Text copyable>soporte@ticketapp.com&lt;/Text>
+                &lt;/div>
+                &lt;Divider />
+                &lt;div>
+                  &lt;Text strong>Teléfono:&lt;/Text>
+                  &lt;br />
+                  &lt;Text copyable>+34 900 123 456&lt;/Text>
+                &lt;/div>
+                &lt;Divider />
+                &lt;div>
+                  &lt;Text strong>Horario de atención:&lt;/Text>
+                  &lt;br />
+                  &lt;Text>Lunes a Viernes: 9:00 - 18:00&lt;/Text>
+                  &lt;br />
+                  &lt;Text>Sábados: 10:00 - 14:00&lt;/Text>
+                &lt;/div>
+              &lt;/Space>
+            &lt;/Card>
+          &lt;/Col>
+          &lt;Col xs={24} md={12}>
+            &lt;Card 
+              title={
+                &lt;span>
+                  &lt;MailOutlined style={{ marginRight: '8px' }} />
+                  Envíanos un mensaje
+                &lt;/span>
+              }
+              style={{ borderRadius: '8px' }}
+            >
+              &lt;Space direction="vertical" style={{ width: '100%' }}>
+                &lt;TextArea
+                  placeholder="Describe tu consulta o problema..."
+                  value={contactMessage}
+                  onChange={(e) => setContactMessage(e.target.value)}
+                  rows={4}
+                  style={{ borderRadius: '6px' }}
+                />
+                &lt;Button 
+                  type="primary" 
+                  onClick={handleContactSubmit}
+                  disabled={!contactMessage.trim()}
+                  style={{ borderRadius: '6px' }}
+                >
+                  Enviar mensaje
+                &lt;/Button>
+              &lt;/Space>
+            &lt;/Card>
+          &lt;/Col>
+        &lt;/Row>
+
+        {/* Alertas informativas */}
+        &lt;Alert
+          message="¿Necesitas ayuda inmediata?"
+          description="Si tienes un problema urgente con tu compra, contacta con nosotros por teléfono para una atención más rápida."
+          type="info"
+          icon={&lt;ExclamationCircleOutlined />}
+          style={{ marginTop: '24px', borderRadius: '8px' }}
+        />
+      &lt;/div>
+    &lt;/Content>
+  );
+};
+
+export default HelpCenter;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-components_colorscheme.html">components/colorscheme</a></li><li><a href="module-hooks_useSeatMapViability.html">hooks/useSeatMapViability</a></li><li><a href="module-models_Event.html">models/Event</a></li><li><a href="module-models_Location.html">models/Location</a></li><li><a href="module-models_SeatMap.html">models/SeatMap</a></li><li><a href="module-models_Ticket.html">models/Ticket</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-services_UserService.html">services/UserService</a></li><li><a href="module-utils_authSession.html">utils/authSession</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AboutUs">AboutUs</a></li><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#AdminStatistics">AdminStatistics</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#BlockingViewSwitcher">BlockingViewSwitcher</a></li><li><a href="global.html#EditProfile">EditProfile</a></li><li><a href="global.html#EditableSeatRenderer">EditableSeatRenderer</a></li><li><a href="global.html#ErrorPage">ErrorPage</a></li><li><a href="global.html#EventCreation">EventCreation</a></li><li><a href="global.html#EventDetails">EventDetails</a></li><li><a href="global.html#FramedImage">FramedImage</a></li><li><a href="global.html#GeneralAdmissionRenderer">GeneralAdmissionRenderer</a></li><li><a href="global.html#GenericSeatRenderer">GenericSeatRenderer</a></li><li><a href="global.html#HelpCenter">HelpCenter</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#ManualBlockingSelection">ManualBlockingSelection</a></li><li><a href="global.html#ManualSeatSelection">ManualSeatSelection</a></li><li><a href="global.html#Navbar">Navbar</a></li><li><a href="global.html#Profile">Profile</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#RowPricingTable">RowPricingTable</a></li><li><a href="global.html#SeatMapContainer">SeatMapContainer</a></li><li><a href="global.html#SeatRenderer">SeatRenderer</a></li><li><a href="global.html#SeatSelectionViewSwitcher">SeatSelectionViewSwitcher</a></li><li><a href="global.html#SectionShapeRenderer">SectionShapeRenderer</a></li><li><a href="global.html#SelectionTopBar">SelectionTopBar</a></li><li><a href="global.html#TicketPurchase">TicketPurchase</a></li><li><a href="global.html#VenueStageRenderer">VenueStageRenderer</a></li><li><a href="global.html#ZoomControls">ZoomControls</a></li><li><a href="global.html#enviarEmailConfirmacionCompra">enviarEmailConfirmacionCompra</a></li><li><a href="global.html#generateTicketNumber">generateTicketNumber</a></li><li><a href="global.html#generateValidationCode">generateValidationCode</a></li><li><a href="global.html#returnError">returnError</a></li><li><a href="global.html#transporter">transporter</a></li><li><a href="global.html#useAdvancedZoomPan">useAdvancedZoomPan</a></li><li><a href="global.html#useDeviceDetection">useDeviceDetection</a></li><li><a href="global.html#useUserRole">useUserRole</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu Oct 23 2025 19:08:08 GMT+0200 (hora de verano de Europa central)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

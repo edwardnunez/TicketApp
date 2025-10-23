@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: frontend/src/pages/AboutUs.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: frontend/src/pages/AboutUs.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import React, { useState, useEffect } from "react";
+import {
+  Layout,
+  Typography,
+  Button,
+  Card,
+  Row,
+  Col,
+  Space,
+  Avatar
+} from "antd";
+import {
+  useNavigate
+} from "react-router-dom";
+import {
+  UserOutlined,
+  GithubOutlined,
+  MailOutlined,
+  HomeOutlined,
+  IdcardOutlined
+} from "@ant-design/icons";
+
+import { COLORS } from "../components/colorscheme";
+
+const { Title, Paragraph, Text } = Typography;
+const { Content } = Layout;
+
+/**
+ * About Us page component displaying team information and project details
+ * @returns {JSX.Element} About Us page with team member information
+ */
+
+const AboutUs = () => {
+  const navigate = useNavigate();
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth &lt; 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const teamMembers = [
+    {
+      key: "1",
+      name: "Iyán Fernández Riol",
+      UO: "UO288231",
+      email: "uo288231@uniovi.es",
+      github: "iyanfdezz",
+      githubUrl: "https://github.com/iyanfdezz",
+      avatar: null
+    },
+    {
+      key: "2",
+      name: "Edward Rolando Núñez Álvarez",
+      UO: "-",
+      email: "nunezedward@uniovi.es",
+      github: "edwardnunez",
+      githubUrl: "https://github.com/edwardnunez",
+      avatar: null
+    },
+    {
+      key: "3",
+      name: "Xiomarah María Guzmán Guzmán",
+      UO: "-",
+      email: "guzmanxiomarah@uniovi.es",
+      github: "tutor2",
+      githubUrl: "https://github.com/tutor2",
+      avatar: null
+    }
+  ];
+
+
+  return (
+    &lt;Layout style={{ backgroundColor: COLORS?.neutral?.white || "#fff", minHeight: "100vh" }}>
+      &lt;Content>
+        &lt;div style={{ 
+          background: COLORS?.gradients?.primary || "linear-gradient(135deg, #1890ff 0%, #722ed1 100%)",
+          padding: isMobile ? "32px 8px" : "60px 20px",
+          textAlign: "center",
+          color: "#fff"
+        }}>
+          &lt;div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+            &lt;Title level={isMobile ? 2 : 1} style={{ color: "#fff", marginBottom: isMobile ? "8px" : "16px" }}>
+              Nuestro equipo
+            &lt;/Title>
+            &lt;Paragraph style={{ 
+              fontSize: isMobile ? "15px" : "18px", 
+              maxWidth: "700px", 
+              margin: isMobile ? "0 auto 16px" : "0 auto 32px",
+              color: "rgba(255, 255, 255, 0.85)"
+            }}>
+              Conozca a las personas detrás del desarrollo de esta plataforma de eventos.
+            &lt;/Paragraph>
+          &lt;/div>
+        &lt;/div>
+
+        &lt;div style={{ maxWidth: "1200px", margin: "0 auto", padding: isMobile ? "18px 4px" : "40px 20px" }}>
+          &lt;Card 
+            className="team-card"
+            style={{ 
+              marginBottom: "40px",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+              borderRadius: "8px",
+              border: "none"
+            }}
+          >
+            &lt;Space direction="vertical" size="large" style={{ width: "100%" }}>
+
+              &lt;div className="mobile-cards" style={{ display: "block", marginBottom: "24px" }}>
+                &lt;Row gutter={[24, 24]}>
+                  {teamMembers.map(member => (
+                    &lt;Col xs={24} sm={12} md={8} key={member.key}>
+                      &lt;Card 
+                        style={{ 
+                          height: "100%", 
+                          borderRadius: "8px",
+                          boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+                          border: "1px solid #f0f0f0"
+                        }}
+                        hoverable
+                      >
+                        &lt;div style={{ textAlign: "center", marginBottom: "16px" }}>
+                          &lt;Avatar 
+                            size={80} 
+                            icon={&lt;UserOutlined />} 
+                            src={member.avatar}
+                            style={{ 
+                              backgroundColor: COLORS?.primary?.light || "#69c0ff",
+                              marginBottom: "16px" 
+                            }}
+                          />
+                          &lt;Title level={4} style={{ margin: "8px 0" }}>
+                            {member.name}
+                          &lt;/Title>
+                        &lt;/div>
+
+                        &lt;Space direction="vertical" size="small" style={{ width: "100%" }}>
+                          {member.UO !== "-" &amp;&amp; (
+                            &lt;div style={{ display: "flex", alignItems: "center" }}>
+                              &lt;IdcardOutlined style={{ marginRight: "8px", color: COLORS?.neutral?.grey4 || "#8c8c8c" }} />
+                              &lt;Text>{member.UO}&lt;/Text>
+                            &lt;/div>
+                          )}
+                          
+                          &lt;div style={{ display: "flex", alignItems: "center" }}>
+                            &lt;MailOutlined style={{ marginRight: "8px", color: COLORS?.neutral?.grey4 || "#8c8c8c" }} />
+                            &lt;Text>{member.email}&lt;/Text>
+                          &lt;/div>
+                          
+                          &lt;div style={{ display: "flex", alignItems: "center" }}>
+                            &lt;GithubOutlined style={{ marginRight: "8px", color: COLORS?.neutral?.grey4 || "#8c8c8c" }} />
+                            &lt;a 
+                              href={member.githubUrl} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              style={{ color: COLORS?.primary?.main || "#1890ff" }}
+                            >
+                              {member.github}
+                            &lt;/a>
+                          &lt;/div>
+                        &lt;/Space>
+                      &lt;/Card>
+                    &lt;/Col>
+                  ))}
+                &lt;/Row>
+              &lt;/div>
+
+            &lt;/Space>
+          &lt;/Card>
+
+          &lt;div style={{ textAlign: "center", marginTop: "24px" }}>
+            &lt;Button 
+              type="primary" 
+              icon={&lt;HomeOutlined />}
+              onClick={() => navigate("/")}
+              size="large"
+              style={{
+                backgroundColor: COLORS?.primary?.main || "#1890ff",
+                borderColor: COLORS?.primary?.main || "#1890ff",
+                height: "46px",
+                borderRadius: "8px",
+                boxShadow: "0 2px 0 rgba(0, 0, 0, 0.045)"
+              }}
+            >
+              Volver al inicio
+            &lt;/Button>
+          &lt;/div>
+        &lt;/div>
+      &lt;/Content>
+    &lt;/Layout>
+  );
+};
+
+export default AboutUs;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-components_colorscheme.html">components/colorscheme</a></li><li><a href="module-hooks_useSeatMapViability.html">hooks/useSeatMapViability</a></li><li><a href="module-models_Event.html">models/Event</a></li><li><a href="module-models_Location.html">models/Location</a></li><li><a href="module-models_SeatMap.html">models/SeatMap</a></li><li><a href="module-models_Ticket.html">models/Ticket</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-services_UserService.html">services/UserService</a></li><li><a href="module-utils_authSession.html">utils/authSession</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AboutUs">AboutUs</a></li><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#AdminStatistics">AdminStatistics</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#BlockingViewSwitcher">BlockingViewSwitcher</a></li><li><a href="global.html#EditProfile">EditProfile</a></li><li><a href="global.html#EditableSeatRenderer">EditableSeatRenderer</a></li><li><a href="global.html#ErrorPage">ErrorPage</a></li><li><a href="global.html#EventCreation">EventCreation</a></li><li><a href="global.html#EventDetails">EventDetails</a></li><li><a href="global.html#FramedImage">FramedImage</a></li><li><a href="global.html#GeneralAdmissionRenderer">GeneralAdmissionRenderer</a></li><li><a href="global.html#GenericSeatRenderer">GenericSeatRenderer</a></li><li><a href="global.html#HelpCenter">HelpCenter</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#ManualBlockingSelection">ManualBlockingSelection</a></li><li><a href="global.html#ManualSeatSelection">ManualSeatSelection</a></li><li><a href="global.html#Navbar">Navbar</a></li><li><a href="global.html#Profile">Profile</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#RowPricingTable">RowPricingTable</a></li><li><a href="global.html#SeatMapContainer">SeatMapContainer</a></li><li><a href="global.html#SeatRenderer">SeatRenderer</a></li><li><a href="global.html#SeatSelectionViewSwitcher">SeatSelectionViewSwitcher</a></li><li><a href="global.html#SectionShapeRenderer">SectionShapeRenderer</a></li><li><a href="global.html#SelectionTopBar">SelectionTopBar</a></li><li><a href="global.html#TicketPurchase">TicketPurchase</a></li><li><a href="global.html#VenueStageRenderer">VenueStageRenderer</a></li><li><a href="global.html#ZoomControls">ZoomControls</a></li><li><a href="global.html#enviarEmailConfirmacionCompra">enviarEmailConfirmacionCompra</a></li><li><a href="global.html#generateTicketNumber">generateTicketNumber</a></li><li><a href="global.html#generateValidationCode">generateValidationCode</a></li><li><a href="global.html#returnError">returnError</a></li><li><a href="global.html#transporter">transporter</a></li><li><a href="global.html#useAdvancedZoomPan">useAdvancedZoomPan</a></li><li><a href="global.html#useDeviceDetection">useDeviceDetection</a></li><li><a href="global.html#useUserRole">useUserRole</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu Oct 23 2025 19:08:08 GMT+0200 (hora de verano de Europa central)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

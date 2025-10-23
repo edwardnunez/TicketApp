@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: frontend/src/pages/ErrorPage.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: frontend/src/pages/ErrorPage.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import React, { useState, useEffect } from "react";
+import { Button, Typography, Layout, Space } from "antd";
+import { useNavigate } from "react-router-dom";
+import { FrownOutlined, HomeOutlined } from "@ant-design/icons";
+
+import { COLORS } from "../components/colorscheme";
+
+const { Title, Paragraph } = Typography;
+const { Content } = Layout;
+
+/**
+ * Error page component for handling 404 and other error states
+ * @returns {JSX.Element} Error page with navigation options
+ */
+const ErrorPage = () => {
+  const navigate = useNavigate();
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth &lt; 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return (
+    &lt;Layout style={{ backgroundColor: COLORS?.neutral?.white || "#fff", minHeight: "100vh" }}>
+      &lt;Content>
+        {/* Hero Section con gradiente como en Home */}
+        &lt;div style={{ 
+          background: COLORS?.gradients?.primary || "linear-gradient(135deg, #1890ff 0%, #722ed1 100%)",
+          padding: isMobile ? '32px 8px' : '60px 20px',
+          textAlign: 'center',
+          color: "#fff",
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center"
+        }}>
+          &lt;div style={{ 
+            background: "#fff", 
+            borderRadius: '12px', 
+            padding: isMobile ? '20px' : '40px',
+            maxWidth: isMobile ? '100%' : '500px',
+            width: "90%",
+            margin: '0 auto',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+            textAlign: "center"
+          }}>
+            &lt;Space direction="vertical" size={isMobile ? "middle" : "large"} style={{ width: "100%" }}>
+              &lt;FrownOutlined style={{ 
+                fontSize: isMobile ? '48px' : '72px', 
+                color: COLORS?.status?.error || "#ff4d4f" 
+              }} />
+              
+              &lt;Title level={isMobile ? 2 : 1} style={{ 
+                marginBottom: isMobile ? '4px' : '8px',
+                color: COLORS?.neutral?.darker || "#000" 
+              }}>
+                ¡Oops! Página no encontrada
+              &lt;/Title>
+              
+              &lt;Paragraph style={{ 
+                fontSize: isMobile ? '14px' : '16px',
+                color: COLORS?.neutral?.grey4 || "#8c8c8c",
+                marginBottom: isMobile ? '16px' : '24px'
+              }}>
+                Lo sentimos, la página que estás buscando no existe o ha sido movida.
+              &lt;/Paragraph>
+              
+              &lt;Button 
+                type="primary" 
+                size={isMobile ? "middle" : "large"}
+                icon={&lt;HomeOutlined />}
+                onClick={() => navigate("/")} 
+                style={{
+                  backgroundColor: COLORS?.primary?.main || "#1890ff",
+                  borderColor: COLORS?.primary?.main || "#1890ff",
+                  height: isMobile ? "38px" : "46px",
+                  borderRadius: "8px",
+                  fontSize: isMobile ? "14px" : "16px"
+                }}
+              >
+                Volver al inicio
+              &lt;/Button>
+            &lt;/Space>
+          &lt;/div>
+        &lt;/div>
+      &lt;/Content>
+    &lt;/Layout>
+  );
+};
+
+export default ErrorPage;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-components_colorscheme.html">components/colorscheme</a></li><li><a href="module-hooks_useSeatMapViability.html">hooks/useSeatMapViability</a></li><li><a href="module-models_Event.html">models/Event</a></li><li><a href="module-models_Location.html">models/Location</a></li><li><a href="module-models_SeatMap.html">models/SeatMap</a></li><li><a href="module-models_Ticket.html">models/Ticket</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-services_UserService.html">services/UserService</a></li><li><a href="module-utils_authSession.html">utils/authSession</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AboutUs">AboutUs</a></li><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#AdminStatistics">AdminStatistics</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#BlockingViewSwitcher">BlockingViewSwitcher</a></li><li><a href="global.html#EditProfile">EditProfile</a></li><li><a href="global.html#EditableSeatRenderer">EditableSeatRenderer</a></li><li><a href="global.html#ErrorPage">ErrorPage</a></li><li><a href="global.html#EventCreation">EventCreation</a></li><li><a href="global.html#EventDetails">EventDetails</a></li><li><a href="global.html#FramedImage">FramedImage</a></li><li><a href="global.html#GeneralAdmissionRenderer">GeneralAdmissionRenderer</a></li><li><a href="global.html#GenericSeatRenderer">GenericSeatRenderer</a></li><li><a href="global.html#HelpCenter">HelpCenter</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#ManualBlockingSelection">ManualBlockingSelection</a></li><li><a href="global.html#ManualSeatSelection">ManualSeatSelection</a></li><li><a href="global.html#Navbar">Navbar</a></li><li><a href="global.html#Profile">Profile</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#RowPricingTable">RowPricingTable</a></li><li><a href="global.html#SeatMapContainer">SeatMapContainer</a></li><li><a href="global.html#SeatRenderer">SeatRenderer</a></li><li><a href="global.html#SeatSelectionViewSwitcher">SeatSelectionViewSwitcher</a></li><li><a href="global.html#SectionShapeRenderer">SectionShapeRenderer</a></li><li><a href="global.html#SelectionTopBar">SelectionTopBar</a></li><li><a href="global.html#TicketPurchase">TicketPurchase</a></li><li><a href="global.html#VenueStageRenderer">VenueStageRenderer</a></li><li><a href="global.html#ZoomControls">ZoomControls</a></li><li><a href="global.html#enviarEmailConfirmacionCompra">enviarEmailConfirmacionCompra</a></li><li><a href="global.html#generateTicketNumber">generateTicketNumber</a></li><li><a href="global.html#generateValidationCode">generateValidationCode</a></li><li><a href="global.html#returnError">returnError</a></li><li><a href="global.html#transporter">transporter</a></li><li><a href="global.html#useAdvancedZoomPan">useAdvancedZoomPan</a></li><li><a href="global.html#useDeviceDetection">useDeviceDetection</a></li><li><a href="global.html#useUserRole">useUserRole</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu Oct 23 2025 19:08:08 GMT+0200 (hora de verano de Europa central)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: frontend/src/pages/Login.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: frontend/src/pages/Login.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { useState, useEffect } from "react";
+import { Layout, Typography, Form, Input, Button, message, Space, Alert } from "antd";
+import { UserOutlined, LockOutlined, LoginOutlined } from "@ant-design/icons";
+import axios from "axios";
+import { useNavigate, Link } from "react-router-dom";
+import { setAuthSession, ensureAuthFreshness, scheduleAuthExpiryTimer } from "../utils/authSession";
+
+import { COLORS } from "../components/colorscheme";
+
+const { Content } = Layout;
+const { Title, Text } = Typography;
+
+/**
+ * Login page component for user authentication
+ * @returns {JSX.Element} Login form with username and password fields
+ */
+const Login = () => {
+  const [loading, setLoading] = useState(false);
+  const [loginError, setLoginError] = useState({});
+  const [form] = Form.useForm();
+  const navigate = useNavigate();
+  const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    // Limpiar si está expirado al entrar en Login
+    ensureAuthFreshness();
+    const handleResize = () => {
+      setIsMobile(window.innerWidth &lt; 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  /**
+   * Validates username field
+   * @param {*} _ - Field rule (unused)
+   * @param {string} value - Username value
+   * @returns {Promise} Validation result
+   */
+  const validateUsername = (_, value) => {
+    if (!value) {
+      return Promise.reject(new Error("Por favor ingresa tu nombre de usuario"));
+    }
+    return Promise.resolve();
+  };
+
+  /**
+   * Validates password field
+   * @param {*} _ - Field rule (unused)
+   * @param {string} value - Password value
+   * @returns {Promise} Validation result
+   */
+  const validatePassword = (_, value) => {
+    if (!value) {
+      return Promise.reject(new Error("Por favor ingresa tu contraseña"));
+    }
+    return Promise.resolve();
+  };
+
+  /**
+   * Handles form submission for user login
+   * @param {Object} values - Form values containing username and password
+   */
+  const onFinish = async (values) => {
+    setLoading(true);
+    setLoginError({});
+    try {
+      const response = await axios.post(gatewayUrl + "/login", values);
+      setAuthSession({
+        token: response.data.token,
+        roleToken: response.data.roleToken,
+        username: response.data.username,
+        expiryMs: 60 * 60 * 1000,
+      });
+      scheduleAuthExpiryTimer();
+      message.success("¡Inicio de sesión exitoso!");
+      navigate("/");
+    } catch (error) {
+      setLoading(false);
+      if (error.response?.data) {
+        const { error: errorMessage, field } = error.response.data;
+        if (error.response.status === 401) {
+          setLoginError({
+            general: "Credenciales inválidas. Verifica tu nombre de usuario y contraseña."
+          });
+        } else {
+          if (field) {
+            setLoginError({ [field]: errorMessage });
+          } else {
+            setLoginError({ general: errorMessage || "¡Algo salió mal! Inténtalo de nuevo más tarde." });
+          }
+        }
+      } else {
+        setLoginError({ general: "Error de conexión. Por favor, inténtalo de nuevo." });
+      }
+    }
+  };
+
+  const onFinishFailed = (errorInfo) => {
+    setLoading(false);
+  };
+
+  return (
+    &lt;Layout style={{ backgroundColor: COLORS.neutral.grey1, minHeight: "100vh" }}>
+      &lt;div
+        style={{
+          background: COLORS.gradients.primary,
+          padding: isMobile ? "24px 8px" : "40px 20px",
+          textAlign: "center",
+          color: COLORS.neutral.white,
+        }}
+      >
+        &lt;div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+          &lt;Title level={isMobile ? 2 : 1} style={{ color: COLORS.neutral.white, marginBottom: isMobile ? "10px" : "16px", fontSize: isMobile ? "1.5rem" : undefined }}>
+            Accede a tu cuenta
+          &lt;/Title>
+          &lt;Text style={{ fontSize: isMobile ? "15px" : "18px", maxWidth: "700px", margin: "0 auto 16px", color: "rgba(255, 255, 255, 0.85)" }}>
+            Inicia sesión para descubrir y reservar eventos increíbles
+          &lt;/Text>
+        &lt;/div>
+      &lt;/div>
+
+      &lt;Content style={{ padding: isMobile ? "24px 8px" : "40px 20px" }}>
+        &lt;div
+          style={{
+            maxWidth: isMobile ? "100%" : "460px",
+            margin: "0 auto",
+            backgroundColor: COLORS.neutral.white,
+            padding: isMobile ? "18px 8px" : "30px",
+            borderRadius: "8px",
+            boxShadow: "0 8px 16px rgba(0,0,0,0.1)",
+          }}
+        >
+          &lt;Space direction="vertical" size={isMobile ? 16 : 24} style={{ width: "100%" }}>
+            &lt;div style={{ textAlign: "center" }}>
+              &lt;LoginOutlined style={{ fontSize: isMobile ? "24px" : "32px", color: COLORS.primary.main, marginBottom: "8px" }} />
+              &lt;Title level={isMobile ? 4 : 3} style={{ margin: "0 0 8px 0", color: COLORS.neutral.dark, fontSize: isMobile ? "1.1rem" : undefined }}>
+                Iniciar sesión
+              &lt;/Title>
+              &lt;Text style={{ color: COLORS.neutral.grey4, fontSize: isMobile ? "13px" : undefined }}>Accede a tu cuenta para gestionar tus eventos&lt;/Text>
+            &lt;/div>
+
+            &lt;Form
+              form={form}
+              name="login"
+              onFinish={onFinish}
+              onFinishFailed={onFinishFailed}
+              layout="vertical"
+              size="large"
+            >
+              &lt;Form.Item
+                name="username"
+                rules={[{ validator: validateUsername }]}
+                validateStatus={loginError["username"] ? "error" : ""}
+                help={loginError["username"]}
+              >
+                &lt;Input data-cy="username-input" prefix={&lt;UserOutlined style={{ color: COLORS.neutral.grey4 }} />} placeholder="Nombre de usuario" style={{ borderRadius: "6px" }} />
+              &lt;/Form.Item>
+
+              &lt;Form.Item
+                name="password"
+                rules={[{ validator: validatePassword }]}
+                validateStatus={loginError["password"] ? "error" : ""}
+                help={loginError["password"]}
+              >
+                &lt;Input.Password data-cy="password-input" prefix={&lt;LockOutlined style={{ color: COLORS.neutral.grey4 }} />} placeholder="Contraseña" style={{ borderRadius: "6px" }} />
+              &lt;/Form.Item>
+
+              {loginError["general"] &amp;&amp; (
+                &lt;Alert
+                  data-cy="error-message"
+                  message="Error de inicio de sesión"
+                  description={loginError["general"]}
+                  type="error"
+                  showIcon
+                  style={{ marginBottom: "16px" }}
+                />
+              )}
+
+              &lt;Form.Item>
+                &lt;Button
+                  type="primary"
+                  htmlType="submit"
+                  block
+                  loading={loading}
+                  data-cy="login-button"
+                  style={{
+                    height: "44px",
+                    borderRadius: "6px",
+                    backgroundColor: COLORS.primary.main,
+                    borderColor: COLORS.primary.main,
+                    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                  }}
+                >
+                  Iniciar sesión
+                &lt;/Button>
+              &lt;/Form.Item>
+
+              &lt;div style={{ textAlign: "center" }}>
+                &lt;Text style={{ color: COLORS.neutral.grey4 }}>
+                  ¿No tienes cuenta?{" "}
+                  &lt;Link to="/register" style={{ color: COLORS.primary.main, fontWeight: "500" }}>
+                    Regístrate
+                  &lt;/Link>
+                &lt;/Text>
+              &lt;/div>
+            &lt;/Form>
+          &lt;/Space>
+        &lt;/div>
+      &lt;/Content>
+    &lt;/Layout>
+  );
+};
+
+export default Login;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-components_colorscheme.html">components/colorscheme</a></li><li><a href="module-hooks_useSeatMapViability.html">hooks/useSeatMapViability</a></li><li><a href="module-models_Event.html">models/Event</a></li><li><a href="module-models_Location.html">models/Location</a></li><li><a href="module-models_SeatMap.html">models/SeatMap</a></li><li><a href="module-models_Ticket.html">models/Ticket</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-services_UserService.html">services/UserService</a></li><li><a href="module-utils_authSession.html">utils/authSession</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AboutUs">AboutUs</a></li><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#AdminStatistics">AdminStatistics</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#BlockingViewSwitcher">BlockingViewSwitcher</a></li><li><a href="global.html#EditProfile">EditProfile</a></li><li><a href="global.html#EditableSeatRenderer">EditableSeatRenderer</a></li><li><a href="global.html#ErrorPage">ErrorPage</a></li><li><a href="global.html#EventCreation">EventCreation</a></li><li><a href="global.html#EventDetails">EventDetails</a></li><li><a href="global.html#FramedImage">FramedImage</a></li><li><a href="global.html#GeneralAdmissionRenderer">GeneralAdmissionRenderer</a></li><li><a href="global.html#GenericSeatRenderer">GenericSeatRenderer</a></li><li><a href="global.html#HelpCenter">HelpCenter</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#ManualBlockingSelection">ManualBlockingSelection</a></li><li><a href="global.html#ManualSeatSelection">ManualSeatSelection</a></li><li><a href="global.html#Navbar">Navbar</a></li><li><a href="global.html#Profile">Profile</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#RowPricingTable">RowPricingTable</a></li><li><a href="global.html#SeatMapContainer">SeatMapContainer</a></li><li><a href="global.html#SeatRenderer">SeatRenderer</a></li><li><a href="global.html#SeatSelectionViewSwitcher">SeatSelectionViewSwitcher</a></li><li><a href="global.html#SectionShapeRenderer">SectionShapeRenderer</a></li><li><a href="global.html#SelectionTopBar">SelectionTopBar</a></li><li><a href="global.html#TicketPurchase">TicketPurchase</a></li><li><a href="global.html#VenueStageRenderer">VenueStageRenderer</a></li><li><a href="global.html#ZoomControls">ZoomControls</a></li><li><a href="global.html#enviarEmailConfirmacionCompra">enviarEmailConfirmacionCompra</a></li><li><a href="global.html#generateTicketNumber">generateTicketNumber</a></li><li><a href="global.html#generateValidationCode">generateValidationCode</a></li><li><a href="global.html#returnError">returnError</a></li><li><a href="global.html#transporter">transporter</a></li><li><a href="global.html#useAdvancedZoomPan">useAdvancedZoomPan</a></li><li><a href="global.html#useDeviceDetection">useDeviceDetection</a></li><li><a href="global.html#useUserRole">useUserRole</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu Oct 23 2025 19:08:08 GMT+0200 (hora de verano de Europa central)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

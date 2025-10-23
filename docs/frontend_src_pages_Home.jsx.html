@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: frontend/src/pages/Home.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: frontend/src/pages/Home.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { 
+  Layout, 
+  Typography, 
+  Card, 
+  Row, 
+  Col, 
+  Button, 
+  DatePicker, 
+  Input,
+  Skeleton, 
+  Empty, 
+  Tag,
+  Tabs, 
+  Space, 
+  Tooltip,
+  notification,
+  Select,
+  Pagination,
+  Drawer,
+  Flex
+} from "antd";
+import { 
+  CalendarOutlined, 
+  EnvironmentOutlined, 
+  SearchOutlined, 
+  FireOutlined,
+  StarOutlined,
+  TagOutlined,
+  ArrowRightOutlined,
+  PictureOutlined,
+  SortAscendingOutlined,
+  SortDescendingOutlined,
+  FilterOutlined,
+  MenuOutlined
+} from "@ant-design/icons";
+import axios from "axios";
+import dayjs from "dayjs";
+
+import { COLORS } from "../components/colorscheme";
+import FramedImage from "../components/FramedImage";
+
+const { Content } = Layout;
+const { Title, Text, Paragraph } = Typography;
+const { RangePicker } = DatePicker;
+const { Meta } = Card;
+const { TabPane } = Tabs;
+const { Option } = Select;
+
+/**
+ * Home page component displaying events with filtering, sorting, and search capabilities
+ * @returns {JSX.Element} Home page with event listings and navigation
+ */
+const Home = () => {
+  const [allEvents, setAllEvents] = useState([]);
+  const [filteredEvents, setFilteredEvents] = useState([]);
+  const [displayedEvents, setDisplayedEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeCategory, setActiveCategory] = useState(null);
+  const [searchText, setSearchText] = useState('');
+  const [dateRange, setDateRange] = useState(null);
+  const [sortBy, setSortBy] = useState('date');
+  const [sortOrder, setSortOrder] = useState('asc');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(12);
+  const [api, contextHolder] = notification.useNotification();
+  const [filtersDrawerVisible, setFiltersDrawerVisible] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  
+  const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
+
+  const FEATURED_CATEGORIES = [
+    { name: "Conciertos", color: COLORS.accent.purple },
+    { name: "Teatro", color: COLORS.accent.gold },
+    { name: "Deportes", color: COLORS.accent.green },
+    { name: "Festivales", color: COLORS.secondary.main },
+    { name: "Cine", color: COLORS.primary.main }
+  ];
+
+  // Detectar si es mobile
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth &lt; 768);
+    };
+    
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    setLoading(true);
+    axios.get(`${gatewayUrl}/events`)
+      .then((res) => {
+        const events = res.data.map(event => ({
+          ...event,
+          date: dayjs(event.date).format("YYYY-MM-DD"),
+          image: event.hasCustomImage ? event.imageUrl : "/event-images/default.jpg",
+          category: mapEventTypeToCategory(event.type),
+          state: event.state || 'proximo'
+        }));
+        // Filtrar eventos cancelados
+        const notCancelled = events.filter(event => event.state !== 'cancelado');
+        setAllEvents(notCancelled);
+        setFilteredEvents(notCancelled);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error loading events", err);
+        setLoading(false);
+        api.error({
+          message: 'Error',
+          description: 'No se pudieron cargar los eventos. Por favor, inténtalo de nuevo más tarde.',
+          placement: 'top',
+        });
+      });
+  }, [gatewayUrl, api]);
+
+  // Aplicar filtros y ordenación
+  useEffect(() => {
+    let filtered = [...allEvents];
+
+    // Filtro por texto de búsqueda
+    if (searchText) {
+      filtered = filtered.filter(event => 
+        event.name.toLowerCase().includes(searchText.toLowerCase()) ||
+        event.location.name.toLowerCase().includes(searchText.toLowerCase())
+      );
+    }
+
+    // Filtro por categoría
+    if (activeCategory) {
+      filtered = filtered.filter(event => event.category === activeCategory);
+    }
+
+    // Filtro por rango de fechas
+    if (dateRange &amp;&amp; dateRange.length === 2) {
+      const [start, end] = dateRange;
+      filtered = filtered.filter(event => {
+        const eventDate = dayjs(event.date);
+        return eventDate.isBetween(start, end, null, "[]");
+      });
+    }
+
+    // Ordenación
+    filtered.sort((a, b) => {
+      let compareValue = 0;
+      
+      if (sortBy === 'date') {
+        compareValue = dayjs(a.date).valueOf() - dayjs(b.date).valueOf();
+      } else if (sortBy === 'name') {
+        compareValue = a.name.localeCompare(b.name);
+      } else if (sortBy === 'state') {
+        const stateOrder = { 'activo': 1, 'proximo': 2, 'finalizado': 3, 'cancelado': 4 };
+        compareValue = (stateOrder[a.state] || 5) - (stateOrder[b.state] || 5);
+      }
+
+      return sortOrder === 'asc' ? compareValue : -compareValue;
+    });
+
+    setFilteredEvents(filtered);
+    setCurrentPage(1); // Reset a la primera página cuando se filtran los eventos
+  }, [allEvents, searchText, activeCategory, dateRange, sortBy, sortOrder]);
+
+  // Paginación
+  useEffect(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    setDisplayedEvents(filteredEvents.slice(startIndex, endIndex));
+  }, [filteredEvents, currentPage, pageSize]);
+
+  const mapEventTypeToCategory = (type) => {
+    const typeMap = {
+      'concert': 'Conciertos',
+      'football': 'Deportes', 
+      'cinema': 'Cine',
+      'festival': 'Festivales',
+      'theater': 'Teatro'
+    };
+    return typeMap[type] || 'Evento';
+  };
+
+  const handleSearch = (e) => {
+    setSearchText(e.target.value);
+  };
+
+  const handleDateFilter = (dates) => {
+    setDateRange(dates);
+  };
+
+  const handleCategoryFilter = (category) => {
+    setActiveCategory(category);
+    if (isMobile) {
+      setFiltersDrawerVisible(false);
+    }
+  };
+
+  const clearAllFilters = () => {
+    setSearchText('');
+    setActiveCategory(null);
+    setDateRange(null);
+    setSortBy('date');
+    setSortOrder('asc');
+    if (isMobile) {
+      setFiltersDrawerVisible(false);
+    }
+  };
+
+  const getCategoryColor = (categoryName) => {
+    switch(categoryName) {
+      case "Conciertos": return COLORS.accent.purple;
+      case "Teatro": return COLORS.accent.gold;
+      case "Deportes": return COLORS.accent.green;
+      case "Festivales": return COLORS.secondary.main;
+      case "Cine": return COLORS.primary.main;
+      default: return COLORS.primary.main;
+    }
+  };
+
+  const getStateColor = (state) => {
+    switch(state) {
+      case "activo": return COLORS.accent.green;
+      case "proximo": return COLORS.primary.main;
+      case "finalizado": return COLORS.neutral.grey400;
+      case "cancelado": return COLORS.secondary.main;
+      default: return COLORS.neutral.grey300;
+    }
+  };
+
+  const getStateLabel = (state) => {
+    switch(state) {
+      case "activo": return "Activo";
+      case "proximo": return "Próximo";
+      case "finalizado": return "Finalizado";
+      case "cancelado": return "Cancelado";
+      default: return "Desconocido";
+    }
+  };
+
+  // Componente de tarjeta de evento reutilizable
+  const EventCard = ({ event, featured = false }) => (
+    &lt;Card
+      hoverable
+      className="event-card"
+      data-cy="event-card"
+      cover={
+        &lt;div style={{ position: 'relative' }}>
+          {event.image ? (
+            &lt;FramedImage
+              src={event.image}
+              alt={event.name}
+              backgroundColor={COLORS.neutral.grey50}
+              borderRadius={8}
+              aspectRatio={isMobile ? 16/10 : 16/9}
+              style={{ transition: 'transform 0.3s ease' }}
+            />
+          ) : (
+            &lt;div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              width: '100%',
+              aspectRatio: isMobile ? '16/10' : '16/9',
+              backgroundColor: COLORS.neutral.grey50,
+              borderRadius: 8
+            }}>
+              &lt;PictureOutlined style={{ fontSize: isMobile ? '32px' : '48px', color: COLORS.neutral.grey300 }} />
+            &lt;/div>
+          )}
+          {featured &amp;&amp; (
+            &lt;Tag color={COLORS.accent.gold} style={{ 
+              position: 'absolute', 
+              top: '8px', 
+              right: '8px',
+              padding: '0 6px',
+              fontSize: isMobile ? '10px' : '12px'
+            }}>
+              &lt;FireOutlined /> {isMobile ? '' : 'Destacado'}
+            &lt;/Tag>
+          )}
+          &lt;Tag color={getCategoryColor(event.category)} style={{ 
+            position: 'absolute', 
+            top: '8px', 
+            left: '8px',
+            fontSize: isMobile ? '10px' : '12px'
+          }}>
+            {event.category}
+          &lt;/Tag>
+          &lt;Tag color={getStateColor(event.state)} style={{ 
+            position: 'absolute', 
+            bottom: '8px', 
+            left: '8px',
+            fontSize: isMobile ? '10px' : '12px'
+          }}>
+            {getStateLabel(event.state)}
+          &lt;/Tag>
+        &lt;/div>
+      }
+      actions={[
+        &lt;Link to={`/event/${event._id}`} key="details">
+          &lt;Button data-cy="view-details-button" type="text" icon={&lt;ArrowRightOutlined />} size={isMobile ? "small" : "default"} >
+            {isMobile ? "Ver" : "Ver detalles"}
+          &lt;/Button>
+        &lt;/Link>
+      ]}
+      bodyStyle={{ padding: isMobile ? '12px' : '16px' }}
+      style={{ 
+        height: '100%', 
+        display: 'flex', 
+        flexDirection: 'column',
+        boxShadow: '0 1px 2px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.07), 0 4px 8px rgba(0,0,0,0.07)',
+        border: featured ? `1px solid ${getCategoryColor(event.category)}` : 'none',
+        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+        opacity: event.state === 'cancelado' ? 0.6 : 1
+      }}
+    >
+      &lt;Meta
+        title={
+          &lt;Tooltip title={event.name}>
+            &lt;div data-cy="event-name" style={{
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              fontSize: isMobile ? '14px' : '16px',
+              fontWeight: '600',
+              color: COLORS.neutral.grey800
+            }}>
+              {event.name}
+            &lt;/div>
+          &lt;/Tooltip>
+        }
+        description={
+          &lt;Space direction="vertical" size={2} style={{ width: '100%' }}>
+            &lt;div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              &lt;Text data-cy="event-date" style={{
+                display: 'flex',
+                alignItems: 'center',
+                color: COLORS.neutral.grey400,
+                fontSize: isMobile ? '12px' : '14px'
+              }}>
+                &lt;CalendarOutlined style={{ marginRight: '4px', color: COLORS.neutral.grey400 }} />
+                {dayjs(event.date).format(isMobile ? "DD MMM" : "DD MMM YYYY")}
+              &lt;/Text>
+            &lt;/div>
+            &lt;Text style={{
+              display: 'flex',
+              alignItems: 'center',
+              color: COLORS.neutral.grey400,
+              fontSize: isMobile ? '12px' : '14px'
+            }}>
+              &lt;EnvironmentOutlined style={{ marginRight: '4px', color: COLORS.neutral.grey400 }} />
+              &lt;Tooltip title={event.location.name}>
+                &lt;span style={{
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  maxWidth: isMobile ? '120px' : '180px',
+                  display: 'inline-block'
+                }}>
+                  {event.location.name}
+                &lt;/span>
+              &lt;/Tooltip>
+            &lt;/Text>
+          &lt;/Space>
+        }
+      />
+    &lt;/Card>
+  );
+
+  // Componente para filtros de categorías
+  const CategoryFilters = () => (
+    &lt;div>
+      &lt;Title level={isMobile ? 5 : 4} style={{ 
+        marginBottom: '16px', 
+        display: 'flex', 
+        alignItems: 'center', 
+        color: COLORS.neutral.grey700 
+      }}>
+        &lt;TagOutlined style={{ marginRight: '8px', color: COLORS.primary.main }} />
+        Categorías {!isMobile &amp;&amp; "destacadas"}
+      &lt;/Title>
+      &lt;Flex wrap="wrap" gap="small">
+        &lt;Button 
+          type={activeCategory === null ? 'primary' : 'default'}
+          onClick={() => handleCategoryFilter(null)}
+          size={isMobile ? 'small' : 'default'}
+          style={{
+            backgroundColor: activeCategory === null ? COLORS.primary.main : '',
+            borderColor: activeCategory === null ? COLORS.primary.main : ''
+          }}
+        >
+          Todos
+        &lt;/Button>
+        {FEATURED_CATEGORIES.map(category => (
+          &lt;Button
+            key={category.name}
+            type={activeCategory === category.name ? 'primary' : 'default'}
+            size={isMobile ? 'small' : 'default'}
+            style={{ 
+              borderColor: category.color,
+              color: activeCategory === category.name ? COLORS.neutral.white : category.color,
+              backgroundColor: activeCategory === category.name ? category.color : 'transparent'
+            }}
+            onClick={() => handleCategoryFilter(category.name)}
+          >
+            {category.name}
+          &lt;/Button>
+        ))}
+      &lt;/Flex>
+    &lt;/div>
+  );
+
+  return (
+    &lt;Layout style={{ backgroundColor: COLORS.neutral.white, minHeight: "100vh" }}>
+      {contextHolder} {/* Para las notificaciones */}
+      
+      &lt;Content>
+        {/* Hero Section - usando el gradiente principal */}
+        &lt;div style={{ 
+          background: COLORS.gradients.primary,
+          padding: isMobile ? '40px 16px' : '60px 20px',
+          textAlign: 'center',
+          color: COLORS.neutral.white
+        }}>
+          &lt;div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+            &lt;Title level={isMobile ? 2 : 1} style={{ 
+              color: COLORS.neutral.white, 
+              marginBottom: '16px',
+              fontSize: isMobile ? '24px' : undefined
+            }}>
+              Descubre eventos increíbles
+            &lt;/Title>
+            &lt;Paragraph style={{ 
+              fontSize: isMobile ? '16px' : '18px', 
+              maxWidth: '700px', 
+              margin: isMobile ? '0 auto 24px' : '0 auto 32px',
+              color: 'rgba(255, 255, 255, 0.85)'
+            }}>
+              Encuentra y reserva entradas para los mejores conciertos, obras de teatro, 
+              eventos deportivos y mucho más.
+            &lt;/Paragraph>
+            
+            &lt;div style={{ 
+              background: COLORS.neutral.white, 
+              borderRadius: '8px', 
+              padding: isMobile ? '16px' : '24px',
+              maxWidth: '900px',
+              margin: '0 auto',
+              boxShadow: '0 8px 16px rgba(0,0,0,0.1)'
+            }}>
+              &lt;Space direction="vertical" size={12} style={{ width: '100%' }}>
+                &lt;Input
+                  size="large"
+                  placeholder="Buscar eventos..."
+                  prefix={&lt;SearchOutlined style={{ color: COLORS.neutral.grey400 }} />}
+                  value={searchText}
+                  onChange={handleSearch}
+                  style={{ width: '100%' }}
+                />
+                
+                {!isMobile ? (
+                  &lt;Row gutter={16} align="middle">
+                    &lt;Col xs={24} sm={12} md={14}>
+                      &lt;RangePicker 
+                        size="large"
+                        value={dateRange}
+                        onChange={handleDateFilter}
+                        style={{ width: '100%' }}
+                        placeholder={['Desde', 'Hasta']}
+                      />
+                    &lt;/Col>
+                    &lt;Col xs={24} sm={12} md={10}>
+                      &lt;Button 
+                        size="large"
+                        onClick={clearAllFilters}
+                        style={{ width: '100%' }}
+                        icon={&lt;FilterOutlined />}
+                      >
+                        Limpiar filtros
+                      &lt;/Button>
+                    &lt;/Col>
+                  &lt;/Row>
+                ) : (
+                  &lt;Row gutter={8}>
+                    &lt;Col span={18}>
+                      &lt;RangePicker 
+                        size="large"
+                        value={dateRange}
+                        onChange={handleDateFilter}
+                        style={{ width: '100%' }}
+                        placeholder={['Desde', 'Hasta']}
+                      />
+                    &lt;/Col>
+                    &lt;Col span={6}>
+                      &lt;Button 
+                        size="large"
+                        onClick={() => setFiltersDrawerVisible(true)}
+                        style={{ width: '100%' }}
+                        icon={&lt;MenuOutlined />}
+                      />
+                    &lt;/Col>
+                  &lt;/Row>
+                )}
+              &lt;/Space>
+            &lt;/div>
+          &lt;/div>
+        &lt;/div>
+
+        {/* Contenido principal */}
+        &lt;div style={{ 
+          maxWidth: '1200px', 
+          margin: '40px auto 20px', 
+          padding: isMobile ? '0 16px' : '0 20px' 
+        }}>
+          &lt;Space direction="vertical" size={24} style={{ width: '100%' }}>
+            {/* Categorías destacadas - Solo en desktop */}
+            {!isMobile &amp;&amp; &lt;CategoryFilters />}
+
+            {/* Controles de ordenación */}
+            &lt;Card style={{ 
+              borderRadius: '8px', 
+              boxShadow: '0 1px 2px rgba(0,0,0,0.07)',
+              padding: isMobile ? '8px' : undefined
+            }}>
+              &lt;Row gutter={[16, 12]} justify="space-between" align="middle">
+                &lt;Col xs={24} md={12}>
+                  &lt;Space size={isMobile ? 'small' : 'middle'} wrap>
+                    &lt;Text strong style={{ fontSize: isMobile ? '14px' : '16px' }}>
+                      Ordenar por:
+                    &lt;/Text>
+                    &lt;Select
+                      value={sortBy}
+                      onChange={setSortBy}
+                      style={{ width: isMobile ? 100 : 120 }}
+                      size={isMobile ? 'small' : 'default'}
+                    >
+                      &lt;Option value="date">
+                        &lt;CalendarOutlined /> Fecha
+                      &lt;/Option>
+                      &lt;Option value="name">Nombre&lt;/Option>
+                      &lt;Option value="state">Estado&lt;/Option>
+                    &lt;/Select>
+                    &lt;Button
+                      icon={sortOrder === 'asc' ? &lt;SortAscendingOutlined /> : &lt;SortDescendingOutlined />}
+                      onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                      size={isMobile ? 'small' : 'default'}
+                    >
+                      {isMobile ? '' : (sortOrder === 'asc' ? 'Ascendente' : 'Descendente')}
+                    &lt;/Button>
+                  &lt;/Space>
+                &lt;/Col>
+                &lt;Col xs={24} md={12} style={{ 
+                  textAlign: isMobile ? 'center' : 'right',
+                  marginTop: isMobile ? '8px' : '0'
+                }}>
+                  &lt;Text type="secondary" style={{ fontSize: isMobile ? '12px' : '14px' }}>
+                    Mostrando {displayedEvents.length} de {filteredEvents.length} eventos
+                  &lt;/Text>
+                &lt;/Col>
+              &lt;/Row>
+            &lt;/Card>
+
+            {/* Contenido principal con tabs */}
+            &lt;Tabs 
+              defaultActiveKey="1" 
+              type="card"
+              style={{
+                '&amp; .ant-tabs-nav .ant-tabs-tab-active': {
+                  color: COLORS.primary.main,
+                }
+              }}
+            >
+              &lt;TabPane 
+                tab={
+                  &lt;span style={{ fontSize: isMobile ? '12px' : '14px' }}>
+                    &lt;StarOutlined style={{ color: COLORS.primary.main }} />
+                    Eventos ({filteredEvents.length})
+                  &lt;/span>
+                } 
+                key="1"
+              >
+                {loading ? (
+                  &lt;Row gutter={[16, 16]}>
+                    {[...Array(isMobile ? 4 : 12)].map((_, i) => (
+                      &lt;Col xs={24} sm={12} md={8} lg={6} key={i}>
+                        &lt;Card>
+                          &lt;Skeleton active avatar paragraph={{ rows: 2 }} />
+                        &lt;/Card>
+                      &lt;/Col>
+                    ))}
+                  &lt;/Row>
+                ) : (
+                  &lt;>
+                    {displayedEvents.length > 0 ? (
+                      &lt;>
+                        &lt;Row gutter={[16, 16]}>
+                          {displayedEvents.map((event) => (
+                            &lt;Col xs={24} sm={12} lg={8} xl={6} key={event._id}>
+                              &lt;EventCard event={event} />
+                            &lt;/Col>
+                          ))}
+                        &lt;/Row>
+                        
+                        {/* Paginación */}
+                        &lt;div style={{ textAlign: 'center', marginTop: '32px' }}>
+                          &lt;Pagination
+                            current={currentPage}
+                            total={filteredEvents.length}
+                            pageSize={pageSize}
+                            showSizeChanger={!isMobile}
+                            showQuickJumper={!isMobile}
+                            simple={isMobile}
+                            showTotal={!isMobile ? (total, range) => `${range[0]}-${range[1]} de ${total} eventos` : undefined}
+                            onChange={(page, size) => {
+                              setCurrentPage(page);
+                              setPageSize(size);
+                            }}
+                            onShowSizeChange={(current, size) => {
+                              setCurrentPage(1);
+                              setPageSize(size);
+                            }}
+                            pageSizeOptions={['8', '12', '16', '24']}
+                            size={isMobile ? 'small' : 'default'}
+                            style={{
+                              marginTop: '24px'
+                            }}
+                          />
+                        &lt;/div>
+                      &lt;/>
+                    ) : (
+                      &lt;Empty
+                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                        description={
+                          &lt;span style={{ color: COLORS.neutral.grey400 }}>
+                            No se encontraron eventos con los filtros seleccionados
+                          &lt;/span>
+                        }
+                      >
+                        &lt;Button 
+                          type="primary" 
+                          onClick={clearAllFilters}
+                          style={{
+                            backgroundColor: COLORS.primary.main,
+                            borderColor: COLORS.primary.main
+                          }}
+                        >
+                          Limpiar filtros
+                        &lt;/Button>
+                      &lt;/Empty>
+                    )}
+                  &lt;/>
+                )}
+              &lt;/TabPane>
+            &lt;/Tabs>
+          &lt;/Space>
+        &lt;/div>
+      &lt;/Content>
+
+      {/* Drawer para filtros en móvil */}
+      &lt;Drawer
+        title="Filtros"
+        placement="right"
+        onClose={() => setFiltersDrawerVisible(false)}
+        open={filtersDrawerVisible}
+        width={280}
+      >
+        &lt;Space direction="vertical" size={24} style={{ width: '100%' }}>
+          &lt;CategoryFilters />
+          &lt;Button 
+            type="primary" 
+            onClick={clearAllFilters}
+            style={{
+              backgroundColor: COLORS.primary.main,
+              borderColor: COLORS.primary.main,
+              width: '100%'
+            }}
+            icon={&lt;FilterOutlined />}
+          >
+            Limpiar filtros
+          &lt;/Button>
+        &lt;/Space>
+      &lt;/Drawer>
+    &lt;/Layout>
+  );
+};
+
+export default Home;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-components_colorscheme.html">components/colorscheme</a></li><li><a href="module-hooks_useSeatMapViability.html">hooks/useSeatMapViability</a></li><li><a href="module-models_Event.html">models/Event</a></li><li><a href="module-models_Location.html">models/Location</a></li><li><a href="module-models_SeatMap.html">models/SeatMap</a></li><li><a href="module-models_Ticket.html">models/Ticket</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-services_UserService.html">services/UserService</a></li><li><a href="module-utils_authSession.html">utils/authSession</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AboutUs">AboutUs</a></li><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#AdminStatistics">AdminStatistics</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#BlockingViewSwitcher">BlockingViewSwitcher</a></li><li><a href="global.html#EditProfile">EditProfile</a></li><li><a href="global.html#EditableSeatRenderer">EditableSeatRenderer</a></li><li><a href="global.html#ErrorPage">ErrorPage</a></li><li><a href="global.html#EventCreation">EventCreation</a></li><li><a href="global.html#EventDetails">EventDetails</a></li><li><a href="global.html#FramedImage">FramedImage</a></li><li><a href="global.html#GeneralAdmissionRenderer">GeneralAdmissionRenderer</a></li><li><a href="global.html#GenericSeatRenderer">GenericSeatRenderer</a></li><li><a href="global.html#HelpCenter">HelpCenter</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#ManualBlockingSelection">ManualBlockingSelection</a></li><li><a href="global.html#ManualSeatSelection">ManualSeatSelection</a></li><li><a href="global.html#Navbar">Navbar</a></li><li><a href="global.html#Profile">Profile</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#RowPricingTable">RowPricingTable</a></li><li><a href="global.html#SeatMapContainer">SeatMapContainer</a></li><li><a href="global.html#SeatRenderer">SeatRenderer</a></li><li><a href="global.html#SeatSelectionViewSwitcher">SeatSelectionViewSwitcher</a></li><li><a href="global.html#SectionShapeRenderer">SectionShapeRenderer</a></li><li><a href="global.html#SelectionTopBar">SelectionTopBar</a></li><li><a href="global.html#TicketPurchase">TicketPurchase</a></li><li><a href="global.html#VenueStageRenderer">VenueStageRenderer</a></li><li><a href="global.html#ZoomControls">ZoomControls</a></li><li><a href="global.html#enviarEmailConfirmacionCompra">enviarEmailConfirmacionCompra</a></li><li><a href="global.html#generateTicketNumber">generateTicketNumber</a></li><li><a href="global.html#generateValidationCode">generateValidationCode</a></li><li><a href="global.html#returnError">returnError</a></li><li><a href="global.html#transporter">transporter</a></li><li><a href="global.html#useAdvancedZoomPan">useAdvancedZoomPan</a></li><li><a href="global.html#useDeviceDetection">useDeviceDetection</a></li><li><a href="global.html#useUserRole">useUserRole</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu Oct 23 2025 19:08:08 GMT+0200 (hora de verano de Europa central)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

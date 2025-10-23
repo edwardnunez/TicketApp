@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: frontend/src/pages/steps/seatmaps/renderers/GenericSeatRenderer.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: frontend/src/pages/steps/seatmaps/renderers/GenericSeatRenderer.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import React, { useState, useEffect } from 'react';
+import SeatMapContainer from '../containers/SeatMapContainer';
+import { COLORS, getSectionTextColor, getContrastTextColor, getSectionLabelColor } from '../../../../components/colorscheme';
+import { Typography, notification, Card } from 'antd';
+import '../styles/SeatMapAnimations.css';
+
+const { Text } = Typography;
+
+/**
+ * Generic seat map renderer component for standard seat map display
+ * @param {Object} props - Component props
+ * @param {Object} props.seatMapData - Seat map data object
+ * @param {Array} props.selectedSeats - Currently selected seats
+ * @param {Function} props.onSeatSelect - Seat selection handler
+ * @param {number} props.maxSeats - Maximum number of selectable seats
+ * @param {Array} props.occupiedSeats - List of occupied seat IDs
+ * @param {Array} props.blockedSeats - List of blocked seat IDs
+ * @param {Array} props.blockedSections - List of blocked section IDs
+ * @param {Function} props.formatPrice - Price formatting function
+ * @param {Object} props.event - Event data object
+ * @param {Function} props.calculateSeatPrice - Seat price calculation function
+ * @returns {JSX.Element} Generic seat map renderer using enhanced container
+ */
+const GenericSeatRenderer = ({
+  seatMapData,
+  selectedSeats,
+  onSeatSelect,
+  maxSeats,
+  occupiedSeats,
+  blockedSeats,
+  blockedSections,
+  formatPrice,
+  event,
+  calculateSeatPrice
+}) => {
+  if (!seatMapData) return null;
+
+  // Usar el nuevo contenedor mejorado
+  return (
+    &lt;SeatMapContainer
+      seatMapData={seatMapData}
+      selectedSeats={selectedSeats}
+      onSeatSelect={onSeatSelect}
+      maxSeats={maxSeats}
+      occupiedSeats={occupiedSeats}
+      blockedSeats={blockedSeats}
+      blockedSections={blockedSections}
+      formatPrice={formatPrice}
+      event={event}
+      calculateSeatPrice={calculateSeatPrice}
+    />
+  );
+};
+
+/**
+ * General admission renderer component for non-numbered seating sections
+ * @param {Object} props - Component props
+ * @param {Object} props.section - Section data object
+ * @param {Array} props.selectedSeats - Currently selected seats
+ * @param {Function} props.onSeatSelect - Seat selection handler
+ * @param {number} props.maxSeats - Maximum number of selectable seats
+ * @param {Array} props.occupiedSeats - List of occupied seat IDs
+ * @param {Array} props.blockedSeats - List of blocked seat IDs
+ * @param {Array} props.blockedSections - List of blocked section IDs
+ * @param {Function} props.formatPrice - Price formatting function
+ * @param {Object} props.event - Event data object
+ * @param {Function} props.calculateSeatPrice - Seat price calculation function
+ * @returns {JSX.Element} General admission renderer with quantity selection
+ */
+const GeneralAdmissionRenderer = ({ 
+  section, 
+  selectedSeats, 
+  onSeatSelect, 
+  maxSeats, 
+  occupiedSeats, 
+  blockedSeats, 
+  blockedSections,
+  formatPrice, 
+  event,
+  calculateSeatPrice 
+}) => {
+  const [quantity, setQuantity] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+  const price = calculateSeatPrice ? calculateSeatPrice(section, null) : (section.defaultPrice || 0);
+  const isBlocked = blockedSections &amp;&amp; blockedSections.includes(section.id);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth &lt; 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const renderSectionTitle = (section) => {
+    const price = calculateSeatPrice ? calculateSeatPrice(section, null) : (section.defaultPrice || 0);
+    const isBlocked = blockedSections &amp;&amp; blockedSections.includes(section.id);
+    
+    return (
+      &lt;Text 
+        style={{ 
+          fontSize: isMobile ? '14px' : '16px',
+          fontWeight: 'bold',
+          color: getSectionLabelColor(section.color, isBlocked),
+          textDecoration: isBlocked ? 'line-through' : 'none'
+        }}
+      >
+        {section.name} - {formatPrice(price)}
+        {!section.hasNumberedSeats &amp;&amp; ' (Entrada General)'}
+      &lt;/Text>
+    );
+  };
+
+  const handleQuantityChange = (newQuantity) => {
+    if (newQuantity &lt; 0) return;
+    if (newQuantity > maxSeats) {
+      notification.warning({
+        message: 'Límite de Asientos',
+        description: `Solo puedes seleccionar hasta ${maxSeats} asiento(s).`,
+        duration: 3,
+      });
+      return;
+    }
+
+    setQuantity(newQuantity);
+    
+    // Simular selección de asientos para entrada general
+    const generalSeats = Array.from({ length: newQuantity }, (_, i) => `${section.id}-general-${i + 1}`);
+    onSeatSelect(generalSeats);
+  };
+
+  return (
+    &lt;Card
+      title={renderSectionTitle(section)}
+      style={{
+        marginBottom: '16px',
+        opacity: isBlocked ? 0.5 : 1,
+        border: isBlocked ? `2px solid ${COLORS.neutral.grey3}` : `2px solid ${section.color || COLORS.primary.main}`,
+        borderRadius: '12px',
+        boxShadow: isBlocked ? 'none' : '0 4px 12px rgba(0, 0, 0, 0.1)'
+      }}
+      className="section-card"
+    >
+      &lt;div style={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '12px'
+      }}>
+        &lt;div style={{ flex: 1, minWidth: '200px' }}>
+          &lt;Text style={{ 
+            color: getContrastTextColor(section.color, 0.8, isBlocked),
+            fontSize: '14px',
+            display: 'block',
+            marginBottom: '8px'
+          }}>
+            Entrada General - Sin asientos numerados
+          &lt;/Text>
+          &lt;Text style={{ 
+            color: getSectionTextColor(section.color, isBlocked),
+            fontSize: '16px',
+            fontWeight: 'bold'
+          }}>
+            Precio: {formatPrice(price)}
+          &lt;/Text>
+        &lt;/div>
+        
+        &lt;div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '12px',
+          flexWrap: 'wrap'
+        }}>
+          &lt;div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '8px' 
+          }}>
+            &lt;button
+              onClick={() => handleQuantityChange(quantity - 1)}
+              disabled={quantity &lt;= 0 || isBlocked}
+              style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                border: `2px solid ${COLORS.primary.main}`,
+                backgroundColor: quantity > 0 &amp;&amp; !isBlocked ? COLORS.primary.main : 'transparent',
+                color: quantity > 0 &amp;&amp; !isBlocked ? 'white' : COLORS.primary.main,
+                cursor: quantity > 0 &amp;&amp; !isBlocked ? 'pointer' : 'not-allowed',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              -
+            &lt;/button>
+            
+            &lt;span style={{ 
+              fontSize: '18px', 
+              fontWeight: 'bold',
+              minWidth: '30px',
+              textAlign: 'center',
+              color: getSectionTextColor(section.color, isBlocked)
+            }}>
+              {quantity}
+            &lt;/span>
+            
+            &lt;button
+              onClick={() => handleQuantityChange(quantity + 1)}
+              disabled={quantity >= maxSeats || isBlocked}
+              style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                border: `2px solid ${COLORS.primary.main}`,
+                backgroundColor: quantity &lt; maxSeats &amp;&amp; !isBlocked ? COLORS.primary.main : 'transparent',
+                color: quantity &lt; maxSeats &amp;&amp; !isBlocked ? 'white' : COLORS.primary.main,
+                cursor: quantity &lt; maxSeats &amp;&amp; !isBlocked ? 'pointer' : 'not-allowed',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              +
+            &lt;/button>
+          &lt;/div>
+          
+          {quantity > 0 &amp;&amp; (
+            &lt;div style={{ 
+              textAlign: 'right',
+              minWidth: '120px'
+            }}>
+              &lt;Text style={{ 
+                fontSize: '14px',
+                color: getContrastTextColor(section.color, 0.8, isBlocked)
+              }}>
+                Total:
+              &lt;/Text>
+              &lt;Text style={{ 
+                fontSize: '18px',
+                fontWeight: 'bold',
+                color: getSectionTextColor(section.color, isBlocked),
+                display: 'block'
+              }}>
+                {formatPrice(price * quantity)}
+              &lt;/Text>
+            &lt;/div>
+          )}
+        &lt;/div>
+      &lt;/div>
+      
+      {isBlocked &amp;&amp; (
+        &lt;div style={{
+          marginTop: '12px',
+          padding: '8px 12px',
+          backgroundColor: COLORS.neutral.grey1,
+          borderRadius: '6px',
+          border: `1px solid ${COLORS.neutral.grey3}`
+        }}>
+          &lt;Text style={{ 
+            color: getContrastTextColor(section.color, 0.6, isBlocked),
+            fontSize: '12px',
+            fontStyle: 'italic'
+          }}>
+            Esta sección está bloqueada y no está disponible para la venta.
+          &lt;/Text>
+        &lt;/div>
+      )}
+    &lt;/Card>
+  );
+};
+
+export default GenericSeatRenderer;
+export { GeneralAdmissionRenderer };
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-components_colorscheme.html">components/colorscheme</a></li><li><a href="module-hooks_useSeatMapViability.html">hooks/useSeatMapViability</a></li><li><a href="module-models_Event.html">models/Event</a></li><li><a href="module-models_Location.html">models/Location</a></li><li><a href="module-models_SeatMap.html">models/SeatMap</a></li><li><a href="module-models_Ticket.html">models/Ticket</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-services_UserService.html">services/UserService</a></li><li><a href="module-utils_authSession.html">utils/authSession</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AboutUs">AboutUs</a></li><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#AdminStatistics">AdminStatistics</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#BlockingViewSwitcher">BlockingViewSwitcher</a></li><li><a href="global.html#EditProfile">EditProfile</a></li><li><a href="global.html#EditableSeatRenderer">EditableSeatRenderer</a></li><li><a href="global.html#ErrorPage">ErrorPage</a></li><li><a href="global.html#EventCreation">EventCreation</a></li><li><a href="global.html#EventDetails">EventDetails</a></li><li><a href="global.html#FramedImage">FramedImage</a></li><li><a href="global.html#GeneralAdmissionRenderer">GeneralAdmissionRenderer</a></li><li><a href="global.html#GenericSeatRenderer">GenericSeatRenderer</a></li><li><a href="global.html#HelpCenter">HelpCenter</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#ManualBlockingSelection">ManualBlockingSelection</a></li><li><a href="global.html#ManualSeatSelection">ManualSeatSelection</a></li><li><a href="global.html#Navbar">Navbar</a></li><li><a href="global.html#Profile">Profile</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#RowPricingTable">RowPricingTable</a></li><li><a href="global.html#SeatMapContainer">SeatMapContainer</a></li><li><a href="global.html#SeatRenderer">SeatRenderer</a></li><li><a href="global.html#SeatSelectionViewSwitcher">SeatSelectionViewSwitcher</a></li><li><a href="global.html#SectionShapeRenderer">SectionShapeRenderer</a></li><li><a href="global.html#SelectionTopBar">SelectionTopBar</a></li><li><a href="global.html#TicketPurchase">TicketPurchase</a></li><li><a href="global.html#VenueStageRenderer">VenueStageRenderer</a></li><li><a href="global.html#ZoomControls">ZoomControls</a></li><li><a href="global.html#enviarEmailConfirmacionCompra">enviarEmailConfirmacionCompra</a></li><li><a href="global.html#generateTicketNumber">generateTicketNumber</a></li><li><a href="global.html#generateValidationCode">generateValidationCode</a></li><li><a href="global.html#returnError">returnError</a></li><li><a href="global.html#transporter">transporter</a></li><li><a href="global.html#useAdvancedZoomPan">useAdvancedZoomPan</a></li><li><a href="global.html#useDeviceDetection">useDeviceDetection</a></li><li><a href="global.html#useUserRole">useUserRole</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu Oct 23 2025 19:08:08 GMT+0200 (hora de verano de Europa central)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

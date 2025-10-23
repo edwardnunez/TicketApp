@@ -1,0 +1,21 @@
+{
+  "source": {
+    "include": ["frontend/src", "backend"],
+    "includePattern": ".+\\.(jsx|js|mjs)$",
+    "excludePattern": "(node_modules|dist|build|public)"
+  },
+  "plugins": [
+    "plugins/markdown"
+  ],
+"opts": {
+    "destination": "./docs",
+    "recurse": true,
+    "readme": "./README.md",
+    "encoding": "utf8",
+    "template": "node_modules/jsdoc/templates/default"
+  },
+  "templates": {
+    "cleverLinks": true,
+    "monospaceLinks": false
+  }
+}

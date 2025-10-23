@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: frontend/src/pages/admin/AdminStatistics.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: frontend/src/pages/admin/AdminStatistics.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import React, { useEffect, useState, useCallback } from 'react';
+import { 
+  Layout, 
+  Typography, 
+  Card, 
+  Row, 
+  Col, 
+  Statistic, 
+  Table, 
+  Select, 
+  DatePicker, 
+  Button, 
+  Tag, 
+  Alert, 
+  Spin,
+  Progress,
+  Input
+} from 'antd';
+import { 
+  BarChartOutlined, 
+  DollarOutlined, 
+  CalendarOutlined,
+  FilterOutlined,
+  ClearOutlined,
+  EyeOutlined,
+  ArrowLeftOutlined,
+  SearchOutlined,
+  EnvironmentOutlined,
+  PercentageOutlined,
+  ShoppingCartOutlined
+} from '@ant-design/icons';
+import axios from 'axios';
+import dayjs from 'dayjs';
+import { COLORS } from '../../components/colorscheme';
+
+const { Content } = Layout;
+const { Title, Text } = Typography;
+const { Option } = Select;
+const { RangePicker } = DatePicker;
+
+/**
+ * Admin statistics page component for detailed sales and revenue analysis
+ * @returns {JSX.Element} Statistics dashboard with filtering and data visualization
+ */
+const AdminStatistics = () => {
+  const [statistics, setStatistics] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  
+  // Estados para filtros
+  const [filters, setFilters] = useState({
+    eventType: 'all',
+    eventState: 'all',
+    dateRange: null,
+    search: ''
+  });
+
+  const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
+
+  // Cargar estadísticas
+  const loadStatistics = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const params = new URLSearchParams();
+      
+      if (filters.eventType !== 'all') {
+        params.append('eventType', filters.eventType);
+      }
+      
+      if (filters.eventState !== 'all') {
+        params.append('eventState', filters.eventState);
+      }
+      
+      if (filters.dateRange &amp;&amp; filters.dateRange.length === 2) {
+        params.append('dateFrom', filters.dateRange[0].format('YYYY-MM-DD'));
+        params.append('dateTo', filters.dateRange[1].format('YYYY-MM-DD'));
+      }
+
+      if (filters.search &amp;&amp; filters.search.trim()) {
+        params.append('search', filters.search.trim());
+      }
+
+      const response = await axios.get(`${gatewayUrl}/events/admin/statistics?${params.toString()}`);
+      setStatistics(response.data);
+    } catch (err) {
+      console.error('Error cargando estadísticas:', err);
+      setError('Error al cargar las estadísticas. Por favor, inténtalo de nuevo.');
+    } finally {
+      setLoading(false);
+    }
+  }, [filters, gatewayUrl]);
+
+  useEffect(() => {
+    loadStatistics();
+  }, [loadStatistics]);
+
+  // Manejadores de filtros
+  const handleEventTypeChange = (value) => {
+    setFilters(prev => ({ ...prev, eventType: value }));
+  };
+
+  const handleEventStateChange = (value) => {
+    setFilters(prev => ({ ...prev, eventState: value }));
+  };
+
+  const handleDateRangeChange = (dates) => {
+    setFilters(prev => ({ ...prev, dateRange: dates }));
+  };
+
+  const handleSearchChange = (e) => {
+    setFilters(prev => ({ ...prev, search: e.target.value }));
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      eventType: 'all',
+      eventState: 'all',
+      dateRange: null,
+      search: ''
+    });
+  };
+
+  // Función para formatear moneda
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('es-ES', {
+      style: 'currency',
+      currency: 'EUR'
+    }).format(amount);
+  };
+
+  // Función para obtener color por tipo de evento
+  const getEventTypeColor = (type) => {
+    const typeMap = {
+      'concert': '#1890ff',
+      'football': '#52c41a',
+      'cinema': '#eb2f96',
+      'festival': '#fa8c16',
+      'theater': '#722ed1'
+    };
+    return typeMap[type] || '#8c8c8c';
+  };
+
+  // Función para obtener etiqueta de tipo de evento
+  const getEventTypeLabel = (type) => {
+    const typeMap = {
+      'concert': 'Concierto',
+      'football': 'Fútbol',
+      'cinema': 'Cine',
+      'festival': 'Festival',
+      'theater': 'Teatro'
+    };
+    return typeMap[type] || type;
+  };
+
+  // Función para obtener color por estado de evento
+  const getEventStateColor = (state) => {
+    const stateMap = {
+      'activo': '#52c41a',
+      'proximo': '#1890ff',
+      'finalizado': '#8c8c8c',
+      'cancelado': '#ff4d4f'
+    };
+    return stateMap[state] || '#8c8c8c';
+  };
+
+  // Función para obtener etiqueta de estado de evento
+  const getEventStateLabel = (state) => {
+    const stateMap = {
+      'activo': 'Activo',
+      'proximo': 'Próximo',
+      'finalizado': 'Finalizado',
+      'cancelado': 'Cancelado'
+    };
+    return stateMap[state] || state;
+  };
+
+  if (loading &amp;&amp; !statistics) {
+    return (
+      &lt;Layout style={{ padding: '24px' }}>
+        &lt;Content>
+          &lt;div style={{ textAlign: 'center', padding: '50px' }}>
+            &lt;Spin size="large" />
+            &lt;div style={{ marginTop: '16px' }}>
+              &lt;Text>Cargando estadísticas...&lt;/Text>
+            &lt;/div>
+          &lt;/div>
+        &lt;/Content>
+      &lt;/Layout>
+    );
+  }
+
+  if (error) {
+    return (
+      &lt;Layout style={{ padding: '24px' }}>
+        &lt;Content>
+          &lt;Alert
+            message="Error"
+            description={error}
+            type="error"
+            showIcon
+            action={
+              &lt;Button size="small" onClick={loadStatistics}>
+                Reintentar
+              &lt;/Button>
+            }
+          />
+        &lt;/Content>
+      &lt;/Layout>
+    );
+  }
+
+  const { events, generalStats } = statistics || {};
+
+  return (
+    &lt;Layout style={{ padding: '24px' }}>
+      &lt;Content>
+        &lt;div style={{ marginBottom: '24px' }}>
+          &lt;div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+            &lt;Button
+              type="text"
+              icon={&lt;ArrowLeftOutlined />}
+              onClick={() => window.location.href = '/admin'}
+              style={{ 
+                marginRight: '12px',
+                color: COLORS?.primary?.main || '#1890ff'
+              }}
+            >
+              Volver al dashboard
+            &lt;/Button>
+          &lt;/div>
+          &lt;Title level={2} style={{ margin: 0, color: COLORS?.primary?.main || '#1890ff' }}>
+            &lt;BarChartOutlined style={{ marginRight: '8px' }} />
+            Estadísticas de ventas
+          &lt;/Title>
+          &lt;Text type="secondary">
+            Análisis detallado de tickets vendidos y recaudaciones
+          &lt;/Text>
+        &lt;/div>
+
+        {/* Filtros */}
+        &lt;Card style={{ marginBottom: '24px' }}>
+          &lt;Title level={4} style={{ marginBottom: '16px' }}>
+            &lt;FilterOutlined style={{ marginRight: '8px' }} />
+            Filtros
+          &lt;/Title>
+          &lt;Row gutter={[16, 16]} align="middle">
+            &lt;Col xs={24} sm={12} md={6}>
+              &lt;Text strong>Buscar evento:&lt;/Text>
+              &lt;Input
+                placeholder="Buscar por nombre..."
+                prefix={&lt;SearchOutlined />}
+                value={filters.search}
+                onChange={handleSearchChange}
+                style={{ marginTop: '4px' }}
+                allowClear
+              />
+            &lt;/Col>
+            &lt;Col xs={24} sm={12} md={6}>
+              &lt;Text strong>Tipo de evento:&lt;/Text>
+              &lt;Select
+                value={filters.eventType}
+                onChange={handleEventTypeChange}
+                style={{ width: '100%', marginTop: '4px' }}
+                placeholder="Todos los tipos"
+              >
+                &lt;Option value="all">Todos los tipos&lt;/Option>
+                &lt;Option value="concert">Conciertos&lt;/Option>
+                &lt;Option value="football">Fútbol&lt;/Option>
+                &lt;Option value="cinema">Cine&lt;/Option>
+                &lt;Option value="festival">Festivales&lt;/Option>
+                &lt;Option value="theater">Teatro&lt;/Option>
+              &lt;/Select>
+            &lt;/Col>
+            &lt;Col xs={24} sm={12} md={6}>
+              &lt;Text strong>Estado del evento:&lt;/Text>
+              &lt;Select
+                value={filters.eventState}
+                onChange={handleEventStateChange}
+                style={{ width: '100%', marginTop: '4px' }}
+                placeholder="Todos los estados"
+              >
+                &lt;Option value="all">Todos los estados&lt;/Option>
+                &lt;Option value="activo">Activo&lt;/Option>
+                &lt;Option value="proximo">Próximo&lt;/Option>
+                &lt;Option value="finalizado">Finalizado&lt;/Option>
+                &lt;Option value="cancelado">Cancelado&lt;/Option>
+              &lt;/Select>
+            &lt;/Col>
+            &lt;Col xs={24} sm={12} md={6}>
+              &lt;Text strong>Rango de fechas:&lt;/Text>
+              &lt;RangePicker
+                value={filters.dateRange}
+                onChange={handleDateRangeChange}
+                style={{ width: '100%', marginTop: '4px' }}
+                placeholder={['Fecha inicio', 'Fecha fin']}
+              />
+            &lt;/Col>
+            &lt;Col xs={24} sm={24} md={24}>
+              &lt;Button
+                icon={&lt;ClearOutlined />}
+                onClick={clearFilters}
+                style={{ marginTop: '8px' }}
+              >
+                Limpiar filtros
+              &lt;/Button>
+            &lt;/Col>
+          &lt;/Row>
+        &lt;/Card>
+
+        {/* Estadísticas Generales */}
+        &lt;Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
+          &lt;Col xs={24} sm={12} md={6}>
+            &lt;Card>
+              &lt;Statistic
+                title="Total de eventos"
+                value={generalStats?.totalEvents || 0}
+                prefix={&lt;CalendarOutlined />}
+                valueStyle={{ color: COLORS?.primary?.main || '#1890ff' }}
+              />
+            &lt;/Card>
+          &lt;/Col>
+          &lt;Col xs={24} sm={12} md={6}>
+            &lt;Card>
+              &lt;Statistic
+                title="Tickets vendidos"
+                value={generalStats?.totalSoldTickets || 0}
+                prefix={&lt;ShoppingCartOutlined />}
+                valueStyle={{ color: COLORS?.status?.success || '#52c41a' }}
+              />
+            &lt;/Card>
+          &lt;/Col>
+          &lt;Col xs={24} sm={12} md={6}>
+            &lt;Card>
+              &lt;Statistic
+                title="Recaudación total"
+                value={generalStats?.totalRevenue || 0}
+                formatter={(value) => formatCurrency(value)}
+                prefix={&lt;DollarOutlined />}
+                valueStyle={{ color: COLORS?.status?.success || '#52c41a' }}
+              />
+            &lt;/Card>
+          &lt;/Col>
+          &lt;Col xs={24} sm={12} md={6}>
+            &lt;Card>
+              &lt;Statistic
+                title="Promedio de ventas"
+                value={generalStats?.averageSalesPercentage || 0}
+                suffix="%"
+                prefix={&lt;PercentageOutlined />}
+                valueStyle={{ color: COLORS?.status?.warning || '#fa8c16' }}
+              />
+            &lt;/Card>
+          &lt;/Col>
+        &lt;/Row>
+
+        {/* Tabla de Eventos */}
+        &lt;Card>
+          &lt;Title level={4} style={{ marginBottom: '16px' }}>
+            &lt;EyeOutlined style={{ marginRight: '8px' }} />
+            Lista de eventos con estadísticas de ventas
+          &lt;/Title>
+          &lt;Table
+            dataSource={events || []}
+            columns={[
+              {
+                title: 'Evento',
+                dataIndex: 'name',
+                key: 'eventName',
+                render: (text, record) => (
+                  &lt;div>
+                    &lt;Text strong style={{ fontSize: '14px' }}>{text || 'Evento no disponible'}&lt;/Text>
+                    &lt;br />
+                    &lt;Text type="secondary" style={{ fontSize: '12px' }}>
+                      &lt;CalendarOutlined style={{ marginRight: '4px' }} />
+                      {dayjs(record.date).format('DD MMM YYYY HH:mm')}
+                    &lt;/Text>
+                    {record.location &amp;&amp; (
+                      &lt;div style={{ marginTop: '4px' }}>
+                        &lt;Text type="secondary" style={{ fontSize: '12px' }}>
+                          &lt;EnvironmentOutlined style={{ marginRight: '4px' }} />
+                          {record.location.name}
+                        &lt;/Text>
+                      &lt;/div>
+                    )}
+                  &lt;/div>
+                ),
+                width: 250,
+              },
+              {
+                title: 'Tipo',
+                dataIndex: 'type',
+                key: 'eventType',
+                render: (type) => (
+                  &lt;Tag color={getEventTypeColor(type)}>
+                    {getEventTypeLabel(type)}
+                  &lt;/Tag>
+                ),
+                width: 100,
+              },
+              {
+                title: 'Estado',
+                dataIndex: 'state',
+                key: 'eventState',
+                render: (state) => (
+                  &lt;Tag color={getEventStateColor(state)}>
+                    {getEventStateLabel(state)}
+                  &lt;/Tag>
+                ),
+                width: 100,
+              },
+              {
+                title: 'Capacidad',
+                dataIndex: 'capacity',
+                key: 'capacity',
+                render: (capacity) => (
+                  &lt;Text strong>{capacity || 0}&lt;/Text>
+                ),
+                width: 80,
+                align: 'center',
+              },
+              {
+                title: 'Tickets vendidos',
+                dataIndex: ['ticketStats', 'soldTickets'],
+                key: 'soldTickets',
+                render: (value) => (
+                  &lt;Text strong style={{ color: COLORS?.status?.success || '#52c41a' }}>
+                    {value || 0}
+                  &lt;/Text>
+                ),
+                width: 120,
+                align: 'center',
+              },
+              {
+                title: 'Porcentaje de ventas',
+                key: 'salesPercentage',
+                render: (_, record) => {
+                  const percentage = record.salesPercentage || 0;
+                  const status = percentage >= 80 ? 'success' : percentage >= 50 ? 'normal' : 'exception';
+                  return (
+                    &lt;div style={{ textAlign: 'center' }}>
+                      &lt;Progress
+                        type="circle"
+                        size={60}
+                        percent={percentage}
+                        status={status}
+                        format={(percent) => `${percent}%`}
+                      />
+                    &lt;/div>
+                  );
+                },
+                width: 100,
+                align: 'center',
+              },
+              {
+                title: 'Recaudación',
+                dataIndex: ['ticketStats', 'soldRevenue'],
+                key: 'soldRevenue',
+                render: (value) => (
+                  &lt;Text strong style={{ color: COLORS?.status?.success || '#52c41a' }}>
+                    {formatCurrency(value || 0)}
+                  &lt;/Text>
+                ),
+                width: 120,
+                align: 'center',
+              },
+              {
+                title: 'Tickets disponibles',
+                key: 'availableTickets',
+                render: (_, record) => {
+                  const available = record.availableTickets || 0;
+                  const total = record.capacity || 0;
+                  return (
+                    &lt;div>
+                      &lt;Text strong style={{ 
+                        color: available > 0 ? COLORS?.status?.success || '#52c41a' : COLORS?.status?.error || '#ff4d4f' 
+                      }}>
+                        {available}
+                      &lt;/Text>
+                      &lt;br />
+                      &lt;Text type="secondary" style={{ fontSize: '12px' }}>
+                        de {total}
+                      &lt;/Text>
+                    &lt;/div>
+                  );
+                },
+                width: 120,
+                align: 'center',
+              },
+            ]}
+            pagination={{
+              pageSize: 10,
+              showSizeChanger: true,
+              showQuickJumper: true,
+              showTotal: (total, range) => 
+                `${range[0]}-${range[1]} de ${total} eventos`,
+              pageSizeOptions: ['10', '20', '50', '100']
+            }}
+            rowKey="_id"
+            loading={loading}
+            scroll={{ x: 1000 }}
+            size="middle"
+            bordered
+          />
+        &lt;/Card>
+      &lt;/Content>
+    &lt;/Layout>
+  );
+};
+
+export default AdminStatistics;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-components_colorscheme.html">components/colorscheme</a></li><li><a href="module-hooks_useSeatMapViability.html">hooks/useSeatMapViability</a></li><li><a href="module-models_Event.html">models/Event</a></li><li><a href="module-models_Location.html">models/Location</a></li><li><a href="module-models_SeatMap.html">models/SeatMap</a></li><li><a href="module-models_Ticket.html">models/Ticket</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-services_UserService.html">services/UserService</a></li><li><a href="module-utils_authSession.html">utils/authSession</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AboutUs">AboutUs</a></li><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#AdminStatistics">AdminStatistics</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#BlockingViewSwitcher">BlockingViewSwitcher</a></li><li><a href="global.html#EditProfile">EditProfile</a></li><li><a href="global.html#EditableSeatRenderer">EditableSeatRenderer</a></li><li><a href="global.html#ErrorPage">ErrorPage</a></li><li><a href="global.html#EventCreation">EventCreation</a></li><li><a href="global.html#EventDetails">EventDetails</a></li><li><a href="global.html#FramedImage">FramedImage</a></li><li><a href="global.html#GeneralAdmissionRenderer">GeneralAdmissionRenderer</a></li><li><a href="global.html#GenericSeatRenderer">GenericSeatRenderer</a></li><li><a href="global.html#HelpCenter">HelpCenter</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#ManualBlockingSelection">ManualBlockingSelection</a></li><li><a href="global.html#ManualSeatSelection">ManualSeatSelection</a></li><li><a href="global.html#Navbar">Navbar</a></li><li><a href="global.html#Profile">Profile</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#RowPricingTable">RowPricingTable</a></li><li><a href="global.html#SeatMapContainer">SeatMapContainer</a></li><li><a href="global.html#SeatRenderer">SeatRenderer</a></li><li><a href="global.html#SeatSelectionViewSwitcher">SeatSelectionViewSwitcher</a></li><li><a href="global.html#SectionShapeRenderer">SectionShapeRenderer</a></li><li><a href="global.html#SelectionTopBar">SelectionTopBar</a></li><li><a href="global.html#TicketPurchase">TicketPurchase</a></li><li><a href="global.html#VenueStageRenderer">VenueStageRenderer</a></li><li><a href="global.html#ZoomControls">ZoomControls</a></li><li><a href="global.html#enviarEmailConfirmacionCompra">enviarEmailConfirmacionCompra</a></li><li><a href="global.html#generateTicketNumber">generateTicketNumber</a></li><li><a href="global.html#generateValidationCode">generateValidationCode</a></li><li><a href="global.html#returnError">returnError</a></li><li><a href="global.html#transporter">transporter</a></li><li><a href="global.html#useAdvancedZoomPan">useAdvancedZoomPan</a></li><li><a href="global.html#useDeviceDetection">useDeviceDetection</a></li><li><a href="global.html#useUserRole">useUserRole</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu Oct 23 2025 19:08:08 GMT+0200 (hora de verano de Europa central)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

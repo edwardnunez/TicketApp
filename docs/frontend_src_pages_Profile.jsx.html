@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: frontend/src/pages/Profile.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: frontend/src/pages/Profile.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { useEffect, useState, useCallback } from "react";
+import { Layout, Typography, Card, Avatar, Button, Divider, Skeleton, Empty, Space, Tag, Tabs, Spin, Alert, Modal, Collapse, Badge, Row, Col, Image } from "antd";
+import { 
+  UserOutlined, 
+  MailOutlined, 
+  EditOutlined, 
+  CalendarOutlined, 
+  EnvironmentOutlined,
+  TagOutlined,
+  ClockCircleOutlined,
+  DeleteOutlined,
+  DownOutlined,
+  UpOutlined,
+  TeamOutlined,
+  EuroOutlined,
+  QrcodeOutlined
+} from "@ant-design/icons";
+import { Link } from "react-router-dom";
+import axios from "axios";
+import dayjs from "dayjs";
+import 'dayjs/locale/es';
+
+import { COLORS } from "../components/colorscheme";
+
+dayjs.locale('es');
+
+const { Content } = Layout;
+const { Title, Text } = Typography;
+const { Panel } = Collapse;
+
+/**
+ * User profile page component displaying user information and ticket history
+ * @returns {JSX.Element} Profile page with user data and ticket management
+ */
+const Profile = () => {
+  const [user, setUser] = useState(null);
+  const [tickets, setTickets] = useState([]);
+  const [events, setEvents] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [ticketsLoading, setTicketsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState('active');
+  
+  // Estados para el modal QR
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [selectedTicket, setSelectedTicket] = useState(null);
+  
+  // Estados para el modal de cancelación
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [ticketToCancel, setTicketToCancel] = useState(null);
+  const [cancelling, setCancelling] = useState(false);
+
+  const token = localStorage.getItem("token");
+  const username = localStorage.getItem("username");
+  const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth &lt; 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const loadUserTickets = useCallback(async (userId) => {
+    try {
+      setTicketsLoading(true);
+      
+      // Obtener tickets del usuario
+      const ticketsRes = await axios.get(`${gatewayUrl}/tickets/user/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      
+      const userTickets = ticketsRes.data.tickets || [];
+      setTickets(userTickets);
+      
+      // Obtener información de los eventos
+      const eventIds = [...new Set(userTickets.map(ticket => ticket.eventId))];
+      const eventsData = {};
+      
+      for (const eventId of eventIds) {
+        try {
+          const eventRes = await axios.get(`${gatewayUrl}/events/${eventId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          eventsData[eventId] = eventRes.data;
+        } catch (err) {
+          console.error(`Error al cargar evento ${eventId}:`, err);
+        }
+      }
+      
+      setEvents(eventsData);
+    } catch (err) {
+      console.error("Error al cargar tickets:", err);
+      setError("Error al cargar los tickets");
+    } finally {
+      setTicketsLoading(false);
+    }
+  }, [token, gatewayUrl]);
+
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const userRes = await axios.get(`${gatewayUrl}/users/search?username=${username}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        setUser(userRes.data);
+
+        if (userRes.data._id) {
+          await loadUserTickets(userRes.data._id);
+        }
+      } catch (err) {
+        console.error("Error al cargar datos del usuario:", err);
+        if (err.response?.status === 404) {
+          setError("Usuario no encontrado");
+        } else if (err.response?.status === 401) {
+          setError("Sesión expirada. Por favor, inicia sesión nuevamente");
+        } else {
+          setError("Error al cargar los datos del perfil");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (!token || !username) {
+      setLoading(false);
+      setError("No se encontraron credenciales de usuario");
+      return;
+    }
+
+    loadUserData();
+  }, [token, username, gatewayUrl, loadUserTickets]);
+
+
+  const handleShowQR = (ticket) => {
+    setSelectedTicket(ticket);
+    setShowQRModal(true);
+  };
+
+  const handleCancelTicket = (ticket) => {
+    setTicketToCancel(ticket);
+    setShowCancelModal(true);
+  };
+
+  const handleConfirmCancelTicket = async () => {
+    if (!ticketToCancel) return;
+    
+    setCancelling(true);
+    
+    try {
+      await axios.delete(`${gatewayUrl}/tickets/${ticketToCancel._id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      
+      // Recargar tickets
+      if (user?._id) {
+        await loadUserTickets(user._id);
+      }
+      
+      // Cerrar modal y mostrar mensaje de éxito
+      setShowCancelModal(false);
+      setTicketToCancel(null);
+      
+      Modal.success({
+        title: 'Entrada cancelada',
+        content: 'La entrada ha sido cancelada exitosamente. Se procesará la devolución según nuestras políticas.',
+        okText: 'Entendido'
+      });
+    } catch (err) {
+      console.error("Error al cancelar ticket:", err);
+      Modal.error({
+        title: 'Error al cancelar',
+        content: 'No se pudo cancelar la entrada. Por favor, inténtalo de nuevo o contacta con soporte.',
+        okText: 'Entendido'
+      });
+    } finally {
+      setCancelling(false);
+    }
+  };
+
+  const getTicketStatusTag = (status) => {
+    const statusConfig = {
+      paid: { color: 'success', text: 'Pagado' },
+      pending: { color: 'warning', text: 'Pendiente' },
+      cancelled: { color: 'error', text: 'Cancelado' }
+    };
+    
+    const config = statusConfig[status] || { color: 'default', text: 'Desconocido' };
+    return &lt;Tag color={config.color}>{config.text}&lt;/Tag>;
+  };
+
+  const formatTicketId = (ticketId) => {
+    return `TKT-${ticketId.slice(-8).toUpperCase()}`;
+  };
+
+  const filterTicketsByStatus = (tickets, status) => {
+    switch (status) {
+      case 'active':
+        return tickets.filter(ticket => ticket.status === 'paid');
+      case 'pending':
+        return tickets.filter(ticket => ticket.status === 'pending');
+      case 'cancelled':
+        return tickets.filter(ticket => ticket.status === 'cancelled');
+      default:
+        return tickets;
+    }
+  };
+
+  // Agrupar tickets por evento
+  const groupTicketsByEvent = (tickets) => {
+    const grouped = {};
+    tickets.forEach(ticket => {
+      const eventId = ticket.eventId;
+      if (!grouped[eventId]) {
+        grouped[eventId] = {
+          event: events[eventId] || {},
+          tickets: []
+        };
+      }
+      grouped[eventId].tickets.push(ticket);
+    });
+    return grouped;
+  };
+
+  const getLocationDisplay = (location) => {
+    if (!location) return "Ubicación no disponible";
+    if (typeof location === 'string') return location;
+    if (typeof location === 'object') {
+      return location.name || location.address || "Ubicación no disponible";
+    }
+    return "Ubicación no disponible";
+  };
+
+  const renderSeatsList = (seats) => {
+    if (!seats || seats.length === 0) return null;
+    
+    return (
+      &lt;div style={{ marginTop: '8px' }}>
+        &lt;Text style={{ color: COLORS.neutral.grey4, fontSize: '13px' }}>
+          &lt;strong>Asientos:&lt;/strong>
+        &lt;/Text>
+        &lt;ul style={{ 
+          margin: '4px 0 0 16px', 
+          padding: 0,
+          color: COLORS.neutral.grey4,
+          fontSize: '13px'
+        }}>
+          {seats.map((seat, index) => (
+            &lt;li key={index} style={{ marginBottom: '2px' }}>
+              Sección {seat.sectionId}, Fila {seat.row}, Asiento {seat.seat}
+            &lt;/li>
+          ))}
+        &lt;/ul>
+      &lt;/div>
+    );
+  };
+
+  const renderTicketDetail = (ticket, isExpired) => {
+    const canCancel = ticket.status === 'paid' &amp;&amp; !isExpired;
+
+    return (
+      &lt;div key={ticket._id} data-cy="ticket-item" style={{
+        padding: '16px',
+        border: `1px solid ${COLORS.neutral.grey2}`,
+        borderRadius: '8px',
+        marginBottom: '12px',
+        backgroundColor: COLORS.neutral.white
+      }}>
+        &lt;Row gutter={[8, 8]} align="middle">
+          &lt;Col xs={24} sm={18}>
+            &lt;Space direction="vertical" size={4} style={{ width: '100%' }}>
+              &lt;div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                &lt;Text strong style={{ color: COLORS.neutral.darker }}>
+                  ID: {formatTicketId(ticket._id)}
+                &lt;/Text>
+                {getTicketStatusTag(ticket.status)}
+              &lt;/div>
+
+              &lt;div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                &lt;Tag color="blue" icon={&lt;TagOutlined />}>
+                  {ticket.ticketType}
+                &lt;/Tag>
+                &lt;Tag color="purple" icon={&lt;TeamOutlined />}>
+                  {ticket.quantity} {ticket.quantity > 1 ? "Entradas" : "Entrada"}
+                &lt;/Tag>
+                &lt;Tag color="green" icon={&lt;EuroOutlined />}>
+                  {(ticket.price * ticket.quantity).toFixed(2)}€
+                &lt;/Tag>
+              &lt;/div>
+
+              {renderSeatsList(ticket.selectedSeats)}
+
+              &lt;Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
+                Comprado el {dayjs(ticket.purchasedAt).format('DD/MM/YYYY HH:mm')}
+              &lt;/Text>
+            &lt;/Space>
+          &lt;/Col>
+
+          &lt;Col xs={24} sm={6} style={{ textAlign: isMobile ? 'left' : 'right' }}>
+            &lt;Space direction={isMobile ? 'horizontal' : 'vertical'} size={8} style={{ width: '100%' }}>
+              {ticket.status === 'paid' &amp;&amp; (
+                &lt;Button
+                  type="text"
+                  size="small"
+                  icon={&lt;QrcodeOutlined />}
+                  onClick={() => handleShowQR(ticket)}
+                  style={{
+                    color: COLORS.primary.main,
+                    borderColor: COLORS.primary.main,
+                    width: isMobile ? 'auto' : '100%'
+                  }}
+                >
+                  {isMobile ? 'QR' : 'Ver QR'}
+                &lt;/Button>
+              )}
+              {canCancel &amp;&amp; (
+                &lt;Button
+                  type="text"
+                  danger
+                  size="small"
+                  icon={&lt;DeleteOutlined />}
+                  onClick={() => handleCancelTicket(ticket)}
+                  style={{ width: isMobile ? 'auto' : '100%' }}
+                >
+                  Cancelar
+                &lt;/Button>
+              )}
+            &lt;/Space>
+          &lt;/Col>
+        &lt;/Row>
+      &lt;/div>
+    );
+  };
+
+  const renderEventGroup = (eventId, eventGroup) => {
+    const { event, tickets: eventTickets } = eventGroup;
+    const isExpired = event.date &amp;&amp; dayjs(event.date).isBefore(dayjs());
+
+    const totalTickets = eventTickets.reduce((sum, ticket) => sum + ticket.quantity, 0);
+    const totalPrice = eventTickets.reduce((sum, ticket) => sum + (ticket.price * ticket.quantity), 0);
+
+    return (
+      &lt;Card 
+        key={eventId}
+        hoverable
+        style={{ 
+          marginBottom: "20px", 
+          borderRadius: "12px",
+          border: "none",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+          transition: "all 0.3s ease",
+        }}
+        bodyStyle={{ padding: "20px" }}
+      >
+        &lt;div style={{ display: "flex", gap: "20px", marginBottom: "16px" }}>
+          {/* Imagen del evento */}
+          {event.image &amp;&amp; (
+            &lt;img 
+              src={event.image} 
+              alt={event.name || "Evento"}
+              style={{ 
+                width: "80px", 
+                height: "80px", 
+                borderRadius: "8px", 
+                objectFit: "cover",
+                flexShrink: 0
+              }}
+            />
+          )}
+          
+          &lt;div style={{ flex: 1 }}>
+            &lt;div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+              &lt;div style={{ flex: 1 }}>
+                &lt;Text 
+                  strong 
+                  style={{ 
+                    fontSize: "20px", 
+                    color: COLORS.neutral.darker,
+                    display: "block",
+                    marginBottom: "8px"
+                  }}
+                >
+                  {event.name || "Evento no disponible"}
+                &lt;/Text>
+                
+                &lt;Space direction="vertical" size={4} style={{ marginBottom: "12px" }}>
+                  &lt;Text style={{ color: COLORS.neutral.grey4, display: "flex", alignItems: "center" }}>
+                    &lt;CalendarOutlined style={{ marginRight: "8px", color: COLORS.neutral.grey4 }} /> 
+                    {event.date ? dayjs(event.date).format("DD [de] MMMM [de] YYYY, HH:mm") : "Fecha no disponible"}
+                  &lt;/Text>
+                  
+                  &lt;Text style={{ color: COLORS.neutral.grey4, display: "flex", alignItems: "center" }}>
+                    &lt;EnvironmentOutlined style={{ marginRight: "8px", color: COLORS.neutral.grey4 }} /> 
+                    {getLocationDisplay(event.location)}
+                  &lt;/Text>
+                &lt;/Space>
+
+                {isExpired &amp;&amp; (
+                  &lt;Tag color="orange" style={{ marginBottom: "8px" }}>Evento finalizado&lt;/Tag>
+                )}
+              &lt;/div>
+              
+              &lt;Space direction="vertical" align="end" style={{ textAlign: 'right' }}>
+                &lt;Badge count={eventTickets.length} color={COLORS.primary.main}>
+                  &lt;Tag color="blue" style={{ margin: 0 }}>
+                    {eventTickets.length} {eventTickets.length > 1 ? 'Compras' : 'Compra'}
+                  &lt;/Tag>
+                &lt;/Badge>
+                
+                &lt;Tag color="purple">
+                  &lt;TeamOutlined /> {totalTickets} {totalTickets > 1 ? "Entradas" : "Entrada"}
+                &lt;/Tag>
+                
+                &lt;Text style={{ fontWeight: "600", color: COLORS.primary.dark, fontSize: "18px" }}>
+                  {totalPrice.toFixed(2)}€
+                &lt;/Text>
+                
+                &lt;Text style={{ color: COLORS.neutral.grey4, fontSize: "12px" }}>
+                  Total del evento
+                &lt;/Text>
+              &lt;/Space>
+            &lt;/div>
+          &lt;/div>
+        &lt;/div>
+
+        {/* Collapse con detalles de cada ticket */}
+        &lt;Collapse 
+          size="small"
+          expandIcon={({ isActive }) => 
+            isActive ? &lt;UpOutlined /> : &lt;DownOutlined />
+          }
+          style={{
+            backgroundColor: 'transparent',
+            border: 'none'
+          }}
+        >
+          &lt;Panel 
+            header={
+              &lt;Text style={{ color: COLORS.primary.main, fontWeight: 500 }}>
+                Ver detalles de {eventTickets.length} {eventTickets.length > 1 ? 'compras' : 'compra'}
+              &lt;/Text>
+            } 
+            key="details"
+            style={{
+              backgroundColor: COLORS.neutral.grey1,
+              border: `1px solid ${COLORS.neutral.grey2}`,
+              borderRadius: '6px'
+            }}
+          >
+            &lt;div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+              {eventTickets.map(ticket => renderTicketDetail(ticket, isExpired))}
+            &lt;/div>
+          &lt;/Panel>
+        &lt;/Collapse>
+      &lt;/Card>
+    );
+  };
+
+  const renderTicketsSection = () => {
+    if (ticketsLoading) {
+      return (
+        &lt;div style={{ textAlign: 'center', padding: '40px' }}>
+          &lt;Spin size="large" />
+          &lt;p style={{ marginTop: '16px', color: COLORS.neutral.grey4 }}>
+            Cargando tus entradas...
+          &lt;/p>
+        &lt;/div>
+      );
+    }
+
+    if (error) {
+      return (
+        &lt;Alert
+          message="Error al cargar las entradas"
+          description={error}
+          type="error"
+          showIcon
+          style={{ marginBottom: '16px' }}
+        />
+      );
+    }
+
+    const activeTickets = filterTicketsByStatus(tickets, 'active');
+    const pendingTickets = filterTicketsByStatus(tickets, 'pending');
+    const cancelledTickets = filterTicketsByStatus(tickets, 'cancelled');
+
+    const renderTicketTab = (ticketsList, emptyMessage) => {
+      if (ticketsList.length === 0) {
+        return (
+          &lt;Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description={emptyMessage}
+          >
+            {emptyMessage.includes('activas') &amp;&amp; (
+              &lt;Link to="/">
+                &lt;Button type="primary" style={{ backgroundColor: COLORS.primary.main }}>
+                  Explorar eventos
+                &lt;/Button>
+              &lt;/Link>
+            )}
+          &lt;/Empty>
+        );
+      }
+
+      const groupedTickets = groupTicketsByEvent(ticketsList);
+      return Object.entries(groupedTickets).map(([eventId, eventGroup]) => 
+        renderEventGroup(eventId, eventGroup)
+      );
+    };
+
+    return (
+      &lt;Tabs 
+        activeKey={activeTab} 
+        onChange={setActiveTab}
+        items={[
+          {
+            key: 'active',
+            label: `Activas (${activeTickets.length})`,
+            children: renderTicketTab(activeTickets, "No tienes entradas activas")
+          },
+          {
+            key: 'pending',
+            label: `Pendientes (${pendingTickets.length})`,
+            children: renderTicketTab(pendingTickets, "No tienes entradas pendientes")
+          },
+          {
+            key: 'cancelled',
+            label: `Canceladas (${cancelledTickets.length})`,
+            children: renderTicketTab(cancelledTickets, "No tienes entradas canceladas")
+          }
+        ]}
+      />
+    );
+  };
+
+  // Función para mostrar el nombre completo del usuario
+  const getFullName = (user) => {
+    if (!user) return "";
+    const parts = [];
+    if (user.name) parts.push(user.name);
+    if (user.surname) parts.push(user.surname);
+    return parts.join(' ') || user.username || "Usuario";
+  };
+
+  return (
+    &lt;Layout style={{ backgroundColor: COLORS.neutral.grey1, minHeight: "100vh" }}>
+      &lt;Content style={{ padding: isMobile ? "18px 4px" : "40px 20px" }}>
+        &lt;div style={{ maxWidth: isMobile ? "100%" : "900px", margin: "0 auto" }}>
+          {loading ? (
+            &lt;Card 
+              style={{ 
+                borderRadius: "12px", 
+                boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                border: "none"
+              }}
+            >
+              &lt;Skeleton active avatar={{ size: 100, shape: "circle" }} paragraph={{ rows: 4 }} />
+            &lt;/Card>
+          ) : user ? (
+            &lt;Space direction="vertical" size={24} style={{ width: "100%" }}>
+              {/* Profile Header Card */}
+              &lt;Card
+                style={{
+                  borderRadius: "12px",
+                  overflow: "hidden",
+                  border: "none",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                }}
+              >
+                {/* Hero Banner */}
+                &lt;div
+                  style={{
+                    height: "120px",
+                    background: COLORS.gradients?.primary || `linear-gradient(135deg, ${COLORS.primary.main} 0%, ${COLORS.primary.dark} 100%)`,
+                    margin: "-24px -24px 0",
+                  }}
+                />
+                
+                {/* Profile Info */}
+                &lt;div
+                  data-cy="profile-info"
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    marginTop: "-60px",
+                    textAlign: "center",
+                  }}
+                >
+                  &lt;Avatar
+                    size={120}
+                    src={user.avatar}
+                    icon={!user.avatar &amp;&amp; &lt;UserOutlined />}
+                    style={{
+                      border: `4px solid ${COLORS.neutral.white}`,
+                      boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+                      backgroundColor: !user.avatar ? COLORS.primary.light : undefined
+                    }}
+                  />
+
+                  &lt;Title level={2} data-cy="user-name" style={{ marginTop: "16px", marginBottom: "4px", color: COLORS.neutral.darker }}>
+                    {getFullName(user)}
+                  &lt;/Title>
+                  
+                  &lt;Text style={{ color: COLORS.neutral.grey4, display: "flex", alignItems: "center", marginBottom: "4px" }}>
+                    &lt;UserOutlined style={{ marginRight: "6px" }} /> @{user.username}
+                  &lt;/Text>
+                  
+                  &lt;Text style={{ color: COLORS.neutral.grey4, display: "flex", alignItems: "center" }}>
+                    &lt;MailOutlined style={{ marginRight: "6px" }} /> {user.email}
+                  &lt;/Text>
+                  
+                  &lt;Text style={{ color: COLORS.neutral.grey4, display: "flex", alignItems: "center", marginTop: "4px" }}>
+                    &lt;ClockCircleOutlined style={{ marginRight: "6px" }} /> 
+                    Miembro desde {dayjs(user.createdAt).format("MMMM [de] YYYY")}
+                  &lt;/Text>
+                  
+                  &lt;div style={{ display: 'flex', gap: '16px', marginTop: '16px' }}>
+                    &lt;div style={{ textAlign: 'center' }}>
+                      &lt;Text strong style={{ display: 'block', fontSize: '20px', color: COLORS.primary.main }}>
+                        {tickets.filter(t => t.status === 'paid').length}
+                      &lt;/Text>
+                      &lt;Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
+                        Entradas activas
+                      &lt;/Text>
+                    &lt;/div>
+                    &lt;div style={{ textAlign: 'center' }}>
+                      &lt;Text strong style={{ display: 'block', fontSize: '20px', color: COLORS.primary.main }}>
+                        {tickets.filter(t => t.status === 'paid').reduce((sum, t) => sum + (t.price * t.quantity), 0).toFixed(0)}€
+                      &lt;/Text>
+                      &lt;Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
+                        Total gastado
+                      &lt;/Text>
+                    &lt;/div>
+                  &lt;/div>
+                  
+                  &lt;Divider style={{ margin: "24px 0 16px" }} />
+                  
+                  {/* Edit Profile Button */}
+                  &lt;Link to="/edit-profile">
+                    &lt;Button
+                      type="primary"
+                      icon={&lt;EditOutlined />}
+                      data-cy="edit-profile-button"
+                      style={{
+                        backgroundColor: COLORS.primary.main,
+                        borderColor: COLORS.primary.main,
+                        borderRadius: "6px",
+                        boxShadow: "0 2px 0 rgba(0, 0, 0, 0.045)",
+                      }}
+                    >
+                      Editar perfil
+                    &lt;/Button>
+                  &lt;/Link>
+                &lt;/div>
+              &lt;/Card>
+
+              {/* Tickets Section */}
+              &lt;Card
+                title={
+                  &lt;div style={{ display: "flex", alignItems: "center" }}>
+                    &lt;TagOutlined style={{ color: COLORS.primary.main, marginRight: "8px" }} />
+                    &lt;span style={{ color: COLORS.neutral.darker }}>Mis entradas&lt;/span>
+                  &lt;/div>
+                }
+                data-cy="tickets-section"
+                style={{
+                  borderRadius: "12px",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                  border: "none",
+                }}
+                bodyStyle={{ padding: "24px" }}
+              >
+                {renderTicketsSection()}
+              &lt;/Card>
+            &lt;/Space>
+          ) : (
+            &lt;Card style={{ textAlign: "center", borderRadius: "12px" }}>
+              &lt;Empty
+                description={
+                  &lt;div>
+                    &lt;Text style={{ color: COLORS.neutral.grey4, display: "block", marginBottom: "16px" }}>
+                      {error || "No se pudo cargar el perfil del usuario"}
+                    &lt;/Text>
+                    &lt;Link to="/login">
+                      &lt;Button type="primary">
+                        Iniciar sesión
+                      &lt;/Button>
+                    &lt;/Link>
+                  &lt;/div>
+                }
+              />
+            &lt;/Card>
+          )}
+
+          {/* Modal QR Code */}
+          &lt;Modal
+            title={
+              &lt;div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                &lt;QrcodeOutlined style={{ color: COLORS.primary.main }} />
+                &lt;span>Código QR de la entrada&lt;/span>
+              &lt;/div>
+            }
+            open={showQRModal}
+            onCancel={() => setShowQRModal(false)}
+            footer={[
+              &lt;Button key="close" onClick={() => setShowQRModal(false)}>
+                Cerrar
+              &lt;/Button>
+            ]}
+            width={400}
+            centered
+          >
+            {selectedTicket &amp;&amp; (
+              &lt;div style={{ textAlign: 'center', padding: '20px' }}>
+                {/* Información del ticket */}
+                &lt;div style={{ marginBottom: '24px' }}>
+                  &lt;Text strong style={{ display: 'block', fontSize: '16px', marginBottom: '8px' }}>
+                    {formatTicketId(selectedTicket._id)}
+                  &lt;/Text>
+                  &lt;Text style={{ color: COLORS.neutral.grey4, display: 'block', marginBottom: '4px' }}>
+                    {events[selectedTicket.eventId]?.name || "Evento"}
+                  &lt;/Text>
+                  &lt;Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
+                    {selectedTicket.quantity} entrada{selectedTicket.quantity > 1 ? 's' : ''}
+                  &lt;/Text>
+                &lt;/div>
+
+                &lt;Divider />
+                {/* QR Code */}
+                &lt;div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'center', 
+                  marginBottom: '16px',
+                  padding: '20px',
+                  backgroundColor: COLORS.neutral.white,
+                  borderRadius: '8px',
+                  border: `1px solid ${COLORS.neutral.grey2}`
+                }}>
+                  &lt;Image
+                      src={selectedTicket.qrCode}
+                      alt="Código QR del ticket"
+                      width={200}
+                      height={200}
+                      style={{ 
+                        border: 'none',
+                        borderRadius: '8px'
+                      }}
+                      preview={{
+                        mask: 'Ver código QR completo'
+                      }}
+                    />
+                &lt;/div>
+
+                {/* Instrucciones */}
+                &lt;Alert
+                  message="Instrucciones de uso"
+                  description="Presenta este código QR en la entrada del evento para acceder. Asegúrate de que la pantalla esté limpia y con buen brillo."
+                  type="info"
+                  showIcon
+                  style={{ textAlign: 'left' }}
+                />
+              &lt;/div>
+            )}
+          &lt;/Modal>
+
+          {/* Modal de confirmación de cancelación */}
+          &lt;Modal
+            title="Confirmar cancelación de entrada"
+            open={showCancelModal}
+            onOk={handleConfirmCancelTicket}
+            onCancel={() => setShowCancelModal(false)}
+            confirmLoading={cancelling}
+            okText="Sí, cancelar"
+            cancelText="No"
+            okButtonProps={{
+              style: {
+                backgroundColor: COLORS?.status?.error || "#ff4d4f",
+                borderColor: COLORS?.status?.error || "#ff4d4f"
+              }
+            }}
+            width={600}
+          >
+            {ticketToCancel &amp;&amp; (
+              &lt;div>
+                &lt;Text>¿Estás seguro de que quieres cancelar esta entrada?&lt;/Text>
+                &lt;Divider />
+                
+                &lt;div style={{ marginBottom: '12px' }}>
+                  &lt;Text strong>Evento:&lt;/Text> {events[ticketToCancel.eventId]?.name || "Evento no disponible"}
+                &lt;/div>
+                
+                &lt;div style={{ marginBottom: '12px' }}>
+                  &lt;Text strong>ID de entrada:&lt;/Text> {formatTicketId(ticketToCancel._id)}
+                &lt;/div>
+                
+                &lt;div style={{ marginBottom: '12px' }}>
+                  &lt;Text strong>Cantidad:&lt;/Text> {ticketToCancel.quantity} entrada{ticketToCancel.quantity > 1 ? 's' : ''}
+                &lt;/div>
+                
+                &lt;div style={{ marginBottom: '12px' }}>
+                  &lt;Text strong>Importe a devolver:&lt;/Text> 
+                  &lt;Text style={{ color: COLORS?.primary?.main || "#1890ff", fontWeight: '600', marginLeft: '8px' }}>
+                    {(ticketToCancel.price * ticketToCancel.quantity).toFixed(2)}€
+                  &lt;/Text>
+                &lt;/div>
+                
+                &lt;div style={{ 
+                  padding: '12px', 
+                  backgroundColor: '#fff2f0', 
+                  border: '1px solid #ffccc7',
+                  borderRadius: '6px',
+                  marginTop: '16px'
+                }}>
+                  &lt;Text style={{ 
+                    color: COLORS?.status?.error || "#ff4d4f", 
+                    fontSize: '14px',
+                    fontWeight: '500'
+                  }}>
+                    ⚠️ Esta acción no se puede deshacer. Se procesará la devolución según nuestras políticas de cancelación.
+                  &lt;/Text>
+                &lt;/div>
+              &lt;/div>
+            )}
+          &lt;/Modal>
+        &lt;/div>
+      &lt;/Content>
+    &lt;/Layout>
+  );
+};
+
+export default Profile;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-components_colorscheme.html">components/colorscheme</a></li><li><a href="module-hooks_useSeatMapViability.html">hooks/useSeatMapViability</a></li><li><a href="module-models_Event.html">models/Event</a></li><li><a href="module-models_Location.html">models/Location</a></li><li><a href="module-models_SeatMap.html">models/SeatMap</a></li><li><a href="module-models_Ticket.html">models/Ticket</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-services_UserService.html">services/UserService</a></li><li><a href="module-utils_authSession.html">utils/authSession</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AboutUs">AboutUs</a></li><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#AdminStatistics">AdminStatistics</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#BlockingViewSwitcher">BlockingViewSwitcher</a></li><li><a href="global.html#EditProfile">EditProfile</a></li><li><a href="global.html#EditableSeatRenderer">EditableSeatRenderer</a></li><li><a href="global.html#ErrorPage">ErrorPage</a></li><li><a href="global.html#EventCreation">EventCreation</a></li><li><a href="global.html#EventDetails">EventDetails</a></li><li><a href="global.html#FramedImage">FramedImage</a></li><li><a href="global.html#GeneralAdmissionRenderer">GeneralAdmissionRenderer</a></li><li><a href="global.html#GenericSeatRenderer">GenericSeatRenderer</a></li><li><a href="global.html#HelpCenter">HelpCenter</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#ManualBlockingSelection">ManualBlockingSelection</a></li><li><a href="global.html#ManualSeatSelection">ManualSeatSelection</a></li><li><a href="global.html#Navbar">Navbar</a></li><li><a href="global.html#Profile">Profile</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#RowPricingTable">RowPricingTable</a></li><li><a href="global.html#SeatMapContainer">SeatMapContainer</a></li><li><a href="global.html#SeatRenderer">SeatRenderer</a></li><li><a href="global.html#SeatSelectionViewSwitcher">SeatSelectionViewSwitcher</a></li><li><a href="global.html#SectionShapeRenderer">SectionShapeRenderer</a></li><li><a href="global.html#SelectionTopBar">SelectionTopBar</a></li><li><a href="global.html#TicketPurchase">TicketPurchase</a></li><li><a href="global.html#VenueStageRenderer">VenueStageRenderer</a></li><li><a href="global.html#ZoomControls">ZoomControls</a></li><li><a href="global.html#enviarEmailConfirmacionCompra">enviarEmailConfirmacionCompra</a></li><li><a href="global.html#generateTicketNumber">generateTicketNumber</a></li><li><a href="global.html#generateValidationCode">generateValidationCode</a></li><li><a href="global.html#returnError">returnError</a></li><li><a href="global.html#transporter">transporter</a></li><li><a href="global.html#useAdvancedZoomPan">useAdvancedZoomPan</a></li><li><a href="global.html#useDeviceDetection">useDeviceDetection</a></li><li><a href="global.html#useUserRole">useUserRole</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu Oct 23 2025 19:08:08 GMT+0200 (hora de verano de Europa central)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

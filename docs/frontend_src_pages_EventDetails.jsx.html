@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: frontend/src/pages/EventDetails.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: frontend/src/pages/EventDetails.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { useEffect, useState } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom"; 
+import { 
+  Layout, 
+  Typography, 
+  Card, 
+  Row, 
+  Col, 
+  Button, 
+  Tag, 
+  Space,
+  Skeleton,
+  Alert,
+  Divider,
+  Table
+} from "antd";
+import { notification } from 'antd';
+import { 
+  CalendarOutlined, 
+  EnvironmentOutlined, 
+  TeamOutlined,
+  ClockCircleOutlined,
+  ArrowLeftOutlined,
+  ShoppingCartOutlined,
+  InfoCircleOutlined,
+  TagOutlined,
+  BarsOutlined,
+  PictureOutlined,
+  EuroOutlined,
+  StopOutlined,
+  CheckCircleOutlined
+} from "@ant-design/icons";
+import axios from "axios";
+import dayjs from "dayjs";
+import "dayjs/locale/es";
+
+// Import color scheme
+import { COLORS } from "../components/colorscheme";
+import FramedImage from "../components/FramedImage";
+
+// Configure dayjs in Spanish
+dayjs.locale('es');
+
+// CSS for spinner animation
+const spinKeyframes = `
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+`;
+
+// Inject CSS if it doesn't exist
+if (!document.getElementById('spin-animation')) {
+  const style = document.createElement('style');
+  style.id = 'spin-animation';
+  style.textContent = spinKeyframes;
+  document.head.appendChild(style);
+}
+
+const { Content } = Layout;
+const { Title, Text, Paragraph } = Typography;
+
+/**
+ * Event details page component displaying comprehensive event information
+ * @returns {JSX.Element} Event details page with information and purchase options
+ */
+const EventDetails = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [event, setEvent] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [ticketAvailability, setTicketAvailability] = useState(null);
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
+  const showNotification = (type, message, description) => {
+    notification[type]({
+      message,
+      description,
+      placement: 'top',
+    });
+  };
+  
+  const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth &lt; 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Robust calculation of total event capacity
+  const computeEventCapacity = (evt) => {
+    if (!evt) return 0;
+    // If detailed section information is available, sum capacities
+    if (evt.usesSectionPricing &amp;&amp; Array.isArray(evt.sectionPricingInfo) &amp;&amp; evt.sectionPricingInfo.length > 0) {
+      return evt.sectionPricingInfo.reduce((sum, s) => sum + (Number(s.capacity) || 0), 0);
+    }
+    // Fallbacks
+    if (typeof evt.capacity === 'number' &amp;&amp; evt.capacity > 0) return evt.capacity;
+    if (evt.location &amp;&amp; typeof evt.location.capacity === 'number') return evt.location.capacity || 0;
+    return 0;
+  };
+
+  // Function to get ticket availability
+  const fetchTicketAvailability = async (evtParam) => {
+    if (!id) return;
+    const currentEvent = evtParam || event;
+    
+    setAvailabilityLoading(true);
+    try {
+      const response = await axios.get(`${gatewayUrl}/tickets/event/${id}`);
+      const ticketStats = response.data.statistics || [];
+      
+      // Process statistics to get availability
+      let soldTickets = 0;
+      let pendingTickets = 0;
+      
+      ticketStats.forEach(stat => {
+        if (stat._id === 'paid') {
+          soldTickets = stat.totalTickets || 0;
+        } else if (stat._id === 'pending') {
+          pendingTickets = stat.totalTickets || 0;
+        }
+      });
+
+      const totalCapacity = computeEventCapacity(currentEvent);
+      const availableTickets = Math.max(0, totalCapacity - soldTickets - pendingTickets);
+      const isSoldOut = availableTickets &lt;= 0;
+      const salesPercentage = totalCapacity > 0 ? Math.round(((soldTickets + pendingTickets) / totalCapacity) * 100) : 0;
+
+      setTicketAvailability({
+        eventId: id,
+        totalCapacity,
+        soldTickets,
+        pendingTickets,
+        availableTickets,
+        isSoldOut,
+        salesPercentage,
+        lastUpdated: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Error fetching ticket availability:", error);
+    } finally {
+      setAvailabilityLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!id) {
+      setError("No se especificó un ID de evento válido");
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    axios.get(`${gatewayUrl}/events/${id}`)
+      .then((res) => {
+        const eventData = {
+          ...res.data,
+          date: res.data.date,
+          image: res.data.imageUrl || "/event-images/default.jpg",
+          // Map event type to category for consistency with Home
+          category: mapEventTypeToCategory(res.data.type)
+        };
+        
+        setEvent(eventData);
+        setLoading(false);
+        
+        // Load availability using the newly obtained event to avoid capacity 0
+        fetchTicketAvailability(eventData);
+      })
+      .catch((err) => {
+        console.error("Error loading event details:", err);
+        setError("No se pudo cargar la información del evento");
+        setLoading(false);
+        showNotification('error', 'Error', 'No se pudieron cargar los detalles del evento. Por favor, inténtalo de nuevo más tarde.');
+      });
+      }, [id, gatewayUrl]);
+
+  // Configure automatic availability update every 30 seconds
+  useEffect(() => {
+    if (!event) return;
+
+    const interval = setInterval(() => {
+      fetchTicketAvailability();
+    }, 30000); // Actualizar cada 30 segundos
+
+    return () => clearInterval(interval);
+  }, [event]);
+
+  // Refrescar disponibilidad inmediatamente cuando el evento cambia
+  useEffect(() => {
+    if (event) {
+      fetchTicketAvailability();
+    }
+  }, [event]);
+
+  const mapEventTypeToCategory = (type) => {
+    const typeMap = {
+      'concert': 'Conciertos',
+      'football': 'Deportes', 
+      'cinema': 'Cine',
+      'festival': 'Festivales',
+      'theater': 'Teatro'
+    };
+    return typeMap[type] || 'Evento';
+  };
+
+  const getStateColor = (state) => {
+    switch(state) {
+      case 'activo': return COLORS.accent.green;
+      case 'proximo': return COLORS.accent.gold;
+      case 'finalizado': return COLORS.neutral.grey400;
+      case 'cancelado': return COLORS.secondary.main;
+      default: return COLORS.neutral.grey400;
+    }
+  };
+
+  const getStateText = (state) => {
+    switch(state) {
+      case 'activo': return 'En venta';
+      case 'proximo': return 'Próximamente';
+      case 'finalizado': return 'Finalizado';
+      case 'cancelado': return 'Cancelado';
+      default: return state;
+    }
+  };
+
+  const getCategoryColor = (categoryName) => {
+    switch(categoryName) {
+      case "Conciertos": return COLORS.accent.purple;
+      case "Teatro": return COLORS.accent.gold;
+      case "Deportes": return COLORS.accent.green;
+      case "Festivales": return COLORS.secondary.main;
+      case "Cine": return COLORS.primary.main;
+      default: return COLORS.primary.main;
+    }
+  };
+
+  const handleBuyTickets = () => {
+    navigate(`/event/purchase/${id}`);
+  };
+
+  const isEventAvailable = () => {
+    return event?.state === 'activo' || event?.state === 'proximo';
+  };
+
+  const isEventActive = () => {
+    return event?.state === 'activo';
+  };
+
+  const renderPricingInfo = () => {
+    if (!event) return null;
+
+    // Si usa pricing por secciones, mostrar tabla de precios
+    if (event.usesSectionPricing &amp;&amp; event.sectionPricingInfo) {
+      const columns = [
+        {
+          title: 'Sección',
+          dataIndex: 'sectionName',
+          key: 'sectionName',
+          render: (text) => &lt;strong>{text}&lt;/strong>
+        },
+        {
+          title: 'Capacidad',
+          dataIndex: 'capacity',
+          key: 'capacity',
+          render: (value) => (
+            &lt;span style={{ display: 'flex', alignItems: 'center' }}>
+              &lt;TeamOutlined style={{ marginRight: '4px', color: COLORS.neutral.grey4 }} />
+              {value}
+            &lt;/span>
+          )
+        },
+        {
+          title: 'Precio',
+          dataIndex: 'priceRange',
+          key: 'priceRange',
+          render: (text, record) => (
+            &lt;div>
+              &lt;Text strong style={{ color: COLORS.primary.main }}>
+                {text}
+              &lt;/Text>
+              {record.pricingType === 'row' &amp;&amp; (
+                &lt;div style={{ fontSize: '12px', color: COLORS.neutral.grey4 }}>
+                  {record.frontRowFirst ? 'Fila 1 más cara' : 'Fila 1 más barata'}
+                &lt;/div>
+              )}
+            &lt;/div>
+          )
+        },
+        {
+          title: 'Filas',
+          dataIndex: 'rows',
+          key: 'rows',
+          render: (value) => (
+            &lt;span style={{ display: 'flex', alignItems: 'center' }}>
+              &lt;BarsOutlined style={{ marginRight: '4px', color: COLORS.neutral.grey4 }} />
+              {value}
+            &lt;/span>
+          )
+        }
+      ];
+
+      return (
+        &lt;Card style={{ 
+          borderRadius: '12px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+          marginTop: '24px'
+        }}>
+          &lt;Title level={4} style={{ 
+            color: COLORS.neutral.darker,
+            marginBottom: '16px',
+            display: 'flex',
+            alignItems: 'center'
+          }}>
+            &lt;EuroOutlined style={{ 
+              marginRight: '8px', 
+              color: COLORS.primary.main 
+            }} />
+            Precios por sección
+          &lt;/Title>
+          
+          &lt;Table 
+            dataSource={event.sectionPricingInfo}
+            columns={columns}
+            pagination={false}
+            rowKey="sectionId"
+            size="middle"
+          />
+
+          {event.usesRowPricing &amp;&amp; (
+            &lt;Alert
+              message="Pricing variable por filas"
+              description="Los precios pueden variar según la fila y la sección."
+              type="info"
+              style={{ marginTop: '16px' }}
+              showIcon
+            />
+          )}
+        &lt;/Card>
+      );
+    }
+
+    // Pricing simple
+    return (
+      &lt;Card style={{ 
+        borderRadius: '12px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+        marginTop: '24px'
+      }}>
+        &lt;div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          &lt;EuroOutlined style={{ 
+            fontSize: '24px',
+            color: COLORS.primary.main,
+            marginRight: '8px' 
+          }} />
+          &lt;Title level={2} style={{ 
+            color: COLORS.primary.main,
+            margin: 0 
+          }}>
+            €{event.price}
+          &lt;/Title>
+        &lt;/div>
+      &lt;/Card>
+    );
+  };
+
+  const renderTicketAvailability = () => {
+    if (!ticketAvailability) return null;
+
+    const { availableTickets, totalCapacity, soldTickets, isSoldOut, salesPercentage, lastUpdated } = ticketAvailability;
+    
+    return (
+      &lt;Card style={{ 
+        borderRadius: '12px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+        marginTop: '24px',
+        borderLeft: `4px solid ${isSoldOut ? COLORS.secondary.main : COLORS.accent.green}`
+      }}>
+        &lt;Title level={5} style={{ 
+          color: COLORS.neutral.grey800,
+          marginBottom: '12px',
+          display: 'flex',
+          alignItems: 'center'
+        }}>
+          &lt;TeamOutlined style={{ 
+            marginRight: '8px', 
+            color: isSoldOut ? COLORS.secondary.main : COLORS.accent.green 
+          }} />
+          Disponibilidad de entradas
+          {availabilityLoading &amp;&amp; (
+            &lt;div style={{ marginLeft: '8px' }}>
+              &lt;div style={{ 
+                width: '12px', 
+                height: '12px', 
+                border: '2px solid #f3f3f3',
+                borderTop: '2px solid #1890ff',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite'
+              }} />
+            &lt;/div>
+          )}
+        &lt;/Title>
+        
+        &lt;Row gutter={[16, 8]}>
+          &lt;Col xs={24} sm={8}>
+            &lt;div style={{ textAlign: 'center' }}>
+              &lt;Text style={{ 
+                fontSize: '24px', 
+                fontWeight: 'bold',
+                color: isSoldOut ? COLORS.secondary.main : COLORS.accent.green
+              }}>
+                {availableTickets}
+              &lt;/Text>
+              &lt;br />
+              &lt;Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
+                Disponibles
+              &lt;/Text>
+            &lt;/div>
+          &lt;/Col>
+          &lt;Col xs={24} sm={8}>
+            &lt;div style={{ textAlign: 'center' }}>
+              &lt;Text style={{ fontSize: '18px', fontWeight: 'bold', color: COLORS.neutral.grey4 }}>
+                {soldTickets}
+              &lt;/Text>
+              &lt;br />
+              &lt;Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
+                Vendidas
+              &lt;/Text>
+            &lt;/div>
+          &lt;/Col>
+          &lt;Col xs={24} sm={8}>
+            &lt;div style={{ textAlign: 'center' }}>
+              &lt;Text style={{ fontSize: '18px', fontWeight: 'bold', color: COLORS.neutral.grey4 }}>
+                {totalCapacity}
+              &lt;/Text>
+              &lt;br />
+              &lt;Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
+                Capacidad total
+              &lt;/Text>
+            &lt;/div>
+          &lt;/Col>
+        &lt;/Row>
+        
+        {totalCapacity > 0 &amp;&amp; (
+          &lt;div style={{ marginTop: '16px' }}>
+            &lt;div style={{ 
+              width: '100%', 
+              height: '8px', 
+              backgroundColor: COLORS.neutral.grey2,
+              borderRadius: '4px',
+              overflow: 'hidden'
+            }}>
+              &lt;div style={{
+                width: `${salesPercentage}%`,
+                height: '100%',
+                backgroundColor: isSoldOut ? COLORS.secondary.main : COLORS.accent.green,
+                transition: 'width 0.3s ease'
+              }} />
+            &lt;/div>
+            &lt;Text style={{ 
+              fontSize: '12px', 
+              color: COLORS.neutral.grey4,
+              marginTop: '4px',
+              display: 'block'
+            }}>
+              {salesPercentage}% vendido
+            &lt;/Text>
+          &lt;/div>
+        )}
+        
+        &lt;Text style={{ 
+          fontSize: '10px', 
+          color: COLORS.neutral.grey3,
+          marginTop: '8px',
+          display: 'block'
+        }}>
+          Última actualización: {dayjs(lastUpdated).format('HH:mm:ss')}
+        &lt;/Text>
+      &lt;/Card>
+    );
+  };
+
+  const renderBlockingStats = () => {
+    if (!event?.blockingStats?.hasBlocks) return null;
+
+    return (
+      &lt;Card style={{ 
+        borderRadius: '12px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+        marginTop: '24px',
+        borderLeft: `4px solid ${COLORS.accent.gold}`
+      }}>
+        &lt;Title level={5} style={{ 
+          color: COLORS.neutral.grey800,
+          marginBottom: '12px',
+          display: 'flex',
+          alignItems: 'center'
+        }}>
+          &lt;StopOutlined style={{ 
+            marginRight: '8px', 
+            color: COLORS.accent.gold 
+          }} />
+          Restricciones de disponibilidad
+        &lt;/Title>
+        
+        &lt;Row gutter={[16, 8]}>
+          {event.blockingStats.blockedSeats > 0 &amp;&amp; (
+            &lt;Col xs={24} sm={12}>
+              &lt;Text style={{ color: COLORS.neutral.grey4 }}>
+                &lt;strong>Asientos bloqueados:&lt;/strong> {event.blockingStats.blockedSeats}
+              &lt;/Text>
+            &lt;/Col>
+          )}
+          {event.blockingStats.blockedSections > 0 &amp;&amp; (
+            &lt;Col xs={24} sm={12}>
+              &lt;Text style={{ color: COLORS.neutral.grey4 }}>
+                &lt;strong>Secciones bloqueadas:&lt;/strong> {event.blockingStats.blockedSections}
+              &lt;/Text>
+            &lt;/Col>
+          )}
+        &lt;/Row>
+      &lt;/Card>
+    );
+  };
+
+  if (loading) {
+    return (
+      &lt;Layout style={{ backgroundColor: COLORS.neutral.white, minHeight: "100vh" }}>
+        &lt;Content style={{ maxWidth: '1200px', margin: '40px auto', padding: '0 20px' }}>
+          &lt;Skeleton active paragraph={{ rows: 8 }} />
+        &lt;/Content>
+      &lt;/Layout>
+    );
+  }
+
+  if (error || !event) {
+    return (
+      &lt;Layout style={{ backgroundColor: COLORS.neutral.white, minHeight: "100vh" }}>
+        &lt;Content style={{ maxWidth: '1200px', margin: '40px auto', padding: '0 20px' }}>
+          &lt;Alert
+            message="Error"
+            description={error || "Evento no encontrado"}
+            type="error"
+            showIcon
+            action={
+              &lt;Link to="/">
+                &lt;Button size="small" type="primary">
+                  Volver al inicio
+                &lt;/Button>
+              &lt;/Link>
+            }
+          />
+        &lt;/Content>
+      &lt;/Layout>
+    );
+  }
+
+  return (
+    &lt;Layout style={{ backgroundColor: COLORS.neutral.white, minHeight: "100vh" }}>
+      &lt;Content style={{ padding: isMobile ? "18px 4px" : "40px 20px" }}>
+        &lt;div style={{ maxWidth: isMobile ? "100%" : "1000px", margin: "0 auto" }}>
+          {/* Breadcrumb y botón de regreso */}
+          &lt;div style={{ 
+            backgroundColor: COLORS.neutral.grey1, 
+            padding: '16px 0',
+            borderBottom: `1px solid ${COLORS.neutral.grey2}`,
+            marginBottom: '32px'
+          }}>
+            &lt;div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
+              &lt;Link to="/">
+                &lt;Button 
+                  type="text" 
+                  icon={&lt;ArrowLeftOutlined />}
+                  style={{ color: COLORS.primary.main }}
+                >
+                  Volver a eventos
+                &lt;/Button>
+              &lt;/Link>
+            &lt;/div>
+          &lt;/div>
+
+          {/* Sección principal del evento */}
+          &lt;Row gutter={[32, 32]}>
+            {/* Imagen del evento */}
+            &lt;Col xs={24} lg={12}>
+              &lt;Card 
+                bodyStyle={{ padding: 0 }}
+                style={{ 
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                }}
+              >
+              {event.image ? (
+                &lt;FramedImage 
+                  src={event.image}
+                  alt={event.name}
+                  backgroundColor={COLORS.neutral.grey1}
+                  borderRadius={12}
+                  aspectRatio={isMobile ? 16/9 : 4/3}
+                  maxHeight={isMobile ? 320 : 500}
+                  objectFit="smart"
+                />
+              ) : (
+                  &lt;div style={{ 
+                    display: 'flex', 
+                    flexDirection: 'column',
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    height: '400px',
+                    backgroundColor: COLORS.neutral.grey1
+                  }}>
+                    &lt;PictureOutlined style={{ fontSize: '64px', color: COLORS.neutral.grey3, marginBottom: '16px' }} />
+                    &lt;Text style={{ color: COLORS.neutral.grey4 }}>Sin imagen disponible&lt;/Text>
+                  &lt;/div>
+                )}
+              &lt;/Card>
+            &lt;/Col>
+
+            {/* Información del evento */}
+            &lt;Col xs={24} lg={12}>
+              &lt;Space direction="vertical" size={24} style={{ width: '100%' }} data-cy="event-details">
+                {/* Título y categoría */}
+                &lt;div>
+                  &lt;div style={{ marginBottom: '12px' }}>
+                    &lt;Tag
+                      color={getCategoryColor(event.category)}
+                      style={{ fontSize: '14px', padding: '4px 12px' }}
+                    >
+                      &lt;TagOutlined style={{ marginRight: '4px' }} />
+                      {event.category}
+                    &lt;/Tag>
+
+                    &lt;Tag
+                      color={getStateColor(event.state)}
+                      style={{ fontSize: '14px', padding: '4px 12px', marginLeft: '8px' }}
+                    >
+                      {isEventActive() ? (
+                        &lt;CheckCircleOutlined style={{ marginRight: '4px' }} />
+                      ) : (
+                        &lt;ClockCircleOutlined style={{ marginRight: '4px' }} />
+                      )}
+                      {getStateText(event.state)}
+                    &lt;/Tag>
+                  &lt;/div>
+
+                  &lt;Title level={1} style={{
+                    color: COLORS.neutral.darker,
+                    marginBottom: '8px',
+                    fontSize: '32px',
+                    lineHeight: '1.2'
+                  }}>
+                    {event.name}
+                  &lt;/Title>
+                &lt;/div>
+
+                {/* Información clave */}
+                &lt;Card style={{
+                  backgroundColor: COLORS.neutral.grey1,
+                  border: 'none'
+                }}>
+                  &lt;Space direction="vertical" size={16} style={{ width: '100%' }}>
+                    &lt;div style={{ display: 'flex', alignItems: 'center' }} data-cy="event-date">
+                      &lt;CalendarOutlined style={{
+                        fontSize: '18px',
+                        color: COLORS.primary.main,
+                        marginRight: '12px'
+                      }} />
+                      &lt;div>
+                        &lt;Text style={{ fontSize: '16px', fontWeight: '600', color: COLORS.neutral.dark }}>
+                          {dayjs(event.date).format("dddd, DD [de] MMMM [de] YYYY")}
+                        &lt;/Text>
+                        &lt;br />
+                        &lt;Text style={{ color: COLORS.neutral.grey4 }}>
+                          {dayjs(event.date).format("HH:mm")} hrs
+                        &lt;/Text>
+                      &lt;/div>
+                    &lt;/div>
+
+                    &lt;Divider style={{ margin: '12px 0' }} />
+
+                    &lt;div style={{ display: 'flex', alignItems: 'flex-start' }} data-cy="event-location">
+                      &lt;EnvironmentOutlined style={{
+                        fontSize: '18px',
+                        color: COLORS.primary.main,
+                        marginRight: '12px',
+                        marginTop: '2px'
+                      }} />
+                      &lt;div style={{ flex: 1 }}>
+                        &lt;Text style={{ fontSize: '16px', fontWeight: '600', color: COLORS.neutral.dark }}>
+                          {event.location?.name || 'Ubicación no disponible'}
+                        &lt;/Text>
+                        &lt;br />
+                        &lt;Text style={{ color: COLORS.neutral.grey4 }}>
+                          {event.location?.address || 'Dirección no disponible'}
+                        &lt;/Text>
+                        {event.capacity &amp;&amp; (
+                          &lt;>
+                            &lt;br />
+                            &lt;Text style={{ color: COLORS.neutral.grey4, display: 'flex', alignItems: 'center', marginTop: '4px' }}>
+                              &lt;TeamOutlined style={{ marginRight: '4px' }} />
+                              Capacidad: {event.capacity.toLocaleString()} personas
+                            &lt;/Text>
+                          &lt;/>
+                        )}
+                      &lt;/div>
+                    &lt;/div>
+
+                    {/* Rango de precios */}
+                    {event.priceRange &amp;&amp; (
+                      &lt;>
+                        &lt;Divider style={{ margin: '12px 0' }} />
+                        &lt;div style={{ display: 'flex', alignItems: 'center' }}>
+                          &lt;EuroOutlined style={{ 
+                            fontSize: '18px', 
+                            color: COLORS.primary.main,
+                            marginRight: '12px'
+                          }} />
+                          &lt;div>
+                            &lt;Text style={{ fontSize: '16px', fontWeight: '600', color: COLORS.neutral.dark }}>
+                              Precios desde
+                            &lt;/Text>
+                            &lt;br />
+                            &lt;Text style={{ fontSize: '18px', fontWeight: 'bold', color: COLORS.primary.main }}>
+                              {event.priceRange.display}
+                            &lt;/Text>
+                          &lt;/div>
+                        &lt;/div>
+                      &lt;/>
+                    )}
+                  &lt;/Space>
+                &lt;/Card>
+
+                {/* Botón de compra */}
+                &lt;div>
+                  {isEventAvailable() &amp;&amp; (!ticketAvailability || !ticketAvailability.isSoldOut) ? (
+                    &lt;Button
+                      type="primary"
+                      size="large"
+                      icon={&lt;ShoppingCartOutlined />}
+                      onClick={handleBuyTickets}
+                      data-cy="buy-tickets-button"
+                      style={{
+                        width: '100%',
+                        height: '48px',
+                        fontSize: '16px',
+                        fontWeight: '600',
+                        backgroundColor: COLORS.primary.main,
+                        borderColor: COLORS.primary.main,
+                        boxShadow: `0 4px 8px ${COLORS.primary.light}40`
+                      }}
+                    >
+                      Comprar entradas
+                    &lt;/Button>
+                  ) : (
+                    &lt;Button
+                      size="large"
+                      disabled
+                      style={{
+                        width: '100%',
+                        height: '48px',
+                        fontSize: '16px'
+                      }}
+                    >
+                      {ticketAvailability?.isSoldOut ? (
+                        &lt;>
+                          &lt;StopOutlined /> Agotado
+                        &lt;/>
+                      ) : (
+                        &lt;>
+                          &lt;ClockCircleOutlined /> {getStateText(event.state)}
+                        &lt;/>
+                      )}
+                    &lt;/Button>
+                  )}
+                  
+                  &lt;Text style={{ 
+                    display: 'block', 
+                    textAlign: 'center', 
+                    marginTop: '8px',
+                    color: COLORS.neutral.grey4,
+                    fontSize: '14px'
+                  }}>
+                    {ticketAvailability?.isSoldOut ? 'No hay entradas disponibles' : 
+                     isEventAvailable() ? 'Reserva tu lugar ahora' : 
+                     `Este evento está ${event.state}`}
+                  &lt;/Text>
+                &lt;/div>
+              &lt;/Space>
+            &lt;/Col>
+          &lt;/Row>
+
+          {/* Información de precios detallada */}
+          {renderPricingInfo()}
+
+          {/* Disponibilidad de tickets en tiempo real */}
+          {renderTicketAvailability()}
+
+          {/* Estadísticas de bloqueos */}
+          {renderBlockingStats()}
+
+          {/* Descripción del evento */}
+          &lt;Row style={{ marginTop: '48px' }}>
+            &lt;Col span={24}>
+              &lt;Card style={{
+                borderRadius: '12px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+              }}>
+                &lt;Title level={3} style={{
+                  color: COLORS.neutral.darker,
+                  marginBottom: '16px',
+                  display: 'flex',
+                  alignItems: 'center'
+                }}>
+                  &lt;InfoCircleOutlined style={{
+                    marginRight: '8px',
+                    color: COLORS.primary.main
+                  }} />
+                  Descripción del evento
+                &lt;/Title>
+
+                &lt;Paragraph data-cy="event-description" style={{
+                  fontSize: '16px',
+                  lineHeight: '1.6',
+                  color: COLORS.neutral.dark,
+                  marginBottom: 0
+                }}>
+                  {event.description || 'No hay descripción disponible para este evento.'}
+                &lt;/Paragraph>
+
+                &lt;div style={{ marginTop: '24px', padding: '16px', backgroundColor: COLORS.neutral.grey1, borderRadius: '8px' }}>
+                  &lt;Title level={5} style={{ color: COLORS.neutral.darker, marginBottom: '12px' }}>
+                    Información adicional
+                  &lt;/Title>
+                  &lt;Row gutter={[16, 8]}>
+                    &lt;Col xs={24} sm={12}>
+                      &lt;Text style={{ color: COLORS.neutral.grey4 }}>
+                        &lt;strong>Tipo de evento:&lt;/strong> {mapEventTypeToCategory(event.type)}
+                      &lt;/Text>
+                    &lt;/Col>
+                    &lt;Col xs={24} sm={12}>
+                      &lt;Text style={{ color: COLORS.neutral.grey4 }}>
+                        &lt;strong>Estado:&lt;/strong> {getStateText(event.state)}
+                      &lt;/Text>
+                    &lt;/Col>
+                    {event.location?.category &amp;&amp; (
+                      &lt;Col xs={24} sm={12}>
+                        &lt;Text style={{ color: COLORS.neutral.grey4 }}>
+                          &lt;strong>Tipo de venue:&lt;/strong> {event.location.category}
+                        &lt;/Text>
+                      &lt;/Col>
+                    )}
+                    {event.usesSectionPricing &amp;&amp; (
+                      &lt;Col xs={24} sm={12}>
+                        &lt;Text style={{ color: COLORS.neutral.grey4 }}>
+                          &lt;strong>Sistema de precios:&lt;/strong> {event.usesRowPricing ? 'Por secciones y filas' : 'Por secciones'}
+                        &lt;/Text>
+                      &lt;/Col>
+                    )}
+                  &lt;/Row>
+                &lt;/div>
+              &lt;/Card>
+            &lt;/Col>
+          &lt;/Row>
+        &lt;/div>
+      &lt;/Content>
+    &lt;/Layout>
+  );
+};
+
+export default EventDetails;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-components_colorscheme.html">components/colorscheme</a></li><li><a href="module-hooks_useSeatMapViability.html">hooks/useSeatMapViability</a></li><li><a href="module-models_Event.html">models/Event</a></li><li><a href="module-models_Location.html">models/Location</a></li><li><a href="module-models_SeatMap.html">models/SeatMap</a></li><li><a href="module-models_Ticket.html">models/Ticket</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-services_UserService.html">services/UserService</a></li><li><a href="module-utils_authSession.html">utils/authSession</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AboutUs">AboutUs</a></li><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#AdminStatistics">AdminStatistics</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#BlockingViewSwitcher">BlockingViewSwitcher</a></li><li><a href="global.html#EditProfile">EditProfile</a></li><li><a href="global.html#EditableSeatRenderer">EditableSeatRenderer</a></li><li><a href="global.html#ErrorPage">ErrorPage</a></li><li><a href="global.html#EventCreation">EventCreation</a></li><li><a href="global.html#EventDetails">EventDetails</a></li><li><a href="global.html#FramedImage">FramedImage</a></li><li><a href="global.html#GeneralAdmissionRenderer">GeneralAdmissionRenderer</a></li><li><a href="global.html#GenericSeatRenderer">GenericSeatRenderer</a></li><li><a href="global.html#HelpCenter">HelpCenter</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#ManualBlockingSelection">ManualBlockingSelection</a></li><li><a href="global.html#ManualSeatSelection">ManualSeatSelection</a></li><li><a href="global.html#Navbar">Navbar</a></li><li><a href="global.html#Profile">Profile</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#RowPricingTable">RowPricingTable</a></li><li><a href="global.html#SeatMapContainer">SeatMapContainer</a></li><li><a href="global.html#SeatRenderer">SeatRenderer</a></li><li><a href="global.html#SeatSelectionViewSwitcher">SeatSelectionViewSwitcher</a></li><li><a href="global.html#SectionShapeRenderer">SectionShapeRenderer</a></li><li><a href="global.html#SelectionTopBar">SelectionTopBar</a></li><li><a href="global.html#TicketPurchase">TicketPurchase</a></li><li><a href="global.html#VenueStageRenderer">VenueStageRenderer</a></li><li><a href="global.html#ZoomControls">ZoomControls</a></li><li><a href="global.html#enviarEmailConfirmacionCompra">enviarEmailConfirmacionCompra</a></li><li><a href="global.html#generateTicketNumber">generateTicketNumber</a></li><li><a href="global.html#generateValidationCode">generateValidationCode</a></li><li><a href="global.html#returnError">returnError</a></li><li><a href="global.html#transporter">transporter</a></li><li><a href="global.html#useAdvancedZoomPan">useAdvancedZoomPan</a></li><li><a href="global.html#useDeviceDetection">useDeviceDetection</a></li><li><a href="global.html#useUserRole">useUserRole</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu Oct 23 2025 19:08:08 GMT+0200 (hora de verano de Europa central)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

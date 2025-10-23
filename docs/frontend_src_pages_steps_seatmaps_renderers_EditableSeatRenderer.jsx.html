@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: frontend/src/pages/steps/seatmaps/renderers/EditableSeatRenderer.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: frontend/src/pages/steps/seatmaps/renderers/EditableSeatRenderer.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import React, { useState, useEffect } from 'react';
+import { Card, Button, Typography, Space, Modal, Form, Input, InputNumber, ColorPicker, Select, Switch, Popconfirm, message, Tooltip, Row, Col, Badge } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, SaveOutlined, EyeOutlined, EyeInvisibleOutlined, SettingOutlined } from '@ant-design/icons';
+import { COLORS } from '../../../../components/colorscheme';
+import MainSeatMapContainer from '../containers/MainSeatMapContainer';
+import useDeviceDetection from '../../../../hooks/useDeviceDetection';
+import '../styles/SeatMapAnimations.css';
+
+const { Title, Text } = Typography;
+const { Option } = Select;
+
+/**
+ * Editable seat renderer component for seat map creation and editing
+ * @param {Object} props - Component props
+ * @param {Object} props.seatMapData - Seat map data object
+ * @param {Function} props.onSeatMapUpdate - Seat map update handler
+ * @param {Object} [props.initialData=null] - Initial seat map data
+ * @param {boolean} [props.readOnly=false] - Whether in read-only mode
+ * @returns {JSX.Element} Editable seat renderer with section management
+ */
+const EditableSeatRenderer = ({ seatMapData, onSeatMapUpdate, initialData = null, readOnly = false }) => {
+  const deviceInfo = useDeviceDetection();
+  const [form] = Form.useForm();
+
+  const [sections, setSections] = useState([]);
+  const [selectedSection, setSelectedSection] = useState(null);
+  const [showPreview, setShowPreview] = useState(true); // Cambiado a true por defecto para mostrar vista previa
+  const [sectionModalVisible, setSectionModalVisible] = useState(false);
+  const [settingsModalVisible, setSettingsModalVisible] = useState(false);
+  const [seatMapConfig, setSeatMapConfig] = useState({ name: '', type: 'generic', venueName: '', description: '' });
+
+  useEffect(() => {
+    if (initialData) {
+      setSections(initialData.sections || []);
+      setSeatMapConfig(initialData.config || {});
+    } else if (seatMapData) {
+      setSections(seatMapData.sections || []);
+      setSeatMapConfig(seatMapData.config || {});
+    }
+  }, [initialData, seatMapData]);
+
+  const addSection = () => {
+    const newSection = {
+      id: `section_${Date.now()}`,
+      name: `Sección ${sections.length + 1}`,
+      position: 'center',
+      rows: 5,
+      seatsPerRow: 10,
+      color: COLORS.primary.main,
+      defaultPrice: 0,
+      hasNumberedSeats: true,
+      totalCapacity: 50,
+      order: sections.length + 1
+    };
+    setSections([...sections, newSection]);
+    message.success('Sección añadida');
+  };
+
+  const editSection = (section) => {
+    setSelectedSection(section);
+    form.setFieldsValue(section);
+    setSectionModalVisible(true);
+  };
+
+  const deleteSection = (sectionId) => {
+    setSections(sections.filter(s => s.id !== sectionId));
+    message.success('Sección eliminada');
+  };
+
+  const handleSectionSave = () => {
+    form.validateFields().then(values => {
+      const updatedSections = sections.map(section => 
+        section.id === selectedSection.id ? { ...section, ...values } : section
+      );
+      setSections(updatedSections);
+      setSectionModalVisible(false);
+      setSelectedSection(null);
+      message.success('Sección actualizada');
+    });
+  };
+
+  const handleSave = () => {
+    const updatedData = { ...seatMapData, sections, config: seatMapConfig, updatedAt: new Date().toISOString() };
+    if (onSeatMapUpdate) onSeatMapUpdate(updatedData);
+    message.success('Mapa de asientos guardado');
+  };
+
+  const formatPrice = (price) => `€${price}`;
+
+  // Construir datos del mapa de asientos para el preview
+  const previewSeatMapData = {
+    sections: sections,
+    config: seatMapConfig,
+    type: seatMapConfig.type || 'generic'
+  };
+
+  return (
+    &lt;div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      {/* Header con controles principales */}
+      &lt;Card>
+        &lt;div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          &lt;div>
+            &lt;Title level={3} style={{ margin: 0 }}>Editor de Mapa de Asientos&lt;/Title>
+            &lt;Text style={{ color: COLORS.neutral.grey4 }}>{seatMapConfig.name || 'Mapa sin nombre'}&lt;/Text>
+          &lt;/div>
+          {!readOnly &amp;&amp; (
+            &lt;Space>
+              &lt;Button
+                icon={showPreview ? &lt;EyeInvisibleOutlined /> : &lt;EyeOutlined />}
+                onClick={() => setShowPreview(!showPreview)}
+              >
+                {showPreview ? 'Ocultar Vista Previa' : 'Mostrar Vista Previa'}
+              &lt;/Button>
+              &lt;Button icon={&lt;SettingOutlined />} onClick={() => setSettingsModalVisible(true)}>
+                Configuración
+              &lt;/Button>
+              &lt;Button type="primary" icon={&lt;SaveOutlined />} onClick={handleSave}>
+                Guardar
+              &lt;/Button>
+            &lt;/Space>
+          )}
+        &lt;/div>
+      &lt;/Card>
+
+      {/* Panel de gestión de secciones */}
+      {!readOnly &amp;&amp; (
+        &lt;Card>
+          &lt;div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            &lt;Title level={4} style={{ margin: 0 }}>Secciones ({sections.length})&lt;/Title>
+            &lt;Button type="primary" icon={&lt;PlusOutlined />} onClick={addSection}>
+              Añadir Sección
+            &lt;/Button>
+          &lt;/div>
+
+          {/* Lista de secciones en formato compacto */}
+          &lt;div style={{
+            display: 'grid',
+            gridTemplateColumns: deviceInfo.isMobile ? '1fr' : 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '12px'
+          }}>
+            {sections.map(section => (
+              &lt;Card
+                key={section.id}
+                size="small"
+                style={{
+                  border: selectedSection?.id === section.id ? `2px solid ${COLORS.primary.main}` : '1px solid #E5E7EB',
+                  borderRadius: '8px',
+                  backgroundColor: selectedSection?.id === section.id ? `${COLORS.primary.main}05` : 'white',
+                  transition: 'all 0.3s ease'
+                }}
+                hoverable={!readOnly}
+                onClick={() => !readOnly &amp;&amp; setSelectedSection(section)}
+              >
+                &lt;div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  &lt;div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    &lt;div style={{
+                      width: '10px',
+                      height: '10px',
+                      backgroundColor: section.color,
+                      borderRadius: '50%'
+                    }} />
+                    &lt;Text strong style={{ fontSize: '13px' }}>{section.name}&lt;/Text>
+                    {!section.hasNumberedSeats &amp;&amp; (
+                      &lt;Badge count="GA" style={{ backgroundColor: '#10B981', fontSize: '9px' }} />
+                    )}
+                  &lt;/div>
+                  {!readOnly &amp;&amp; (
+                    &lt;Space size="small">
+                      &lt;Tooltip title="Editar">
+                        &lt;Button
+                          type="text"
+                          icon={&lt;EditOutlined />}
+                          size="small"
+                          onClick={(e) => { e.stopPropagation(); editSection(section); }}
+                        />
+                      &lt;/Tooltip>
+                      &lt;Popconfirm
+                        title="¿Eliminar sección?"
+                        description="Esta acción no se puede deshacer"
+                        onConfirm={() => deleteSection(section.id)}
+                        okText="Sí"
+                        cancelText="No"
+                      >
+                        &lt;Tooltip title="Eliminar">
+                          &lt;Button
+                            type="text"
+                            icon={&lt;DeleteOutlined />}
+                            size="small"
+                            danger
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        &lt;/Tooltip>
+                      &lt;/Popconfirm>
+                    &lt;/Space>
+                  )}
+                &lt;/div>
+                &lt;div>
+                  &lt;Row gutter={[8, 8]}>
+                    &lt;Col span={14}>
+                      &lt;Text style={{ fontSize: '11px', color: COLORS.neutral.grey4 }}>
+                        {section.hasNumberedSeats
+                          ? `${section.rows} filas × ${section.seatsPerRow} asientos`
+                          : `Capacidad: ${section.totalCapacity}`}
+                      &lt;/Text>
+                    &lt;/Col>
+                    &lt;Col span={10} style={{ textAlign: 'right' }}>
+                      &lt;Text strong style={{ color: COLORS.primary.main, fontSize: '12px' }}>
+                        {formatPrice(section.defaultPrice)}
+                      &lt;/Text>
+                    &lt;/Col>
+                  &lt;/Row>
+                &lt;/div>
+              &lt;/Card>
+            ))}
+          &lt;/div>
+        &lt;/Card>
+      )}
+
+      {/* Vista previa integrada usando MainSeatMapContainer */}
+      {showPreview &amp;&amp; sections.length > 0 &amp;&amp; (
+        &lt;Card
+          title="Vista Previa del Mapa"
+          style={{
+            backgroundColor: '#F9FAFB',
+            border: '2px solid #E5E7EB'
+          }}
+        >
+          &lt;div style={{
+            minHeight: '600px',
+            backgroundColor: 'white',
+            borderRadius: '8px',
+            overflow: 'visible',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: '20px',
+            position: 'relative'
+          }}>
+            &lt;MainSeatMapContainer
+              seatMapData={previewSeatMapData}
+              selectedSeats={[]}
+              onSeatSelect={() => {}} // No selección en modo preview
+              maxSeats={0}
+              occupiedSeats={[]}
+              blockedSeats={[]}
+              blockedSections={[]}
+              formatPrice={formatPrice}
+              event={{}}
+              calculateSeatPrice={(seat) => seat.price || 0}
+              isAdminMode={true}
+              isPreviewMode={true} // Modo preview para ocultar controles innecesarios
+            />
+          &lt;/div>
+        &lt;/Card>
+      )}
+
+      {sections.length === 0 &amp;&amp; (
+        &lt;Card style={{ textAlign: 'center', padding: '40px' }}>
+          &lt;Title level={4} style={{ color: COLORS.neutral.grey4 }}>
+            No hay secciones creadas
+          &lt;/Title>
+          &lt;Text style={{ color: COLORS.neutral.grey4 }}>
+            Añade una sección para comenzar a diseñar tu mapa de asientos
+          &lt;/Text>
+          {!readOnly &amp;&amp; (
+            &lt;div style={{ marginTop: '20px' }}>
+              &lt;Button type="primary" icon={&lt;PlusOutlined />} onClick={addSection} size="large">
+                Añadir Primera Sección
+              &lt;/Button>
+            &lt;/div>
+          )}
+        &lt;/Card>
+      )}
+
+      {/* Modal de edición de sección */}
+      &lt;Modal
+        title="Editar Sección"
+        open={sectionModalVisible}
+        onOk={handleSectionSave}
+        onCancel={() => { setSectionModalVisible(false); setSelectedSection(null); }}
+        width={600}
+        okText="Guardar"
+        cancelText="Cancelar"
+      >
+        &lt;Form form={form} layout="vertical">
+          &lt;Row gutter={16}>
+            &lt;Col span={12}>
+              &lt;Form.Item name="name" label="Nombre de la sección" rules={[{ required: true, message: 'El nombre es requerido' }]}>
+                &lt;Input placeholder="Ej: Tribuna Norte" />
+              &lt;/Form.Item>
+            &lt;/Col>
+            &lt;Col span={12}>
+              &lt;Form.Item name="position" label="Posición" rules={[{ required: true, message: 'La posición es requerida' }]}>
+                &lt;Select placeholder="Seleccionar posición">
+                  &lt;Option value="north">Norte&lt;/Option>
+                  &lt;Option value="south">Sur&lt;/Option>
+                  &lt;Option value="east">Este&lt;/Option>
+                  &lt;Option value="west">Oeste&lt;/Option>
+                  &lt;Option value="center">Centro&lt;/Option>
+                  &lt;Option value="vip">VIP&lt;/Option>
+                &lt;/Select>
+              &lt;/Form.Item>
+            &lt;/Col>
+          &lt;/Row>
+          &lt;Row gutter={16}>
+            &lt;Col span={12}>
+              &lt;Form.Item name="color" label="Color de la sección" rules={[{ required: true, message: 'El color es requerido' }]}>
+                &lt;ColorPicker showText format="hex" style={{ width: '100%' }} />
+              &lt;/Form.Item>
+            &lt;/Col>
+            &lt;Col span={12}>
+              &lt;Form.Item name="defaultPrice" label="Precio por defecto" rules={[{ required: true, message: 'El precio es requerido' }]}>
+                &lt;InputNumber min={0} step={0.01} style={{ width: '100%' }} formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={value => value.replace(/\$\s?|(,*)/g, '')} />
+              &lt;/Form.Item>
+            &lt;/Col>
+          &lt;/Row>
+          &lt;Form.Item name="hasNumberedSeats" label="Tipo de asientos" valuePropName="checked">
+            &lt;Switch checkedChildren="Numerados" unCheckedChildren="Entrada General" />
+          &lt;/Form.Item>
+          &lt;Form.Item noStyle shouldUpdate={(prevValues, currentValues) => prevValues.hasNumberedSeats !== currentValues.hasNumberedSeats}>
+            {({ getFieldValue }) => {
+              const hasNumberedSeats = getFieldValue('hasNumberedSeats');
+              return hasNumberedSeats ? (
+                &lt;Row gutter={16}>
+                  &lt;Col span={12}>
+                    &lt;Form.Item name="rows" label="Número de filas" rules={[{ required: true, message: 'El número de filas es requerido' }]}>
+                      &lt;InputNumber min={1} max={50} style={{ width: '100%' }} />
+                    &lt;/Form.Item>
+                  &lt;/Col>
+                  &lt;Col span={12}>
+                    &lt;Form.Item name="seatsPerRow" label="Asientos por fila" rules={[{ required: true, message: 'El número de asientos por fila es requerido' }]}>
+                      &lt;InputNumber min={1} max={100} style={{ width: '100%' }} />
+                    &lt;/Form.Item>
+                  &lt;/Col>
+                &lt;/Row>
+              ) : (
+                &lt;Form.Item name="totalCapacity" label="Capacidad total" rules={[{ required: true, message: 'La capacidad es requerida' }]}>
+                  &lt;InputNumber min={1} max={10000} style={{ width: '100%' }} />
+                &lt;/Form.Item>
+              );
+            }}
+          &lt;/Form.Item>
+          &lt;Form.Item name="order" label="Orden de visualización">
+            &lt;InputNumber min={1} style={{ width: '100%' }} />
+          &lt;/Form.Item>
+        &lt;/Form>
+      &lt;/Modal>
+
+      {/* Modal de configuración */}
+      &lt;Modal
+        title="Configuración del Mapa"
+        open={settingsModalVisible}
+        onOk={(values) => {
+          setSeatMapConfig(prev => ({ ...prev, ...values }));
+          setSettingsModalVisible(false);
+        }}
+        onCancel={() => setSettingsModalVisible(false)}
+        width={500}
+        okText="Guardar"
+        cancelText="Cancelar"
+      >
+        &lt;Form
+          layout="vertical"
+          initialValues={seatMapConfig}
+          onFinish={(values) => {
+            setSeatMapConfig(prev => ({ ...prev, ...values }));
+            setSettingsModalVisible(false);
+          }}
+        >
+          &lt;Form.Item name="name" label="Nombre del mapa" rules={[{ required: true, message: 'El nombre es requerido' }]}>
+            &lt;Input placeholder="Ej: Estadio Principal" />
+          &lt;/Form.Item>
+          &lt;Form.Item name="type" label="Tipo de venue" rules={[{ required: true, message: 'El tipo es requerido' }]}>
+            &lt;Select placeholder="Seleccionar tipo">
+              &lt;Option value="football">Estadio de Fútbol&lt;/Option>
+              &lt;Option value="theater">Teatro&lt;/Option>
+              &lt;Option value="cinema">Cine&lt;/Option>
+              &lt;Option value="concert">Concierto&lt;/Option>
+              &lt;Option value="arena">Arena&lt;/Option>
+              &lt;Option value="generic">Genérico&lt;/Option>
+            &lt;/Select>
+          &lt;/Form.Item>
+          &lt;Form.Item name="venueName" label="Nombre del venue">
+            &lt;Input placeholder="Ej: Estadio Santiago Bernabéu" />
+          &lt;/Form.Item>
+          &lt;Form.Item name="description" label="Descripción">
+            &lt;Input.TextArea rows={3} placeholder="Descripción del mapa de asientos..." />
+          &lt;/Form.Item>
+        &lt;/Form>
+      &lt;/Modal>
+    &lt;/div>
+  );
+};
+
+export default EditableSeatRenderer;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-components_colorscheme.html">components/colorscheme</a></li><li><a href="module-hooks_useSeatMapViability.html">hooks/useSeatMapViability</a></li><li><a href="module-models_Event.html">models/Event</a></li><li><a href="module-models_Location.html">models/Location</a></li><li><a href="module-models_SeatMap.html">models/SeatMap</a></li><li><a href="module-models_Ticket.html">models/Ticket</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-services_UserService.html">services/UserService</a></li><li><a href="module-utils_authSession.html">utils/authSession</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AboutUs">AboutUs</a></li><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#AdminStatistics">AdminStatistics</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#BlockingViewSwitcher">BlockingViewSwitcher</a></li><li><a href="global.html#EditProfile">EditProfile</a></li><li><a href="global.html#EditableSeatRenderer">EditableSeatRenderer</a></li><li><a href="global.html#ErrorPage">ErrorPage</a></li><li><a href="global.html#EventCreation">EventCreation</a></li><li><a href="global.html#EventDetails">EventDetails</a></li><li><a href="global.html#FramedImage">FramedImage</a></li><li><a href="global.html#GeneralAdmissionRenderer">GeneralAdmissionRenderer</a></li><li><a href="global.html#GenericSeatRenderer">GenericSeatRenderer</a></li><li><a href="global.html#HelpCenter">HelpCenter</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#ManualBlockingSelection">ManualBlockingSelection</a></li><li><a href="global.html#ManualSeatSelection">ManualSeatSelection</a></li><li><a href="global.html#Navbar">Navbar</a></li><li><a href="global.html#Profile">Profile</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#RowPricingTable">RowPricingTable</a></li><li><a href="global.html#SeatMapContainer">SeatMapContainer</a></li><li><a href="global.html#SeatRenderer">SeatRenderer</a></li><li><a href="global.html#SeatSelectionViewSwitcher">SeatSelectionViewSwitcher</a></li><li><a href="global.html#SectionShapeRenderer">SectionShapeRenderer</a></li><li><a href="global.html#SelectionTopBar">SelectionTopBar</a></li><li><a href="global.html#TicketPurchase">TicketPurchase</a></li><li><a href="global.html#VenueStageRenderer">VenueStageRenderer</a></li><li><a href="global.html#ZoomControls">ZoomControls</a></li><li><a href="global.html#enviarEmailConfirmacionCompra">enviarEmailConfirmacionCompra</a></li><li><a href="global.html#generateTicketNumber">generateTicketNumber</a></li><li><a href="global.html#generateValidationCode">generateValidationCode</a></li><li><a href="global.html#returnError">returnError</a></li><li><a href="global.html#transporter">transporter</a></li><li><a href="global.html#useAdvancedZoomPan">useAdvancedZoomPan</a></li><li><a href="global.html#useDeviceDetection">useDeviceDetection</a></li><li><a href="global.html#useUserRole">useUserRole</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu Oct 23 2025 19:08:08 GMT+0200 (hora de verano de Europa central)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

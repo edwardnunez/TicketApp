@@ -1,0 +1,18 @@
+{
+  "name": "ticketapp",
+  "version": "1.0.0",
+  "description": "![React](https://img.shields.io/badge/React-18.2.0-61dafb.svg)\r ![Node.js](https://img.shields.io/badge/Node.js-18+-339933.svg)\r ![MongoDB](https://img.shields.io/badge/MongoDB-5.0+-47A248.svg)\r ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED.svg)",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "jsdoc": "^4.0.5"
+  }
+}

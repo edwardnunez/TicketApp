@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: frontend/src/App.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: frontend/src/App.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { Routes, Route, useLocation } from "react-router-dom";
+import { useEffect } from "react";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import EventDetails from "./pages/EventDetails";
+import Profile from "./pages/Profile";
+import EditProfile from "./pages/EditProfile";
+import ErrorPage from "./pages/ErrorPage";
+import AboutUs from "./pages/AboutUs";
+import TicketPurchase from "./pages/TicketPurchase";
+
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminStatistics from "./pages/admin/AdminStatistics";
+import EventCreation from "./pages/admin/EventCreation";
+import EventSeatMapEditor from "./pages/admin/EventSeatmapEditor";
+import HelpCenter from "./pages/HelpCenter";
+
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
+import ProtectedRoute from "./components/ProtectedRoute";
+import AdminRoute from "./components/AdminRoute";
+import LocationCreation from "./pages/admin/LocationCreation";
+
+/**
+ * Main application component that handles routing
+ * @returns {JSX.Element} The main app component with routing configuration
+ */
+function App() {
+  const location = useLocation();
+
+  // Scroll to top when route changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
+  return (
+    &lt;div className="min-h-screen bg-gray-100">
+      &lt;Navbar />
+      &lt;Routes>
+
+        &lt;Route path="/login" element={&lt;Login />} />
+        &lt;Route path="/register" element={&lt;Register />} />
+
+        &lt;Route path="/" element={&lt;Home />} />
+        &lt;Route path="/event/:id" element={&lt;ProtectedRoute element={&lt;EventDetails />} />} />
+        &lt;Route path="/about-us" element={&lt;ProtectedRoute element={&lt;AboutUs />} />} />
+        &lt;Route path="/profile" element={&lt;ProtectedRoute element={&lt;Profile />} />} />
+        &lt;Route path="/edit-profile" element={&lt;ProtectedRoute element={&lt;EditProfile />} />} />
+        &lt;Route path="/event/purchase/:id" element={&lt;ProtectedRoute element={&lt;TicketPurchase />} />} />
+        &lt;Route path="/help" element={&lt;ProtectedRoute element={&lt;HelpCenter />} />} />
+
+        &lt;Route path="/admin" element={&lt;AdminRoute element={&lt;AdminDashboard />} />} />
+        &lt;Route path="/admin/statistics" element={&lt;AdminRoute element={&lt;AdminStatistics />} />} />
+        &lt;Route path="/admin/create-event" element={&lt;AdminRoute element={&lt;EventCreation />} />} />
+        &lt;Route path="/admin/create-location" element={&lt;AdminRoute element={&lt;LocationCreation />} />} />
+        &lt;Route path="/admin/event-seatmap-config" element={&lt;AdminRoute element={&lt;EventSeatMapEditor />} />} />
+
+        &lt;Route path="*" element={&lt;ErrorPage />} /> 
+      &lt;/Routes>
+      &lt;Footer />
+    &lt;/div>
+  );
+}
+
+export default App;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-components_colorscheme.html">components/colorscheme</a></li><li><a href="module-hooks_useSeatMapViability.html">hooks/useSeatMapViability</a></li><li><a href="module-models_Event.html">models/Event</a></li><li><a href="module-models_Location.html">models/Location</a></li><li><a href="module-models_SeatMap.html">models/SeatMap</a></li><li><a href="module-models_Ticket.html">models/Ticket</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-services_UserService.html">services/UserService</a></li><li><a href="module-utils_authSession.html">utils/authSession</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AboutUs">AboutUs</a></li><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#AdminStatistics">AdminStatistics</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#BlockingViewSwitcher">BlockingViewSwitcher</a></li><li><a href="global.html#EditProfile">EditProfile</a></li><li><a href="global.html#EditableSeatRenderer">EditableSeatRenderer</a></li><li><a href="global.html#ErrorPage">ErrorPage</a></li><li><a href="global.html#EventCreation">EventCreation</a></li><li><a href="global.html#EventDetails">EventDetails</a></li><li><a href="global.html#FramedImage">FramedImage</a></li><li><a href="global.html#GeneralAdmissionRenderer">GeneralAdmissionRenderer</a></li><li><a href="global.html#GenericSeatRenderer">GenericSeatRenderer</a></li><li><a href="global.html#HelpCenter">HelpCenter</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#ManualBlockingSelection">ManualBlockingSelection</a></li><li><a href="global.html#ManualSeatSelection">ManualSeatSelection</a></li><li><a href="global.html#Navbar">Navbar</a></li><li><a href="global.html#Profile">Profile</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#RowPricingTable">RowPricingTable</a></li><li><a href="global.html#SeatMapContainer">SeatMapContainer</a></li><li><a href="global.html#SeatRenderer">SeatRenderer</a></li><li><a href="global.html#SeatSelectionViewSwitcher">SeatSelectionViewSwitcher</a></li><li><a href="global.html#SectionShapeRenderer">SectionShapeRenderer</a></li><li><a href="global.html#SelectionTopBar">SelectionTopBar</a></li><li><a href="global.html#TicketPurchase">TicketPurchase</a></li><li><a href="global.html#VenueStageRenderer">VenueStageRenderer</a></li><li><a href="global.html#ZoomControls">ZoomControls</a></li><li><a href="global.html#enviarEmailConfirmacionCompra">enviarEmailConfirmacionCompra</a></li><li><a href="global.html#generateTicketNumber">generateTicketNumber</a></li><li><a href="global.html#generateValidationCode">generateValidationCode</a></li><li><a href="global.html#returnError">returnError</a></li><li><a href="global.html#transporter">transporter</a></li><li><a href="global.html#useAdvancedZoomPan">useAdvancedZoomPan</a></li><li><a href="global.html#useDeviceDetection">useDeviceDetection</a></li><li><a href="global.html#useUserRole">useUserRole</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu Oct 23 2025 19:08:08 GMT+0200 (hora de verano de Europa central)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: frontend/src/utils/authSession.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: frontend/src/utils/authSession.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file Utilidades para gestión de sesión de autenticación
+ * @module utils/authSession
+ * @description Maneja el almacenamiento de sesión de autenticación, seguimiento de expiración y limpieza automática
+ */
+
+export const AUTH_EXPIRY_KEY = 'authExpiry';
+
+let clearTimerId = null;
+
+/**
+ * Establece los datos de sesión de autenticación en localStorage
+ * @param {Object} params - Parámetros de autenticación
+ * @param {string} [params.token] - Token de autenticación JWT
+ * @param {string} [params.roleToken] - Token JWT basado en roles
+ * @param {string} [params.username] - Nombre de usuario
+ * @param {number} [params.expiryMs=3600000] - Tiempo de expiración de sesión en milisegundos (por defecto: 1 hora)
+ */
+export function setAuthSession({ token, roleToken, username, expiryMs = 60 * 60 * 1000 }) {
+  if (token) localStorage.setItem('token', token);
+  if (roleToken) localStorage.setItem('roleToken', roleToken);
+  if (username) localStorage.setItem('username', username);
+  const expiryAt = Date.now() + expiryMs;
+  localStorage.setItem(AUTH_EXPIRY_KEY, String(expiryAt));
+
+  // Disparar evento personalizado para notificar cambios en la autenticación
+  window.dispatchEvent(new Event('authChange'));
+}
+
+/**
+ * Verifica si la sesión de autenticación actual ha expirado
+ * @returns {boolean} Verdadero si la sesión ha expirado
+ */
+export function isAuthExpired() {
+  const expiry = Number(localStorage.getItem(AUTH_EXPIRY_KEY));
+  if (!expiry) return false;
+  return Date.now() > expiry;
+}
+
+/**
+ * Limpia todos los datos de autenticación de localStorage
+ */
+export function clearAuthSession() {
+  localStorage.removeItem('token');
+  localStorage.removeItem('roleToken');
+  localStorage.removeItem('username');
+  localStorage.removeItem(AUTH_EXPIRY_KEY);
+
+  // Disparar evento personalizado para notificar cambios en la autenticación
+  window.dispatchEvent(new Event('authChange'));
+}
+
+/**
+ * Asegura que la sesión de autenticación esté fresca, limpia si ha expirado
+ * @returns {boolean} Verdadero si la sesión expiró y fue limpiada
+ */
+export function ensureAuthFreshness() {
+  if (isAuthExpired()) {
+    clearAuthSession();
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Programa la limpieza automática de sesión cuando el token expire
+ */
+export function scheduleAuthExpiryTimer() {
+  if (clearTimerId) {
+    clearTimeout(clearTimerId);
+    clearTimerId = null;
+  }
+  const expiry = Number(localStorage.getItem(AUTH_EXPIRY_KEY));
+  if (!expiry) return;
+  const delay = Math.max(0, expiry - Date.now());
+  clearTimerId = setTimeout(() => {
+    clearAuthSession();
+  }, delay);
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-components_colorscheme.html">components/colorscheme</a></li><li><a href="module-hooks_useSeatMapViability.html">hooks/useSeatMapViability</a></li><li><a href="module-models_Event.html">models/Event</a></li><li><a href="module-models_Location.html">models/Location</a></li><li><a href="module-models_SeatMap.html">models/SeatMap</a></li><li><a href="module-models_Ticket.html">models/Ticket</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-services_UserService.html">services/UserService</a></li><li><a href="module-utils_authSession.html">utils/authSession</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AboutUs">AboutUs</a></li><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#AdminStatistics">AdminStatistics</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#BlockingViewSwitcher">BlockingViewSwitcher</a></li><li><a href="global.html#EditProfile">EditProfile</a></li><li><a href="global.html#EditableSeatRenderer">EditableSeatRenderer</a></li><li><a href="global.html#ErrorPage">ErrorPage</a></li><li><a href="global.html#EventCreation">EventCreation</a></li><li><a href="global.html#EventDetails">EventDetails</a></li><li><a href="global.html#FramedImage">FramedImage</a></li><li><a href="global.html#GeneralAdmissionRenderer">GeneralAdmissionRenderer</a></li><li><a href="global.html#GenericSeatRenderer">GenericSeatRenderer</a></li><li><a href="global.html#HelpCenter">HelpCenter</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#ManualBlockingSelection">ManualBlockingSelection</a></li><li><a href="global.html#ManualSeatSelection">ManualSeatSelection</a></li><li><a href="global.html#Navbar">Navbar</a></li><li><a href="global.html#Profile">Profile</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#RowPricingTable">RowPricingTable</a></li><li><a href="global.html#SeatMapContainer">SeatMapContainer</a></li><li><a href="global.html#SeatRenderer">SeatRenderer</a></li><li><a href="global.html#SeatSelectionViewSwitcher">SeatSelectionViewSwitcher</a></li><li><a href="global.html#SectionShapeRenderer">SectionShapeRenderer</a></li><li><a href="global.html#SelectionTopBar">SelectionTopBar</a></li><li><a href="global.html#TicketPurchase">TicketPurchase</a></li><li><a href="global.html#VenueStageRenderer">VenueStageRenderer</a></li><li><a href="global.html#ZoomControls">ZoomControls</a></li><li><a href="global.html#enviarEmailConfirmacionCompra">enviarEmailConfirmacionCompra</a></li><li><a href="global.html#generateTicketNumber">generateTicketNumber</a></li><li><a href="global.html#generateValidationCode">generateValidationCode</a></li><li><a href="global.html#returnError">returnError</a></li><li><a href="global.html#transporter">transporter</a></li><li><a href="global.html#useAdvancedZoomPan">useAdvancedZoomPan</a></li><li><a href="global.html#useDeviceDetection">useDeviceDetection</a></li><li><a href="global.html#useUserRole">useUserRole</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu Oct 23 2025 19:08:08 GMT+0200 (hora de verano de Europa central)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: frontend/src/pages/TicketPurchase.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: frontend/src/pages/TicketPurchase.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { useEffect, useState } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import { 
+  Layout, 
+  Typography,
+  Row, 
+  Col, 
+  Button,
+  Space, 
+  notification,
+  Skeleton,
+  Alert,
+  Steps,
+  Form
+} from "antd";
+import { 
+  CalendarOutlined, 
+  EnvironmentOutlined, 
+  ArrowLeftOutlined,
+  CreditCardOutlined,
+  CheckCircleOutlined,
+  UserOutlined,
+  TagOutlined
+} from "@ant-design/icons";
+import axios from "axios";
+import dayjs from "dayjs";
+
+import SelectTickets from "./steps/TicketSelection";
+import BuyerInfo from "./steps/BuyerInfo";
+import PaymentMethod from "./steps/PaymentMethod";
+import Confirmation from "./steps/PurchaseConfirmation";
+
+import { COLORS } from "../components/colorscheme";
+
+const { Content } = Layout;
+const { Title, Text} = Typography;
+
+/**
+ * Ticket purchase page component with multi-step checkout process
+ * @returns {JSX.Element} Multi-step ticket purchase flow
+ */
+const TicketPurchase = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [event, setEvent] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [processing, setProcessing] = useState(false);
+  const [purchaseComplete, setPurchaseComplete] = useState(false);
+  const [ticketInfo, setTicketInfo] = useState(null);
+  const [api, contextHolder] = notification.useNotification();
+  const [form] = Form.useForm();
+
+  // Estados para manejo de asientos con persistencia
+  const [selectedSeats, setSelectedSeats] = useState(() => {
+    // Intentar recuperar del sessionStorage al inicializar
+    const saved = sessionStorage.getItem(`selectedSeats_${id}`);
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [occupiedSeats, setOccupiedSeats] = useState([]);
+
+  // Inicializar quantity basado en los asientos guardados
+  const [quantity, setQuantity] = useState(() => {
+    const saved = sessionStorage.getItem(`selectedSeats_${id}`);
+    if (saved) {
+      const seats = JSON.parse(saved);
+      return seats.length > 0 ? seats.length : 1;
+    }
+    return 1;
+  });
+
+  const [userData, setUserData] = useState(null); // datos reales del usuario
+  const [useAccountData, setUseAccountData] = useState(false);
+  
+  const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
+
+  useEffect(() => {
+    if (!id) {
+      setError("No se especificó un ID de evento válido");
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    axios.get(`${gatewayUrl}/events/${id}`)
+      .then((res) => {
+        const eventData = {
+          ...res.data,
+          date: dayjs(res.data.date).format("YYYY-MM-DD"),
+          image: res.data.imageUrl || res.data.image || "/event-images/default.jpg",
+        };
+
+        setEvent(eventData);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error loading event details:", err);
+        setError("No se pudo cargar la información del evento");
+        setLoading(false);
+        api.error({
+          message: 'Error',
+          description: 'No se pudieron cargar los detalles del evento.',
+          placement: 'top',
+        });
+      });
+  }, [id, gatewayUrl, api]);
+
+  // Limpiar sessionStorage cuando se completa la compra
+  useEffect(() => {
+    if (purchaseComplete) {
+      sessionStorage.removeItem(`selectedSeats_${id}`);
+    }
+  }, [id, purchaseComplete]);
+
+  // Limpiar sessionStorage si el usuario sale completamente de la página
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      // Solo limpiar si sale navegando a otra URL, no en refresh
+      if (!purchaseComplete) {
+        const currentPath = window.location.pathname;
+        if (!currentPath.includes(`/purchase/${id}`)) {
+          sessionStorage.removeItem(`selectedSeats_${id}`);
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [id, purchaseComplete]);
+
+  useEffect(() => {
+    const username = localStorage.getItem("username");
+    if (username) {
+      axios.get(`${gatewayUrl}/users/search`, {
+        params: { username }
+      }).then(res => {
+        setUserData(res.data);
+      }).catch(err => {
+        console.error("Error fetching user data:", err);
+      });
+    }
+  }, [gatewayUrl]);
+
+  useEffect(() => {
+    if (useAccountData &amp;&amp; userData) {
+      form.setFieldsValue({
+        firstName: userData.name || '',
+        lastName: userData.surname || '',
+        email: userData.email || '',
+        phone: userData.phone || ''
+      });
+    } else {
+      form.resetFields(["firstName", "lastName", "email", "phone"]);
+    }
+  }, [useAccountData, userData, form]);
+
+  useEffect(() => {
+    if (!event) return;
+
+    axios.get(`${gatewayUrl}/tickets/occupied/${event._id}`)
+      .then(res => {
+        if (res.data.success) {
+          setOccupiedSeats(res.data.occupiedSeats);
+        }
+      })
+      .catch(err => {
+        console.error("Error obteniendo asientos ocupados:", err);
+      });
+  }, [event, gatewayUrl]);
+
+  // Función para manejar la selección de asientos con persistencia
+  const handleSeatSelect = (seats) => {
+    setSelectedSeats(seats);
+    setQuantity(seats.length);
+    // Guardar en sessionStorage para mantener la selección entre navegaciones
+    sessionStorage.setItem(`selectedSeats_${id}`, JSON.stringify(seats));
+  };
+
+  const requiresSeatMap = () => {
+    if (!event?.type) return false;
+    
+    // Si el evento tiene seatMapId configurado, requiere mapa
+    if (event?.location?.seatMapId) return true;
+    
+    // Los conciertos pueden tener o no mapa según la configuración
+    if (event.type.toLowerCase() === 'concert' || event.type.toLowerCase() === 'concierto') {
+      return !!event?.location?.seatMapId;
+    }
+    
+    // Otros tipos que siempre requieren mapa
+    const eventToSeatMapType = {
+      'cinema': 'cinema',
+      'theater': 'theater', 
+      'theatre': 'theater',
+      'football': 'football',
+      'soccer': 'football',
+      'sports': 'football',
+      'stadium': 'football'
+    };
+    
+    return Object.keys(eventToSeatMapType).includes(event.type.toLowerCase());
+  };
+
+
+  const getTotalPrice = () => {
+    // Si requiere mapa de asientos Y hay asientos seleccionados, usar el precio de los asientos
+    if (requiresSeatMap() &amp;&amp; selectedSeats.length > 0) {
+      return selectedSeats.reduce((total, seat) => total + seat.price, 0);
+    }
+    
+    // Si no requiere mapa de asientos O no hay asientos seleccionados, usar precio del evento
+    return event?.price * quantity || 0;
+  };
+
+
+
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('es-CL', {
+      style: 'currency',
+      currency: 'EUR'
+    }).format(price);
+  };
+
+  const handleNext = () => {
+    if (currentStep === 0) {
+      // Validar según si requiere mapa de asientos o no
+      if (requiresSeatMap()) {
+        if (selectedSeats.length === 0) {
+          api.warning({
+            message: 'Selección requerida',
+            description: 'Debes seleccionar al menos un asiento.',
+            placement: 'top',
+          });
+          return;
+        }
+        // Permitir múltiples asientos de pista
+        if (selectedSeats.length > 6) {
+          api.warning({
+            message: 'Límite excedido',
+            description: 'Puedes seleccionar máximo 6 asientos.',
+            placement: 'top',
+          });
+          return;
+        }
+      } else {
+        if (quantity &lt; 1 || quantity > 6) {
+          api.warning({
+            message: 'Cantidad inválida',
+            description: 'Debes seleccionar entre 1 y 6 tickets.',
+            placement: 'top',
+          });
+          return;
+        }
+      }
+      setCurrentStep(1);
+    } else if (currentStep === 1) {
+      form.validateFields().then(() => {
+        setCurrentStep(2);
+      }).catch(() => {
+        api.warning({
+          message: 'Formulario incompleto',
+          description: 'Por favor completa todos los campos requeridos.',
+          placement: 'top',
+        });
+      });
+    }
+  };
+
+  const handlePrevious = () => {
+    setCurrentStep(currentStep - 1);
+  };
+
+
+
+  const isEventActive = () => {
+    if (!event) return false;
+    const eventDate = dayjs(event.date);
+    const now = dayjs();
+    return eventDate.isAfter(now);
+  };
+
+  const handlePayPalSuccess = async (paypalDetails, paypalData) => {
+    try {
+      setProcessing(true);
+      
+      const formData = form.getFieldsValue();
+      const username = localStorage.getItem("username");
+      
+      let userId = null;
+      if (username) {
+        try {
+          const userResponse = await axios.get(`${gatewayUrl}/users/search`, {
+            params: { username }
+          });
+          userId = userResponse.data._id;
+        } catch (error) {
+          console.error("Error obteniendo datos del usuario:", error);
+        }
+      }
+
+      const usesSpecificSeats = requiresSeatMap() &amp;&amp; selectedSeats.length > 0;
+      
+      const finalQuantity = usesSpecificSeats ? selectedSeats.length : quantity;
+      const totalPrice = getTotalPrice();
+      const unitPrice = totalPrice / finalQuantity;
+
+      // Preparar selectedSeats - siempre se envía
+      let validSelectedSeats = [];
+      
+      if (usesSpecificSeats &amp;&amp; selectedSeats.length > 0) {
+        validSelectedSeats = selectedSeats.map(seat => {
+          if (seat.seat !== undefined &amp;&amp; seat.row !== undefined &amp;&amp; 
+              seat.seat !== null &amp;&amp; seat.row !== null) {
+            return seat;
+          } else {
+            return {
+              ...seat,
+              row: null,
+              seat: null
+            };
+          }
+        });
+      }
+
+              const ticketData = {
+          userId: userId,
+          eventId: id,
+          quantity: finalQuantity,
+          price: unitPrice,
+          totalPrice: totalPrice,
+          selectedSeats: validSelectedSeats,
+          usesSpecificSeats: usesSpecificSeats,
+          customerInfo: {
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            email: formData.email,
+            phone: formData.phone
+          },
+          // Información de PayPal para referencia
+          paymentInfo: {
+            paypalOrderId: paypalData.orderID,
+            paypalPayerId: paypalDetails.payer.payer_id,
+            paypalTransactionId: paypalDetails.purchase_units[0].payments.captures[0].id,
+            paymentMethod: 'paypal',
+            paymentStatus: 'completed'
+          }
+        };
+
+      console.log('Enviando datos del ticket con PayPal:', ticketData);
+
+      const response = await axios.post(`${gatewayUrl}/tickets/purchase`, ticketData);
+      
+      if (response.data.success) {
+        setTicketInfo({
+           id: response.data.ticketId,
+           ticketId: response.data.ticketId,
+           ticket: response.data.ticket,
+           eventName: event.name,
+           quantity: finalQuantity,
+           unitPrice: unitPrice,
+           totalPrice: totalPrice,
+           purchaseDate: new Date(),
+           qrCode: response.data.ticket.qrCode,
+           selectedSeats: validSelectedSeats,
+           usesSpecificSeats: usesSpecificSeats,
+           paymentInfo: ticketData.paymentInfo
+         });
+        
+        setPurchaseComplete(true);
+        setCurrentStep(3);
+        
+        api.success({
+          message: 'Compra exitosa',
+          description: '¡Tus tickets han sido comprados exitosamente con PayPal!',
+          placement: 'top',
+        });
+      }
+      
+    } catch (error) {
+      console.error('Error purchasing tickets:', error);
+      
+      let errorMessage = 'Hubo un problema al procesar tu compra. Por favor intenta nuevamente.';
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.data?.details) {
+        errorMessage = error.response.data.details;
+      }
+      
+      api.error({
+        message: 'Error en la compra',
+        description: errorMessage,
+        placement: 'top',
+      });
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth &lt; 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  if (loading) {
+    return (
+      &lt;Layout style={{ backgroundColor: COLORS.neutral.white, minHeight: "100vh" }}>
+        &lt;Content style={{ maxWidth: '1200px', margin: '40px auto', padding: '0 20px' }}>
+          &lt;Skeleton active paragraph={{ rows: 8 }} />
+        &lt;/Content>
+      &lt;/Layout>
+    );
+  }
+
+  if (error || !event) {
+    return (
+      &lt;Layout style={{ backgroundColor: COLORS.neutral.white, minHeight: "100vh" }}>
+        &lt;Content style={{ maxWidth: '1200px', margin: '40px auto', padding: '0 20px' }}>
+          &lt;Alert
+            message="Error"
+            description={error || "Evento no encontrado"}
+            type="error"
+            showIcon
+            action={
+              &lt;Link to="/">
+                &lt;Button size="small" type="primary">
+                  Volver al inicio
+                &lt;/Button>
+              &lt;/Link>
+            }
+          />
+        &lt;/Content>
+      &lt;/Layout>
+    );
+  }
+
+  if (!isEventActive()) {
+    return (
+      &lt;Layout style={{ backgroundColor: COLORS.neutral.white, minHeight: "100vh" }}>
+        &lt;Content style={{ maxWidth: '1200px', margin: '40px auto', padding: '0 20px' }}>
+          &lt;Alert
+            message="Evento no disponible"
+            description="Este evento ya ha finalizado o no está disponible para la compra de tickets."
+            type="warning"
+            showIcon
+            action={
+              &lt;Link to={`/event/${id}`}>
+                &lt;Button size="small" type="primary">
+                  Ver detalles del evento
+                &lt;/Button>
+              &lt;/Link>
+            }
+          />
+        &lt;/Content>
+      &lt;/Layout>
+    );
+  }
+
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 0:
+        return (
+                     &lt;SelectTickets
+             quantity={quantity}
+             setQuantity={setQuantity}
+             formatPrice={formatPrice}
+             event={event}
+             selectedSeats={selectedSeats}
+             onSeatSelect={handleSeatSelect}
+             occupiedSeats={occupiedSeats}
+           />
+        );
+      case 1:
+        return (
+                     &lt;BuyerInfo
+             form={form}
+             useAccountData={useAccountData}
+             setUseAccountData={setUseAccountData}
+             userData={userData}
+             quantity={quantity}
+             formatPrice={formatPrice}
+             event={event}
+             getTotalPrice={getTotalPrice}
+             selectedSeats={selectedSeats}
+             requiresSeatMap={requiresSeatMap}
+           />
+        );
+      case 2:
+        return (
+                     &lt;PaymentMethod
+             event={event}
+             form={form}
+             quantity={quantity}
+             formatPrice={formatPrice}
+             getTotalPrice={getTotalPrice}
+             selectedSeats={selectedSeats}
+             requiresSeatMap={requiresSeatMap}
+             onPaymentSuccess={handlePayPalSuccess} 
+           />
+        );
+      case 3:
+        return (
+                     &lt;Confirmation
+             ticketInfo={ticketInfo}
+             event={event}
+             form={form}
+             quantity={quantity}
+             formatPrice={formatPrice}
+             navigate={navigate}
+             COLORS={COLORS}
+             selectedSeats={selectedSeats}
+             requiresSeatMap={requiresSeatMap}
+             getTotalPrice={getTotalPrice}
+           />
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    &lt;Layout style={{ backgroundColor: COLORS.neutral.grey1, minHeight: "100vh" }}>
+      {contextHolder}
+      
+      &lt;Content style={{ padding: isMobile ? "18px 4px" : "40px 20px" }}>
+        &lt;div style={{ maxWidth: isMobile ? "100%" : "1200px", margin: "0 auto" }}>
+          &lt;Link to={`/event/${id}`}>
+            &lt;Button 
+              type="text" 
+              icon={&lt;ArrowLeftOutlined />}
+              style={{ color: COLORS.primary.main, marginBottom: '16px' }}
+            >
+              Volver al evento
+            &lt;/Button>
+          &lt;/Link>
+          
+          &lt;Row gutter={[24, 24]} align="middle">
+            &lt;Col xs={24} sm={18}>
+              &lt;Title level={2} style={{ 
+                color: COLORS.neutral.darker, 
+                marginBottom: '8px',
+                fontSize: '28px',
+                lineHeight: '1.2'
+              }}>
+                {event.name}
+              &lt;/Title>
+              &lt;div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+                &lt;div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  &lt;CalendarOutlined style={{ color: COLORS.primary.main }} />
+                  &lt;Text style={{ color: COLORS.neutral.grey4 }}>
+                    {dayjs(event.date).format("dddd, DD [de] MMMM [de] YYYY")}
+                  &lt;/Text>
+                &lt;/div>
+                &lt;div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  &lt;EnvironmentOutlined style={{ color: COLORS.primary.main }} />
+                  &lt;Text style={{ color: COLORS.neutral.grey4 }}>
+                    {typeof event.location === 'string' ? event.location : event.location?.name || 'Ubicación no especificada'}
+                  &lt;/Text>
+                &lt;/div>
+              &lt;/div>
+            &lt;/Col>
+          &lt;/Row>
+        &lt;/div>
+
+        {/* Steps */}
+        &lt;div style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px 20px 0' }}>
+          &lt;Steps
+            current={currentStep}
+            style={{ marginBottom: '40px' }}
+            items={[
+              {
+                title: 'Seleccionar tickets',
+                icon: &lt;TagOutlined />
+              },
+              {
+                title: 'Información',
+                icon: &lt;UserOutlined />
+              },
+              {
+                title: 'Pago',
+                icon: &lt;CreditCardOutlined />
+              },
+              {
+                title: 'Confirmación',
+                icon: &lt;CheckCircleOutlined />
+              }
+            ]}
+          />
+        &lt;/div>
+
+        {/* Contenido principal */}
+        &lt;div style={{ maxWidth: 'none', margin: '0 auto', padding: '0 20px 40px', width: '100%' }}>
+          {renderStepContent()}
+          
+          {/* Botones de navegación */}
+          {!purchaseComplete &amp;&amp; (
+            &lt;div style={{ 
+              marginTop: '32px', 
+              textAlign: 'center',
+              borderTop: `1px solid ${COLORS.neutral.grey2}`,
+              paddingTop: '24px'
+            }}>
+              &lt;Space size={16}>
+                {currentStep > 0 &amp;&amp; (
+                  &lt;Button 
+                    size="large"
+                    onClick={handlePrevious}
+                    disabled={processing}
+                  >
+                    Anterior
+                  &lt;/Button>
+                )}
+                
+                {currentStep &lt; 2 &amp;&amp; (
+                  &lt;Button
+                    type="primary"
+                    size="large"
+                    onClick={handleNext}
+                    data-cy="continue-button"
+                    style={{
+                      backgroundColor: COLORS.primary.main,
+                      borderColor: COLORS.primary.main
+                    }}
+                  >
+                    Siguiente
+                  &lt;/Button>
+                )}
+                
+              &lt;/Space>
+            &lt;/div>
+          )}
+        &lt;/div>
+      &lt;/Content>
+    &lt;/Layout>
+  );
+};
+
+export default TicketPurchase;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-components_colorscheme.html">components/colorscheme</a></li><li><a href="module-hooks_useSeatMapViability.html">hooks/useSeatMapViability</a></li><li><a href="module-models_Event.html">models/Event</a></li><li><a href="module-models_Location.html">models/Location</a></li><li><a href="module-models_SeatMap.html">models/SeatMap</a></li><li><a href="module-models_Ticket.html">models/Ticket</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-services_UserService.html">services/UserService</a></li><li><a href="module-utils_authSession.html">utils/authSession</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AboutUs">AboutUs</a></li><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#AdminStatistics">AdminStatistics</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#BlockingViewSwitcher">BlockingViewSwitcher</a></li><li><a href="global.html#EditProfile">EditProfile</a></li><li><a href="global.html#EditableSeatRenderer">EditableSeatRenderer</a></li><li><a href="global.html#ErrorPage">ErrorPage</a></li><li><a href="global.html#EventCreation">EventCreation</a></li><li><a href="global.html#EventDetails">EventDetails</a></li><li><a href="global.html#FramedImage">FramedImage</a></li><li><a href="global.html#GeneralAdmissionRenderer">GeneralAdmissionRenderer</a></li><li><a href="global.html#GenericSeatRenderer">GenericSeatRenderer</a></li><li><a href="global.html#HelpCenter">HelpCenter</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#ManualBlockingSelection">ManualBlockingSelection</a></li><li><a href="global.html#ManualSeatSelection">ManualSeatSelection</a></li><li><a href="global.html#Navbar">Navbar</a></li><li><a href="global.html#Profile">Profile</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#RowPricingTable">RowPricingTable</a></li><li><a href="global.html#SeatMapContainer">SeatMapContainer</a></li><li><a href="global.html#SeatRenderer">SeatRenderer</a></li><li><a href="global.html#SeatSelectionViewSwitcher">SeatSelectionViewSwitcher</a></li><li><a href="global.html#SectionShapeRenderer">SectionShapeRenderer</a></li><li><a href="global.html#SelectionTopBar">SelectionTopBar</a></li><li><a href="global.html#TicketPurchase">TicketPurchase</a></li><li><a href="global.html#VenueStageRenderer">VenueStageRenderer</a></li><li><a href="global.html#ZoomControls">ZoomControls</a></li><li><a href="global.html#enviarEmailConfirmacionCompra">enviarEmailConfirmacionCompra</a></li><li><a href="global.html#generateTicketNumber">generateTicketNumber</a></li><li><a href="global.html#generateValidationCode">generateValidationCode</a></li><li><a href="global.html#returnError">returnError</a></li><li><a href="global.html#transporter">transporter</a></li><li><a href="global.html#useAdvancedZoomPan">useAdvancedZoomPan</a></li><li><a href="global.html#useDeviceDetection">useDeviceDetection</a></li><li><a href="global.html#useUserRole">useUserRole</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu Oct 23 2025 19:08:08 GMT+0200 (hora de verano de Europa central)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

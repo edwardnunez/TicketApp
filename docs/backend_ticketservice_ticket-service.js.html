@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: backend/ticketservice/ticket-service.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: backend/ticketservice/ticket-service.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import express from 'express';
+import mongoose from 'mongoose';
+import cors from 'cors';
+import Ticket from './ticket-model.js';
+import crypto from 'crypto';
+import QRCode from 'qrcode';
+import axios from 'axios';
+import nodemailer from 'nodemailer';
+
+const app = express();
+const port = 8002;
+
+app.use(express.json());
+app.use(cors());
+
+const EVENT_SERVICE_URL = process.env.EVENT_SERVICE_URL || "http://localhost:8003";
+
+const mongoUri = process.env.MONGODB_URI || "mongodb://localhost:27017/ticketdb";
+mongoose.connect(mongoUri, { useNewUrlParser: true, useUnifiedTopology: true });
+
+/**
+ * Nodemailer transporter configuration for sending emails
+ */
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || 'smtp.gmail.com',
+  port: process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT) : 587,
+  secure: false,
+  auth: {
+    user: process.env.SMTP_USER || 'tu_email@gmail.com',
+    pass: process.env.SMTP_PASS || 'tu_contraseña',
+  },
+  tls: {
+    rejectUnauthorized: false
+  }
+});
+
+/**
+ * Sends purchase confirmation email to users
+ * @param {Object} params - Email parameters
+ * @param {string} params.to - Recipient email address
+ * @param {string} params.subject - Email subject
+ * @param {string} params.html - Email HTML content
+ */
+async function enviarEmailConfirmacionCompra({ to, subject, html }) {
+  const mailOptions = {
+    from: process.env.SMTP_FROM || 'TicketApp &lt;no-reply@ticketapp.com>',
+    to,
+    subject,
+    html,
+  };
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log('Email de confirmación enviado a', to);
+  } catch (err) {
+    console.error('Error enviando email de confirmación:', err);
+  }
+}
+
+/**
+ * Generates a unique ticket number
+ * @returns {string} Unique ticket number
+ */
+const generateTicketNumber = () => {
+  const timestamp = Date.now().toString(36);
+  const random = Math.random().toString(36).substring(2, 8);
+  return `TKT-${timestamp}-${random}`.toUpperCase();
+};
+
+/**
+ * Generates a validation code for ticket verification
+ * @returns {string} Hexadecimal validation code
+ */
+const generateValidationCode = () => {
+  return crypto.randomBytes(16).toString('hex').toUpperCase();
+};
+
+// Función para generar datos del QR
+const generateQRData = (ticket) => {
+  return JSON.stringify({
+    ticketId: ticket._id,
+    ticketNumber: ticket.ticketNumber,
+    eventId: ticket.eventId,
+    userId: ticket.userId,
+    validationCode: ticket.validationCode,
+    purchaseDate: ticket.purchasedAt,
+    status: ticket.status,
+    quantity: ticket.quantity,
+    
+    seats: ticket.selectedSeats || []
+  });
+};
+
+// Función para generar QR code como string base64
+const generateQRCode = async (data) => {
+  try {
+    const qrString = await QRCode.toDataURL(data, {
+      type: 'image/png',
+      width: 300,
+      margin: 2,
+      color: {
+        dark: '#000000',
+        light: '#FFFFFF'
+      }
+    });
+    return qrString;
+  } catch (error) {
+    console.error('Error generando QR:', error);
+    throw new Error('No se pudo generar el código QR');
+  }
+};
+
+
+// Middleware para validación de ObjectId
+const validateObjectId = (req, res, next) => {
+  const { id, userId, eventId } = req.params;
+  const idToValidate = id || userId || eventId;
+  
+  if (idToValidate &amp;&amp; !mongoose.Types.ObjectId.isValid(idToValidate)) {
+    return res.status(400).json({ 
+      error: "ID inválido", 
+      message: "El ID proporcionado no es válido" 
+    });
+  }
+  next();
+};
+
+// Función auxiliar para obtener información de eventos
+const getEventDetails = async (eventId) => {
+  try {
+    const response = await axios.get(`${EVENT_SERVICE_URL}/events/${eventId}`);
+    return response.data;
+  } catch (error) {
+    console.warn(`No se pudo obtener información del evento ${eventId}:`, error.message);
+    return {
+      _id: eventId,
+      name: "Evento no disponible",
+      date: null,
+      location: "Ubicación no disponible",
+      image: null,
+      description: null
+    };
+  }
+};
+
+//obtener asientos ocupados por evento
+app.get('/tickets/occupied/:eventId', validateObjectId, async (req, res) => {
+  try {
+    const { eventId } = req.params;
+
+    const occupiedTickets = await Ticket.find({
+      eventId: new mongoose.Types.ObjectId(eventId),
+      status: { $in: ['paid', 'pending'] } // Incluir tickets pagados y pendientes
+    }).select('selectedSeats').lean();
+
+    // Extraer todos los IDs de asientos ocupados
+    const occupiedSeats = [];
+    occupiedTickets.forEach(ticket => {
+      if (ticket.selectedSeats &amp;&amp; ticket.selectedSeats.length > 0) {
+        ticket.selectedSeats.forEach(seat => {
+          occupiedSeats.push(seat.id);
+        });
+      }
+    });
+
+    res.json({
+      success: true,
+      occupiedSeats: [...new Set(occupiedSeats)],
+      count: occupiedSeats.length
+    });
+
+  } catch (error) {
+    console.error('Error obteniendo asientos ocupados:', error);
+    res.status(500).json({
+      error: "Error interno del servidor",
+      message: "No se pudieron obtener los asientos ocupados"
+    });
+  }
+});
+
+// Comprar tickets con generación de QR
+app.post('/tickets/purchase', async (req, res) => {
+  try {
+    const { 
+      userId, 
+      eventId, 
+      ticketType, 
+      quantity, 
+      price, 
+      customerInfo, 
+      selectedSeats,
+      generalAdmissionSeats, // Nuevo campo para asientos de pista
+      usesSpecificSeats,
+      paymentInfo,
+      metadata
+    } = req.body;
+
+    // Validaciones básicas
+    if (!userId || !eventId || !quantity || !price || !customerInfo) {
+      return res.status(400).json({
+        error: "Campos requeridos faltantes",
+        message: "userId, eventId, quantity, price y customerInfo son requeridos"
+      });
+    }
+
+    if (quantity &lt; 1 || quantity > 6) {
+      return res.status(400).json({
+        error: "Cantidad inválida",
+        message: "La cantidad debe estar entre 1 y 6 tickets"
+      });
+    }
+
+    // Generar identificadores únicos
+    const ticketNumber = generateTicketNumber();
+    const validationCode = generateValidationCode();
+
+    // Combinar asientos numerados y de pista en un solo array
+    let allSelectedSeats = [];
+    
+    // Agregar asientos numerados si existen
+    if (selectedSeats &amp;&amp; selectedSeats.length > 0) {
+      allSelectedSeats = [...allSelectedSeats, ...selectedSeats];
+    }
+    
+    // Agregar asientos de pista si existen
+    if (generalAdmissionSeats &amp;&amp; generalAdmissionSeats.length > 0) {
+      // Convertir asientos de pista al formato esperado por el schema
+      const formattedGeneralSeats = generalAdmissionSeats.map(seat => ({
+        id: seat.id,
+        sectionId: seat.section || seat.sectionId || 'pista',
+        row: null, // Los asientos de pista no tienen fila específica
+        seat: null, // Los asientos de pista no tienen asiento específico
+        price: seat.price,
+        isGeneralAdmission: true
+      }));
+      
+      allSelectedSeats = [...allSelectedSeats, ...formattedGeneralSeats];
+    }
+
+    console.log('Asientos procesados para guardado:', allSelectedSeats); // Para debugging
+
+    // Crear el ticket inicial CON qrCode temporal
+    const newTicket = new Ticket({
+      userId,
+      eventId,
+      price,
+      quantity,
+      selectedSeats: allSelectedSeats, // Usar el array combinado
+      status: 'paid',
+      customerInfo,
+      paymentInfo: paymentInfo || {
+        method: 'demo',
+        transactionId: `TXN-${Date.now()}`
+      },
+      metadata: {
+        ...metadata,
+        usesSpecificSeats: usesSpecificSeats || false,
+        hasGeneralAdmission: generalAdmissionSeats &amp;&amp; generalAdmissionSeats.length > 0,
+        hasNumberedSeats: selectedSeats &amp;&amp; selectedSeats.length > 0
+      },
+      ticketNumber,
+      validationCode,
+      qrCode: 'temp' // QR temporal para evitar el error de validación
+    });
+
+    // Guardar el ticket para obtener el _id
+    const savedTicket = await newTicket.save();
+
+    // Generar datos del QR con el ticket guardado
+    const qrData = generateQRData(savedTicket);
+    const qrCodeString = await generateQRCode(qrData);
+
+    // Actualizar el ticket con el QR generado
+    savedTicket.qrCode = qrCodeString;
+    await savedTicket.save();
+
+    // Generar ID de compra para mostrar al usuario
+    const purchaseId = `TKT-${savedTicket._id.toString().slice(-8).toUpperCase()}`;
+
+    // === ENVÍO DE EMAIL DE CONFIRMACIÓN ===
+    // Obtener email del comprador
+    let emailDestino = savedTicket.customerInfo?.email;
+    if (!emailDestino &amp;&amp; savedTicket.userId) {
+      // Buscar email del usuario en el servicio de usuarios
+      try {
+        const userRes = await axios.get(`${process.env.USER_SERVICE_URL || 'http://localhost:8001'}/users/search?userId=${savedTicket.userId}`);
+        emailDestino = userRes.data.email;
+      } catch (err) {
+        console.warn('No se pudo obtener el email del usuario:', err.message);
+      }
+    }
+    if (emailDestino) {
+      // Obtener detalles del evento para el email
+      let evento = null;
+      try {
+        evento = await getEventDetails(savedTicket.eventId);
+      } catch (err) {
+        console.warn('No se pudo obtener detalles del evento:', err.message);
+      }
+      // Construir HTML del email
+      const html = `
+        &lt;h2>¡Gracias por tu compra en TicketApp!&lt;/h2>
+        &lt;p>Has comprado &lt;b>${savedTicket.quantity}&lt;/b> entrada(s) para el evento &lt;b>${evento?.name || 'Evento'}&lt;/b>.&lt;/p>
+        &lt;ul>
+          &lt;li>&lt;b>Fecha:&lt;/b> ${evento?.date ? new Date(evento.date).toLocaleString() : 'Sin fecha'}&lt;/li>
+          &lt;li>&lt;b>Ubicación:&lt;/b> ${evento?.location?.name || 'Sin ubicación'}&lt;/li>
+
+          &lt;li>&lt;b>Número de ticket:&lt;/b> ${savedTicket.ticketNumber}&lt;/li>
+        &lt;/ul>
+        &lt;p>Adjunto encontrarás el código QR de tu entrada:&lt;/p>
+        &lt;img src="${qrCodeString}" alt="QR de tu entrada" style="width:200px;" />
+        &lt;p>Guarda este email y presenta el QR en la entrada del evento.&lt;/p>
+        &lt;hr/>
+        &lt;p>Si tienes dudas, responde a este correo o contacta con soporte.&lt;/p>
+      `;
+      await enviarEmailConfirmacionCompra({
+        to: emailDestino,
+        subject: `Confirmación de compra - ${evento?.name || 'Evento'}`,
+        html,
+      });
+    } else {
+      console.warn('No se pudo enviar email de confirmación: email no disponible');
+    }
+    // === FIN EMAIL ===
+
+    res.status(201).json({
+      success: true,
+      message: "Tickets comprados exitosamente",
+      ticket: {
+        ...savedTicket.toObject(),
+        qrCode: qrCodeString
+      },
+      ticketId: purchaseId,
+      qrCode: qrCodeString
+    });
+
+  } catch (error) {
+    console.error('Error comprando tickets:', error);
+    res.status(500).json({
+      error: "Error interno del servidor",
+      message: "No se pudo completar la compra",
+      details: error.message
+    });
+  }
+});
+
+app.get('/tickets/:id', validateObjectId, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const ticket = await Ticket.findById(id).lean();
+
+    if (!ticket) {
+      return res.status(404).json({
+        error: "Ticket no encontrado",
+        message: "El ticket solicitado no existe"
+      });
+    }
+
+    res.json({
+      success: true,
+      ticket
+    });
+
+  } catch (error) {
+    console.error('Error obteniendo ticket:', error);
+    res.status(500).json({
+      error: "Error interno del servidor",
+      message: "No se pudo obtener el ticket"
+    });
+  }
+});
+
+// Obtener QR de un ticket específico
+app.get('/tickets/:id/qr', validateObjectId, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const ticket = await Ticket.findById(id).select('qrCode ticketNumber status').lean();
+
+    if (!ticket) {
+      return res.status(404).json({
+        error: "Ticket no encontrado",
+        message: "El ticket solicitado no existe"
+      });
+    }
+
+    if (!ticket.qrCode) {
+      return res.status(404).json({
+        error: "QR no disponible",
+        message: "Este ticket no tiene un código QR generado"
+      });
+    }
+
+    res.json({
+      success: true,
+      qrCode: ticket.qrCode,
+      ticketNumber: ticket.ticketNumber,
+      status: ticket.status
+    });
+
+  } catch (error) {
+    console.error('Error obteniendo QR del ticket:', error);
+    res.status(500).json({
+      error: "Error interno del servidor",
+      message: "No se pudo obtener el código QR"
+    });
+  }
+});
+
+// GET /tickets/user/:userId - Obtener tickets del usuario (SIN información de eventos)
+app.get('/tickets/user/:userId', validateObjectId, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { status, eventId } = req.query;
+
+    let query = { userId };
+    
+    if (status &amp;&amp; ['pending', 'paid', 'cancelled'].includes(status)) {
+      query.status = status;
+    }
+    
+    if (eventId &amp;&amp; mongoose.Types.ObjectId.isValid(eventId)) {
+      query.eventId = eventId;
+    }
+
+    const tickets = await Ticket.find(query)
+      .sort({ purchasedAt: -1 })
+      .lean();
+
+    res.json({
+      success: true,
+      tickets,
+      count: tickets.length
+    });
+
+  } catch (error) {
+    console.error('Error obteniendo tickets del usuario:', error);
+    res.status(500).json({
+      error: "Error interno del servidor",
+      message: "No se pudieron obtener los tickets"
+    });
+  }
+});
+
+// GET /tickets/user/:userId/details - Obtener tickets del usuario CON información de eventos
+app.get('/tickets/user/:userId/details', validateObjectId, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { status, eventId, limit = 50 } = req.query;
+
+    let query = { userId };
+    
+    if (status &amp;&amp; ['pending', 'paid', 'cancelled'].includes(status)) {
+      query.status = status;
+    }
+    
+    if (eventId &amp;&amp; mongoose.Types.ObjectId.isValid(eventId)) {
+      query.eventId = eventId;
+    }
+
+    const tickets = await Ticket.find(query)
+      .sort({ purchasedAt: -1 })
+      .limit(parseInt(limit))
+      .lean();
+
+    // Obtener información de eventos únicos
+    const uniqueEventIds = [...new Set(tickets.map(ticket => ticket.eventId.toString()))];
+    const eventsInfo = {};
+
+    // Obtener información de todos los eventos en paralelo
+    const eventPromises = uniqueEventIds.map(async (eventId) => {
+      const eventInfo = await getEventDetails(eventId);
+      eventsInfo[eventId] = eventInfo;
+    });
+
+    await Promise.all(eventPromises);
+
+    // Agregar información del evento a cada ticket
+    const ticketsWithEventInfo = tickets.map(ticket => ({
+      ...ticket,
+      event: eventsInfo[ticket.eventId.toString()]
+    }));
+
+    // Calcular estadísticas
+    const stats = {
+      totalTickets: tickets.length,
+      totalSpent: tickets
+        .filter(t => t.status === 'paid')
+        .reduce((sum, t) => sum + (t.price * t.quantity), 0),
+      activeTickets: tickets.filter(t => t.status === 'paid').length,
+      pendingTickets: tickets.filter(t => t.status === 'pending').length,
+      cancelledTickets: tickets.filter(t => t.status === 'cancelled').length,
+      
+    };
+
+    res.json({
+      success: true,
+      tickets: ticketsWithEventInfo,
+      count: tickets.length,
+      statistics: stats
+    });
+
+  } catch (error) {
+    console.error('Error obteniendo tickets con detalles:', error);
+    res.status(500).json({
+      error: "Error interno del servidor",
+      message: "No se pudieron obtener los tickets con detalles"
+    });
+  }
+});
+
+app.get('/tickets/event/:eventId', validateObjectId, async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const { status } = req.query;
+
+    let query = { eventId };
+    
+    if (status &amp;&amp; ['pending', 'paid', 'cancelled'].includes(status)) {
+      query.status = status;
+    }
+
+    const tickets = await Ticket.find(query)
+      .sort({ purchasedAt: -1 })
+      .lean();
+
+    // Estadísticas del evento
+    const stats = await Ticket.aggregate([
+      { $match: { eventId: new mongoose.Types.ObjectId(eventId) } },
+      {
+        $group: {
+          _id: '$status',
+          totalTickets: { $sum: '$quantity' },
+          totalRevenue: { $sum: { $multiply: ['$price', '$quantity'] } },
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    res.json({
+      success: true,
+      tickets,
+      count: tickets.length,
+      statistics: stats
+    });
+
+  } catch (error) {
+    console.error('Error obteniendo tickets del evento:', error);
+    res.status(500).json({
+      error: "Error interno del servidor",
+      message: "No se pudieron obtener los tickets del evento"
+    });
+  }
+});
+
+app.get('/tickets/:id', validateObjectId, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const ticket = await Ticket.findById(id).lean();
+
+    if (!ticket) {
+      return res.status(404).json({
+        error: "Ticket no encontrado",
+        message: "El ticket solicitado no existe"
+      });
+    }
+
+    res.json({
+      success: true,
+      ticket
+    });
+
+  } catch (error) {
+    console.error('Error obteniendo ticket:', error);
+    res.status(500).json({
+      error: "Error interno del servidor",
+      message: "No se pudo obtener el ticket"
+    });
+  }
+});
+
+app.delete("/tickets/event/:eventId", async (req, res) => {
+  try {
+    const { eventId } = req.params;
+
+    // Eliminar todos los tickets del evento
+    const result = await Ticket.deleteMany({ eventId: eventId });
+
+    console.log(`Eliminados ${result.deletedCount} tickets para el evento ${eventId}`);
+
+    res.status(200).json({
+      success: true,
+      message: `Eliminados ${result.deletedCount} tickets del evento`,
+      deletedCount: result.deletedCount,
+      eventId: eventId
+    });
+
+  } catch (error) {
+    console.error("Error eliminando tickets por evento:", error);
+    res.status(500).json({ 
+      error: "Error interno del servidor", 
+      details: error.message 
+    });
+  }
+});
+
+app.delete('/tickets/:id', validateObjectId, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const ticket = await Ticket.findById(id);
+
+    if (!ticket) {
+      return res.status(404).json({
+        error: "Ticket no encontrado",
+        message: "El ticket que intentas cancelar no existe"
+      });
+    }
+
+    // Validar que el ticket no esté ya cancelado
+    if (ticket.status === 'cancelled') {
+      return res.status(400).json({
+        error: "Ticket ya cancelado",
+        message: "Este ticket ya ha sido cancelado anteriormente"
+      });
+    }
+
+    // En lugar de eliminar, cambiar estado a cancelado
+    ticket.status = 'cancelled';
+    await ticket.save();
+
+    res.json({
+      success: true,
+      message: "Ticket cancelado exitosamente",
+      ticket
+    });
+
+  } catch (error) {
+    console.error('Error cancelando ticket:', error);
+    res.status(500).json({
+      error: "Error interno del servidor",
+      message: "No se pudo cancelar el ticket"
+    });
+  }
+});
+
+// GET /tickets/user/:userId/events - Obtener eventos únicos con tickets del usuario
+app.get('/tickets/user/:userId/events', validateObjectId, async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const events = await Ticket.aggregate([
+      { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+      {
+        $group: {
+          _id: '$eventId',
+          totalTickets: { $sum: '$quantity' },
+          totalSpent: { $sum: { $multiply: ['$price', '$quantity'] } },
+  
+          latestPurchase: { $max: '$purchasedAt' },
+          tickets: { $push: '$$ROOT' }
+        }
+      },
+      { $sort: { latestPurchase: -1 } }
+    ]);
+
+    res.json({
+      success: true,
+      events,
+      count: events.length
+    });
+
+  } catch (error) {
+    console.error('Error obteniendo eventos del usuario:', error);
+    res.status(500).json({
+      error: "Error interno del servidor",
+      message: "No se pudieron obtener los eventos"
+    });
+  }
+});
+
+// GET /tickets/admin/statistics - Estadísticas generales para administradores
+app.get('/tickets/admin/statistics', async (req, res) => {
+  try {
+    const { eventType, dateFrom, dateTo, status } = req.query;
+
+    // Construir filtros
+    let matchFilters = {};
+    
+    if (status &amp;&amp; ['pending', 'paid', 'cancelled'].includes(status)) {
+      matchFilters.status = status;
+    }
+    
+    if (dateFrom || dateTo) {
+      matchFilters.purchasedAt = {};
+      if (dateFrom) {
+        matchFilters.purchasedAt.$gte = new Date(dateFrom);
+      }
+      if (dateTo) {
+        matchFilters.purchasedAt.$lte = new Date(dateTo);
+      }
+    }
+
+    // Obtener estadísticas generales
+    const generalStats = await Ticket.aggregate([
+      { $match: matchFilters },
+      {
+        $group: {
+          _id: null,
+          totalTickets: { $sum: '$quantity' },
+          totalRevenue: { $sum: { $multiply: ['$price', '$quantity'] } },
+          totalTransactions: { $sum: 1 },
+          paidTickets: {
+            $sum: {
+              $cond: [{ $eq: ['$status', 'paid'] }, '$quantity', 0]
+            }
+          },
+          pendingTickets: {
+            $sum: {
+              $cond: [{ $eq: ['$status', 'pending'] }, '$quantity', 0]
+            }
+          },
+          cancelledTickets: {
+            $sum: {
+              $cond: [{ $eq: ['$status', 'cancelled'] }, '$quantity', 0]
+            }
+          },
+          paidRevenue: {
+            $sum: {
+              $cond: [
+                { $eq: ['$status', 'paid'] },
+                { $multiply: ['$price', '$quantity'] },
+                0
+              ]
+            }
+          }
+        }
+      }
+    ]);
+
+    // Obtener estadísticas por evento
+    const eventStats = await Ticket.aggregate([
+      { $match: matchFilters },
+      {
+        $group: {
+          _id: '$eventId',
+          totalTickets: { $sum: '$quantity' },
+          totalRevenue: { $sum: { $multiply: ['$price', '$quantity'] } },
+          totalTransactions: { $sum: 1 },
+          paidTickets: {
+            $sum: {
+              $cond: [{ $eq: ['$status', 'paid'] }, '$quantity', 0]
+            }
+          },
+          paidRevenue: {
+            $sum: {
+              $cond: [
+                { $eq: ['$status', 'paid'] },
+                { $multiply: ['$price', '$quantity'] },
+                0
+              ]
+            }
+          },
+          latestPurchase: { $max: '$purchasedAt' }
+        }
+      },
+      { $sort: { totalRevenue: -1 } }
+    ]);
+
+    // Obtener información de eventos para las estadísticas
+    const eventIds = eventStats.map(stat => stat._id);
+    const eventsInfo = {};
+    
+    if (eventIds.length > 0) {
+      const eventPromises = eventIds.map(async (eventId) => {
+        try {
+          const eventInfo = await getEventDetails(eventId);
+          eventsInfo[eventId.toString()] = eventInfo;
+        } catch (error) {
+          console.warn(`No se pudo obtener información del evento ${eventId}:`, error.message);
+          eventsInfo[eventId.toString()] = {
+            _id: eventId,
+            name: "Evento no disponible",
+            type: "unknown",
+            date: null,
+            location: { name: "Ubicación no disponible" }
+          };
+        }
+      });
+      
+      await Promise.all(eventPromises);
+    }
+
+    // Combinar estadísticas con información de eventos
+    const eventStatsWithInfo = eventStats.map(stat => ({
+      ...stat,
+      event: eventsInfo[stat._id.toString()] || {
+        _id: stat._id,
+        name: "Evento no disponible",
+        type: "unknown",
+        date: null,
+        location: { name: "Ubicación no disponible" }
+      }
+    }));
+
+    // Filtrar por tipo de evento si se especifica
+    let filteredEventStats = eventStatsWithInfo;
+    if (eventType &amp;&amp; eventType !== 'all') {
+      filteredEventStats = eventStatsWithInfo.filter(stat => 
+        stat.event.type === eventType
+      );
+    }
+
+    // Estadísticas por tipo de evento
+    const typeStats = await Ticket.aggregate([
+      { $match: matchFilters },
+      {
+        $lookup: {
+          from: 'events',
+          localField: 'eventId',
+          foreignField: '_id',
+          as: 'event'
+        }
+      },
+      { $unwind: { path: '$event', preserveNullAndEmptyArrays: true } },
+      {
+        $group: {
+          _id: '$event.type',
+          totalTickets: { $sum: '$quantity' },
+          totalRevenue: { $sum: { $multiply: ['$price', '$quantity'] } },
+          totalTransactions: { $sum: 1 },
+          paidRevenue: {
+            $sum: {
+              $cond: [
+                { $eq: ['$status', 'paid'] },
+                { $multiply: ['$price', '$quantity'] },
+                0
+              ]
+            }
+          }
+        }
+      },
+      { $sort: { totalRevenue: -1 } }
+    ]);
+
+    res.json({
+      success: true,
+      statistics: {
+        general: generalStats[0] || {
+          totalTickets: 0,
+          totalRevenue: 0,
+          totalTransactions: 0,
+          paidTickets: 0,
+          pendingTickets: 0,
+          cancelledTickets: 0,
+          paidRevenue: 0
+        },
+        byEvent: filteredEventStats,
+        byType: typeStats,
+        filters: {
+          eventType,
+          dateFrom,
+          dateTo,
+          status
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Error obteniendo estadísticas de administrador:', error);
+    res.status(500).json({
+      error: "Error interno del servidor",
+      message: "No se pudieron obtener las estadísticas"
+    });
+  }
+});
+
+
+// Middleware de manejo de errores
+app.use((err, req, res, next) => {
+  console.error('Error no manejado:', err);
+  res.status(500).json({
+    error: "Error interno del servidor",
+    message: "Algo salió mal"
+  });
+});
+
+// Ruta 404
+app.use('*', (req, res) => {
+  res.status(404).json({
+    error: "Ruta no encontrada",
+    message: "La ruta solicitada no existe"
+  });
+});
+
+const server = app.listen(port, () => {
+  console.log(`Tickets Service listening at http://localhost:${port}`);
+});
+
+server.on("close", () => mongoose.connection.close());
+
+export default server;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-components_colorscheme.html">components/colorscheme</a></li><li><a href="module-hooks_useSeatMapViability.html">hooks/useSeatMapViability</a></li><li><a href="module-models_Event.html">models/Event</a></li><li><a href="module-models_Location.html">models/Location</a></li><li><a href="module-models_SeatMap.html">models/SeatMap</a></li><li><a href="module-models_Ticket.html">models/Ticket</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-services_UserService.html">services/UserService</a></li><li><a href="module-utils_authSession.html">utils/authSession</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AboutUs">AboutUs</a></li><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#AdminStatistics">AdminStatistics</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#BlockingViewSwitcher">BlockingViewSwitcher</a></li><li><a href="global.html#EditProfile">EditProfile</a></li><li><a href="global.html#EditableSeatRenderer">EditableSeatRenderer</a></li><li><a href="global.html#ErrorPage">ErrorPage</a></li><li><a href="global.html#EventCreation">EventCreation</a></li><li><a href="global.html#EventDetails">EventDetails</a></li><li><a href="global.html#FramedImage">FramedImage</a></li><li><a href="global.html#GeneralAdmissionRenderer">GeneralAdmissionRenderer</a></li><li><a href="global.html#GenericSeatRenderer">GenericSeatRenderer</a></li><li><a href="global.html#HelpCenter">HelpCenter</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#ManualBlockingSelection">ManualBlockingSelection</a></li><li><a href="global.html#ManualSeatSelection">ManualSeatSelection</a></li><li><a href="global.html#Navbar">Navbar</a></li><li><a href="global.html#Profile">Profile</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#RowPricingTable">RowPricingTable</a></li><li><a href="global.html#SeatMapContainer">SeatMapContainer</a></li><li><a href="global.html#SeatRenderer">SeatRenderer</a></li><li><a href="global.html#SeatSelectionViewSwitcher">SeatSelectionViewSwitcher</a></li><li><a href="global.html#SectionShapeRenderer">SectionShapeRenderer</a></li><li><a href="global.html#SelectionTopBar">SelectionTopBar</a></li><li><a href="global.html#TicketPurchase">TicketPurchase</a></li><li><a href="global.html#VenueStageRenderer">VenueStageRenderer</a></li><li><a href="global.html#ZoomControls">ZoomControls</a></li><li><a href="global.html#enviarEmailConfirmacionCompra">enviarEmailConfirmacionCompra</a></li><li><a href="global.html#generateTicketNumber">generateTicketNumber</a></li><li><a href="global.html#generateValidationCode">generateValidationCode</a></li><li><a href="global.html#returnError">returnError</a></li><li><a href="global.html#transporter">transporter</a></li><li><a href="global.html#useAdvancedZoomPan">useAdvancedZoomPan</a></li><li><a href="global.html#useDeviceDetection">useDeviceDetection</a></li><li><a href="global.html#useUserRole">useUserRole</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu Oct 23 2025 19:08:08 GMT+0200 (hora de verano de Europa central)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
