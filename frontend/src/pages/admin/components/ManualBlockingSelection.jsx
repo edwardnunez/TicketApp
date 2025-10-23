@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { Card, Select, InputNumber, Button, Typography, Alert, List, Tag, Space, notification, Switch } from 'antd';
-import { PlusOutlined, DeleteOutlined, LockOutlined, UnlockOutlined, StopOutlined } from '@ant-design/icons';
+import { Card, Select, InputNumber, Button, Typography, Alert, Tag, Space, notification, Switch } from 'antd';
+import { LockOutlined, UnlockOutlined, StopOutlined } from '@ant-design/icons';
 import { COLORS } from '../../../components/colorscheme';
 
 const { Title, Text } = Typography;

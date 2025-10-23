@@ -220,8 +220,6 @@ const MainSeatMapContainer = ({
   const {
     zoomLevel,
     panOffset,
-    isDragging,
-    isTouching,
     isInteracting,
     zoomIn: handleZoomIn,
     zoomOut: handleZoomOut,
