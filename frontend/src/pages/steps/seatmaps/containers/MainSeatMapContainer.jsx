@@ -866,8 +866,8 @@ const MainSeatMapContainer = ({
         {/* Controles de zoom */}
         <div style={{
           position: 'absolute',
-          top: isAdminMode ? '250px' : ((!isAdminMode && !isPreviewMode) ? '70px' : '10px'),
-          right: isAdminMode ? '120px' : '10px',
+          top: isAdminMode ? (isMobile ? '10px' : '250px') : ((!isAdminMode && !isPreviewMode) ? '70px' : '10px'),
+          right: isMobile ? '10px' : (isAdminMode ? '120px' : '10px'),
           zIndex: 150
         }}>
           <ZoomControls
