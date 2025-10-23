@@ -937,59 +937,133 @@
 
   .seatmap-content {
     min-height: 120vh; /* Usar altura más grande en móvil */
+    overflow: auto !important; /* Permitir scroll en móvil */
+    justify-content: flex-start !important; /* Alinear al inicio para que el scroll funcione */
+    align-items: flex-start !important;
+    -webkit-overflow-scrolling: touch; /* Scroll suave en iOS */
+  }
+
+  .seatmap-transform {
+    min-width: 1400px !important; /* Ancho mucho más grande para acomodar todo sin comprimir */
+    transform-origin: top left !important; /* Origen de transformación en esquina superior izquierda */
   }
 
   .responsive-seatmap-container {
     padding: 16px; /* Mantener consistente con desktop */
   }
+
+  /* Mantener el grid layout con espacio adecuado para las secciones Y el campo */
   .football-stadium-layout {
     grid-template-areas:
-      "north"
-      "center"
-      "west"
-      "east"
-      "south"
-      "vip";
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto auto auto auto;
-    gap: 14px; /* Mantener gap similar a desktop (era 16px) */
-    padding: 18px; /* Mantener padding más cercano a desktop (era 24px) */
+      "north north north"
+      "west center east"
+      "south south south"
+      "vip vip vip";
+    grid-template-columns: 1fr 650px 1fr; /* Columna central FIJA de 650px para el campo completo */
+    grid-template-rows: auto auto auto auto;
+    gap: 40px; /* Gap mucho más grande para mejor separación */
+    padding: 40px; /* Padding más grande */
+    width: fit-content; /* Ajustar al contenido */
+    min-width: 1400px; /* Ancho mínimo mucho más grande para acomodar todo */
+    max-width: none; /* Sin límite máximo */
   }
-  
-  /* Secciones laterales sin rotación - se maneja por lógica de renderizado */
+
+  /* Garantizar espacio para el campo/escenario - TAMAÑO COMPLETO */
+  .field-container,
+  .stage-container {
+    min-width: 650px; /* Ancho mínimo garantizado para el campo/escenario - TAMAÑO COMPLETO */
+    min-height: 420px; /* Alto mínimo garantizado */
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  /* Secciones laterales mantienen espacio AMPLIO */
   .tribuna-oeste {
-    /* Sin rotación - se maneja por lógica de renderizado */
+    min-width: 300px; /* Ancho mínimo amplio para las secciones */
+    width: auto; /* Ajustar al contenido */
   }
-  
+
   .tribuna-este {
-    /* Sin rotación - se maneja por lógica de renderizado */
+    min-width: 300px; /* Ancho mínimo amplio para las secciones */
+    width: auto; /* Ajustar al contenido */
   }
-  
+
+  /* Secciones norte y sur ALINEADAS con el campo/escenario central */
+  .tribuna-norte,
+  .tribuna-sur {
+    width: auto;
+    max-width: 650px; /* Ancho máximo igual a la columna central para alineación */
+    min-width: 600px; /* Ancho mínimo amplio para evitar compresión */
+    justify-self: center; /* Centrar dentro de su área del grid */
+  }
+
   .concert-stadium-layout {
     grid-template-areas:
-      "north"
-      "center"
-      "west"
-      "east"
-      "south"
-      "pit"
-      "vip";
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto auto auto auto auto;
-    gap: 14px; /* Mantener gap consistente */
-    padding: 18px; /* Mantener padding consistente */
+      "north north north"
+      "west center east"
+      "pit pit pit"
+      "south south south"
+      "vip vip vip";
+    grid-template-columns: 1fr 350px 1fr; /* Columna central FIJA de 350px para el escenario completo */
+    grid-template-rows: auto auto auto auto auto;
+    gap: 40px; /* Gap mucho más grande para mejor separación */
+    padding: 40px; /* Padding más grande */
+    width: fit-content; /* Ajustar al contenido */
+    min-width: 1400px; /* Ancho mínimo mucho más grande para acomodar todo */
+    max-width: none; /* Sin límite máximo */
+  }
+
+  /* Alinear secciones norte y sur con el escenario en layout de concierto */
+  .concert-stadium-layout .tribuna-norte,
+  .concert-stadium-layout .tribuna-sur {
+    max-width: 350px; /* Ancho máximo igual a la columna central del escenario */
+    min-width: 300px;
+    justify-self: center; /* Centrar dentro de su área del grid */
+  }
+
+  /* Alinear pit area con el escenario */
+  .concert-stadium-layout .pit-area {
+    max-width: 350px;
+    min-width: 300px;
+    justify-self: center;
   }
   
   .concert-theater-layout {
-    gap: 16px;
-    padding: 16px;
+    gap: 40px;
+    padding: 40px;
+    min-width: 1200px; /* Ancho mínimo grande */
   }
-  
+
   .cinema-layout,
   .theater-layout,
   .arena-layout {
-    gap: 12px;
-    padding: 16px;
+    gap: 40px;
+    padding: 40px;
+    min-width: 1200px; /* Ancho mínimo grande para todos los layouts */
+  }
+
+  /* Aumentar espacio para secciones de teatro/cine/arena */
+  .orchestra-section,
+  .mezzanine-section,
+  .balcony-section,
+  .boxes-section,
+  .front-section,
+  .middle-section,
+  .back-section,
+  .premium-section,
+  .lower-sections,
+  .upper-sections,
+  .pista-section,
+  .pit-area {
+    min-width: 500px; /* Ancho mínimo amplio para todas las secciones */
+  }
+
+  /* Aumentar espacio para gradas */
+  .gradas-container {
+    min-width: 700px;
+    gap: 30px;
   }
   
   .seatmap-header {

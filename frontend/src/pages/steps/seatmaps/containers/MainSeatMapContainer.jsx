@@ -32,7 +32,17 @@ const { Title, Text } = Typography;
  */
 const SelectionTopBar = ({ selectedSeats, maxSeats, formatPrice, event, showLegend, setShowLegend, isFullscreen, toggleFullscreen }) => {
   const totalPrice = selectedSeats.reduce((total, seat) => total + (seat.price || 0), 0);
-  
+  const [isMobile, setIsMobile] = React.useState(false);
+
+  React.useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <div
       style={{
@@ -43,80 +53,136 @@ const SelectionTopBar = ({ selectedSeats, maxSeats, formatPrice, event, showLege
         zIndex: 100,
         backgroundColor: 'rgba(255, 255, 255, 0.95)',
         backdropFilter: 'blur(10px)',
-        padding: '12px 16px',
+        padding: isMobile ? '10px 12px' : '12px 16px',
         borderBottom: `1px solid ${COLORS.neutral.grey2}`,
         display: 'flex',
+        flexDirection: isMobile ? 'column' : 'row',
         justifyContent: 'space-between',
-        alignItems: 'center'
+        alignItems: isMobile ? 'stretch' : 'center',
+        gap: isMobile ? '10px' : '0'
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <Title level={4} style={{ margin: 0, color: COLORS.neutral.darker }}>
+      <div style={{
+        display: 'flex',
+        flexDirection: isMobile ? 'column' : 'row',
+        alignItems: isMobile ? 'flex-start' : 'center',
+        gap: isMobile ? '4px' : '12px',
+        minWidth: 0,
+        flex: isMobile ? 'none' : 1
+      }}>
+        <Title level={4} style={{
+          margin: 0,
+          color: COLORS.neutral.darker,
+          fontSize: isMobile ? '16px' : '20px',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis'
+        }}>
           Selección de asientos
         </Title>
-        <Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
+        <Text style={{
+          color: COLORS.neutral.grey4,
+          fontSize: isMobile ? '11px' : '12px',
+          whiteSpace: isMobile ? 'normal' : 'nowrap',
+          lineHeight: '1.3'
+        }}>
           Selecciona hasta {maxSeats} asiento(s) para continuar
         </Text>
       </div>
-      
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+
+      <div style={{
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: isMobile ? '8px' : '16px',
+        flexWrap: isMobile ? 'wrap' : 'nowrap',
+        justifyContent: isMobile ? 'space-between' : 'flex-end',
+        width: isMobile ? '100%' : 'auto'
+      }}>
         {/* Información de selección */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: isMobile ? '8px' : '16px',
+          flex: isMobile ? '1 1 auto' : 'none'
+        }}>
           <div style={{ textAlign: 'center' }}>
-            <Text style={{ 
-              fontSize: '12px',
+            <Text style={{
+              fontSize: isMobile ? '10px' : '12px',
               color: COLORS.neutral.grey4,
-              display: 'block'
+              display: 'block',
+              whiteSpace: 'nowrap'
             }}>
-              Asientos seleccionados
+              Asientos
             </Text>
-            <Text style={{ 
-              fontSize: '16px',
+            <Text style={{
+              fontSize: isMobile ? '14px' : '16px',
               fontWeight: 'bold',
-              color: COLORS.primary.main
+              color: COLORS.primary.main,
+              whiteSpace: 'nowrap'
             }}>
               {selectedSeats.length} / {maxSeats}
             </Text>
           </div>
-          
+
           {selectedSeats.length > 0 && (
             <div style={{ textAlign: 'center' }}>
-              <Text style={{ 
-                fontSize: '12px',
+              <Text style={{
+                fontSize: isMobile ? '10px' : '12px',
                 color: COLORS.neutral.grey4,
-                display: 'block'
+                display: 'block',
+                whiteSpace: 'nowrap'
               }}>
                 Total
               </Text>
-              <Text style={{ 
-                fontSize: '16px',
+              <Text style={{
+                fontSize: isMobile ? '14px' : '16px',
                 fontWeight: 'bold',
-                color: COLORS.primary.main
+                color: COLORS.primary.main,
+                whiteSpace: 'nowrap'
               }}>
                 {formatPrice(totalPrice)}
               </Text>
             </div>
           )}
         </div>
-        
+
         {/* Botones de control */}
-        <Space>
-          <Button
-            size="small"
-            icon={<InfoCircleOutlined />}
-            onClick={() => setShowLegend(!showLegend)}
-            type={showLegend ? 'primary' : 'default'}
-          >
-            Leyenda
-          </Button>
-          <Button
-            size="small"
-            icon={isFullscreen ? <CompressOutlined /> : <FullscreenOutlined />}
-            onClick={toggleFullscreen}
-          >
-            {isFullscreen ? 'Salir' : 'Pantalla completa'}
-          </Button>
-        </Space>
+        {!isMobile && (
+          <Space>
+            <Button
+              size="small"
+              icon={<InfoCircleOutlined />}
+              onClick={() => setShowLegend(!showLegend)}
+              type={showLegend ? 'primary' : 'default'}
+            >
+              Leyenda
+            </Button>
+            <Button
+              size="small"
+              icon={isFullscreen ? <CompressOutlined /> : <FullscreenOutlined />}
+              onClick={toggleFullscreen}
+            >
+              {isFullscreen ? 'Salir' : 'Pantalla completa'}
+            </Button>
+          </Space>
+        )}
+        {/* En móvil, solo mostrar iconos sin texto */}
+        {isMobile && (
+          <Space size="small">
+            <Button
+              size="small"
+              icon={<InfoCircleOutlined />}
+              onClick={() => setShowLegend(!showLegend)}
+              type={showLegend ? 'primary' : 'default'}
+            />
+            <Button
+              size="small"
+              icon={isFullscreen ? <CompressOutlined /> : <FullscreenOutlined />}
+              onClick={toggleFullscreen}
+            />
+          </Space>
+        )}
       </div>
     </div>
   );
@@ -162,10 +228,10 @@ const MainSeatMapContainer = ({
     reset: handleResetZoom,
     handlers: zoomPanHandlers
   } = useAdvancedZoomPan({
-    minZoom: 0.3,
+    minZoom: 0.15,
     maxZoom: 2.5,
-    initialZoom: isMobile ? 0.5 : 0.7, // Zoom inicial más bajo en móvil
-    zoomStep: 0.2,
+    initialZoom: isMobile ? 0.25 : 0.7, // Zoom inicial más bajo en móvil para ver todo el mapa amplio
+    zoomStep: 0.15,
     enableMouseWheel: true,
     enablePinch: true,
     enablePan: true
@@ -764,13 +830,11 @@ const MainSeatMapContainer = ({
       className={`professional-seatmap-container ${isFullscreen ? 'fullscreen' : ''} ${isHighContrast ? 'high-contrast' : ''}`}
       style={{
         position: 'relative',
-        width: isPreviewMode ? '100%' : (isFullscreen ? '100%' : '90vw'),
         maxWidth: isPreviewMode ? '100%' : (isFullscreen ? '100%' : '2400px'),
-        height: isFullscreen ? '100vh' : 'auto',
-        minHeight: isPreviewMode ? '600px' : (isMobile ? '150vh' : '150vh'),
+        minHeight: isPreviewMode ? '600px' : (isMobile ? '80vh' : '150vh'),
         backgroundColor: COLORS.neutral.grey50,
         borderRadius: isFullscreen ? '0' : (isPreviewMode ? '0' : '16px'),
-        overflow: 'visible', // Restored to 'visible' to prevent content cutoff
+        overflow: 'hidden', // Cambiar a hidden para contener el contenido
         boxShadow: isFullscreen ? 'none' : (isPreviewMode ? 'none' : COLORS.shadows.xl),
         margin: isPreviewMode ? '0' : '0 auto'
       }}
@@ -825,19 +889,21 @@ const MainSeatMapContainer = ({
             position: 'relative',
             width: '100%',
             height: '100%',
-            overflow: 'auto',
-            cursor: isInteracting ? 'grabbing' : 'grab',
+            overflow: isMobile ? 'auto' : 'hidden', // En móvil permitir scroll, en desktop usar pan
+            cursor: !isMobile && isInteracting ? 'grabbing' : (isMobile ? 'auto' : 'grab'),
             display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
+            justifyContent: isMobile ? 'flex-start' : 'center',
+            alignItems: isMobile ? 'flex-start' : 'center',
             padding: 0,
             flex: 1,
-            touchAction: 'none', // Importante para gestos táctiles
+            touchAction: isMobile ? 'pan-x pan-y pinch-zoom' : 'none', // En móvil permitir scroll nativo + pinch zoom
             WebkitUserSelect: 'none',
-            userSelect: 'none'
+            userSelect: 'none',
+            WebkitOverflowScrolling: 'touch', // Scroll suave en iOS
+            minHeight: isMobile ? 'calc(80vh - 100px)' : '100%' // Restar espacio para top bar en móvil
           }}
-          onWheel={zoomPanHandlers.onWheel}
-          onMouseDown={zoomPanHandlers.onMouseDown}
+          onWheel={!isMobile ? zoomPanHandlers.onWheel : undefined}
+          onMouseDown={!isMobile ? zoomPanHandlers.onMouseDown : undefined}
           onTouchStart={zoomPanHandlers.onTouchStart}
           onTouchMove={zoomPanHandlers.onTouchMove}
           onTouchEnd={zoomPanHandlers.onTouchEnd}
@@ -845,13 +911,13 @@ const MainSeatMapContainer = ({
           <div
             className="seatmap-transform"
             style={{
-              transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`,
-              transformOrigin: 'center center',
+              transform: isMobile ? `scale(${zoomLevel})` : `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`,
+              transformOrigin: isMobile ? 'top left' : 'center center',
               transition: isInteracting ? 'none' : 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
               width: 'fit-content',
               height: 'fit-content',
               position: 'relative',
-              minWidth: 'auto',
+              minWidth: isMobile ? '1400px' : 'auto', // En móvil mantener tamaño AMPLIO para evitar apelotonamiento
               minHeight: 'auto',
               maxWidth: 'none',
               maxHeight: 'none',
