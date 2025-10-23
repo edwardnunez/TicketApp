@@ -119,8 +119,21 @@ const ManualBlockingSelection = ({
   };
 
   return (
-    <div style={{ padding: '20px 40px', maxWidth: '1200px', margin: '0 auto' }}>
-      <Title level={3} style={{ marginBottom: '24px', textAlign: 'center', color: COLORS.neutral.darker }}>
+    <div style={{
+      padding: '12px',
+      maxWidth: '100%',
+      width: '100%',
+      margin: '0 auto',
+      boxSizing: 'border-box',
+      overflow: 'hidden'
+    }}>
+      <Title level={3} style={{
+        marginBottom: '16px',
+        textAlign: 'center',
+        color: COLORS.neutral.darker,
+        fontSize: 'clamp(18px, 4vw, 24px)',
+        wordWrap: 'break-word'
+      }}>
         Control de bloqueo de asientos
       </Title>
 
@@ -129,26 +142,39 @@ const ManualBlockingSelection = ({
         description="Puedes bloquear asientos individuales o secciones completas. Los asientos bloqueados no estarán disponibles para la venta."
         type="info"
         showIcon
-        style={{ marginBottom: '24px' }}
+        style={{
+          marginBottom: '16px',
+          fontSize: 'clamp(12px, 2vw, 14px)'
+        }}
       />
 
       {/* Modo de bloqueo */}
       <Card
         style={{
-          marginBottom: '24px',
+          marginBottom: '16px',
           borderRadius: '12px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          overflow: 'hidden'
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          <Text strong>Modo de bloqueo:</Text>
-          <Space>
-            <Tag color={blockingMode === 'seat' ? 'blue' : 'default'}>Asientos individuales</Tag>
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '12px',
+          marginBottom: '16px'
+        }}>
+          <Text strong style={{ fontSize: 'clamp(14px, 3vw, 16px)' }}>Modo de bloqueo:</Text>
+          <Space wrap style={{ justifyContent: 'center' }}>
+            <Tag color={blockingMode === 'seat' ? 'blue' : 'default'} style={{ margin: '4px' }}>
+              Asientos individuales
+            </Tag>
             <Switch
               checked={blockingMode === 'section'}
               onChange={(checked) => setBlockingMode(checked ? 'section' : 'seat')}
             />
-            <Tag color={blockingMode === 'section' ? 'blue' : 'default'}>Secciones completas</Tag>
+            <Tag color={blockingMode === 'section' ? 'blue' : 'default'} style={{ margin: '4px' }}>
+              Secciones completas
+            </Tag>
           </Space>
         </div>
 
@@ -273,9 +299,10 @@ const ManualBlockingSelection = ({
 
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(min(200px, 100%), 1fr))',
               gap: '12px',
-              marginTop: '12px'
+              marginTop: '12px',
+              width: '100%'
             }}>
               {sections.map(section => {
                 const isBlocked = isSectionBlocked(section.id);
@@ -290,16 +317,40 @@ const ManualBlockingSelection = ({
                     style={{
                       borderColor: isBlocked ? '#ff4d4f' : section.color,
                       color: isBlocked ? '#fff' : '#fff',
-                      height: '60px',
+                      minHeight: '60px',
+                      height: 'auto',
+                      padding: '8px',
+                      whiteSpace: 'normal',
+                      wordWrap: 'break-word',
                       ...(isBlocked ? {} : {
                         backgroundColor: section.color
                       })
                     }}
                     block
                   >
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                      <span style={{ fontWeight: 'bold' }}>{section.name}</span>
-                      {isBlocked && <span style={{ fontSize: '11px' }}>(Bloqueada)</span>}
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '4px',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis'
+                    }}>
+                      <span style={{
+                        fontWeight: 'bold',
+                        fontSize: 'clamp(12px, 2.5vw, 14px)',
+                        wordWrap: 'break-word',
+                        textAlign: 'center'
+                      }}>
+                        {section.name}
+                      </span>
+                      {isBlocked && (
+                        <span style={{
+                          fontSize: 'clamp(10px, 2vw, 11px)'
+                        }}>
+                          (Bloqueada)
+                        </span>
+                      )}
                     </div>
                   </Button>
                 );
@@ -311,18 +362,24 @@ const ManualBlockingSelection = ({
 
       {/* Resumen de bloqueos */}
       <Card
-        title={<span style={{ fontSize: '18px', fontWeight: 'bold' }}>Resumen de bloqueos</span>}
+        title={<span style={{
+          fontSize: 'clamp(16px, 3.5vw, 18px)',
+          fontWeight: 'bold'
+        }}>
+          Resumen de bloqueos
+        </span>}
         style={{
           borderRadius: '12px',
           boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          marginTop: '24px'
+          marginTop: '16px',
+          overflow: 'hidden'
         }}
       >
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(250px, 100%), 1fr))',
           gap: '16px',
-          marginBottom: blockedSections.length > 0 ? '24px' : '0'
+          marginBottom: blockedSections.length > 0 ? '16px' : '0'
         }}>
           <div style={{
             display: 'flex',

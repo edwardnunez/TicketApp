@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Tooltip } from 'antd';
-import { 
-  CheckOutlined, 
+import { Tooltip, Button } from 'antd';
+import {
+  CheckOutlined,
   UserOutlined,
   LockOutlined,
+  UnlockOutlined,
   StarOutlined,
+  StopOutlined
 } from '@ant-design/icons';
 import { COLORS, getSeatStateColors, getContrastBorderColor, getContrastInfoBackground, getSectionLabelColor, getSectionDimensionColor, getRowLabelColor } from '../../../../components/colorscheme';
 import SectionShapeRenderer from './SectionShapeRenderer';
@@ -31,7 +33,8 @@ const ProSeatRenderer = ({
   isTablet = false,
   showTooltips = true,
   isHighContrast = false,
-  isAdminMode = false
+  isAdminMode = false,
+  onSectionToggle = null
 }) => {
   const [hoveredSeat, setHoveredSeat] = useState(null);
   const [seatSize, setSeatSize] = useState({ width: 24, height: 24, fontSize: 10 });
@@ -625,11 +628,12 @@ const ProSeatRenderer = ({
           marginBottom: '12px',
           paddingBottom: '8px',
           borderBottom: `2px solid ${COLORS.neutral.grey100}`,
-          width: '100%'
+          width: '100%',
+          position: 'relative'
         }}
       >
         {/* Nombre de la sección con indicador de color */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
           <div
             className="section-color-indicator"
             style={{
@@ -652,6 +656,28 @@ const ProSeatRenderer = ({
           >
             {sectionName}
           </span>
+
+          {/* Botón de bloqueo de sección - Solo en modo admin */}
+          {isAdminMode && onSectionToggle && (
+            <Button
+              type={sectionBlocked ? "primary" : "default"}
+              danger={sectionBlocked}
+              size="small"
+              icon={sectionBlocked ? <UnlockOutlined /> : <StopOutlined />}
+              onClick={(e) => {
+                e.stopPropagation();
+                onSectionToggle(sectionId);
+              }}
+              style={{
+                fontSize: `${seatSize.fontSize * 1.1}px`,
+                height: 'auto',
+                padding: '2px 8px',
+                marginLeft: '8px'
+              }}
+            >
+              {sectionBlocked ? 'Desbloquear' : 'Bloquear'} sección
+            </Button>
+          )}
         </div>
 
         {/* Info de dimensiones - Ahora debajo del nombre */}

@@ -222,14 +222,26 @@ const ManualSeatSelection = ({
     onSeatSelect(newSeats);
     notification.info({
       message: 'Asiento eliminado',
-      description: 'El asiento ha sido removido de tu selección.',
+      description: 'El asiento ha sido eliminado de tu selección.',
       placement: 'topRight'
     });
   };
 
   return (
-    <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
-      <Title level={3} style={{ marginBottom: '24px', textAlign: 'center' }}>
+    <div style={{
+      padding: '12px',
+      maxWidth: '100%',
+      width: '100%',
+      margin: '0 auto',
+      boxSizing: 'border-box',
+      overflow: 'hidden'
+    }}>
+      <Title level={3} style={{
+        marginBottom: '16px',
+        textAlign: 'center',
+        fontSize: 'clamp(18px, 4vw, 24px)',
+        wordWrap: 'break-word'
+      }}>
         Selección manual de asientos
       </Title>
 
@@ -238,15 +250,19 @@ const ManualSeatSelection = ({
         description="Selecciona la sección, fila y asiento deseado. Para entrada general, solo necesitas seleccionar la sección."
         type="info"
         showIcon
-        style={{ marginBottom: '24px' }}
+        style={{
+          marginBottom: '16px',
+          fontSize: 'clamp(12px, 2vw, 14px)'
+        }}
       />
 
       {/* Formulario de selección */}
       <Card
         style={{
-          marginBottom: '24px',
+          marginBottom: '16px',
           borderRadius: '12px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          overflow: 'hidden'
         }}
       >
         <Space direction="vertical" size="large" style={{ width: '100%' }}>
@@ -270,12 +286,24 @@ const ManualSeatSelection = ({
                     value={section.id}
                     disabled={blocked}
                   >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span>
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      width: '100%',
+                      overflow: 'hidden'
+                    }}>
+                      <span style={{
+                        flex: 1,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        marginRight: '8px'
+                      }}>
                         {section.name}
                         {!section.hasNumberedSeats && ' (Entrada General)'}
                       </span>
-                      {blocked && <Tag color="red">Bloqueada</Tag>}
+                      {blocked && <Tag color="red" style={{ flexShrink: 0 }}>Bloqueada</Tag>}
                     </div>
                   </Option>
                 );
@@ -375,9 +403,21 @@ const ManualSeatSelection = ({
       {selectedSeats.length > 0 && (
         <Card
           title={
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span>Asientos seleccionados ({selectedSeats.length}/{maxSeats})</span>
-              <Text strong style={{ color: COLORS.primary.main, fontSize: '18px' }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '8px'
+            }}>
+              <span style={{ fontSize: 'clamp(14px, 3vw, 16px)' }}>
+                Asientos seleccionados ({selectedSeats.length}/{maxSeats})
+              </span>
+              <Text strong style={{
+                color: COLORS.primary.main,
+                fontSize: 'clamp(14px, 3vw, 18px)',
+                whiteSpace: 'nowrap'
+              }}>
                 Total: {formatPrice(totalPrice)}
               </Text>
             </div>
@@ -385,7 +425,8 @@ const ManualSeatSelection = ({
           style={{
             borderRadius: '12px',
             boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-            border: `2px solid ${COLORS.primary.main}`
+            border: `2px solid ${COLORS.primary.main}`,
+            overflow: 'hidden'
           }}
         >
           <List
