@@ -389,7 +389,7 @@ describe("User Service - Integration tests", () => {
         .send(updateData);
 
       expect(response.status).toBe(404);
-      expect(response.body.error).toContain("User not found");
+      expect(response.body.error).toContain("Usuario no encontrado");
     });
   });
 
