@@ -106,6 +106,85 @@ const verifyAdmin = (req, res, next) => {
 };
 
 /**
+ * Middleware to verify user is authenticated (has valid token)
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ */
+const verifyAuthenticated = (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+      return res.status(401).json({
+        error: 'No autenticado',
+        message: 'Debes iniciar sesión para acceder a este recurso'
+      });
+    }
+
+    const token = authHeader.startsWith('Bearer ')
+      ? authHeader.slice(7)
+      : authHeader;
+
+    if (!token) {
+      return res.status(401).json({
+        error: 'Token inválido',
+        message: 'El token de autenticación no tiene el formato correcto'
+      });
+    }
+
+    const decoded = jwt.verify(token, secretKey);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({
+        error: 'Sesión expirada',
+        message: 'Tu sesión ha expirado, por favor inicia sesión nuevamente'
+      });
+    }
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(401).json({
+        error: 'Token inválido',
+        message: 'El token de autenticación no es válido'
+      });
+    }
+    return res.status(500).json({
+      error: 'Error de autenticación',
+      message: 'Ocurrió un error al verificar tu autenticación'
+    });
+  }
+};
+
+/**
+ * Middleware to verify user can only access their own resources
+ * Must be used after verifyAuthenticated
+ * @param {string} paramName - Name of the parameter containing userId (default: 'userId')
+ */
+const verifyOwnership = (paramName = 'userId') => {
+  return (req, res, next) => {
+    const resourceUserId = req.params[paramName];
+    const tokenUserId = req.user.userId;
+
+    if (!tokenUserId) {
+      return res.status(401).json({
+        error: 'Token inválido',
+        message: 'El token no contiene información de usuario'
+      });
+    }
+
+    if (resourceUserId !== tokenUserId) {
+      return res.status(403).json({
+        error: 'Acceso denegado',
+        message: 'No tienes permiso para acceder a este recurso'
+      });
+    }
+
+    next();
+  };
+};
+
+/**
  * Health check endpoint
  * @route GET /health
  * @returns {Object} Service status
@@ -203,13 +282,13 @@ app.get("/users/search", async (req, res) => {
 });
 
 /**
- * Update user endpoint
+ * Update user endpoint (Protected - User can only edit their own profile)
  * @route PUT /edit-user/:userId
  * @param {string} req.params.userId - User ID to update
  * @param {Object} req.body - Updated user data
  * @returns {Object} Updated user data
  */
-app.put("/edit-user/:userId", async (req, res) => {
+app.put("/edit-user/:userId", verifyAuthenticated, verifyOwnership(), async (req, res) => {
   try {
     const { userId } = req.params;
     const updatedUserData = req.body;
@@ -261,7 +340,7 @@ app.get('/tickets/occupied/:eventId', async (req, res) => {
 });
 
 /**
- * Purchase tickets endpoint
+ * Purchase tickets endpoint (Protected - Requires authentication)
  * @route POST /tickets/purchase
  * @param {Object} req.body - Ticket purchase data
  * @param {string} req.body.eventId - Event ID
@@ -270,7 +349,7 @@ app.get('/tickets/occupied/:eventId', async (req, res) => {
  * @param {string} req.body.paymentMethod - Payment method
  * @returns {Object} Purchase confirmation with ticket details
  */
-app.post('/tickets/purchase', async (req, res) => {
+app.post('/tickets/purchase', verifyAuthenticated, async (req, res) => {
   try {
     const ticketResponse = await axios.post(`${ticketServiceUrl}/tickets/purchase`, req.body);
     res.json(ticketResponse.data);
@@ -280,13 +359,13 @@ app.post('/tickets/purchase', async (req, res) => {
 });
 
 /**
- * Get detailed tickets for a user
+ * Get detailed tickets for a user (Protected - User can only see their own tickets)
  * @route GET /tickets/user/:userId/details
  * @param {string} req.params.userId - User ID
  * @param {Object} [req.query] - Query parameters for filtering
  * @returns {Array} Detailed ticket information for the user
  */
-app.get('/tickets/user/:userId/details', async (req, res) => {
+app.get('/tickets/user/:userId/details', verifyAuthenticated, verifyOwnership(), async (req, res) => {
     try {
       const { userId } = req.params;
       const ticketResponse = await axios.get(`${ticketServiceUrl}/tickets/user/${userId}/details`, {
@@ -299,13 +378,13 @@ app.get('/tickets/user/:userId/details', async (req, res) => {
 });
 
 /**
- * Get tickets for a user
+ * Get tickets for a user (Protected - User can only see their own tickets)
  * @route GET /tickets/user/:userId
  * @param {string} req.params.userId - User ID
  * @param {Object} [req.query] - Query parameters for filtering
  * @returns {Array} List of tickets for the user
  */
-app.get('/tickets/user/:userId', async (req, res) => {
+app.get('/tickets/user/:userId', verifyAuthenticated, verifyOwnership(), async (req, res) => {
     try {
       const { userId } = req.params;
       const ticketResponse = await axios.get(`${ticketServiceUrl}/tickets/user/${userId}`, {
@@ -369,12 +448,12 @@ app.get('/tickets/:id/qr', async (req, res) => {
 });
 
 /**
- * Get events for a user's tickets
+ * Get events for a user's tickets (Protected - User can only see their own events)
  * @route GET /tickets/user/:userId/events
  * @param {string} req.params.userId - User ID
  * @returns {Array} Events associated with user's tickets
  */
-app.get('/tickets/user/:userId/events', async (req, res) => {
+app.get('/tickets/user/:userId/events', verifyAuthenticated, verifyOwnership(), async (req, res) => {
   try {
       const { userId } = req.params;
       const ticketResponse = await axios.get(`${ticketServiceUrl}/tickets/user/${userId}/events`);
