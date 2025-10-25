@@ -1,6 +1,7 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import useUserRole from './useUserRole';
 import axios from 'axios';
+import { ensureAuthFreshness } from '../utils/authSession';
 
 // Mock de axios
 jest.mock('axios');
@@ -9,8 +10,6 @@ jest.mock('axios');
 jest.mock('../utils/authSession', () => ({
   ensureAuthFreshness: jest.fn()
 }));
-
-import { ensureAuthFreshness } from '../utils/authSession';
 
 describe('useUserRole', () => {
   let localStorageMock;
