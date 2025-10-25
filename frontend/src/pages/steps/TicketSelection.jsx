@@ -59,18 +59,18 @@ export default function SelectTickets({
   }, []);
 
   // Función para obtener disponibilidad de tickets
-  const fetchTicketAvailability = async () => {
+  const fetchTicketAvailability = useCallback(async () => {
     if (!memoizedEvent?._id) return;
-    
+
     setAvailabilityLoading(true);
     try {
       const response = await axios.get(`${gatewayUrl}/tickets/event/${memoizedEvent._id}`);
       const ticketStats = response.data.statistics || [];
-      
+
       // Procesar estadísticas para obtener disponibilidad
       let soldTickets = 0;
       let pendingTickets = 0;
-      
+
       ticketStats.forEach(stat => {
         if (stat._id === 'paid') {
           soldTickets = stat.totalTickets || 0;
@@ -99,7 +99,7 @@ export default function SelectTickets({
     } finally {
       setAvailabilityLoading(false);
     }
-  };
+  }, [memoizedEvent, gatewayUrl]);
 
   // Calcular entradas disponibles usando datos en tiempo real
   const availableTickets = useMemo(() => {
@@ -321,7 +321,7 @@ export default function SelectTickets({
       // Cargar disponibilidad de tickets en la primera carga
       fetchTicketAvailability();
     }
-  }, [memoizedEvent?._id, memoizedEvent?.usesRowPricing, onSeatSelect, setQuantity]);
+  }, [memoizedEvent?._id, memoizedEvent?.usesRowPricing, onSeatSelect, setQuantity, fetchTicketAvailability]);
 
   // Configurar actualización automática de disponibilidad cada 30 segundos
   useEffect(() => {
@@ -332,7 +332,7 @@ export default function SelectTickets({
     }, 30000); // Actualizar cada 30 segundos
 
     return () => clearInterval(interval);
-  }, [memoizedEvent?._id]);
+  }, [memoizedEvent?._id, fetchTicketAvailability]);
 
 
 

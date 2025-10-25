@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom"; 
 import { 
   Layout, 
@@ -93,7 +93,7 @@ const EventDetails = () => {
   }, []);
 
   // Robust calculation of total event capacity
-  const computeEventCapacity = (evt) => {
+  const computeEventCapacity = useCallback((evt) => {
     if (!evt) return 0;
     // If detailed section information is available, sum capacities
     if (evt.usesSectionPricing && Array.isArray(evt.sectionPricingInfo) && evt.sectionPricingInfo.length > 0) {
@@ -103,22 +103,22 @@ const EventDetails = () => {
     if (typeof evt.capacity === 'number' && evt.capacity > 0) return evt.capacity;
     if (evt.location && typeof evt.location.capacity === 'number') return evt.location.capacity || 0;
     return 0;
-  };
+  }, []);
 
   // Function to get ticket availability
-  const fetchTicketAvailability = async (evtParam) => {
+  const fetchTicketAvailability = useCallback(async (evtParam) => {
     if (!id) return;
     const currentEvent = evtParam || event;
-    
+
     setAvailabilityLoading(true);
     try {
       const response = await axios.get(`${gatewayUrl}/tickets/event/${id}`);
       const ticketStats = response.data.statistics || [];
-      
+
       // Process statistics to get availability
       let soldTickets = 0;
       let pendingTickets = 0;
-      
+
       ticketStats.forEach(stat => {
         if (stat._id === 'paid') {
           soldTickets = stat.totalTickets || 0;
@@ -147,7 +147,7 @@ const EventDetails = () => {
     } finally {
       setAvailabilityLoading(false);
     }
-  };
+  }, [id, event, gatewayUrl, computeEventCapacity]);
 
   useEffect(() => {
     if (!id) {
@@ -166,10 +166,10 @@ const EventDetails = () => {
           // Map event type to category for consistency with Home
           category: mapEventTypeToCategory(res.data.type)
         };
-        
+
         setEvent(eventData);
         setLoading(false);
-        
+
         // Load availability using the newly obtained event to avoid capacity 0
         fetchTicketAvailability(eventData);
       })
@@ -179,6 +179,7 @@ const EventDetails = () => {
         setLoading(false);
         showNotification('error', 'Error', 'No se pudieron cargar los detalles del evento. Por favor, inténtalo de nuevo más tarde.');
       });
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       }, [id, gatewayUrl]);
 
   // Configure automatic availability update every 30 seconds
@@ -190,14 +191,14 @@ const EventDetails = () => {
     }, 30000); // Actualizar cada 30 segundos
 
     return () => clearInterval(interval);
-  }, [event]);
+  }, [event, fetchTicketAvailability]);
 
   // Refrescar disponibilidad inmediatamente cuando el evento cambia
   useEffect(() => {
     if (event) {
       fetchTicketAvailability();
     }
-  }, [event]);
+  }, [event, fetchTicketAvailability]);
 
   const mapEventTypeToCategory = (type) => {
     const typeMap = {
