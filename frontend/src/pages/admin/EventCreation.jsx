@@ -51,6 +51,7 @@ import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import { COLORS } from "../../components/colorscheme";
 import ImageCropperModal from "../../components/ImageCropperModal";
 import FramedImage from "../../components/FramedImage";
+import { authenticatedPost } from "../../utils/api";
 
 const { Content } = Layout;
 const { Option } = Select;
@@ -631,8 +632,8 @@ const EventCreation = () => {
     
     try {
       // Crear el evento (solo para eventos sin seatmap)
-      await axios.post(`${gatewayUrl}/events`, eventDataToSave);
-      
+      await authenticatedPost('/events', eventDataToSave);
+
       message.success('Evento creado correctamente');
       setShowConfirmModal(false);
 
@@ -851,9 +852,9 @@ const EventCreation = () => {
         // Si tiene seatmap, crear el evento directamente y redirigir a configuración
         try {
           console.log('Creating event with seatmap, redirecting to configuration...');
-          
+
           // Crear el evento
-          const createEventResponse = await axios.post(`${gatewayUrl}/events`, eventData);
+          const createEventResponse = await authenticatedPost('/events', eventData);
           const createdEvent = createEventResponse.data;
           
           // Redirigir a la página de configuración del seatmap

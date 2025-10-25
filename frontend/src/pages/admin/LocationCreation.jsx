@@ -44,6 +44,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 
 import { COLORS } from "../../components/colorscheme";
+import { authenticatedPost } from "../../utils/api";
 
 const { Content } = Layout;
 const { Option } = Select;
@@ -272,8 +273,8 @@ const LocationCreation = () => {
 
       console.log('Creating location with data:', locationData);
 
-      const response = await axios.post(`${gatewayUrl}/location`, locationData);
-      
+      const response = await authenticatedPost('/location', locationData);
+
       if (response.status === 201 || response.status === 200) {
         setCreatedLocationName(values.name);
         setSuccessModalVisible(true);
@@ -469,8 +470,8 @@ const LocationCreation = () => {
         isActive: true
       };
 
-      const response = await axios.post(`${gatewayUrl}/seatmaps`, seatMapData);
-      
+      const response = await authenticatedPost('/seatmaps', seatMapData);
+
       if (response.status === 201 || response.status === 200) {
         message.success('Mapa de asientos creado exitosamente');
         

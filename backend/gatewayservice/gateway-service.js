@@ -1,6 +1,25 @@
 import express from 'express';
 import axios from 'axios';
 import cors from 'cors';
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, resolve } from 'path';
+import { existsSync } from 'fs';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Intentar cargar .env solo si existe (desarrollo local)
+// En Docker, las variables vienen del contenedor
+const envPath = resolve(__dirname, '../../.env');
+if (existsSync(envPath)) {
+  console.log('Loading .env from:', envPath);
+  dotenv.config({ path: envPath });
+  console.log('Environment variables loaded from file');
+} else {
+  console.log('No .env file found, using environment variables from container');
+}
 
 const app = express();
 const port = 8000;
@@ -10,6 +29,14 @@ const ticketServiceUrl = process.env.TICKET_SERVICE_URL || "http://localhost:800
 const eventServiceUrl = process.env.EVENT_SERVICE_URL || "http://localhost:8003";
 const locationServiceUrl = process.env.LOCATION_SERVICE_URL || "http://localhost:8004";
 
+const secretKey = process.env.JWT_SECRET;
+
+if (!secretKey) {
+  console.error('ERROR: JWT_SECRET no está definido en las variables de entorno');
+  console.error('Make sure JWT_SECRET is set in .env (local) or docker-compose.yml (Docker)');
+  process.exit(1);
+}
+
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -17,6 +44,66 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 const largePayloadMiddleware = express.json({ limit: '50mb' });
 
 app.set("json spaces", 40);
+
+/**
+ * Middleware to verify admin authentication
+ * Checks for roleToken in Authorization header and verifies admin role
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ */
+const verifyAdmin = (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+      return res.status(401).json({
+        error: 'No se proporcionó token de autenticación',
+        message: 'Se requiere autenticación para acceder a este recurso'
+      });
+    }
+
+    const token = authHeader.startsWith('Bearer ')
+      ? authHeader.slice(7)
+      : authHeader;
+
+    if (!token) {
+      return res.status(401).json({
+        error: 'Token inválido',
+        message: 'El token de autenticación no tiene el formato correcto'
+      });
+    }
+
+    const decoded = jwt.verify(token, secretKey);
+
+    if (!decoded.role || decoded.role !== 'admin') {
+      return res.status(403).json({
+        error: 'Acceso denegado',
+        message: 'No tienes permisos de administrador para acceder a este recurso'
+      });
+    }
+
+    req.user = decoded;
+    next();
+  } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({
+        error: 'Token expirado',
+        message: 'Tu sesión ha expirado, por favor inicia sesión nuevamente'
+      });
+    }
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(401).json({
+        error: 'Token inválido',
+        message: 'El token de autenticación no es válido'
+      });
+    }
+    return res.status(500).json({
+      error: 'Error de autenticación',
+      message: 'Ocurrió un error al verificar tu autenticación'
+    });
+  }
+};
 
 /**
  * Health check endpoint
@@ -81,11 +168,11 @@ app.post("/adduser", async (req, res) => {
 });
 
 /**
- * Get all users endpoint
+ * Get all users endpoint (Admin only)
  * @route GET /users
  * @returns {Array} List of all users
  */
-app.get("/users", async (req, res) => {
+app.get("/users", verifyAdmin, async (req, res) => {
   try {
     const usersResponse = await axios.get(`${userServiceUrl}/users`);
     res.json(usersResponse.data);
@@ -298,12 +385,12 @@ app.get('/tickets/user/:userId/events', async (req, res) => {
 });
 
 /**
- * Get administrator ticket statistics
+ * Get administrator ticket statistics (Admin only)
  * @route GET /tickets/admin/statistics
  * @param {Object} [req.query] - Query parameters for filtering statistics
  * @returns {Object} Administrative ticket statistics
  */
-app.get('/tickets/admin/statistics', async (req, res) => {
+app.get('/tickets/admin/statistics', verifyAdmin, async (req, res) => {
   try {
     const ticketResponse = await axios.get(`${ticketServiceUrl}/tickets/admin/statistics`, {
       params: req.query
@@ -315,12 +402,12 @@ app.get('/tickets/admin/statistics', async (req, res) => {
 });
 
 /**
- * Delete all tickets for an event
+ * Delete all tickets for an event (Admin only)
  * @route DELETE /tickets/event/:eventId
  * @param {string} req.params.eventId - Event ID
  * @returns {Object} Deletion confirmation
  */
-app.delete("/tickets/event/:eventId", async (req, res) => {
+app.delete("/tickets/event/:eventId", verifyAdmin, async (req, res) => {
   try {
     const { eventId } = req.params;
     const ticketResponse = await axios.delete(`${ticketServiceUrl}/tickets/event/${eventId}`);
@@ -349,7 +436,7 @@ app.delete('/tickets/:id', async (req, res) => {
 // **Event Routes**
 
 /**
- * Create a new event
+ * Create a new event (Admin only)
  * @route POST /events
  * @param {Object} req.body - Event data
  * @param {string} req.body.name - Event name
@@ -360,7 +447,7 @@ app.delete('/tickets/:id', async (req, res) => {
  * @param {string} req.body.type - Event type
  * @returns {Object} Created event data
  */
-app.post("/events", largePayloadMiddleware ,async (req, res) => {
+app.post("/events", verifyAdmin, largePayloadMiddleware, async (req, res) => {
   try {
     const eventResponse = await axios.post(`${eventServiceUrl}/event`, req.body);
     res.json(eventResponse.data);
@@ -370,13 +457,13 @@ app.post("/events", largePayloadMiddleware ,async (req, res) => {
 });
 
 /**
- * Update an event
+ * Update an event (Admin only)
  * @route PUT /events/:eventId
  * @param {string} req.params.eventId - Event ID
  * @param {Object} req.body - Updated event data
  * @returns {Object} Updated event data
  */
-app.put("/events/:eventId", largePayloadMiddleware, async (req, res) => {
+app.put("/events/:eventId", verifyAdmin, largePayloadMiddleware, async (req, res) => {
   try {
     const { eventId } = req.params;
     const eventResponse = await axios.put(`${eventServiceUrl}/events/${eventId}`, req.body);
@@ -387,13 +474,13 @@ app.put("/events/:eventId", largePayloadMiddleware, async (req, res) => {
 });
 
 /**
- * Update event image
+ * Update event image (Admin only)
  * @route PATCH /events/:eventId/image
  * @param {string} req.params.eventId - Event ID
  * @param {Object} req.body - Image data
  * @returns {Object} Updated event with new image
  */
-app.patch("/events/:eventId/image", largePayloadMiddleware, async (req, res) => {
+app.patch("/events/:eventId/image", verifyAdmin, largePayloadMiddleware, async (req, res) => {
   try {
     const { eventId } = req.params;
     const eventResponse = await axios.patch(`${eventServiceUrl}/events/${eventId}/image`, req.body);
@@ -433,12 +520,12 @@ app.get("/events/:eventId", async (req, res) => {
 });
 
 /**
- * Manually update event states
+ * Manually update event states (Admin only)
  * @route POST /events/update-states
  * @param {Object} req.body - State update data
  * @returns {Object} State update confirmation
  */
-app.post("/events/update-states", async (req, res) => {
+app.post("/events/update-states", verifyAdmin, async (req, res) => {
   try {
     const eventResponse = await axios.post(`${eventServiceUrl}/events/update-states`, req.body);
     res.json(eventResponse.data);
@@ -448,11 +535,11 @@ app.post("/events/update-states", async (req, res) => {
 });
 
 /**
- * Get event statistics by state
+ * Get event statistics by state (Admin only)
  * @route GET /events/stats/states
  * @returns {Object} Event statistics grouped by state
  */
-app.get("/events/stats/states", async (req, res) => {
+app.get("/events/stats/states", verifyAdmin, async (req, res) => {
   try {
     const eventResponse = await axios.get(`${eventServiceUrl}/events/stats/states`);
     res.json(eventResponse.data);
@@ -462,13 +549,13 @@ app.get("/events/stats/states", async (req, res) => {
 });
 
 /**
- * Change event state
+ * Change event state (Admin only)
  * @route PATCH /events/:eventId/state
  * @param {string} req.params.eventId - Event ID
  * @param {Object} req.body - New state data
  * @returns {Object} Updated event with new state
  */
-app.patch("/events/:eventId/state", async (req, res) => {
+app.patch("/events/:eventId/state", verifyAdmin, async (req, res) => {
   try {
     const { eventId } = req.params;
     const eventResponse = await axios.patch(`${eventServiceUrl}/events/${eventId}/state`, req.body);
@@ -479,13 +566,13 @@ app.patch("/events/:eventId/state", async (req, res) => {
 });
 
 /**
- * Update seat blocks for an event
+ * Update seat blocks for an event (Admin only)
  * @route PUT /events/:eventId/seat-blocks
  * @param {string} req.params.eventId - Event ID
  * @param {Object} req.body - Seat block data
  * @returns {Object} Updated seat blocks
  */
-app.put("/events/:eventId/seat-blocks", async (req, res) => {
+app.put("/events/:eventId/seat-blocks", verifyAdmin, async (req, res) => {
   try {
     const { eventId } = req.params;
     const eventResponse = await axios.put(`${eventServiceUrl}/events/${eventId}/seat-blocks`, req.body);
@@ -496,12 +583,12 @@ app.put("/events/:eventId/seat-blocks", async (req, res) => {
 });
 
 /**
- * Delete an event
+ * Delete an event (Admin only)
  * @route DELETE /events/:eventId
  * @param {string} req.params.eventId - Event ID
  * @returns {Object} Deletion confirmation
  */
-app.delete("/events/:eventId", async (req, res) => {
+app.delete("/events/:eventId", verifyAdmin, async (req, res) => {
   try {
     const { eventId } = req.params;
     const eventResponse = await axios.delete(`${eventServiceUrl}/events/${eventId}`);
@@ -512,13 +599,13 @@ app.delete("/events/:eventId", async (req, res) => {
 });
 
 /**
- * Cancel an event (only by creator admin)
+ * Cancel an event (Admin only - creator admin)
  * @route DELETE /events/:eventId/cancel
  * @param {string} req.params.eventId - Event ID
  * @param {Object} req.body - Cancellation data
  * @returns {Object} Cancellation confirmation
  */
-app.delete("/events/:eventId/cancel", async (req, res) => {
+app.delete("/events/:eventId/cancel", verifyAdmin, async (req, res) => {
   try {
     const { eventId } = req.params;
     const eventResponse = await axios.delete(`${eventServiceUrl}/events/${eventId}/cancel`, {
@@ -531,12 +618,12 @@ app.delete("/events/:eventId/cancel", async (req, res) => {
 });
 
 /**
- * Get event statistics with sales data
+ * Get event statistics with sales data (Admin only)
  * @route GET /events/admin/statistics
  * @param {Object} [req.query] - Query parameters for filtering statistics
  * @returns {Object} Event statistics with sales information
  */
-app.get("/events/admin/statistics", async (req, res) => {
+app.get("/events/admin/statistics", verifyAdmin, async (req, res) => {
   try {
     const eventResponse = await axios.get(`${eventServiceUrl}/events/admin/statistics`, {
       params: req.query
@@ -550,7 +637,7 @@ app.get("/events/admin/statistics", async (req, res) => {
 // **Location Routes**
 
 /**
- * Create a new location
+ * Create a new location (Admin only)
  * @route POST /location
  * @param {Object} req.body - Location data
  * @param {string} req.body.name - Location name
@@ -560,7 +647,7 @@ app.get("/events/admin/statistics", async (req, res) => {
  * @param {number} [req.body.capacity] - Location capacity
  * @returns {Object} Created location data
  */
-app.post("/location", async (req, res) => {
+app.post("/location", verifyAdmin, async (req, res) => {
   try {
     const locationResponse = await axios.post(`${locationServiceUrl}/location`, req.body);
     res.json(locationResponse.data);
@@ -609,7 +696,7 @@ app.get("/seatmaps", async (req, res) => {
   }
 });
 
-app.post("/seatmaps", async (req, res) => {
+app.post("/seatmaps", verifyAdmin, async (req, res) => {
   try {
     const locationResponse = await axios.post(`${locationServiceUrl}/seatmaps`, req.body);
     res.json(locationResponse.data);

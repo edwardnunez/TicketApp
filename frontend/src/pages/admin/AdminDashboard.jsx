@@ -41,6 +41,7 @@ import { Link } from 'react-router-dom';
 import dayjs from 'dayjs';
 
 import { COLORS } from "../../components/colorscheme";
+import { authenticatedDelete } from '../../utils/api';
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
@@ -282,7 +283,7 @@ const AdminDashboard = () => {
       onOk: async () => {
         try {
           setLoading(true);
-          await axios.delete(`${gatewayUrl}/events/${eventId}/cancel`, { data: { adminId: currentUserId } });
+          await authenticatedDelete(`/events/${eventId}/cancel`, { data: { adminId: currentUserId } });
           setEvents(prevEvents => prevEvents.map(event => event._id === eventId ? { ...event, state: 'cancelado' } : event));
           api.success({
             message: 'Evento cancelado',
@@ -350,7 +351,7 @@ const AdminDashboard = () => {
       onOk: async () => {
         try {
           setLoading(true);
-          await axios.delete(`${gatewayUrl}/events/${eventId}?forceDelete=true`);
+          await authenticatedDelete(`/events/${eventId}?forceDelete=true`);
           setEvents(prevEvents => prevEvents.filter(event => event._id !== eventId));
           api.success({
             message: 'Evento eliminado',
