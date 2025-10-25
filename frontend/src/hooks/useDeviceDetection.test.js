@@ -35,7 +35,7 @@ describe('useDeviceDetection', () => {
     });
   });
 
-  test('debe inicializar con los valores correctos al montar', () => {
+  test('debe inicializar con los valores correctos', () => {
     resizeWindow(1024, 768);
     const { result } = renderHook(() => useDeviceDetection());
 
