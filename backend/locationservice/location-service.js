@@ -80,7 +80,7 @@ app.post("/location", async (req, res) => {
     }
 
     let locationDoc = await LocationModel.findOne({ name });
-    let repeatedLocation = await LocationModel.findOne({ name, address, category });
+    const repeatedLocation = await LocationModel.findOne({ name, address, category });
 
     if (locationDoc) {
       // Actualiza los campos permitidos
@@ -195,7 +195,7 @@ const buildRows = (rowsCount, seatsPerRow) => {
 };
 
 const normalizeSection = (section) => {
-  const { rows, seatsPerRow, price, ...rest } = section || {};
+  const { rows, seatsPerRow, ...rest } = section || {};
   const defaultPrice = section && section.defaultPrice !== undefined ? section.defaultPrice : 0;
 
   if (section && section.hasNumberedSeats === false) {

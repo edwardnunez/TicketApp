@@ -21,7 +21,6 @@ const seedSeatMaps = async (dbConnection) => {
     const {
       rows,
       seatsPerRow,
-      price, // legacy, no usado
       ...rest
     } = section;
 

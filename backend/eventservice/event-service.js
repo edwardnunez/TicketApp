@@ -4,7 +4,6 @@ import cors from 'cors';
 import Event from './event-model.js';
 import axios from 'axios';
 import multer from 'multer';
-import path from 'path';
 import EventStateService from './event-state-service.js';
 import nodemailer from 'nodemailer';
 
@@ -231,7 +230,7 @@ app.post("/event", largePayloadMiddleware, largeUrlEncodedMiddleware, async (req
       }
     }
 
-    let eventData = {
+    const eventData = {
       name,
       date: eventDate,
       location: location._id? location._id : location,
@@ -1048,7 +1047,7 @@ app.get("/events/admin/statistics", async (req, res) => {
     const { eventType, eventState, dateFrom, dateTo, search } = req.query;
 
     // Construir filtros para eventos
-    let eventFilters = {};
+    const eventFilters = {};
     
     if (eventType && eventType !== 'all') {
       eventFilters.type = eventType;

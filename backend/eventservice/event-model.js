@@ -199,7 +199,7 @@ eventSchema.methods.hasImage = function() {
  * @param {number} seat - Número de asiento
  * @returns {number} Precio para el asiento especificado
  */
-eventSchema.methods.getSeatPrice = function(sectionId, row, seat) {
+eventSchema.methods.getSeatPrice = function(sectionId, row) {
   if (!this.usesSectionPricing) {
     return this.price;
   }

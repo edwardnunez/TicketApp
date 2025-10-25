@@ -205,6 +205,9 @@ describe('useUserRole', () => {
 
     await waitFor(() => {
       expect(result.current.userRole).toBe('admin');
+    });
+
+    await waitFor(() => {
       expect(result.current.isAdmin).toBe(true);
     });
   });

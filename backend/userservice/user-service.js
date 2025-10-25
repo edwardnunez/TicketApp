@@ -180,7 +180,7 @@ app.post('/login', async (req, res) => {
     } else {
       res.status(401).json({ error: 'Credenciales inválidas' });
     }
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
@@ -194,7 +194,7 @@ app.get("/users", async (req, res) => {
   try {
     const users = await User.find({}, { password: 0});
     res.status(200).json(users);
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ error: "Error interno del servidor" });
   }
 });
@@ -233,7 +233,7 @@ app.get("/users/search", async (req, res) => {
       return res.status(404).json({ error: "Usuario no encontrado" });
     }
 
-    const { password, ...userWithoutPassword } = currentUser.toObject();
+    const { password: _password, ...userWithoutPassword } = currentUser.toObject();
     res.status(200).json(userWithoutPassword);
   } catch (error) {
     console.error("Error in /users/search:", error);
@@ -263,7 +263,7 @@ app.put("/edit-user/:userId", async (req, res) => {
       });
     }
 
-    let updateData = { ...otherFields };
+    const updateData = { ...otherFields };
 
     if (password) {
       if (!currentPassword) {
@@ -378,7 +378,7 @@ app.post('/verifyToken', (req, res) => {
     } else {
       res.status(403).json({ error: 'Prohibido' });
     }
-  } catch (error) {
+  } catch (_error) {
     res.status(401).json({ error: 'Token inválido o expirado' });
   }
 });

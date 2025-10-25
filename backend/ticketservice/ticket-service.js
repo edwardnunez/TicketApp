@@ -183,7 +183,6 @@ app.post('/tickets/purchase', async (req, res) => {
     const { 
       userId, 
       eventId, 
-      ticketType, 
       quantity, 
       price, 
       customerInfo, 
@@ -413,7 +412,7 @@ app.get('/tickets/user/:userId', validateObjectId, async (req, res) => {
     const { userId } = req.params;
     const { status, eventId } = req.query;
 
-    let query = { userId };
+    const query = { userId };
     
     if (status && ['pending', 'paid', 'cancelled'].includes(status)) {
       query.status = status;
@@ -448,7 +447,7 @@ app.get('/tickets/user/:userId/details', validateObjectId, async (req, res) => {
     const { userId } = req.params;
     const { status, eventId, limit = 50 } = req.query;
 
-    let query = { userId };
+    const query = { userId };
     
     if (status && ['pending', 'paid', 'cancelled'].includes(status)) {
       query.status = status;
@@ -514,7 +513,7 @@ app.get('/tickets/event/:eventId', validateObjectId, async (req, res) => {
     const { eventId } = req.params;
     const { status } = req.query;
 
-    let query = { eventId };
+    const query = { eventId };
     
     if (status && ['pending', 'paid', 'cancelled'].includes(status)) {
       query.status = status;
@@ -686,7 +685,7 @@ app.get('/tickets/admin/statistics', async (req, res) => {
     const { eventType, dateFrom, dateTo, status } = req.query;
 
     // Construir filtros
-    let matchFilters = {};
+    const matchFilters = {};
     
     if (status && ['pending', 'paid', 'cancelled'].includes(status)) {
       matchFilters.status = status;
@@ -878,7 +877,7 @@ app.get('/tickets/admin/statistics', async (req, res) => {
 
 
 // Middleware de manejo de errores
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
   console.error('Error no manejado:', err);
   res.status(500).json({
     error: "Error interno del servidor",

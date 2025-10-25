@@ -570,28 +570,6 @@ const SeatRenderer = ({
     );
   };
 
-  // Calcular el ancho total del contenedor basado en el contenido
-  const getContainerWidth = () => {
-    if(isMobile) return '100%';
-    if (responsiveMode) {
-      const seatTotalWidth = (seatSize.width + (seatSize.margin * 2)) * seatsPerRow;
-      const labelWidth = rowLabelWidth;
-      return seatTotalWidth + labelWidth;
-    }
-    return 'auto';
-  };
-
-  // Calcular el ancho máximo permitido para evitar overflow
-  const getMaxWidth = () => {
-    if(isMobile) return '100%';
-    const maxSeatsPerRow = Math.min(seatsPerRow, 25); // Límite máximo de 25 asientos por fila
-    const seatTotalWidth = (seatSize.width + (seatSize.margin * 2)) * maxSeatsPerRow;
-    const labelWidth = rowLabelWidth;
-    return seatTotalWidth + labelWidth + 32; // 32px de padding extra
-  };
-
-  const containerWidth = getContainerWidth();
-  const maxWidth = getMaxWidth();
   const dimensions = getSectionDimensions();
 
   return (
