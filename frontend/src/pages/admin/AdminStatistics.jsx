@@ -32,6 +32,7 @@ import {
 import axios from 'axios';
 import dayjs from 'dayjs';
 import { COLORS } from '../../components/colorscheme';
+import { authenticatedGet } from '../../utils/api';
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
@@ -82,7 +83,7 @@ const AdminStatistics = () => {
         params.append('search', filters.search.trim());
       }
 
-      const response = await axios.get(`${gatewayUrl}/events/admin/statistics?${params.toString()}`);
+      const response = await authenticatedGet(`/events/admin/statistics?${params.toString()}`);
       setStatistics(response.data);
     } catch (err) {
       console.error('Error cargando estadísticas:', err);

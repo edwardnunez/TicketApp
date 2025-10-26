@@ -22,6 +22,7 @@ import {
 import { COLORS } from '../../components/colorscheme';
 import AdminSeatMapRenderer from './AdminSeatMapRenderer';
 import axios from 'axios';
+import { authenticatedPost, authenticatedPut } from '../../utils/api';
 
 const { Title, Text } = Typography;
 
@@ -226,11 +227,11 @@ const EventSeatMapEditor = () => {
 
       if (eventData._id) {
         console.log('Actualizando evento existente:', eventData._id);
-        await axios.put(`${gatewayUrl}/events/${eventData._id}`, eventPayload);
+        await authenticatedPut(`/events/${eventData._id}`, eventPayload);
         message.success('Mapa de asientos guardado exitosamente');
       } else {
         console.log('Creando nuevo evento');
-        await axios.post(`${gatewayUrl}/events`, eventPayload);
+        await authenticatedPost('/events', eventPayload);
         message.success('Evento creado exitosamente');
       }
 

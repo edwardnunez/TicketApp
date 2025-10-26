@@ -15,11 +15,35 @@ import cors from 'cors';
 import User from "./user-model.js";
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, resolve } from 'path';
+import { existsSync } from 'fs';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Intentar cargar .env solo si existe (desarrollo local)
+// En Docker, las variables vienen del contenedor
+const envPath = resolve(__dirname, '../../.env');
+if (existsSync(envPath)) {
+  console.log('Loading .env from:', envPath);
+  dotenv.config({ path: envPath });
+  console.log('Environment variables loaded from file');
+} else {
+  console.log('No .env file found, using environment variables from container');
+}
 
 const app = express();
 const port = 8001;
 
-const secretKey = 'your-secret-key';
+const secretKey = process.env.JWT_SECRET;
+
+if (!secretKey) {
+  console.error('ERROR: JWT_SECRET no está definido en las variables de entorno');
+  console.error('Available env vars:', Object.keys(process.env).filter(k => !k.startsWith('npm_')));
+  process.exit(1);
+}
 
 app.use(express.json());
 app.use(cors());

@@ -103,6 +103,7 @@ jobs:
             # Create .env file with secrets
             cat > .env << 'EOF'
             GITHUB_REPOSITORY_OWNER=${{ github.repository_owner }}
+            JWT_SECRET=${{ secrets.JWT_SECRET }}
             SMTP_HOST=${{ secrets.SMTP_HOST }}
             SMTP_PORT=${{ secrets.SMTP_PORT }}
             SMTP_USER=${{ secrets.SMTP_USER }}
