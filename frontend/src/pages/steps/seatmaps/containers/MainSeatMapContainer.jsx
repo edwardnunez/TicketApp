@@ -786,23 +786,28 @@ const MainSeatMapContainer = ({
 
   // Layout para teatro
   const renderTheaterLayout = () => {
-    const orchestraSection = sections.find(s => 
+    const orchestraSection = sections.find(s =>
       s.id.includes('orchestra') || s.name.toLowerCase().includes('orchestra') ||
       s.id.includes('orquesta') || s.name.toLowerCase().includes('orquesta')
     );
-    const mezzanineSection = sections.find(s => 
+    const mezzanineSection = sections.find(s =>
       s.id.includes('mezzanine') || s.name.toLowerCase().includes('mezzanine') ||
       s.id.includes('mezanine') || s.name.toLowerCase().includes('mezanine')
     );
-    const balconySection = sections.find(s => 
+    const balconySection = sections.find(s =>
       s.id.includes('balcony') || s.name.toLowerCase().includes('balcony') ||
       s.id.includes('balcón') || s.name.toLowerCase().includes('balcón')
     );
-    const boxesSection = sections.find(s => 
+    const boxesSection = sections.find(s =>
       s.id.includes('boxes') || s.name.toLowerCase().includes('boxes') ||
       s.id.includes('palcos') || s.name.toLowerCase().includes('palcos')
     );
-    const vipSection = sections.find(s => s.id.includes('vip') || s.name.toLowerCase().includes('vip'));
+    // VIP section solo si no es parte de boxes (palcos)
+    const vipSection = sections.find(s =>
+      (s.id.includes('vip') || s.name.toLowerCase().includes('vip')) &&
+      !s.id.includes('boxes') && !s.name.toLowerCase().includes('boxes') &&
+      !s.id.includes('palcos') && !s.name.toLowerCase().includes('palcos')
+    );
 
     return (
       <div className="theater-layout">
