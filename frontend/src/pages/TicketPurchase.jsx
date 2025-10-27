@@ -422,7 +422,6 @@ const TicketPurchase = () => {
 
       console.log('Enviando datos del ticket con PayPal:', ticketData);
 
-      const token = localStorage.getItem('token');
       const response = await axios.post(`${gatewayUrl}/tickets/purchase`, ticketData, {
         headers: {
           'Authorization': `Bearer ${token}`
