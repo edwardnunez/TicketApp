@@ -208,6 +208,7 @@ const MainSeatMapContainer = ({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showLegend, setShowLegend] = useState(false);
   const [hoveredSection, setHoveredSection] = useState(null);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   // Estados de accesibilidad
   const [isHighContrast, setIsHighContrast] = useState(false);
@@ -273,28 +274,90 @@ const MainSeatMapContainer = ({
   // Centrar el scroll en móvil cuando se carga el mapa
   useEffect(() => {
     if (isMobile && seatMapRef.current) {
-      // Usar setTimeout para asegurar que el contenido se haya renderizado
-      const timer = setTimeout(() => {
+      const centerScroll = () => {
         const container = seatMapRef.current;
         if (container) {
+          // Asegurar que el scroll sea instantáneo, no smooth
+          const originalScrollBehavior = container.style.scrollBehavior;
+          container.style.scrollBehavior = 'auto';
+
           // Calcular la posición central
           const scrollWidth = container.scrollWidth;
           const clientWidth = container.clientWidth;
           const scrollHeight = container.scrollHeight;
           const clientHeight = container.clientHeight;
 
-          // Centrar horizontal y verticalmente
-          const centerX = (scrollWidth - clientWidth) / 2;
-          const centerY = (scrollHeight - clientHeight) / 2;
+          // Solo centrar si hay contenido que hacer scroll
+          if (scrollWidth > clientWidth || scrollHeight > clientHeight) {
+            const centerX = Math.max(0, (scrollWidth - clientWidth) / 2);
+            const centerY = Math.max(0, (scrollHeight - clientHeight) / 2);
 
-          container.scrollLeft = centerX;
-          container.scrollTop = centerY;
+            // Centrar usando scrollTo para mejor compatibilidad
+            container.scrollTo({
+              left: centerX,
+              top: centerY,
+              behavior: 'auto'
+            });
+          }
+
+          // Restaurar el scroll behavior original
+          container.style.scrollBehavior = originalScrollBehavior;
         }
-      }, 100); // Pequeño delay para asegurar que el contenido esté renderizado
+      };
+
+      let timerId;
+      // Usar requestAnimationFrame para asegurar que el DOM esté actualizado
+      const frameId = requestAnimationFrame(() => {
+        // Luego un pequeño delay adicional para asegurar que todo esté renderizado
+        timerId = setTimeout(centerScroll, 250);
+      });
+
+      return () => {
+        cancelAnimationFrame(frameId);
+        if (timerId) clearTimeout(timerId);
+      };
+    }
+  }, [isMobile, seatMapData]);
+
+  // Recentrar cuando cambie el nivel de zoom en móvil (después de la carga inicial)
+  useEffect(() => {
+    if (isMobile && seatMapRef.current && seatMapData) {
+      setHasInitialized(true);
+    }
+  }, [isMobile, seatMapData]);
+
+  useEffect(() => {
+    if (isMobile && seatMapRef.current && hasInitialized && zoomLevel) {
+      const timer = setTimeout(() => {
+        const container = seatMapRef.current;
+        if (container) {
+          // Asegurar que el scroll sea instantáneo
+          const originalScrollBehavior = container.style.scrollBehavior;
+          container.style.scrollBehavior = 'auto';
+
+          const scrollWidth = container.scrollWidth;
+          const clientWidth = container.clientWidth;
+          const scrollHeight = container.scrollHeight;
+          const clientHeight = container.clientHeight;
+
+          if (scrollWidth > clientWidth || scrollHeight > clientHeight) {
+            const centerX = Math.max(0, (scrollWidth - clientWidth) / 2);
+            const centerY = Math.max(0, (scrollHeight - clientHeight) / 2);
+
+            container.scrollTo({
+              left: centerX,
+              top: centerY,
+              behavior: 'auto'
+            });
+          }
+
+          container.style.scrollBehavior = originalScrollBehavior;
+        }
+      }, 100);
 
       return () => clearTimeout(timer);
     }
-  }, [isMobile, seatMapData]);
+  }, [isMobile, zoomLevel, hasInitialized]);
 
   if (!seatMapData) return null;
 

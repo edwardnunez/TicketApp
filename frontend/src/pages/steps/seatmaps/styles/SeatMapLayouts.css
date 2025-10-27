@@ -428,7 +428,6 @@
   max-width: none; /* Sin límite de ancho máximo */
   min-width: fit-content; /* Adaptarse al contenido */
   overflow: visible; /* Asegurar que nada se corte */
-  width: 100%; /* Ocupar todo el ancho disponible */
   box-sizing: border-box; /* Incluir padding en el cálculo del ancho */
 }
 
