@@ -359,8 +359,8 @@
   align-items: center;
   gap: 20px;
   z-index: 1;
-  width: 100%;
-  max-width: 1200px;
+  width: fit-content;
+  max-width: none;
 }
 
 /* Mejoras para la distribución de asientos */

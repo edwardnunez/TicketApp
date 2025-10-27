@@ -270,6 +270,32 @@ const MainSeatMapContainer = ({
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
+  // Centrar el scroll en móvil cuando se carga el mapa
+  useEffect(() => {
+    if (isMobile && seatMapRef.current) {
+      // Usar setTimeout para asegurar que el contenido se haya renderizado
+      const timer = setTimeout(() => {
+        const container = seatMapRef.current;
+        if (container) {
+          // Calcular la posición central
+          const scrollWidth = container.scrollWidth;
+          const clientWidth = container.clientWidth;
+          const scrollHeight = container.scrollHeight;
+          const clientHeight = container.clientHeight;
+
+          // Centrar horizontal y verticalmente
+          const centerX = (scrollWidth - clientWidth) / 2;
+          const centerY = (scrollHeight - clientHeight) / 2;
+
+          container.scrollLeft = centerX;
+          container.scrollTop = centerY;
+        }
+      }, 100); // Pequeño delay para asegurar que el contenido esté renderizado
+
+      return () => clearTimeout(timer);
+    }
+  }, [isMobile, seatMapData]);
+
   if (!seatMapData) return null;
 
   const { sections, config, type } = seatMapData;
