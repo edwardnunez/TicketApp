@@ -56,6 +56,21 @@ const TicketPurchase = () => {
   const [selectedSeats, setSelectedSeats] = useState(() => {
     // Intentar recuperar del sessionStorage al inicializar
     const saved = sessionStorage.getItem(`selectedSeats_${id}`);
+    const timestamp = sessionStorage.getItem(`selectedSeats_${id}_timestamp`);
+
+    // Verificar si han pasado más de 1 hora
+    if (saved && timestamp) {
+      const oneHourInMs = 60 * 60 * 1000;
+      const elapsed = Date.now() - parseInt(timestamp, 10);
+
+      if (elapsed > oneHourInMs) {
+        // Limpiar cache si ha pasado más de 1 hora
+        sessionStorage.removeItem(`selectedSeats_${id}`);
+        sessionStorage.removeItem(`selectedSeats_${id}_timestamp`);
+        return [];
+      }
+      return JSON.parse(saved);
+    }
     return saved ? JSON.parse(saved) : [];
   });
   const [occupiedSeats, setOccupiedSeats] = useState([]);
@@ -63,7 +78,18 @@ const TicketPurchase = () => {
   // Inicializar quantity basado en los asientos guardados
   const [quantity, setQuantity] = useState(() => {
     const saved = sessionStorage.getItem(`selectedSeats_${id}`);
-    if (saved) {
+    const timestamp = sessionStorage.getItem(`selectedSeats_${id}_timestamp`);
+
+    if (saved && timestamp) {
+      const oneHourInMs = 60 * 60 * 1000;
+      const elapsed = Date.now() - parseInt(timestamp, 10);
+
+      if (elapsed > oneHourInMs) {
+        sessionStorage.removeItem(`selectedSeats_${id}`);
+        sessionStorage.removeItem(`selectedSeats_${id}_timestamp`);
+        return 1;
+      }
+
       const seats = JSON.parse(saved);
       return seats.length > 0 ? seats.length : 1;
     }
@@ -110,33 +136,72 @@ const TicketPurchase = () => {
   useEffect(() => {
     if (purchaseComplete) {
       sessionStorage.removeItem(`selectedSeats_${id}`);
+      sessionStorage.removeItem(`selectedSeats_${id}_timestamp`);
     }
   }, [id, purchaseComplete]);
 
-  // Limpiar sessionStorage si el usuario sale completamente de la página
+  // Limpiar sessionStorage si el usuario sale de la compra del evento
   useEffect(() => {
-    const handleBeforeUnload = () => {
-      // Solo limpiar si sale navegando a otra URL, no en refresh
-      if (!purchaseComplete) {
-        const currentPath = window.location.pathname;
-        if (!currentPath.includes(`/purchase/${id}`)) {
-          sessionStorage.removeItem(`selectedSeats_${id}`);
-        }
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
+      // Se ejecuta cuando el componente se desmonta
+      if (!purchaseComplete) {
+        sessionStorage.removeItem(`selectedSeats_${id}`);
+        sessionStorage.removeItem(`selectedSeats_${id}_timestamp`);
+      }
     };
   }, [id, purchaseComplete]);
 
+  // Escuchar cambios en la autenticación y limpiar cache si se cierra sesión
+  useEffect(() => {
+    const handleAuthChange = () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        // El usuario cerró sesión, limpiar todos los asientos guardados
+        Object.keys(sessionStorage).forEach(key => {
+          if (key.startsWith('selectedSeats_')) {
+            sessionStorage.removeItem(key);
+          }
+        });
+      }
+    };
+
+    window.addEventListener('authChange', handleAuthChange);
+
+    return () => {
+      window.removeEventListener('authChange', handleAuthChange);
+    };
+  }, []);
+
+  // Limpieza automática después de 1 hora
+  useEffect(() => {
+    const timestamp = sessionStorage.getItem(`selectedSeats_${id}_timestamp`);
+    if (timestamp) {
+      const oneHourInMs = 60 * 60 * 1000;
+      const elapsed = Date.now() - parseInt(timestamp, 10);
+      const remaining = oneHourInMs - elapsed;
+
+      if (remaining > 0) {
+        const timerId = setTimeout(() => {
+          sessionStorage.removeItem(`selectedSeats_${id}`);
+          sessionStorage.removeItem(`selectedSeats_${id}_timestamp`);
+          setSelectedSeats([]);
+          setQuantity(1);
+        }, remaining);
+
+        return () => clearTimeout(timerId);
+      }
+    }
+  }, [id]);
+
   useEffect(() => {
     const username = localStorage.getItem("username");
-    if (username) {
+    const token = localStorage.getItem("token");
+    if (username && token) {
       axios.get(`${gatewayUrl}/users/search`, {
-        params: { username }
+        params: { username },
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       }).then(res => {
         setUserData(res.data);
       }).catch(err => {
@@ -176,8 +241,9 @@ const TicketPurchase = () => {
   const handleSeatSelect = (seats) => {
     setSelectedSeats(seats);
     setQuantity(seats.length);
-    // Guardar en sessionStorage para mantener la selección entre navegaciones
+    // Guardar en sessionStorage con timestamp para mantener la selección entre navegaciones
     sessionStorage.setItem(`selectedSeats_${id}`, JSON.stringify(seats));
+    sessionStorage.setItem(`selectedSeats_${id}_timestamp`, String(Date.now()));
   };
 
   const requiresSeatMap = () => {
@@ -291,10 +357,14 @@ const TicketPurchase = () => {
       const username = localStorage.getItem("username");
       
       let userId = null;
-      if (username) {
+      const token = localStorage.getItem('token');
+      if (username && token) {
         try {
           const userResponse = await axios.get(`${gatewayUrl}/users/search`, {
-            params: { username }
+            params: { username },
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
           });
           userId = userResponse.data._id;
         } catch (error) {
@@ -352,7 +422,11 @@ const TicketPurchase = () => {
 
       console.log('Enviando datos del ticket con PayPal:', ticketData);
 
-      const response = await axios.post(`${gatewayUrl}/tickets/purchase`, ticketData);
+      const response = await axios.post(`${gatewayUrl}/tickets/purchase`, ticketData, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       
       if (response.data.success) {
         setTicketInfo({

@@ -208,6 +208,7 @@ const MainSeatMapContainer = ({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showLegend, setShowLegend] = useState(false);
   const [hoveredSection, setHoveredSection] = useState(null);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   // Estados de accesibilidad
   const [isHighContrast, setIsHighContrast] = useState(false);
@@ -269,6 +270,94 @@ const MainSeatMapContainer = ({
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
+
+  // Centrar el scroll en móvil cuando se carga el mapa
+  useEffect(() => {
+    if (isMobile && seatMapRef.current) {
+      const centerScroll = () => {
+        const container = seatMapRef.current;
+        if (container) {
+          // Asegurar que el scroll sea instantáneo, no smooth
+          const originalScrollBehavior = container.style.scrollBehavior;
+          container.style.scrollBehavior = 'auto';
+
+          // Calcular la posición central
+          const scrollWidth = container.scrollWidth;
+          const clientWidth = container.clientWidth;
+          const scrollHeight = container.scrollHeight;
+          const clientHeight = container.clientHeight;
+
+          // Solo centrar si hay contenido que hacer scroll
+          if (scrollWidth > clientWidth || scrollHeight > clientHeight) {
+            const centerX = Math.max(0, (scrollWidth - clientWidth) / 2);
+            const centerY = Math.max(0, (scrollHeight - clientHeight) / 2);
+
+            // Centrar usando scrollTo para mejor compatibilidad
+            container.scrollTo({
+              left: centerX,
+              top: centerY,
+              behavior: 'auto'
+            });
+          }
+
+          // Restaurar el scroll behavior original
+          container.style.scrollBehavior = originalScrollBehavior;
+        }
+      };
+
+      let timerId;
+      // Usar requestAnimationFrame para asegurar que el DOM esté actualizado
+      const frameId = requestAnimationFrame(() => {
+        // Luego un pequeño delay adicional para asegurar que todo esté renderizado
+        timerId = setTimeout(centerScroll, 250);
+      });
+
+      return () => {
+        cancelAnimationFrame(frameId);
+        if (timerId) clearTimeout(timerId);
+      };
+    }
+  }, [isMobile, seatMapData]);
+
+  // Recentrar cuando cambie el nivel de zoom en móvil (después de la carga inicial)
+  useEffect(() => {
+    if (isMobile && seatMapRef.current && seatMapData) {
+      setHasInitialized(true);
+    }
+  }, [isMobile, seatMapData]);
+
+  useEffect(() => {
+    if (isMobile && seatMapRef.current && hasInitialized && zoomLevel) {
+      const timer = setTimeout(() => {
+        const container = seatMapRef.current;
+        if (container) {
+          // Asegurar que el scroll sea instantáneo
+          const originalScrollBehavior = container.style.scrollBehavior;
+          container.style.scrollBehavior = 'auto';
+
+          const scrollWidth = container.scrollWidth;
+          const clientWidth = container.clientWidth;
+          const scrollHeight = container.scrollHeight;
+          const clientHeight = container.clientHeight;
+
+          if (scrollWidth > clientWidth || scrollHeight > clientHeight) {
+            const centerX = Math.max(0, (scrollWidth - clientWidth) / 2);
+            const centerY = Math.max(0, (scrollHeight - clientHeight) / 2);
+
+            container.scrollTo({
+              left: centerX,
+              top: centerY,
+              behavior: 'auto'
+            });
+          }
+
+          container.style.scrollBehavior = originalScrollBehavior;
+        }
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isMobile, zoomLevel, hasInitialized]);
 
   if (!seatMapData) return null;
 
@@ -697,23 +786,28 @@ const MainSeatMapContainer = ({
 
   // Layout para teatro
   const renderTheaterLayout = () => {
-    const orchestraSection = sections.find(s => 
+    const orchestraSection = sections.find(s =>
       s.id.includes('orchestra') || s.name.toLowerCase().includes('orchestra') ||
       s.id.includes('orquesta') || s.name.toLowerCase().includes('orquesta')
     );
-    const mezzanineSection = sections.find(s => 
+    const mezzanineSection = sections.find(s =>
       s.id.includes('mezzanine') || s.name.toLowerCase().includes('mezzanine') ||
       s.id.includes('mezanine') || s.name.toLowerCase().includes('mezanine')
     );
-    const balconySection = sections.find(s => 
+    const balconySection = sections.find(s =>
       s.id.includes('balcony') || s.name.toLowerCase().includes('balcony') ||
       s.id.includes('balcón') || s.name.toLowerCase().includes('balcón')
     );
-    const boxesSection = sections.find(s => 
+    const boxesSection = sections.find(s =>
       s.id.includes('boxes') || s.name.toLowerCase().includes('boxes') ||
       s.id.includes('palcos') || s.name.toLowerCase().includes('palcos')
     );
-    const vipSection = sections.find(s => s.id.includes('vip') || s.name.toLowerCase().includes('vip'));
+    // VIP section solo si no es parte de boxes (palcos)
+    const vipSection = sections.find(s =>
+      (s.id.includes('vip') || s.name.toLowerCase().includes('vip')) &&
+      !s.id.includes('boxes') && !s.name.toLowerCase().includes('boxes') &&
+      !s.id.includes('palcos') && !s.name.toLowerCase().includes('palcos')
+    );
 
     return (
       <div className="theater-layout">
