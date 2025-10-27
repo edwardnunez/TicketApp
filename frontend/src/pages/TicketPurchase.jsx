@@ -195,9 +195,13 @@ const TicketPurchase = () => {
 
   useEffect(() => {
     const username = localStorage.getItem("username");
-    if (username) {
+    const token = localStorage.getItem("token");
+    if (username && token) {
       axios.get(`${gatewayUrl}/users/search`, {
-        params: { username }
+        params: { username },
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       }).then(res => {
         setUserData(res.data);
       }).catch(err => {
@@ -353,10 +357,14 @@ const TicketPurchase = () => {
       const username = localStorage.getItem("username");
       
       let userId = null;
-      if (username) {
+      const token = localStorage.getItem('token');
+      if (username && token) {
         try {
           const userResponse = await axios.get(`${gatewayUrl}/users/search`, {
-            params: { username }
+            params: { username },
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
           });
           userId = userResponse.data._id;
         } catch (error) {
@@ -414,7 +422,12 @@ const TicketPurchase = () => {
 
       console.log('Enviando datos del ticket con PayPal:', ticketData);
 
-      const response = await axios.post(`${gatewayUrl}/tickets/purchase`, ticketData);
+      const token = localStorage.getItem('token');
+      const response = await axios.post(`${gatewayUrl}/tickets/purchase`, ticketData, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       
       if (response.data.success) {
         setTicketInfo({
