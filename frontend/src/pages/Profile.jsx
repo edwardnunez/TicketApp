@@ -203,11 +203,25 @@ const Profile = () => {
   const filterTicketsByStatus = (tickets, status) => {
     switch (status) {
       case 'active':
-        return tickets.filter(ticket => ticket.status === 'paid');
+        // Solo mostrar tickets pagados de eventos que aún no han pasado
+        return tickets.filter(ticket => {
+          if (ticket.status !== 'paid') return false;
+          const event = events[ticket.eventId];
+          if (!event || !event.date) return true; // Incluir si no hay fecha
+          return dayjs(event.date).isAfter(dayjs());
+        });
       case 'pending':
         return tickets.filter(ticket => ticket.status === 'pending');
       case 'cancelled':
         return tickets.filter(ticket => ticket.status === 'cancelled');
+      case 'past':
+        // Mostrar tickets pagados de eventos que ya pasaron
+        return tickets.filter(ticket => {
+          if (ticket.status !== 'paid') return false;
+          const event = events[ticket.eventId];
+          if (!event || !event.date) return false; // Excluir si no hay fecha
+          return dayjs(event.date).isBefore(dayjs());
+        });
       default:
         return tickets;
     }
@@ -490,6 +504,7 @@ const Profile = () => {
     const activeTickets = filterTicketsByStatus(tickets, 'active');
     const pendingTickets = filterTicketsByStatus(tickets, 'pending');
     const cancelledTickets = filterTicketsByStatus(tickets, 'cancelled');
+    const pastTickets = filterTicketsByStatus(tickets, 'past');
 
     const renderTicketTab = (ticketsList, emptyMessage) => {
       if (ticketsList.length === 0) {
@@ -510,14 +525,14 @@ const Profile = () => {
       }
 
       const groupedTickets = groupTicketsByEvent(ticketsList);
-      return Object.entries(groupedTickets).map(([eventId, eventGroup]) => 
+      return Object.entries(groupedTickets).map(([eventId, eventGroup]) =>
         renderEventGroup(eventId, eventGroup)
       );
     };
 
     return (
-      <Tabs 
-        activeKey={activeTab} 
+      <Tabs
+        activeKey={activeTab}
         onChange={setActiveTab}
         items={[
           {
@@ -529,6 +544,11 @@ const Profile = () => {
             key: 'pending',
             label: `Pendientes (${pendingTickets.length})`,
             children: renderTicketTab(pendingTickets, "No tienes entradas pendientes")
+          },
+          {
+            key: 'past',
+            label: `Pasadas (${pastTickets.length})`,
+            children: renderTicketTab(pastTickets, "No tienes entradas pasadas")
           },
           {
             key: 'cancelled',
@@ -625,7 +645,12 @@ const Profile = () => {
                   <div style={{ display: 'flex', gap: '16px', marginTop: '16px' }}>
                     <div style={{ textAlign: 'center' }}>
                       <Text strong style={{ display: 'block', fontSize: '20px', color: COLORS.primary.main }}>
-                        {tickets.filter(t => t.status === 'paid').length}
+                        {tickets.filter(t => {
+                          if (t.status !== 'paid') return false;
+                          const event = events[t.eventId];
+                          if (!event || !event.date) return true;
+                          return dayjs(event.date).isAfter(dayjs());
+                        }).length}
                       </Text>
                       <Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
                         Entradas activas
