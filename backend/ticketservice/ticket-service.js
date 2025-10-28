@@ -237,7 +237,7 @@ app.post('/tickets/purchase', async (req, res) => {
 
     console.log('Asientos procesados para guardado:', allSelectedSeats); // Para debugging
 
-    // Crear el ticket inicial CON qrCode temporal
+    // Crear el ticket inicial CON qrCode temporal ÚNICO
     const newTicket = new Ticket({
       userId,
       eventId,
@@ -258,7 +258,7 @@ app.post('/tickets/purchase', async (req, res) => {
       },
       ticketNumber,
       validationCode,
-      qrCode: 'temp' // QR temporal para evitar el error de validación
+      qrCode: `temp-${Date.now()}-${Math.random().toString(36).substring(2, 15)}` // QR temporal único para evitar conflictos de concurrencia
     });
 
     // Guardar el ticket para obtener el _id
