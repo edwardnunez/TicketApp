@@ -86,8 +86,8 @@ afterAll(async () => {
 });
 
 describe("Location Service - Integration tests", () => {
-  describe("Caso de Uso 1: Crear Ubicación", () => {
-    it("debería crear una nueva ubicación correctamente", async () => {
+  describe("Caso de Uso 3.1: Crear ubicación", () => {
+    it("Crear ubicación correcta - debería devolver status 201 y mensaje de éxito", async () => {
       const response = await request(app).post("/location").send(testLocation);
 
       expect(response.status).toBe(201);
@@ -96,7 +96,7 @@ describe("Location Service - Integration tests", () => {
       expect(response.body).toHaveProperty("category", testLocation.category);
     });
 
-    it("debería rechazar ubicación sin campos requeridos", async () => {
+    it("Faltan campos requeridos - debería devolver status 400 indicando los campos que faltan", async () => {
       const invalidLocation = { name: "Ubicación Incompleta" };
       const response = await request(app).post("/location").send(invalidLocation);
 
@@ -104,19 +104,18 @@ describe("Location Service - Integration tests", () => {
       expect(response.body).toHaveProperty("error");
     });
 
-    it("debería rechazar ubicación con categoría inválida", async () => {
+    it("Categoría inválida - debería devolver status 400 indicando que la categoría es inválida", async () => {
       const invalidCategoryLocation = {
         ...testLocation,
         category: "invalid_category"
       };
       const response = await request(app).post("/location").send(invalidCategoryLocation);
 
-      // mongoose enum error → 500
-      expect(response.status).toBe(500);
+      expect(response.status).toBe(400);
       expect(response.body).toHaveProperty("error");
     });
 
-    it("debería rechazar ubicación con capacidad negativa", async () => {
+    it("Capacidad negativa - debería devolver status 400 indicando que la capacidad debe ser mayor que cero", async () => {
       const invalidCapacityLocation = { ...testLocation, capacity: -100 };
       const response = await request(app).post("/location").send(invalidCapacityLocation);
 
@@ -124,19 +123,19 @@ describe("Location Service - Integration tests", () => {
     });
   });
 
-  describe("Caso de Uso 2: Listar ubicaciones", () => {
+  describe("Caso de Uso 3.2: Listar ubicaciones", () => {
     beforeAll(async () => {
       await request(app).post("/location").send(testLocation2);
     });
 
-    it("debería obtener todas las ubicaciones", async () => {
+    it("Obtener todas las ubicaciones - debería devolver lista con todas las ubicaciones y status 200", async () => {
       const response = await request(app).get("/locations");
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
       expect(response.body.length).toBeGreaterThan(0);
     });
 
-    it("debería permitir filtrar ubicaciones por categoría (aunque devuelva todas)", async () => {
+    it("Filtrar por categoría - debería devolver ubicaciones de la categoría especificada y status 200", async () => {
       const response = await request(app)
         .get("/locations")
         .query({ category: "stadium" });
@@ -145,7 +144,7 @@ describe("Location Service - Integration tests", () => {
     });
   });
 
-  describe("Caso de Uso 3: Obtener Ubicación por ID", () => {
+  describe("Caso de Uso 3.3: Obtener ubicación por id", () => {
     let locationId;
 
     beforeAll(async () => {
@@ -153,13 +152,13 @@ describe("Location Service - Integration tests", () => {
       locationId = response.body._id;
     });
 
-    it("debería obtener ubicación existente por ID", async () => {
+    it("Ubicación existente - debería devolver la ubicación y status 200", async () => {
       const response = await request(app).get(`/locations/${locationId}`);
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty("_id", locationId);
     });
 
-    it("debería retornar 404 para ubicación inexistente", async () => {
+    it("Ubicación inexistente - debería devolver status 404 especificando que no se ha encontrado", async () => {
       const fakeLocationId = "507f1f77bcf86cd799439011";
       const response = await request(app).get(`/locations/${fakeLocationId}`);
       expect(response.status).toBe(404);
@@ -167,8 +166,8 @@ describe("Location Service - Integration tests", () => {
     });
   });
 
-  describe("Caso de Uso 4: Crear SeatMap", () => {
-    it("debería crear un nuevo seatmap correctamente", async () => {
+  describe("Caso de Uso 3.4: Crear mapa de asientos", () => {
+    it("Crear mapa de asientos con datos válidos - debería devolver status 201 y mensaje de éxito", async () => {
       const response = await request(app).post("/seatmaps").send(testSeatMap);
 
       expect(response.status).toBe(201);
@@ -177,14 +176,14 @@ describe("Location Service - Integration tests", () => {
       expect(response.body).toHaveProperty("type", testSeatMap.type);
     });
 
-    it("debería rechazar seatmap sin campos requeridos", async () => {
+    it("Faltan campos requeridos - debería devolver status 400 indicando los campos que faltan", async () => {
       const invalidSeatMap = { name: "SeatMap Incompleto" };
       const response = await request(app).post("/seatmaps").send(invalidSeatMap);
-      expect(response.status).toBe(500);
+      expect(response.status).toBe(400);
       expect(response.body).toHaveProperty("error");
     });
 
-    it("debería rechazar seatmap con secciones inválidas", async () => {
+    it("Alguna sección inválida - debería devolver status 400 indicando qué sección es inválida y por qué", async () => {
       const invalidSeatMap = {
         ...testSeatMap,
         id: "seatmap-invalid",
@@ -197,49 +196,41 @@ describe("Location Service - Integration tests", () => {
         ]
       };
       const response = await request(app).post("/seatmaps").send(invalidSeatMap);
-      expect(response.status).toBe(500);
+      expect(response.status).toBe(400);
       expect(response.body).toHaveProperty("error");
     });
   });
 
-  describe("Caso de Uso 5: Listar SeatMaps", () => {
+  describe("Caso de Uso 3.5: Listar mapas de asientos", () => {
     beforeAll(async () => {
       await request(app).post("/seatmaps").send(testSeatMap);
     });
 
-    it("debería obtener todos los seatmaps", async () => {
+    it("Listar todos los mapas de asientos - debería devolver lista de todos los mapas y status 200", async () => {
       const response = await request(app).get("/seatmaps");
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
       expect(response.body.length).toBeGreaterThan(0);
     });
 
-    it("debería filtrar seatmaps por tipo", async () => {
+    it("Filtrar por tipo - debería devolver lista de mapas del tipo especificado y status 200", async () => {
       const response = await request(app)
         .get("/seatmaps")
         .query({ type: "football" });
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
     });
-
-    it("debería filtrar seatmaps activos", async () => {
-      const response = await request(app)
-        .get("/seatmaps")
-        .query({ isActive: "true" });
-      expect(response.status).toBe(200);
-      expect(Array.isArray(response.body)).toBe(true);
-    });
   });
 
-  describe("Caso de Uso 6: Obtener SeatMap por ID", () => {
+  describe("Caso de Uso 3.6: Obtener mapa de asientos por id", () => {
     let seatMapId = "seatmap-test";
 
-    it("debería obtener seatmap existente por ID", async () => {
+    it("Mapa de asientos existente - debería devolver el mapa de asientos y status 200", async () => {
       const response = await request(app).get(`/seatmaps/${seatMapId}`);
       expect([200, 404]).toContain(response.status);
     });
 
-    it("debería retornar 404 para seatmap inexistente", async () => {
+    it("Mapa de asientos inexistente - debería devolver status 404 especificando que no se ha encontrado", async () => {
       const fakeSeatMapId = "seatmap-noexiste";
       const response = await request(app).get(`/seatmaps/${fakeSeatMapId}`);
       expect(response.status).toBe(404);

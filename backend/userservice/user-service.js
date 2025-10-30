@@ -153,7 +153,7 @@ app.post("/adduser", async (req, res) => {
       { expiresIn: '1h' }
     );
 
-    res.status(200).json({
+    res.status(201).json({
       username: newUser.username,
       createdAt: newUser.createdAt,
       token: token,

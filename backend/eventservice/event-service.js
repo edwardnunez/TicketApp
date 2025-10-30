@@ -816,6 +816,43 @@ app.put("/events/:eventId", async (req, res) => {
       return res.status(404).json({ error: "Evento no encontrado" });
     }
 
+    // Validar tipo de evento
+    const validTypes = ['football', 'cinema', 'concert', 'theater', 'festival'];
+    if (eventData.type && !validTypes.includes(eventData.type)) {
+      return res.status(400).json({
+        error: `Tipo de evento inválido. Los tipos válidos son: ${validTypes.join(', ')}`
+      });
+    }
+
+    // Validar estado de evento
+    const validStates = ['activo', 'proximo', 'finalizado', 'cancelado'];
+    if (eventData.state && !validStates.includes(eventData.state)) {
+      return res.status(400).json({
+        error: `Estado de evento inválido. Los estados válidos son: ${validStates.join(', ')}`
+      });
+    }
+
+    // Validar campos requeridos
+    if (!eventData.name || !eventData.date || !eventData.location || !eventData.type) {
+      return res.status(400).json({
+        error: "Faltan campos requeridos: nombre, fecha, ubicación y tipo son obligatorios"
+      });
+    }
+
+    // Validar precios (no pueden ser negativos)
+    if (eventData.price !== undefined && eventData.price < 0) {
+      return res.status(400).json({
+        error: "El precio no puede ser negativo"
+      });
+    }
+
+    // Validar capacidad (debe ser positiva)
+    if (eventData.capacity !== undefined && eventData.capacity <= 0) {
+      return res.status(400).json({
+        error: "La capacidad debe ser mayor que cero"
+      });
+    }
+
     // Validar conflicto de eventos (excluyendo el evento actual)
     const eventDate = new Date(eventData.date);
     const startRange = new Date(eventDate.getTime() - 12 * 60 * 60 * 1000); // 12 horas antes
@@ -903,9 +940,27 @@ app.put("/events/:eventId", async (req, res) => {
 
   } catch (error) {
     console.error('Error actualizando evento:', error);
-    res.status(500).json({ 
-      error: 'Error interno del servidor', 
-      details: error.message 
+
+    // Si es un error de validación de Mongoose, devolver 400
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        error: 'Datos inválidos',
+        details: error.message
+      });
+    }
+
+    // Si es un error de CastError (ID inválido), devolver 400
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        error: 'ID de evento inválido',
+        details: error.message
+      });
+    }
+
+    // Cualquier otro error es 500
+    res.status(500).json({
+      error: 'Error interno del servidor',
+      details: error.message
     });
   }
 });

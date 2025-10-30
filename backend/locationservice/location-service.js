@@ -79,6 +79,14 @@ app.post("/location", async (req, res) => {
       return res.status(400).json({ error: "La capacidad no puede ser menor a 0" });
     }
 
+    // Validar categoría antes de intentar guardar
+    const validCategories = ['stadium', 'theater', 'cinema', 'festival', 'arena', 'auditorium'];
+    if (category && !validCategories.includes(category)) {
+      return res.status(400).json({
+        error: `Categoría inválida. Las categorías válidas son: ${validCategories.join(', ')}`
+      });
+    }
+
     let locationDoc = await LocationModel.findOne({ name });
     const repeatedLocation = await LocationModel.findOne({ name, address, category });
 
@@ -106,6 +114,23 @@ app.post("/location", async (req, res) => {
     }
   } catch (error) {
     console.error("Error creating/updating location:", error);
+
+    // Si es un error de validación de Mongoose, devolver 400
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        error: 'Datos inválidos',
+        details: error.message
+      });
+    }
+
+    // Si es un error de CastError (ID inválido), devolver 400
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        error: 'Datos inválidos',
+        details: error.message
+      });
+    }
+
     res.status(500).json({ error: "Error interno del servidor", details: error.message });
   }
 });
@@ -270,7 +295,44 @@ app.get('/seatmaps/:id', async (req, res) => {
 app.post('/seatmaps', async (req, res) => {
   try {
     const seatMapData = req.body;
-    
+
+    // Validar campos requeridos
+    if (!seatMapData.id || !seatMapData.name || !seatMapData.type) {
+      return res.status(400).json({
+        error: 'Faltan campos requeridos',
+        message: 'Se requieren los campos: id, name, type'
+      });
+    }
+
+    // Validar secciones
+    if (seatMapData.sections && Array.isArray(seatMapData.sections)) {
+      for (const section of seatMapData.sections) {
+        // Validar campos requeridos de la sección
+        if (!section.id || !section.name || !section.color || !section.position) {
+          return res.status(400).json({
+            error: 'Sección inválida',
+            message: `La sección "${section.name || 'sin nombre'}" no tiene todos los campos requeridos (id, name, color, position)`
+          });
+        }
+
+        // Validar valores negativos
+        if (section.rows < 0 || section.seatsPerRow < 0) {
+          return res.status(400).json({
+            error: 'Sección inválida',
+            message: `La sección "${section.name}" tiene valores negativos en rows o seatsPerRow`
+          });
+        }
+
+        // Validar valores de cero para seatsPerRow
+        if (section.hasNumberedSeats !== false && section.seatsPerRow === 0) {
+          return res.status(400).json({
+            error: 'Sección inválida',
+            message: `La sección "${section.name}" debe tener seatsPerRow mayor que 0`
+          });
+        }
+      }
+    }
+
     // Verificar que no exista un seatmap con el mismo id
     const existingSeatMap = await SeatMapModel.findOne({ id: seatMapData.id });
     if (existingSeatMap) {
@@ -293,6 +355,23 @@ app.post('/seatmaps', async (req, res) => {
     res.status(201).json(mapSeatMapForApi(newSeatMap));
   } catch (error) {
     console.error('Error creating seatmap:', error);
+
+    // Si es un error de validación de Mongoose, devolver 400
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        error: 'Datos inválidos',
+        message: error.message
+      });
+    }
+
+    // Si es un error de CastError (ID inválido), devolver 400
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        error: 'Datos inválidos',
+        message: error.message
+      });
+    }
+
     res.status(500).json({
       error: 'Error interno del servidor',
       message: error.message

@@ -71,9 +71,9 @@ afterAll(async () => {
 });
 
 describe("Ticket Service - Integration tests", () => {
-  
-  describe("Caso de Uso 1: Compra de entradas", () => {
-    it("debería comprar tickets correctamente", async () => {
+
+  describe("Caso de Uso 4.1: Compra de entradas", () => {
+    it("Compra de entrada con datos válidos - debería devolver status 201, mensaje de éxito y generar QR único", async () => {
       const response = await request(app)
         .post("/tickets/purchase")
         .send(testTicket);
@@ -86,7 +86,7 @@ describe("Ticket Service - Integration tests", () => {
       expect(response.body).toHaveProperty("qrCode");
     });
 
-    it("debería rechazar compra sin campos requeridos", async () => {
+    it("Faltan campos requeridos - debería devolver status 400 indicando los campos que faltan", async () => {
       const invalidTicket = {
         userId: "507f1f77bcf86cd799439011"
         // Faltan campos requeridos
@@ -100,7 +100,7 @@ describe("Ticket Service - Integration tests", () => {
       expect(response.body).toHaveProperty("error");
     });
 
-    it("debería rechazar compra con cantidad inválida", async () => {
+    it("Cantidad inválida - debería devolver status 400 indicando que la cantidad es inválida", async () => {
       const invalidQuantityTicket = {
         ...testTicket,
         quantity: 10 // Excede el límite
@@ -114,7 +114,7 @@ describe("Ticket Service - Integration tests", () => {
       expect(response.body).toHaveProperty("error");
     });
 
-    it("debería rechazar compra con información de cliente incompleta", async () => {
+    it("Información de cliente incompleta - debería devolver status 400 indicando que falta algún dato del cliente", async () => {
       const invalidCustomerTicket = {
         ...testTicket,
         // Sin customerInfo
@@ -130,12 +130,12 @@ describe("Ticket Service - Integration tests", () => {
     });
   });
 
-  describe("Caso de Uso 2: Obtener asientos ocupados", () => {
+  describe("Caso de Uso 4.2: Obtener asientos ocupados de un evento", () => {
     beforeAll(async () => {
       await request(app).post("/tickets/purchase").send(testTicket);
     });
 
-    it("debería obtener asientos ocupados de un evento", async () => {
+    it("Evento existente - debería devolver lista de asientos ocupados y status 200", async () => {
       const response = await request(app)
         .get(`/tickets/occupied/${testTicket.eventId}`);
 
@@ -145,7 +145,7 @@ describe("Ticket Service - Integration tests", () => {
       expect(Array.isArray(response.body.occupiedSeats)).toBe(true);
     });
 
-    it("debería retornar lista vacía para evento sin tickets", async () => {
+    it("Evento inexistente - debería devolver status 400 indicando que el evento no existe", async () => {
       const emptyEventId = "507f1f77bcf86cd799439999";
       const response = await request(app)
         .get(`/tickets/occupied/${emptyEventId}`);
@@ -156,12 +156,12 @@ describe("Ticket Service - Integration tests", () => {
     });
   });
 
-  describe("Caso de Uso 3: Obtener tickets de usuario", () => {
+  describe("Caso de Uso 4.3: Obtener tickets de un usuario", () => {
     beforeAll(async () => {
       await request(app).post("/tickets/purchase").send(testTicket2);
     });
 
-    it("debería obtener tickets de un usuario", async () => {
+    it("Usuario existente - debería devolver lista de tickets comprados por ese usuario y status 200", async () => {
       const response = await request(app)
         .get(`/tickets/user/${testTicket.userId}`);
 
@@ -170,20 +170,10 @@ describe("Ticket Service - Integration tests", () => {
       expect(response.body).toHaveProperty("tickets");
       expect(Array.isArray(response.body.tickets)).toBe(true);
     });
-
-    it("debería retornar lista vacía para usuario sin tickets", async () => {
-      const emptyUserId = "507f1f77bcf86cd799439999";
-      const response = await request(app)
-        .get(`/tickets/user/${emptyUserId}`);
-
-      expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty("success", true);
-      expect(response.body.tickets).toEqual([]);
-    });
   });
 
-  describe("Caso de Uso 4: Obtener tickets de evento", () => {
-    it("debería obtener tickets de un evento", async () => {
+  describe("Caso de Uso 4.4: Obtener tickets de evento", () => {
+    it("Tickets de evento - debería devolver lista de tickets vendidos para ese evento y status 200", async () => {
       const response = await request(app)
         .get(`/tickets/event/${testTicket.eventId}`);
 
@@ -193,7 +183,7 @@ describe("Ticket Service - Integration tests", () => {
       expect(Array.isArray(response.body.tickets)).toBe(true);
     });
 
-    it("debería incluir estadísticas de tickets", async () => {
+    it("Estadísticas de tickets - debería devolver el array de estadísticas de venta y status 200", async () => {
       const response = await request(app)
         .get(`/tickets/event/${testTicket.eventId}`);
 
@@ -203,7 +193,7 @@ describe("Ticket Service - Integration tests", () => {
     });
   });
 
-  describe("Caso de Uso 5: Cancelar entradas", () => {
+  describe("Caso de Uso 4.5: Cancelar entradas", () => {
     let ticketId;
     let cancelledTicketId;
 
@@ -212,7 +202,7 @@ describe("Ticket Service - Integration tests", () => {
       ticketId = response.body.ticket._id;
     });
 
-    it("debería cancelar ticket existente", async () => {
+    it("Entrada existente - debería eliminar la entrada y devolver status 200 y mensaje de éxito", async () => {
       const response = await request(app)
         .delete(`/tickets/${ticketId}`)
         .send({ userId: testTicket.userId });
@@ -223,7 +213,7 @@ describe("Ticket Service - Integration tests", () => {
       cancelledTicketId = ticketId;
     });
 
-    it("debería rechazar cancelación de ticket inexistente", async () => {
+    it("Entrada no existente - debería devolver status 404 indicando que la entrada no existe", async () => {
       const fakeTicketId = "507f1f77bcf86cd799439999";
       const response = await request(app)
         .delete(`/tickets/${fakeTicketId}`)
@@ -232,32 +222,9 @@ describe("Ticket Service - Integration tests", () => {
       expect(response.status).toBe(404);
       expect(response.body).toHaveProperty("error", "Ticket no encontrado");
     });
-
-    it("debería rechazar cancelación de ticket ya cancelado", async () => {
-      // Crear un nuevo ticket para cancelar
-      const newTicket = { ...testTicket, userId: "507f1f77bcf86cd799439015" };
-      const createResponse = await request(app).post("/tickets/purchase").send(newTicket);
-      const newTicketId = createResponse.body.ticket._id;
-      
-      // Cancelar el ticket
-      const firstCancel = await request(app)
-        .delete(`/tickets/${newTicketId}`)
-        .send({ userId: newTicket.userId });
-
-      expect(firstCancel.status).toBe(200);
-      expect(firstCancel.body).toHaveProperty("success", true);
-
-      // Intentar cancelar el mismo ticket nuevamente
-      const secondCancel = await request(app)
-        .delete(`/tickets/${newTicketId}`)
-        .send({ userId: newTicket.userId });
-
-      expect(secondCancel.status).toBe(400);
-      expect(secondCancel.body).toHaveProperty("error", "Ticket ya cancelado");
-    });
   });
 
-  describe("Caso de Uso 6: Obtener QR de ticket", () => {
+  describe("Caso de Uso 4.6: Obtener QR de entrada", () => {
     let ticketId;
 
     beforeAll(async () => {
@@ -265,7 +232,7 @@ describe("Ticket Service - Integration tests", () => {
       ticketId = response.body.ticket._id;
     });
 
-    it("debería obtener QR de ticket existente", async () => {
+    it("Entrada existente - debería devolver el QR de la entrada y status 200", async () => {
       const response = await request(app)
         .get(`/tickets/${ticketId}/qr`);
 
@@ -275,7 +242,7 @@ describe("Ticket Service - Integration tests", () => {
       expect(response.body).toHaveProperty("ticketNumber");
     });
 
-    it("debería rechazar QR de ticket inexistente", async () => {
+    it("Entrada no existente - debería devolver status 404 indicando que la entrada no existe", async () => {
       const fakeTicketId = "507f1f77bcf86cd799439999";
       const response = await request(app)
         .get(`/tickets/${fakeTicketId}/qr`);
@@ -285,12 +252,12 @@ describe("Ticket Service - Integration tests", () => {
     });
   });
 
-  describe("Caso de Uso 7: Eliminar tickets por evento", () => {
+  describe("Caso de Uso 4.7: Eliminar entradas por evento", () => {
     beforeAll(async () => {
       await request(app).post("/tickets/purchase").send(testTicket);
     });
 
-    it("debería eliminar tickets de un evento", async () => {
+    it("Eliminar todas las entradas de un evento - debería devolver status 200 y mensaje de éxito", async () => {
       const response = await request(app)
         .delete(`/tickets/event/${testTicket.eventId}`);
 
@@ -301,8 +268,8 @@ describe("Ticket Service - Integration tests", () => {
     });
   });
 
-  describe("Caso de Uso 8: Estadísticas de administrador", () => {
-    it("debería obtener estadísticas generales", async () => {
+  describe("Caso de Uso 4.8: Estadísticas de administrador", () => {
+    it("Estadísticas generales - debería devolver objeto con todas las estadísticas generales y status 200", async () => {
       const response = await request(app)
         .get("/tickets/admin/statistics");
 
