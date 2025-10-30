@@ -43,9 +43,29 @@ brew install jmeter
 
 Asegúrate de que tu aplicación esté corriendo:
 
+#### ⚠️ IMPORTANTE: Deshabilitar Emails Durante Pruebas de Rendimiento
+
+**Por qué es necesario:**
+- Las pruebas de rendimiento generan cientos/miles de compras
+- Cada compra intenta enviar un email de confirmación
+- Gmail bloquea la cuenta por "Too many login attempts" (Error 454)
+- Esto causa que las pruebas fallen
+
+**Solución:**
+
+Antes de ejecutar pruebas de rendimiento, edita el archivo `.env` en la raíz del proyecto:
+
 ```bash
-# Iniciar con Docker Compose
+# En .env, cambiar:
+ENABLE_EMAILS=false
+```
+
+Luego reinicia los servicios:
+
+```bash
+# Iniciar con Docker Compose (con emails deshabilitados)
 cd ticketapp
+docker-compose down
 docker-compose up -d
 
 # O iniciar servicios individualmente
@@ -93,10 +113,31 @@ Copia los tokens de las respuestas para usarlos en JMeter.
 
 Abre el archivo `TicketApp-Performance-Test.jmx` en JMeter y actualiza las variables:
 
+**Variables de Conexión:**
 - `GATEWAY_HOST`: localhost (o tu host)
 - `GATEWAY_PORT`: 8000
-- `ADMIN_TOKEN`: Tu token de admin
-- `USER_TOKEN`: Tu token de usuario
+
+**Variables de Autenticación:**
+- `TEST_USERNAME`: Usuario de prueba (por defecto: `testuser`)
+- `TEST_PASSWORD`: Contraseña de prueba (por defecto: `Password123`)
+
+**Variables de Datos de Prueba (REQUERIDAS):**
+- `TEST_USER_ID`: ID de un usuario existente en el sistema
+- `TEST_EVENT_ID`: ID de un evento existente en el sistema
+
+**Cómo obtener TEST_USER_ID:**
+```bash
+# Después de hacer login, el token contiene el userId
+# O consultar directamente:
+curl -X GET http://localhost:8000/users/search?username=testuser
+```
+
+**Cómo obtener TEST_EVENT_ID:**
+```bash
+# Listar eventos disponibles
+curl -X GET http://localhost:8000/events
+# Copiar el _id de cualquier evento
+```
 
 ---
 
@@ -140,55 +181,173 @@ jmeter -n -t TicketApp-Performance-Test.jmx \
 
 ## Tipos de Pruebas
 
-### 1. Health Check (Básica)
-**Thread Group:** `1. Health Check`
-- **Usuarios:** 10
-- **Ramp-up:** 2 segundos
-- **Loops:** 10
-- **Total requests:** 100
+El archivo `TicketApp-Performance-Test.jmx` contiene dos tipos de escenarios de prueba:
 
-**Propósito:** Verificar disponibilidad básica del sistema.
+### Comparación Rápida
 
-### 2. Carga de Eventos Públicos
-**Thread Group:** `2. Public Endpoints - Events List`
+| Métrica | Pruebas de Rendimiento | Pruebas de Estrés |
+|---------|------------------------|-------------------|
+| **Usuarios Simultáneos** | 50-100 | 1000-1500 |
+| **Total de Requests** | ~6,650 | ~338,000 |
+| **Objetivo** | Carga normal | Carga extrema |
+| **Estado por Defecto** | ✅ Habilitadas (excepto compra) | ❌ Deshabilitadas |
+| **Recursos Requeridos** | Moderados | Altos |
+| **Uso Recomendado** | Testing diario | Testing de límites |
+| **Asientos Dinámicos** | ✅ Sí | ✅ Sí |
+
+### 🔵 Pruebas de Rendimiento (Carga Normal)
+Simulan el uso normal de la aplicación con volúmenes de usuarios moderados. **HABILITADAS por defecto**.
+
+#### 1. Inicio de Sesión - `[RENDIMIENTO] 1. Inicio de Sesión`
 - **Usuarios:** 50
 - **Ramp-up:** 10 segundos
-- **Loops:** 50
-- **Total requests:** 2,500
-
-**Propósito:** Simular carga de usuarios navegando por eventos.
-
-### 3. Autenticación de Usuario
-**Thread Group:** `3. User Authentication - Login`
-- **Usuarios:** 20
-- **Ramp-up:** 5 segundos
 - **Loops:** 20
-- **Total requests:** 400
+- **Total requests:** 1,000
+- **Endpoint:** `POST /login`
+- **Propósito:** Probar sistema de autenticación bajo carga normal
 
-**Propósito:** Probar sistema de autenticación bajo carga.
-
-### 4. Compra de Tickets (Deshabilitado por defecto)
-**Thread Group:** `4. Authenticated - Ticket Purchase`
-- **Usuarios:** 30
-- **Ramp-up:** 10 segundos
+#### 2. Carga de Eventos - `[RENDIMIENTO] 2. Carga de Eventos`
+- **Usuarios:** 80
+- **Ramp-up:** 15 segundos
 - **Loops:** 30
+- **Total requests:** 2,400
+- **Endpoint:** `GET /events`
+- **Propósito:** Simular usuarios navegando por el catálogo de eventos
 
-**Configuración requerida:**
-1. Habilitar el Thread Group
-2. Reemplazar `EVENT_ID_HERE` con un ID de evento válido
-3. Configurar `USER_TOKEN` en variables
+#### 3. Selección de Asientos - `[RENDIMIENTO] 3. Selección de Asientos`
+- **Usuarios:** 60
+- **Ramp-up:** 12 segundos
+- **Loops:** 25
+- **Total requests:** 1,500
+- **Endpoint:** `GET /tickets/occupied/:eventId`
+- **Propósito:** Probar consulta de disponibilidad de asientos bajo carga normal
 
-**Propósito:** Probar transacciones críticas bajo carga.
-
-### 5. Operaciones de Admin (Deshabilitado por defecto)
-**Thread Group:** `5. Admin - Get All Users`
-- **Usuarios:** 5
-- **Ramp-up:** 2 segundos
+#### 4. Compra de Entradas - `[RENDIMIENTO] 4. Compra de Entradas`
+- **Usuarios:** 40
+- **Ramp-up:** 15 segundos
 - **Loops:** 10
+- **Total requests:** 800 (400 login + 400 compra)
+- **Endpoint:** `POST /tickets/purchase`
+- **Estado:** **DESHABILITADO por defecto** (puede generar muchos datos)
+- **Propósito:** Probar transacciones críticas de compra bajo carga normal
+
+**⚠️ IMPORTANTE: Genera Asientos Dinámicos**
+
+Esta prueba usa **IDs de asientos únicos** por cada thread para evitar colisiones:
+- IDs generados: `PERF-{threadNum}-{random}`
+- Ejemplo: `PERF-1-543210`, `PERF-2-789456`, etc.
+- Cada usuario compra asientos diferentes ✅
 
 **Configuración requerida:**
-1. Habilitar el Thread Group
-2. Configurar `ADMIN_TOKEN` en variables
+1. Habilitar el Thread Group (cambiar `enabled="false"` a `enabled="true"`)
+2. Configurar `TEST_USER_ID` y `TEST_EVENT_ID` en las variables
+3. **Nota:** No requiere asientos específicos en el evento (se generan dinámicamente)
+
+#### 5. Cargar Entradas de Usuario - `[RENDIMIENTO] 5. Cargar Entradas de Usuario`
+- **Usuarios:** 50
+- **Ramp-up:** 10 segundos
+- **Loops:** 15
+- **Total requests:** 750
+- **Endpoint:** `GET /tickets/user/:userId/details`
+- **Propósito:** Probar consulta de tickets de usuario bajo carga normal
+
+---
+
+### 🔴 Pruebas de Estrés (Carga Alta - 1000+ Usuarios)
+Simulan momentos de máxima carga con grandes volúmenes de usuarios simultáneos. **DESHABILITADAS por defecto**.
+
+⚠️ **ADVERTENCIA**: Estas pruebas generan una carga extremadamente alta. Asegúrate de tener recursos suficientes.
+
+#### 1. Inicio de Sesión - `[ESTRÉS] 1. Inicio de Sesión`
+- **Usuarios:** 1,000
+- **Ramp-up:** 10 segundos
+- **Loops:** 50
+- **Total requests:** 50,000
+- **Endpoint:** `POST /login`
+- **Propósito:** Probar límite de autenticación bajo carga extrema
+
+#### 2. Carga de Eventos - `[ESTRÉS] 2. Carga de Eventos`
+- **Usuarios:** 1,500
+- **Ramp-up:** 15 segundos
+- **Loops:** 80
+- **Total requests:** 120,000
+- **Endpoint:** `GET /events`
+- **Propósito:** Probar límite de consultas de catálogo bajo máxima carga
+
+#### 3. Selección de Asientos - `[ESTRÉS] 3. Selección de Asientos`
+- **Usuarios:** 1,200
+- **Ramp-up:** 12 segundos
+- **Loops:** 60
+- **Total requests:** 72,000
+- **Endpoint:** `GET /tickets/occupied/:eventId`
+- **Propósito:** Probar disponibilidad en escenario de alta concurrencia
+
+#### 4. Compra de Entradas - `[ESTRÉS] 4. Compra de Entradas`
+- **Usuarios:** 800
+- **Ramp-up:** 15 segundos
+- **Loops:** 20
+- **Total requests:** 32,000 (16,000 login + 16,000 compra)
+- **Endpoint:** `POST /tickets/purchase`
+- **Estado:** **DESHABILITADO por defecto**
+- **Propósito:** Probar límite de transacciones concurrentes
+- **Nota:** Usa IDs de asientos dinámicos para evitar colisiones
+
+#### 5. Cargar Entradas de Usuario - `[ESTRÉS] 5. Cargar Entradas de Usuario`
+- **Usuarios:** 1,000
+- **Ramp-up:** 10 segundos
+- **Loops:** 40
+- **Total requests:** 40,000
+- **Endpoint:** `GET /tickets/user/:userId/details`
+- **Propósito:** Probar consulta de datos de usuario bajo carga extrema
+
+**Para ejecutar las pruebas de estrés:**
+1. Abrir el archivo `.jmx` en JMeter GUI
+2. Deshabilitar los Thread Groups de `[RENDIMIENTO]`
+3. Habilitar los Thread Groups de `[ESTRÉS]`
+4. Configurar variables requeridas
+5. **Aumentar memoria de JMeter** (ver sección Requisitos de Sistema)
+6. Ejecutar las pruebas
+
+#### Requisitos de Sistema para Pruebas de Estrés
+
+Las pruebas de estrés con 1000+ usuarios requieren recursos significativos:
+
+**JMeter (Máquina de Prueba):**
+- RAM: Mínimo 4GB, Recomendado 8GB
+- CPU: 4+ cores
+- Configurar JVM:
+  ```bash
+  # Windows
+  set JVM_ARGS=-Xms2g -Xmx4g -XX:MaxMetaspaceSize=256m
+
+  # Linux/Mac
+  export JVM_ARGS="-Xms2g -Xmx4g -XX:MaxMetaspaceSize=256m"
+  ```
+
+**Servidor (Sistema bajo prueba):**
+- RAM: Mínimo 8GB, Recomendado 16GB
+- CPU: 8+ cores
+- Base de datos con suficiente capacidad
+- Conexiones de red: Aumentar límites del sistema operativo
+
+**Límites del Sistema Operativo:**
+```bash
+# Linux/Mac - Aumentar límite de archivos abiertos
+ulimit -n 65536
+
+# Linux - Aumentar límite de conexiones TCP
+sysctl -w net.core.somaxconn=4096
+sysctl -w net.ipv4.tcp_max_syn_backlog=4096
+```
+
+**Recomendaciones Importantes:**
+- ⚠️ **NO ejecutar en producción** sin autorización explícita
+- ⚠️ Usar modo CLI (sin GUI) para pruebas de estrés
+- ⚠️ Monitorear recursos del servidor durante las pruebas
+- ⚠️ Ejecutar una prueba a la vez (no todos los Thread Groups simultáneamente)
+- ⚠️ Limpiar base de datos después de pruebas de compra
+
+📘 **Para más detalles sobre pruebas de estrés, consulta:** [STRESS-TEST-GUIDE.md](STRESS-TEST-GUIDE.md)
 
 ---
 
@@ -405,6 +564,55 @@ jobs:
 ---
 
 ## Troubleshooting
+
+### Problema: "Error enviando email: Too many login attempts" (Error 454)
+
+**Síntomas:**
+```
+ticketservice | Error enviando email de confirmación: Error: Invalid login: 454-4.7.0 Too many login attempts
+ticketservice | responseCode: 454
+ticketservice | code: 'EAUTH'
+```
+
+**Causa:** Las pruebas de rendimiento generan muchos intentos de envío de email y Gmail bloquea la cuenta temporalmente.
+
+**Solución Inmediata:**
+
+1. **Deshabilitar el envío de emails** editando [.env](../.env):
+   ```bash
+   # Cambiar en .env
+   ENABLE_EMAILS=false
+   ```
+
+2. **Reiniciar los servicios:**
+   ```bash
+   docker-compose down
+   docker-compose up -d
+   ```
+
+3. **Verificar que el cambio se aplicó:**
+   ```bash
+   docker logs ticketservice
+   # Deberías ver: "⚠️  Envío de emails deshabilitado (ENABLE_EMAILS=false)"
+   ```
+
+4. **Ejecutar las pruebas nuevamente**
+
+**Para volver a habilitar emails después de las pruebas:**
+```bash
+# En .env
+ENABLE_EMAILS=true
+
+# Reiniciar servicios
+docker-compose restart ticketservice
+```
+
+**Prevención:**
+- **SIEMPRE** deshabilitar emails antes de ejecutar pruebas de rendimiento/estrés
+- Usar `ENABLE_EMAILS=false` en entornos de testing
+- Solo habilitar emails en producción
+
+---
 
 ### Problema: "Connection Refused"
 **Solución:** Verifica que todos los servicios estén corriendo

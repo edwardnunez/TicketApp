@@ -30,6 +30,7 @@ services:
       - SMTP_USER=${SMTP_USER}
       - SMTP_PASS=${SMTP_PASS}
       - SMTP_FROM=${SMTP_FROM:-TicketApp <no-reply@ticketapp.com>}
+      - ENABLE_EMAILS=${ENABLE_EMAILS:-true}
       - USER_SERVICE_URL=http://userservice:8001
       - EVENT_SERVICE_URL=http://eventservice:8003
       - NODE_TLS_REJECT_UNAUTHORIZED=0
