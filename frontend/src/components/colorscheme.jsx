@@ -9,7 +9,7 @@
  * Paleta de colores primaria con tema verde menta
  */
 const PRIMARY = {
-  main: '#00BFA5',
+  main: '#00856F',
   light: '#5DF2D6',
   dark: '#008E76',
   contrast: '#FFFFFF'
@@ -40,7 +40,7 @@ const CATEGORIES = {
  * Colores de estado y notificaciones
  */
 const STATUS = {
-  success: '#00BFA5', // Mismo que color primario
+  success: '#00856F', // Mismo que color primario
   info: '#4DD0E1', // Azul claro compatible
   warning: '#FFC107', // Amarillo ámbar
   error: '#F44336', // Rojo para errores
@@ -129,10 +129,10 @@ const SEAT_STATES = {
     hover: '#F3F4F6'
   },
   selected: {
-    background: '#00BFA5',
+    background: '#00856F',
     border: '#008E76',
     color: '#FFFFFF',
-    shadow: '0 4px 12px rgba(0, 191, 165, 0.3)'
+    shadow: '0 4px 12px rgba(0, 133, 111, 0.3)'
   },
   occupied: {
     background: '#F3F4F6',
@@ -164,7 +164,7 @@ const SEAT_STATES = {
  * Definiciones de degradados profesionales
  */
 const GRADIENTS = {
-  primary: 'linear-gradient(135deg, #00BFA5 0%, #008E76 100%)', // Degradado verde menta
+  primary: 'linear-gradient(135deg, #00856F 0%, #008E76 100%)', // Degradado verde menta
   header: 'linear-gradient(90deg, #424242 0%, #212121 100%)', // Degradado gris oscuro
   footer: 'linear-gradient(180deg, #f9f9f9 0%, #f0f2f5 100%)', // Mantener sutil para footer
   secondary: 'linear-gradient(135deg, #DC2626 0%, #EF4444 100%)',
@@ -187,7 +187,7 @@ const SHADOWS = {
   xl: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
   '2xl': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
   inner: 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)',
-  glow: '0 0 20px rgba(0, 191, 165, 0.3)',
+  glow: '0 0 20px rgba(0, 133, 111, 0.3)',
   glowGold: '0 0 20px rgba(245, 158, 11, 0.4)',
   glowRed: '0 0 20px rgba(220, 38, 38, 0.3)'
 };
