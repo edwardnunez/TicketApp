@@ -1,572 +1,1186 @@
 import request from "supertest";
-import { MongoMemoryServer } from "mongodb-memory-server";
+import nock from "nock";
+import jwt from "jsonwebtoken";
 
-let mongoServer;
 let app;
+const JWT_SECRET = "test-secret-key";
 
-const testUser = {
-  username: "testuser",
-  password: "TestPass123",
-  name: "Test",
-  surname: "User",
-  email: "test@example.com"
+// URLs de los microservicios
+const USER_SERVICE_URL = "http://localhost:8001";
+const TICKET_SERVICE_URL = "http://localhost:8002";
+const EVENT_SERVICE_URL = "http://localhost:8003";
+const LOCATION_SERVICE_URL = "http://localhost:8004";
+
+/**
+ * Helper para generar tokens JWT de prueba
+ */
+const generateToken = (payload) => {
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: "1h" });
 };
 
-const testEvent = {
-  name: "Concierto de Prueba",
-  type: "concert",
-  description: "Un concierto de prueba",
-  date: "2024-12-31T20:00:00Z",
-  location: "507f1f77bcf86cd799439011",
-  capacity: 1000,
-  price: 50,
-  createdBy: "admin1"
-};
-
-const testLocation = {
-  name: "Estadio de Prueba",
-  category: "stadium",
-  address: "Calle de Prueba 123",
-  capacity: 50000
-};
-
-const testTicket = {
-  userId: "507f1f77bcf86cd799439011",
-  eventId: "507f1f77bcf86cd799439012",
-  selectedSeats: [
-    {
-      id: "vip-1-1",
-      sectionId: "vip",
-      row: 1,
-      seat: 1,
-      price: 100,
-      isGeneralAdmission: false
-    }
-  ],
-  price: 100,
-  quantity: 1,
-  customerInfo: {
-    name: "Test Customer",
-    email: "test@example.com",
-    phone: "123456789"
-  }
+/**
+ * Tokens de prueba
+ */
+const tokens = {
+  admin: generateToken({ userId: "admin123", role: "admin", username: "admin" }),
+  user: generateToken({ userId: "user123", role: "user", username: "testuser" }),
+  otherUser: generateToken({ userId: "user456", role: "user", username: "otheruser" }),
+  expired: jwt.sign({ userId: "user123", role: "user" }, JWT_SECRET, { expiresIn: "-1h" }),
+  invalid: "invalid.token.here"
 };
 
 beforeAll(async () => {
-  try {
-    mongoServer = await MongoMemoryServer.create();
-    const mongoUri = mongoServer.getUri();
-    process.env.MONGODB_URI = mongoUri;
-    process.env.MONGODB_URI_LOCATION = mongoUri;
-    process.env.MONGODB_URI_SEATMAP = mongoUri;
-    
-    // Mock de servicios externos para tests
-    process.env.USER_SERVICE_URL = "http://localhost:8001";
-    process.env.TICKET_SERVICE_URL = "http://localhost:8002";
-    process.env.EVENT_SERVICE_URL = "http://localhost:8003";
-    process.env.LOCATION_SERVICE_URL = "http://localhost:8004";
-    
-    const { default: gatewayService } = await import("../gateway-service.js");
-    app = gatewayService;
-  } catch (error) {
-    console.error('Error en beforeAll:', error);
-    throw error;
-  }
+  // Configurar variables de entorno para las pruebas
+  process.env.JWT_SECRET = JWT_SECRET;
+  process.env.USER_SERVICE_URL = USER_SERVICE_URL;
+  process.env.TICKET_SERVICE_URL = TICKET_SERVICE_URL;
+  process.env.EVENT_SERVICE_URL = EVENT_SERVICE_URL;
+  process.env.LOCATION_SERVICE_URL = LOCATION_SERVICE_URL;
+
+  // Importar la aplicación
+  const { default: gatewayService } = await import("../gateway-service.js");
+  app = gatewayService;
 });
 
 afterAll(async () => {
   if (app && typeof app.close === 'function') {
     app.close();
   }
-  if (mongoServer && typeof mongoServer.stop === 'function') {
-    await mongoServer.stop();
-  }
 });
 
-describe("Gateway Service - Integration tests", () => {
-  
-  describe("Caso de Uso 1: Health check", () => {
-    it("debería retornar estado OK", async () => {
+afterEach(() => {
+  nock.cleanAll();
+});
+
+describe("Gateway Service - Integration Tests", () => {
+
+  describe("Health Check", () => {
+    it("GET /health - debería retornar estado OK", async () => {
       const response = await request(app).get("/health");
 
       expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty("status", "OK");
+      expect(response.body).toEqual({ status: "OK" });
     });
   });
 
-  describe("Caso de Uso 2: Autenticación de usuario", () => {
-    it("debería validar datos de login", async () => {
-      const loginData = {
-        username: "testuser",
-        password: "testpassword"
-      };
+  describe("User Routes", () => {
 
-      expect(loginData.username).toBeDefined();
-      expect(loginData.password).toBeDefined();
+    describe("POST /login", () => {
+      it("debería hacer proxy de login exitoso al user service", async () => {
+        const loginData = { username: "testuser", password: "testpass" };
+        const mockResponse = {
+          token: "jwt-token-123",
+          user: { id: "user123", username: "testuser", email: "test@example.com" }
+        };
+
+        nock(USER_SERVICE_URL)
+          .post("/login", loginData)
+          .reply(200, mockResponse);
+
+        const response = await request(app)
+          .post("/login")
+          .send(loginData);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(mockResponse);
+      });
+
+      it("debería retornar error 401 si las credenciales son inválidas", async () => {
+        const loginData = { username: "testuser", password: "wrongpass" };
+
+        nock(USER_SERVICE_URL)
+          .post("/login", loginData)
+          .reply(401, { error: "Credenciales inválidas" });
+
+        const response = await request(app)
+          .post("/login")
+          .send(loginData);
+
+        expect(response.status).toBe(401);
+        expect(response.body).toHaveProperty("error");
+      });
     });
 
-    it("debería validar respuesta de login exitoso", async () => {
-      const loginResponse = {
-        token: "jwt-token-123",
-        user: {
-          id: "user1",
-          username: "testuser",
+    describe("POST /adduser", () => {
+      it("debería registrar un nuevo usuario correctamente", async () => {
+        const userData = {
+          username: "newuser",
+          password: "TestPass123",
+          name: "New",
+          surname: "User",
+          email: "new@example.com"
+        };
+
+        const mockResponse = {
+          success: true,
+          userId: "newuser123",
+          message: "Usuario creado exitosamente"
+        };
+
+        nock(USER_SERVICE_URL)
+          .post("/adduser", userData)
+          .reply(200, mockResponse);
+
+        const response = await request(app)
+          .post("/adduser")
+          .send(userData);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(mockResponse);
+      });
+
+      it("debería retornar error si el username ya existe", async () => {
+        const userData = {
+          username: "existinguser",
+          password: "TestPass123",
+          name: "Test",
+          surname: "User",
           email: "test@example.com"
-        }
-      };
+        };
 
-      expect(loginResponse.token).toBeDefined();
-      expect(loginResponse.user).toBeDefined();
-      expect(loginResponse.user.id).toBe("user1");
+        nock(USER_SERVICE_URL)
+          .post("/adduser", userData)
+          .reply(400, { error: "El nombre de usuario ya existe" });
+
+        const response = await request(app)
+          .post("/adduser")
+          .send(userData);
+
+        expect(response.status).toBe(400);
+        expect(response.body).toHaveProperty("error");
+      });
     });
 
-    it("debería validar registro de usuario", async () => {
-      const userData = {
-        name: "Test",
-        surname: "User",
-        username: "newuser",
-        email: "test@example.com",
-        password: "testpassword"
-      };
+    describe("GET /users (Admin only)", () => {
+      it("debería permitir acceso con token de admin", async () => {
+        const mockUsers = [
+          { id: "user1", username: "user1", email: "user1@example.com" },
+          { id: "user2", username: "user2", email: "user2@example.com" }
+        ];
 
-      const requiredFields = ['name', 'surname', 'username', 'email', 'password'];
-      const hasAllRequiredFields = requiredFields.every(field => 
-        userData[field] !== undefined && userData[field] !== null
-      );
+        nock(USER_SERVICE_URL)
+          .get("/users")
+          .reply(200, mockUsers);
 
-      expect(hasAllRequiredFields).toBe(true);
+        const response = await request(app)
+          .get("/users")
+          .set("Authorization", `Bearer ${tokens.admin}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(mockUsers);
+      });
+
+      it("debería denegar acceso sin token", async () => {
+        const response = await request(app)
+          .get("/users");
+
+        expect(response.status).toBe(401);
+        expect(response.body).toHaveProperty("error");
+        expect(response.body.message).toContain("autenticación");
+      });
+
+      it("debería denegar acceso con token de usuario normal", async () => {
+        const response = await request(app)
+          .get("/users")
+          .set("Authorization", `Bearer ${tokens.user}`);
+
+        expect(response.status).toBe(403);
+        expect(response.body).toHaveProperty("error");
+        expect(response.body.message).toContain("permisos de administrador");
+      });
+
+      it("debería denegar acceso con token expirado", async () => {
+        const response = await request(app)
+          .get("/users")
+          .set("Authorization", `Bearer ${tokens.expired}`);
+
+        expect(response.status).toBe(401);
+        expect(response.body.error).toBe("Token expirado");
+      });
+
+      it("debería denegar acceso con token inválido", async () => {
+        const response = await request(app)
+          .get("/users")
+          .set("Authorization", `Bearer ${tokens.invalid}`);
+
+        expect(response.status).toBe(401);
+        expect(response.body.error).toBe("Token inválido");
+      });
     });
 
-    it("debería validar respuesta de registro exitoso", async () => {
-      const registrationResponse = {
-        userId: "user123",
-        success: true,
-        message: "User created successfully"
-      };
+    describe("GET /users/search", () => {
+      it("debería buscar usuario por username", async () => {
+        const mockUser = { id: "user123", username: "testuser", email: "test@example.com" };
 
-      expect(registrationResponse.userId).toBeDefined();
-      expect(registrationResponse.success).toBe(true);
-    });
-  });
+        nock(USER_SERVICE_URL)
+          .get("/users/search?username=testuser")
+          .reply(200, mockUser);
 
-  describe("Caso de Uso 3: Gestión de tickets", () => {
-    it("debería validar compra de tickets", async () => {
-      const purchaseData = {
-        eventId: "event1",
-        seats: ["seat1", "seat2"],
-        buyerInfo: {
-          name: "Test Buyer",
-          email: "buyer@example.com",
-          phone: "123456789"
-        },
-        paymentMethod: "credit_card"
-      };
+        const response = await request(app)
+          .get("/users/search?username=testuser");
 
-      expect(purchaseData.eventId).toBeDefined();
-      expect(Array.isArray(purchaseData.seats)).toBe(true);
-      expect(purchaseData.buyerInfo).toBeDefined();
-      expect(purchaseData.paymentMethod).toBeDefined();
-    });
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(mockUser);
+      });
 
-    it("debería validar respuesta de compra exitosa", async () => {
-      const purchaseResponse = {
-        success: true,
-        ticketId: "ticket123",
-        qrCode: "qr-code-123",
-        totalPrice: 100
-      };
+      it("debería buscar usuario por userId", async () => {
+        const mockUser = { id: "user123", username: "testuser", email: "test@example.com" };
 
-      expect(purchaseResponse.success).toBe(true);
-      expect(purchaseResponse.ticketId).toBeDefined();
-      expect(purchaseResponse.qrCode).toBeDefined();
+        nock(USER_SERVICE_URL)
+          .get("/users/search?userId=user123")
+          .reply(200, mockUser);
+
+        const response = await request(app)
+          .get("/users/search?userId=user123");
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(mockUser);
+      });
     });
 
-    it("debería validar obtención de asientos ocupados", async () => {
-      const occupiedSeatsResponse = {
-        eventId: "event1",
-        occupiedSeats: ["seat1", "seat2", "seat3"],
-        count: 3
-      };
+    describe("PUT /edit-user/:userId (Protected - Ownership)", () => {
+      it("debería permitir a usuario editar su propio perfil", async () => {
+        const userId = "user123";
+        const updateData = { name: "Updated", surname: "Name" };
+        const mockResponse = { success: true, user: { ...updateData, id: userId } };
 
-      expect(occupiedSeatsResponse.eventId).toBeDefined();
-      expect(Array.isArray(occupiedSeatsResponse.occupiedSeats)).toBe(true);
-      expect(occupiedSeatsResponse.count).toBe(occupiedSeatsResponse.occupiedSeats.length);
+        nock(USER_SERVICE_URL)
+          .put(`/edit-user/${userId}`, updateData)
+          .reply(200, mockResponse);
+
+        const response = await request(app)
+          .put(`/edit-user/${userId}`)
+          .set("Authorization", `Bearer ${tokens.user}`)
+          .send(updateData);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(mockResponse);
+      });
+
+      it("debería denegar acceso sin autenticación", async () => {
+        const response = await request(app)
+          .put("/edit-user/user123")
+          .send({ name: "Updated" });
+
+        expect(response.status).toBe(401);
+        expect(response.body).toHaveProperty("error");
+      });
+
+      it("debería denegar a usuario editar perfil de otro usuario", async () => {
+        const response = await request(app)
+          .put("/edit-user/user456")
+          .set("Authorization", `Bearer ${tokens.user}`)
+          .send({ name: "Hacked" });
+
+        expect(response.status).toBe(403);
+        expect(response.body.error).toBe("Acceso denegado");
+        expect(response.body.message).toContain("permiso");
+      });
     });
 
-    it("debería validar cancelación de ticket", async () => {
-      const cancellationData = {
-        ticketId: "ticket123",
-        reason: "User request"
-      };
+    describe("POST /verifyToken", () => {
+      it("debería verificar token válido", async () => {
+        const mockResponse = { valid: true, userId: "user123" };
 
-      const cancellationResponse = {
-        success: true,
-        cancelledTicket: "ticket123",
-        refundAmount: 50
-      };
+        nock(USER_SERVICE_URL)
+          .post("/verifyToken", { token: "valid-token" })
+          .reply(200, mockResponse);
 
-      expect(cancellationData.ticketId).toBeDefined();
-      expect(cancellationResponse.success).toBe(true);
-      expect(cancellationResponse.cancelledTicket).toBe(cancellationData.ticketId);
-    });
-  });
+        const response = await request(app)
+          .post("/verifyToken")
+          .send({ token: "valid-token" });
 
-  describe("Caso de Uso 4: Gestión de eventos", () => {
-    it("debería validar creación de evento", async () => {
-      const eventData = {
-        name: "Concierto de Rock",
-        description: "Un increíble concierto de rock",
-        date: "2024-12-31T20:00:00Z",
-        location: "loc1",
-        price: 50,
-        type: "concert",
-        capacity: 1000
-      };
-
-      const requiredFields = ['name', 'description', 'date', 'location', 'price', 'type'];
-      const hasAllRequiredFields = requiredFields.every(field => 
-        eventData[field] !== undefined && eventData[field] !== null
-      );
-
-      expect(hasAllRequiredFields).toBe(true);
-    });
-
-    it("debería validar respuesta de creación exitosa", async () => {
-      const eventResponse = {
-        eventId: "event123",
-        name: "Concierto de Rock",
-        success: true,
-        message: "Event created successfully"
-      };
-
-      expect(eventResponse.eventId).toBeDefined();
-      expect(eventResponse.success).toBe(true);
-      expect(eventResponse.name).toBe("Concierto de Rock");
-    });
-
-    it("debería validar actualización de evento", async () => {
-      const updateData = {
-        name: "Concierto de Rock Actualizado",
-        description: "Descripción actualizada",
-        price: 75
-      };
-
-      const updateResponse = {
-        success: true,
-        updatedEvent: updateData,
-        eventId: "event123"
-      };
-
-      expect(updateResponse.success).toBe(true);
-      expect(updateResponse.updatedEvent).toEqual(updateData);
-    });
-
-    it("debería validar cancelación de evento", async () => {
-      const cancellationData = {
-        reason: "Weather conditions",
-        adminId: "admin1"
-      };
-
-      const cancellationResponse = {
-        success: true,
-        cancelledEvent: "event123",
-        message: "Event cancelled successfully"
-      };
-
-      expect(cancellationData.reason).toBeDefined();
-      expect(cancellationResponse.success).toBe(true);
-      expect(cancellationResponse.cancelledEvent).toBeDefined();
-    });
-
-    it("debería validar eliminación de evento", async () => {
-      const deletionResponse = {
-        success: true,
-        deletedEvent: "event123",
-        message: "Event deleted successfully"
-      };
-
-      expect(deletionResponse.success).toBe(true);
-      expect(deletionResponse.deletedEvent).toBeDefined();
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(mockResponse);
+      });
     });
   });
 
-  describe("Caso de Uso 5: Gestión de ubicaciones", () => {
-    it("debería validar creación de ubicación", async () => {
-      const locationData = {
-        name: "Estadio Principal",
-        category: "stadium",
-        address: "Calle Principal 123",
-        capacity: 50000,
-        seatMapId: "seatmap1"
-      };
+  describe("Ticket Routes", () => {
 
-      const requiredFields = ['name', 'category', 'address'];
-      const hasAllRequiredFields = requiredFields.every(field => 
-        locationData[field] !== undefined && locationData[field] !== null
-      );
+    describe("GET /tickets/occupied/:eventId", () => {
+      it("debería obtener asientos ocupados de un evento", async () => {
+        const eventId = "event123";
+        const mockResponse = {
+          success: true,
+          occupiedSeats: ["seat-1-1", "seat-1-2", "seat-2-5"]
+        };
 
-      expect(hasAllRequiredFields).toBe(true);
+        nock(TICKET_SERVICE_URL)
+          .get(`/tickets/occupied/${eventId}`)
+          .reply(200, mockResponse);
+
+        const response = await request(app)
+          .get(`/tickets/occupied/${eventId}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(mockResponse);
+      });
     });
 
-    it("debería validar respuesta de creación exitosa", async () => {
-      const locationResponse = {
-        locationId: "loc123",
-        name: "Estadio Principal",
-        success: true,
-        message: "Location created successfully"
-      };
+    describe("POST /tickets/purchase (Protected - Authenticated)", () => {
+      it("debería permitir compra de tickets con autenticación", async () => {
+        const purchaseData = {
+          eventId: "event123",
+          userId: "user123",
+          selectedSeats: [{ id: "seat-1-1", price: 50 }],
+          price: 50,
+          quantity: 1,
+          customerInfo: { name: "Test", email: "test@test.com", phone: "123" }
+        };
 
-      expect(locationResponse.locationId).toBeDefined();
-      expect(locationResponse.success).toBe(true);
-      expect(locationResponse.name).toBe("Estadio Principal");
+        const mockResponse = {
+          success: true,
+          ticket: { id: "ticket123", ...purchaseData },
+          qrCode: "qr-code-base64"
+        };
+
+        nock(TICKET_SERVICE_URL)
+          .post("/tickets/purchase", purchaseData)
+          .reply(200, mockResponse);
+
+        const response = await request(app)
+          .post("/tickets/purchase")
+          .set("Authorization", `Bearer ${tokens.user}`)
+          .send(purchaseData);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(mockResponse);
+      });
+
+      it("debería denegar compra sin autenticación", async () => {
+        const response = await request(app)
+          .post("/tickets/purchase")
+          .send({ eventId: "event123" });
+
+        expect(response.status).toBe(401);
+        expect(response.body).toHaveProperty("error");
+      });
     });
 
-    it("debería validar obtención de ubicaciones", async () => {
-      const locationsResponse = {
-        locations: [
-          { locationId: "loc1", name: "Estadio 1", address: "Dirección 1" },
-          { locationId: "loc2", name: "Teatro 1", address: "Dirección 2" }
-        ],
-        count: 2
-      };
+    describe("GET /tickets/user/:userId/details (Protected - Ownership)", () => {
+      it("debería permitir a usuario ver sus propios tickets", async () => {
+        const userId = "user123";
+        const mockResponse = {
+          success: true,
+          tickets: [
+            { id: "ticket1", eventId: "event1", seats: ["seat-1-1"] },
+            { id: "ticket2", eventId: "event2", seats: ["seat-2-2"] }
+          ]
+        };
 
-      expect(Array.isArray(locationsResponse.locations)).toBe(true);
-      expect(locationsResponse.count).toBe(locationsResponse.locations.length);
+        nock(TICKET_SERVICE_URL)
+          .get(`/tickets/user/${userId}/details`)
+          .reply(200, mockResponse);
+
+        const response = await request(app)
+          .get(`/tickets/user/${userId}/details`)
+          .set("Authorization", `Bearer ${tokens.user}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(mockResponse);
+      });
+
+      it("debería denegar a usuario ver tickets de otro usuario", async () => {
+        const response = await request(app)
+          .get("/tickets/user/user456/details")
+          .set("Authorization", `Bearer ${tokens.user}`);
+
+        expect(response.status).toBe(403);
+        expect(response.body.error).toBe("Acceso denegado");
+      });
     });
-  });
 
-  describe("Caso de Uso 6: Gestión de mapas de asientos", () => {
-    it("debería validar creación de seatmap", async () => {
-      const seatMapData = {
-        name: "Estadio SeatMap",
-        type: "football",
-        sections: [
-          {
-            id: "vip",
-            name: "VIP",
-            rows: 5,
-            seatsPerRow: 20,
-            defaultPrice: 100
-          },
-          {
-            id: "general",
-            name: "General",
-            rows: 20,
-            seatsPerRow: 50,
-            defaultPrice: 50
+    describe("GET /tickets/user/:userId (Protected - Ownership)", () => {
+      it("debería permitir a usuario ver sus tickets", async () => {
+        const userId = "user123";
+        const mockResponse = {
+          success: true,
+          tickets: [{ id: "ticket1" }, { id: "ticket2" }]
+        };
+
+        nock(TICKET_SERVICE_URL)
+          .get(`/tickets/user/${userId}`)
+          .reply(200, mockResponse);
+
+        const response = await request(app)
+          .get(`/tickets/user/${userId}`)
+          .set("Authorization", `Bearer ${tokens.user}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(mockResponse);
+      });
+    });
+
+    describe("GET /tickets/event/:eventId", () => {
+      it("debería obtener tickets de un evento", async () => {
+        const eventId = "event123";
+        const mockResponse = {
+          success: true,
+          tickets: [{ id: "ticket1" }, { id: "ticket2" }],
+          statistics: { total: 2, sold: 2 }
+        };
+
+        nock(TICKET_SERVICE_URL)
+          .get(`/tickets/event/${eventId}`)
+          .reply(200, mockResponse);
+
+        const response = await request(app)
+          .get(`/tickets/event/${eventId}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(mockResponse);
+      });
+    });
+
+    describe("GET /tickets/:id", () => {
+      it("debería obtener un ticket por ID", async () => {
+        const ticketId = "ticket123";
+        const mockResponse = {
+          success: true,
+          ticket: { id: ticketId, eventId: "event123", userId: "user123" }
+        };
+
+        nock(TICKET_SERVICE_URL)
+          .get(`/tickets/${ticketId}`)
+          .reply(200, mockResponse);
+
+        const response = await request(app)
+          .get(`/tickets/${ticketId}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(mockResponse);
+      });
+    });
+
+    describe("GET /tickets/:id/qr", () => {
+      it("debería obtener QR code de un ticket", async () => {
+        const ticketId = "ticket123";
+        const mockResponse = {
+          success: true,
+          qrCode: "base64-qr-code",
+          ticketNumber: "TKT-12345"
+        };
+
+        nock(TICKET_SERVICE_URL)
+          .get(`/tickets/${ticketId}/qr`)
+          .reply(200, mockResponse);
+
+        const response = await request(app)
+          .get(`/tickets/${ticketId}/qr`);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(mockResponse);
+      });
+    });
+
+    describe("GET /tickets/user/:userId/events (Protected - Ownership)", () => {
+      it("debería obtener eventos de tickets del usuario", async () => {
+        const userId = "user123";
+        const mockResponse = {
+          success: true,
+          events: [{ id: "event1", name: "Concierto 1" }]
+        };
+
+        nock(TICKET_SERVICE_URL)
+          .get(`/tickets/user/${userId}/events`)
+          .reply(200, mockResponse);
+
+        const response = await request(app)
+          .get(`/tickets/user/${userId}/events`)
+          .set("Authorization", `Bearer ${tokens.user}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(mockResponse);
+      });
+    });
+
+    describe("GET /tickets/admin/statistics (Admin only)", () => {
+      it("debería permitir a admin ver estadísticas", async () => {
+        const mockResponse = {
+          success: true,
+          statistics: {
+            totalTickets: 1000,
+            totalRevenue: 50000,
+            byEvent: []
           }
-        ]
-      };
+        };
 
-      expect(seatMapData.name).toBeDefined();
-      expect(seatMapData.type).toBeDefined();
-      expect(Array.isArray(seatMapData.sections)).toBe(true);
-      expect(seatMapData.sections.length).toBeGreaterThan(0);
+        nock(TICKET_SERVICE_URL)
+          .get("/tickets/admin/statistics")
+          .reply(200, mockResponse);
+
+        const response = await request(app)
+          .get("/tickets/admin/statistics")
+          .set("Authorization", `Bearer ${tokens.admin}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(mockResponse);
+      });
+
+      it("debería denegar acceso a usuario normal", async () => {
+        const response = await request(app)
+          .get("/tickets/admin/statistics")
+          .set("Authorization", `Bearer ${tokens.user}`);
+
+        expect(response.status).toBe(403);
+      });
     });
 
-    it("debería validar respuesta de creación exitosa", async () => {
-      const seatMapResponse = {
-        seatMapId: "seatmap123",
-        name: "Estadio SeatMap",
-        success: true,
-        message: "SeatMap created successfully"
-      };
+    describe("DELETE /tickets/event/:eventId (Admin only)", () => {
+      it("debería permitir a admin eliminar tickets de un evento", async () => {
+        const eventId = "event123";
+        const mockResponse = { success: true, deletedCount: 5 };
 
-      expect(seatMapResponse.seatMapId).toBeDefined();
-      expect(seatMapResponse.success).toBe(true);
-      expect(seatMapResponse.name).toBe("Estadio SeatMap");
+        nock(TICKET_SERVICE_URL)
+          .delete(`/tickets/event/${eventId}`)
+          .reply(200, mockResponse);
+
+        const response = await request(app)
+          .delete(`/tickets/event/${eventId}`)
+          .set("Authorization", `Bearer ${tokens.admin}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(mockResponse);
+      });
+
+      it("debería denegar a usuario normal", async () => {
+        const response = await request(app)
+          .delete("/tickets/event/event123")
+          .set("Authorization", `Bearer ${tokens.user}`);
+
+        expect(response.status).toBe(403);
+      });
     });
 
-    it("debería validar obtención de seatmaps", async () => {
-      const seatMapsResponse = {
-        seatMaps: [
-          { seatMapId: "seatmap1", name: "SeatMap 1", type: "football" },
-          { seatMapId: "seatmap2", name: "SeatMap 2", type: "theater" }
-        ],
-        count: 2
-      };
+    describe("DELETE /tickets/:id", () => {
+      it("debería cancelar un ticket", async () => {
+        const ticketId = "ticket123";
+        const mockResponse = {
+          success: true,
+          message: "Ticket cancelado exitosamente"
+        };
 
-      expect(Array.isArray(seatMapsResponse.seatMaps)).toBe(true);
-      expect(seatMapsResponse.count).toBe(seatMapsResponse.seatMaps.length);
-    });
-  });
+        nock(TICKET_SERVICE_URL)
+          .delete(`/tickets/${ticketId}`)
+          .reply(200, mockResponse);
 
-  describe("Caso de Uso 7: Búsqueda y filtrado", () => {
-    it("debería validar búsqueda de usuarios", async () => {
-      const searchParams = {
-        username: "testuser"
-      };
+        const response = await request(app)
+          .delete(`/tickets/${ticketId}`);
 
-      const searchResponse = {
-        user: {
-          id: "user1",
-          username: "testuser",
-          email: "test@example.com"
-        },
-        found: true
-      };
-
-      expect(searchParams.username).toBeDefined();
-      expect(searchResponse.found).toBe(true);
-      expect(searchResponse.user).toBeDefined();
-    });
-
-    it("debería validar filtrado de eventos", async () => {
-      const filterParams = {
-        type: "concert",
-        date: "2024-12-31",
-        location: "loc1"
-      };
-
-      const filteredEvents = {
-        events: [
-          { eventId: "event1", name: "Concierto 1", type: "concert" },
-          { eventId: "event2", name: "Concierto 2", type: "concert" }
-        ],
-        count: 2
-      };
-
-      expect(filterParams.type).toBeDefined();
-      expect(Array.isArray(filteredEvents.events)).toBe(true);
-      expect(filteredEvents.count).toBe(filteredEvents.events.length);
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(mockResponse);
+      });
     });
   });
 
-  describe("Caso de Uso 8: Estadísticas y reportes", () => {
-    it("debería validar estadísticas de tickets", async () => {
-      const ticketStats = {
-        totalTickets: 1000,
-        soldTickets: 750,
-        pendingTickets: 200,
-        cancelledTickets: 50,
-        totalRevenue: 50000
-      };
+  describe("Event Routes", () => {
 
-      expect(ticketStats.totalTickets).toBeGreaterThanOrEqual(0);
-      expect(ticketStats.soldTickets).toBeLessThanOrEqual(ticketStats.totalTickets);
-      expect(ticketStats.totalRevenue).toBeGreaterThanOrEqual(0);
+    describe("POST /events (Admin only)", () => {
+      it("debería permitir a admin crear un evento", async () => {
+        const eventData = {
+          name: "Concierto de Rock",
+          description: "Un gran concierto",
+          date: "2024-12-31T20:00:00Z",
+          location: "loc123",
+          price: 50,
+          type: "concert",
+          capacity: 1000
+        };
+
+        const mockResponse = {
+          success: true,
+          event: { id: "event123", ...eventData }
+        };
+
+        nock(EVENT_SERVICE_URL)
+          .post("/event", eventData)
+          .reply(200, mockResponse);
+
+        const response = await request(app)
+          .post("/events")
+          .set("Authorization", `Bearer ${tokens.admin}`)
+          .send(eventData);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(mockResponse);
+      });
+
+      it("debería denegar a usuario normal", async () => {
+        const response = await request(app)
+          .post("/events")
+          .set("Authorization", `Bearer ${tokens.user}`)
+          .send({ name: "Test Event" });
+
+        expect(response.status).toBe(403);
+      });
     });
 
-    it("debería validar estadísticas de eventos", async () => {
-      const eventStats = {
-        totalEvents: 100,
-        activeEvents: 60,
-        cancelledEvents: 10,
-        completedEvents: 30,
-        totalRevenue: 100000
-      };
+    describe("PUT /events/:eventId (Admin only)", () => {
+      it("debería permitir a admin actualizar un evento", async () => {
+        const eventId = "event123";
+        const updateData = { name: "Concierto Actualizado", price: 75 };
+        const mockResponse = { success: true, event: { id: eventId, ...updateData } };
 
-      expect(eventStats.totalEvents).toBeGreaterThanOrEqual(0);
-      expect(eventStats.activeEvents).toBeLessThanOrEqual(eventStats.totalEvents);
-      expect(eventStats.totalRevenue).toBeGreaterThanOrEqual(0);
+        nock(EVENT_SERVICE_URL)
+          .put(`/events/${eventId}`, updateData)
+          .reply(200, mockResponse);
+
+        const response = await request(app)
+          .put(`/events/${eventId}`)
+          .set("Authorization", `Bearer ${tokens.admin}`)
+          .send(updateData);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(mockResponse);
+      });
+    });
+
+    describe("PATCH /events/:eventId/image (Admin only)", () => {
+      it("debería permitir a admin actualizar imagen del evento", async () => {
+        const eventId = "event123";
+        const imageData = { image: "base64-image-data" };
+        const mockResponse = { success: true, event: { id: eventId, ...imageData } };
+
+        nock(EVENT_SERVICE_URL)
+          .patch(`/events/${eventId}/image`, imageData)
+          .reply(200, mockResponse);
+
+        const response = await request(app)
+          .patch(`/events/${eventId}/image`)
+          .set("Authorization", `Bearer ${tokens.admin}`)
+          .send(imageData);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(mockResponse);
+      });
+    });
+
+    describe("GET /events", () => {
+      it("debería obtener todos los eventos (público)", async () => {
+        const mockResponse = {
+          success: true,
+          events: [
+            { id: "event1", name: "Concierto 1" },
+            { id: "event2", name: "Concierto 2" }
+          ]
+        };
+
+        nock(EVENT_SERVICE_URL)
+          .get("/events")
+          .reply(200, mockResponse);
+
+        const response = await request(app)
+          .get("/events");
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(mockResponse);
+      });
+    });
+
+    describe("GET /events/:eventId", () => {
+      it("debería obtener un evento específico (público)", async () => {
+        const eventId = "event123";
+        const mockResponse = {
+          success: true,
+          event: { id: eventId, name: "Concierto de Rock", price: 50 }
+        };
+
+        nock(EVENT_SERVICE_URL)
+          .get(`/events/${eventId}`)
+          .reply(200, mockResponse);
+
+        const response = await request(app)
+          .get(`/events/${eventId}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(mockResponse);
+      });
+    });
+
+    describe("POST /events/update-states (Admin only)", () => {
+      it("debería permitir a admin actualizar estados de eventos", async () => {
+        const mockResponse = { success: true, updatedCount: 5 };
+
+        nock(EVENT_SERVICE_URL)
+          .post("/events/update-states", {})
+          .reply(200, mockResponse);
+
+        const response = await request(app)
+          .post("/events/update-states")
+          .set("Authorization", `Bearer ${tokens.admin}`)
+          .send({});
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(mockResponse);
+      });
+    });
+
+    describe("GET /events/stats/states (Admin only)", () => {
+      it("debería permitir a admin ver estadísticas por estado", async () => {
+        const mockResponse = {
+          success: true,
+          stats: { active: 10, cancelled: 2, completed: 5 }
+        };
+
+        nock(EVENT_SERVICE_URL)
+          .get("/events/stats/states")
+          .reply(200, mockResponse);
+
+        const response = await request(app)
+          .get("/events/stats/states")
+          .set("Authorization", `Bearer ${tokens.admin}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(mockResponse);
+      });
+    });
+
+    describe("PATCH /events/:eventId/state (Admin only)", () => {
+      it("debería permitir a admin cambiar estado de evento", async () => {
+        const eventId = "event123";
+        const stateData = { state: "cancelled" };
+        const mockResponse = { success: true, event: { id: eventId, state: "cancelled" } };
+
+        nock(EVENT_SERVICE_URL)
+          .patch(`/events/${eventId}/state`, stateData)
+          .reply(200, mockResponse);
+
+        const response = await request(app)
+          .patch(`/events/${eventId}/state`)
+          .set("Authorization", `Bearer ${tokens.admin}`)
+          .send(stateData);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(mockResponse);
+      });
+    });
+
+    describe("PUT /events/:eventId/seat-blocks (Admin only)", () => {
+      it("debería permitir a admin actualizar bloques de asientos", async () => {
+        const eventId = "event123";
+        const seatBlockData = { blocks: ["block-1", "block-2"] };
+        const mockResponse = { success: true, seatBlocks: seatBlockData.blocks };
+
+        nock(EVENT_SERVICE_URL)
+          .put(`/events/${eventId}/seat-blocks`, seatBlockData)
+          .reply(200, mockResponse);
+
+        const response = await request(app)
+          .put(`/events/${eventId}/seat-blocks`)
+          .set("Authorization", `Bearer ${tokens.admin}`)
+          .send(seatBlockData);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(mockResponse);
+      });
+    });
+
+    describe("DELETE /events/:eventId (Admin only)", () => {
+      it("debería permitir a admin eliminar un evento", async () => {
+        const eventId = "event123";
+        const mockResponse = { success: true, message: "Evento eliminado" };
+
+        nock(EVENT_SERVICE_URL)
+          .delete(`/events/${eventId}`)
+          .reply(200, mockResponse);
+
+        const response = await request(app)
+          .delete(`/events/${eventId}`)
+          .set("Authorization", `Bearer ${tokens.admin}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(mockResponse);
+      });
+
+      it("debería denegar a usuario normal", async () => {
+        const response = await request(app)
+          .delete("/events/event123")
+          .set("Authorization", `Bearer ${tokens.user}`);
+
+        expect(response.status).toBe(403);
+      });
+    });
+
+    describe("DELETE /events/:eventId/cancel (Admin only)", () => {
+      it("debería permitir a admin cancelar un evento", async () => {
+        const eventId = "event123";
+        const cancelData = { reason: "Mal tiempo" };
+        const mockResponse = { success: true, message: "Evento cancelado" };
+
+        nock(EVENT_SERVICE_URL)
+          .delete(`/events/${eventId}/cancel`)
+          .reply(200, mockResponse);
+
+        const response = await request(app)
+          .delete(`/events/${eventId}/cancel`)
+          .set("Authorization", `Bearer ${tokens.admin}`)
+          .send(cancelData);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(mockResponse);
+      });
+    });
+
+    describe("GET /events/admin/statistics (Admin only)", () => {
+      it("debería permitir a admin ver estadísticas de eventos", async () => {
+        const mockResponse = {
+          success: true,
+          statistics: {
+            totalEvents: 100,
+            totalRevenue: 100000,
+            activeEvents: 60
+          }
+        };
+
+        nock(EVENT_SERVICE_URL)
+          .get("/events/admin/statistics")
+          .reply(200, mockResponse);
+
+        const response = await request(app)
+          .get("/events/admin/statistics")
+          .set("Authorization", `Bearer ${tokens.admin}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(mockResponse);
+      });
+
+      it("debería denegar a usuario normal", async () => {
+        const response = await request(app)
+          .get("/events/admin/statistics")
+          .set("Authorization", `Bearer ${tokens.user}`);
+
+        expect(response.status).toBe(403);
+      });
     });
   });
 
-  describe("Caso de Uso 9: Manejo de errores", () => {
-    it("debería manejar errores de servicio no disponible", async () => {
-      const serviceError = {
-        code: "SERVICE_UNAVAILABLE",
-        message: "User service is not available",
-        status: 503
-      };
+  describe("Location Routes", () => {
 
-      expect(serviceError.code).toBeDefined();
-      expect(serviceError.message).toBeDefined();
-      expect(serviceError.status).toBe(503);
+    describe("POST /location (Admin only)", () => {
+      it("debería permitir a admin crear una ubicación", async () => {
+        const locationData = {
+          name: "Estadio Principal",
+          category: "stadium",
+          address: "Calle Principal 123",
+          capacity: 50000
+        };
+
+        const mockResponse = {
+          success: true,
+          location: { id: "loc123", ...locationData }
+        };
+
+        nock(LOCATION_SERVICE_URL)
+          .post("/location", locationData)
+          .reply(200, mockResponse);
+
+        const response = await request(app)
+          .post("/location")
+          .set("Authorization", `Bearer ${tokens.admin}`)
+          .send(locationData);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(mockResponse);
+      });
+
+      it("debería denegar a usuario normal", async () => {
+        const response = await request(app)
+          .post("/location")
+          .set("Authorization", `Bearer ${tokens.user}`)
+          .send({ name: "Test Location" });
+
+        expect(response.status).toBe(403);
+      });
     });
 
-    it("debería manejar errores de validación", async () => {
-      const validationError = {
-        code: "VALIDATION_ERROR",
-        message: "Invalid input data",
-        details: {
-          username: "Username is required",
-          email: "Invalid email format"
-        }
-      };
+    describe("GET /locations", () => {
+      it("debería obtener todas las ubicaciones (público)", async () => {
+        const mockResponse = {
+          success: true,
+          locations: [
+            { id: "loc1", name: "Estadio 1", category: "stadium" },
+            { id: "loc2", name: "Teatro 1", category: "theater" }
+          ]
+        };
 
-      expect(validationError.code).toBe("VALIDATION_ERROR");
-      expect(validationError.details).toBeDefined();
+        nock(LOCATION_SERVICE_URL)
+          .get("/locations")
+          .reply(200, mockResponse);
+
+        const response = await request(app)
+          .get("/locations");
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(mockResponse);
+      });
     });
 
-    it("debería manejar errores de autenticación", async () => {
-      const authError = {
-        code: "UNAUTHORIZED",
-        message: "Invalid token",
-        status: 401
-      };
+    describe("GET /locations/:locationId", () => {
+      it("debería obtener una ubicación específica (público)", async () => {
+        const locationId = "loc123";
+        const mockResponse = {
+          success: true,
+          location: { id: locationId, name: "Estadio Principal", category: "stadium" }
+        };
 
-      expect(authError.code).toBe("UNAUTHORIZED");
-      expect(authError.status).toBe(401);
+        nock(LOCATION_SERVICE_URL)
+          .get(`/locations/${locationId}`)
+          .reply(200, mockResponse);
+
+        const response = await request(app)
+          .get(`/locations/${locationId}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(mockResponse);
+      });
+    });
+
+    describe("GET /seatmaps", () => {
+      it("debería obtener todos los seatmaps (público)", async () => {
+        const mockResponse = {
+          success: true,
+          seatmaps: [
+            { id: "sm1", name: "SeatMap 1", type: "football" },
+            { id: "sm2", name: "SeatMap 2", type: "theater" }
+          ]
+        };
+
+        nock(LOCATION_SERVICE_URL)
+          .get("/seatmaps")
+          .reply(200, mockResponse);
+
+        const response = await request(app)
+          .get("/seatmaps");
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(mockResponse);
+      });
+    });
+
+    describe("POST /seatmaps (Admin only)", () => {
+      it("debería permitir a admin crear un seatmap", async () => {
+        const seatmapData = {
+          name: "Estadio SeatMap",
+          type: "football",
+          sections: [
+            { id: "vip", name: "VIP", rows: 5, seatsPerRow: 20, defaultPrice: 100 }
+          ]
+        };
+
+        const mockResponse = {
+          success: true,
+          seatmap: { id: "sm123", ...seatmapData }
+        };
+
+        nock(LOCATION_SERVICE_URL)
+          .post("/seatmaps", seatmapData)
+          .reply(200, mockResponse);
+
+        const response = await request(app)
+          .post("/seatmaps")
+          .set("Authorization", `Bearer ${tokens.admin}`)
+          .send(seatmapData);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(mockResponse);
+      });
+
+      it("debería denegar a usuario normal", async () => {
+        const response = await request(app)
+          .post("/seatmaps")
+          .set("Authorization", `Bearer ${tokens.user}`)
+          .send({ name: "Test Seatmap" });
+
+        expect(response.status).toBe(403);
+      });
+    });
+
+    describe("GET /seatmaps/:id", () => {
+      it("debería obtener un seatmap específico (público)", async () => {
+        const seatmapId = "sm123";
+        const mockResponse = {
+          success: true,
+          seatmap: { id: seatmapId, name: "Estadio SeatMap", type: "football" }
+        };
+
+        nock(LOCATION_SERVICE_URL)
+          .get(`/seatmaps/${seatmapId}`)
+          .reply(200, mockResponse);
+
+        const response = await request(app)
+          .get(`/seatmaps/${seatmapId}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(mockResponse);
+      });
+    });
+
+    describe("GET /location/:locationId/sections", () => {
+      it("debería obtener secciones de una ubicación (público)", async () => {
+        const locationId = "loc123";
+        const mockResponse = {
+          success: true,
+          sections: [
+            { id: "vip", name: "VIP", capacity: 100 },
+            { id: "general", name: "General", capacity: 900 }
+          ]
+        };
+
+        nock(LOCATION_SERVICE_URL)
+          .get(`/location/${locationId}/sections`)
+          .reply(200, mockResponse);
+
+        const response = await request(app)
+          .get(`/location/${locationId}/sections`);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(mockResponse);
+      });
     });
   });
 
-  describe("Caso de Uso 10: Integración de servicios", () => {
-    it("debería validar flujo completo de compra", async () => {
-      const completePurchaseFlow = {
-        step1: "User authentication",
-        step2: "Event selection",
-        step3: "Seat selection",
-        step4: "Payment processing",
-        step5: "Ticket generation",
-        step6: "QR code creation"
-      };
+  describe("Middleware Integration Tests", () => {
 
-      const steps = Object.keys(completePurchaseFlow);
-      expect(steps.length).toBe(6);
-      expect(completePurchaseFlow.step1).toBe("User authentication");
-      expect(completePurchaseFlow.step6).toBe("QR code creation");
+    describe("verifyAdmin middleware", () => {
+      it("debería rechazar sin header Authorization", async () => {
+        const response = await request(app).get("/users");
+
+        expect(response.status).toBe(401);
+        expect(response.body.error).toBe("No se proporcionó token de autenticación");
+      });
+
+      it("debería rechazar con Bearer vacío", async () => {
+        const response = await request(app)
+          .get("/users")
+          .set("Authorization", "Bearer ");
+
+        expect(response.status).toBe(401);
+      });
+
+      it("debería rechazar con rol no-admin", async () => {
+        const response = await request(app)
+          .get("/users")
+          .set("Authorization", `Bearer ${tokens.user}`);
+
+        expect(response.status).toBe(403);
+        expect(response.body.message).toContain("permisos de administrador");
+      });
+
+      it("debería aceptar con rol admin", async () => {
+        nock(USER_SERVICE_URL)
+          .get("/users")
+          .reply(200, []);
+
+        const response = await request(app)
+          .get("/users")
+          .set("Authorization", `Bearer ${tokens.admin}`);
+
+        expect(response.status).toBe(200);
+      });
     });
 
-    it("debería validar flujo completo de creación de evento", async () => {
-      const completeEventFlow = {
-        step1: "Location creation",
-        step2: "SeatMap configuration",
-        step3: "Event creation",
-        step4: "Image upload",
-        step5: "Event activation"
-      };
+    describe("verifyAuthenticated middleware", () => {
+      it("debería rechazar sin token", async () => {
+        const response = await request(app)
+          .post("/tickets/purchase")
+          .send({});
 
-      const steps = Object.keys(completeEventFlow);
-      expect(steps.length).toBe(5);
-      expect(completeEventFlow.step1).toBe("Location creation");
-      expect(completeEventFlow.step5).toBe("Event activation");
+        expect(response.status).toBe(401);
+        expect(response.body.error).toBe("No autenticado");
+      });
+
+      it("debería rechazar con token expirado", async () => {
+        const response = await request(app)
+          .post("/tickets/purchase")
+          .set("Authorization", `Bearer ${tokens.expired}`)
+          .send({});
+
+        expect(response.status).toBe(401);
+        expect(response.body.error).toBe("Sesión expirada");
+      });
+
+      it("debería aceptar con token válido", async () => {
+        nock(TICKET_SERVICE_URL)
+          .post("/tickets/purchase")
+          .reply(200, { success: true });
+
+        const response = await request(app)
+          .post("/tickets/purchase")
+          .set("Authorization", `Bearer ${tokens.user}`)
+          .send({
+            eventId: "e1",
+            userId: "user123",
+            selectedSeats: [{ id: "s1", price: 50 }],
+            price: 50,
+            quantity: 1,
+            customerInfo: { name: "T", email: "t@t.com", phone: "123" }
+          });
+
+        expect(response.status).toBe(200);
+      });
+    });
+
+    describe("verifyOwnership middleware", () => {
+      it("debería permitir acceso a propio recurso", async () => {
+        nock(USER_SERVICE_URL)
+          .put("/edit-user/user123")
+          .reply(200, { success: true });
+
+        const response = await request(app)
+          .put("/edit-user/user123")
+          .set("Authorization", `Bearer ${tokens.user}`)
+          .send({ name: "Updated" });
+
+        expect(response.status).toBe(200);
+      });
+
+      it("debería denegar acceso a recurso de otro usuario", async () => {
+        const response = await request(app)
+          .put("/edit-user/user456")
+          .set("Authorization", `Bearer ${tokens.user}`)
+          .send({ name: "Hacked" });
+
+        expect(response.status).toBe(403);
+        expect(response.body.error).toBe("Acceso denegado");
+      });
+
+      it("debería validar que token contenga userId", async () => {
+        const tokenSinUserId = generateToken({ role: "user" });
+
+        const response = await request(app)
+          .put("/edit-user/user123")
+          .set("Authorization", `Bearer ${tokenSinUserId}`)
+          .send({ name: "Test" });
+
+        expect(response.status).toBe(401);
+        expect(response.body.message).toContain("información de usuario");
+      });
     });
   });
 
-  describe("Validaciones de Negocio", () => {
-    it("debería validar límites de capacidad", async () => {
-      const event = {
-        capacity: 1000,
-        soldTickets: 500
-      };
+  describe("Error Handling", () => {
 
-      const isWithinCapacity = (event) => {
-        return event.soldTickets <= event.capacity;
-      };
+    it("debería manejar error 500 del microservicio", async () => {
+      nock(EVENT_SERVICE_URL)
+        .get("/events")
+        .reply(500, { error: "Internal Server Error" });
 
-      expect(isWithinCapacity(event)).toBe(true);
+      const response = await request(app).get("/events");
+
+      expect(response.status).toBe(500);
+      expect(response.body).toHaveProperty("error");
     });
 
-    it("debería validar fechas futuras", async () => {
-      const futureDate = new Date('2025-12-31T20:00:00Z');
-      const pastDate = new Date('2023-01-01T20:00:00Z');
-      const now = new Date();
+    it("debería manejar error 404 del microservicio", async () => {
+      nock(EVENT_SERVICE_URL)
+        .get("/events/nonexistent")
+        .reply(404, { error: "Event not found" });
 
-      const isFutureDate = (date) => new Date(date) > now;
+      const response = await request(app).get("/events/nonexistent");
 
-      expect(isFutureDate(futureDate)).toBe(true);
-      expect(isFutureDate(pastDate)).toBe(false);
-    });
-
-    it("debería validar precios positivos", async () => {
-      const validPrice = 50;
-      const invalidPrice = -10;
-
-      const isValidPrice = (price) => price >= 0;
-
-      expect(isValidPrice(validPrice)).toBe(true);
-      expect(isValidPrice(invalidPrice)).toBe(false);
+      expect(response.status).toBe(404);
+      expect(response.body).toHaveProperty("error");
     });
   });
 });

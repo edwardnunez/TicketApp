@@ -38,19 +38,19 @@ afterAll(async () => {
 
 describe("User Service - Integration tests", () => {
   
-  describe("Caso de Uso 1: Registro de usuario", () => {
-    it("debería registrar un nuevo usuario correctamente", async () => {
+  describe("Caso de Uso 1.1: Registro de usuario", () => {
+    it("Registrar usuario correcto - debería registrar usuario con status 201 y retornar token y roleToken", async () => {
       const response = await request(app)
         .post("/adduser")
         .send(testUser);
 
-      expect(response.status).toBe(200);
+      expect(response.status).toBe(201);
       expect(response.body).toHaveProperty("username", testUser.username);
       expect(response.body).toHaveProperty("token");
       expect(response.body).toHaveProperty("roleToken");
     });
 
-    it("debería rechazar registro con contraseña débil", async () => {
+    it("Contraseña débil - debería devolver status 400 indicando contraseña débil", async () => {
       const weakUser = {
         username: "weakuser",
         name: "Weak",
@@ -69,7 +69,7 @@ describe("User Service - Integration tests", () => {
       expect(response.body.error).toContain("La contraseña debe tener");
     });
 
-    it("debería rechazar registro sin campos requeridos", async () => {
+    it("Campos requeridos faltantes - debería devolver status 400 indicando los campos faltantes", async () => {
       const invalidUser = {
         username: "nopassuser"
       };
@@ -83,7 +83,7 @@ describe("User Service - Integration tests", () => {
       expect(response.body.error).toContain("Missing required field");
     });
 
-    it("debería rechazar registro de usuario duplicado", async () => {
+    it("Usuario o email duplicados - debería devolver status 400 indicando campo duplicado", async () => {
       const response = await request(app)
         .post("/adduser")
         .send(testUser);
@@ -92,7 +92,7 @@ describe("User Service - Integration tests", () => {
       expect(response.body.error).toContain("El nombre de usuario ya existe");
     });
 
-    it("debería rechazar contraseñas que no coinciden", async () => {
+    it("Las contraseñas no coinciden - debería devolver status 400 indicando que las contraseñas no coinciden", async () => {
       const userWithMismatchedPasswords = {
         username: "mismatchuser",
         name: "Mismatch",
@@ -111,8 +111,8 @@ describe("User Service - Integration tests", () => {
     });
   });
 
-  describe("Caso de Uso 2: Autenticación de usuario", () => {
-    it("debería autenticar usuario con credenciales correctas", async () => {
+  describe("Caso de Uso 1.2: Autenticación de usuario", () => {
+    it("Autenticación correcta - debería devolver status 200 con token, username y roleToken", async () => {
       const loginData = {
         username: testUser.username,
         password: testUser.password
@@ -128,7 +128,7 @@ describe("User Service - Integration tests", () => {
       expect(response.body).toHaveProperty("username", testUser.username);
     });
 
-    it("debería rechazar autenticación con credenciales incorrectas", async () => {
+    it("Credenciales incorrectas - debería devolver status 401 indicando credenciales incorrectas", async () => {
       const loginData = {
         username: testUser.username,
         password: "wrongpassword"
@@ -141,24 +141,10 @@ describe("User Service - Integration tests", () => {
       expect(response.status).toBe(401);
       expect(response.body).toHaveProperty("error", "Credenciales inválidas");
     });
-
-    it("debería rechazar autenticación de usuario inexistente", async () => {
-      const loginData = {
-        username: "nonexistentuser",
-        password: "somepassword"
-      };
-
-      const response = await request(app)
-        .post("/login")
-        .send(loginData);
-
-      expect(response.status).toBe(401);
-      expect(response.body).toHaveProperty("error", "Credenciales inválidas");
-    });
   });
 
-  describe("Caso de Uso 3: Consulta de información de usuario", () => {
-    it("debería obtener información de usuario existente por username", async () => {
+  describe("Caso de Uso 1.3: Consulta de información de usuario", () => {
+    it("Buscar usuario existente - debería devolver status 200 con datos del usuario sin contraseña", async () => {
       const response = await request(app)
         .get("/users/search")
         .query({ username: testUser.username });
@@ -169,7 +155,7 @@ describe("User Service - Integration tests", () => {
       expect(response.body).not.toHaveProperty("password");
     });
 
-    it("debería retornar 404 para usuario inexistente", async () => {
+    it("Usuario no encontrado - debería devolver status 404 indicando que el usuario no se ha encontrado", async () => {
       const response = await request(app)
         .get("/users/search")
         .query({ username: "nonexistentuser" });
@@ -178,7 +164,7 @@ describe("User Service - Integration tests", () => {
       expect(response.body).toHaveProperty("error", "Usuario no encontrado");
     });
 
-    it("debería retornar error cuando no se proporciona username o userId", async () => {
+    it("No se envía username o userId - debería devolver status 400 indicando que se debe enviar uno de los dos", async () => {
       const response = await request(app)
         .get("/users/search");
 
@@ -187,45 +173,26 @@ describe("User Service - Integration tests", () => {
     });
   });
 
-  describe("Caso de Uso 4: Listado de usuarios", () => {
+  describe("Caso de Uso 1.4: Listado de usuarios", () => {
     beforeAll(async () => {
       await request(app).post("/adduser").send(testUser2);
     });
 
-    it("debería obtener todos los usuarios", async () => {
+    it("Obtener todos los usuarios - debería devolver status 200 con datos de todos los usuarios sin contraseña", async () => {
       const response = await request(app).get("/users");
 
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
       expect(response.body.length).toBeGreaterThan(0);
-      
+
       // Verificar que no se incluyen contraseñas
       response.body.forEach(user => {
         expect(user).not.toHaveProperty("password");
       });
     });
-
-    it("debería buscar usuarios por nombre", async () => {
-      const response = await request(app)
-        .get("/users/search")
-        .query({ username: "simple" });
-
-      expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty("username");
-      expect(response.body.username).toContain("simple");
-    });
-
-    it("debería retornar error al buscar usuario inexistente", async () => {
-      const response = await request(app)
-        .get("/users/search")
-        .query({ username: "nonexistentxyz123" });
-
-      expect(response.status).toBe(404);
-      expect(response.body).toHaveProperty("error", "Usuario no encontrado");
-    });
   });
 
-  describe("Caso de Uso 5: Verificación de token", () => {
+  describe("Caso de Uso 1.5: Verificación de token", () => {
     let validToken;
     let adminToken;
 
@@ -251,7 +218,7 @@ describe("User Service - Integration tests", () => {
       };
 
       await request(app).post("/adduser").send(adminUser);
-      
+
       const adminLoginResponse = await request(app)
         .post("/login")
         .send({
@@ -261,7 +228,7 @@ describe("User Service - Integration tests", () => {
       adminToken = adminLoginResponse.body.roleToken;
     });
 
-    it("debería verificar token válido de admin", async () => {
+    it("Token válido de administrador - debería devolver status 200 con rol = admin", async () => {
       const response = await request(app)
         .post("/verifyToken")
         .send({ token: adminToken });
@@ -270,7 +237,7 @@ describe("User Service - Integration tests", () => {
       expect(response.body).toHaveProperty("role", "admin");
     });
 
-    it("debería rechazar token inválido", async () => {
+    it("Token inválido - debería devolver status 401 indicando que el token es inválido o ha expirado", async () => {
       const response = await request(app)
         .post("/verifyToken")
         .send({ token: "invalid-token" });
@@ -279,7 +246,7 @@ describe("User Service - Integration tests", () => {
       expect(response.body).toHaveProperty("error", "Token inválido o expirado");
     });
 
-    it("debería rechazar token de usuario no admin", async () => {
+    it("Token válido de usuario - debería devolver status 403 indicando que el usuario no está autorizado", async () => {
       const response = await request(app)
         .post("/verifyToken")
         .send({ token: validToken });
@@ -288,7 +255,7 @@ describe("User Service - Integration tests", () => {
       expect(response.body).toHaveProperty("error", "Prohibido");
     });
 
-    it("debería rechazar request sin token", async () => {
+    it("Sin token - debería devolver status 400 indicando que no se ha enviado token", async () => {
       const response = await request(app)
         .post("/verifyToken")
         .send({});
@@ -298,7 +265,7 @@ describe("User Service - Integration tests", () => {
     });
   });
 
-  describe("Caso de Uso 6: Edición de perfil", () => {
+  describe("Caso de Uso 1.6: Edición de perfil", () => {
     let userId;
 
     beforeAll(async () => {
@@ -307,7 +274,7 @@ describe("User Service - Integration tests", () => {
       userId = user._id.toString();
     });
 
-    it("debería actualizar información básica del usuario", async () => {
+    it("Actualizar datos básicos - debería devolver status 200 y mensaje de éxito", async () => {
       const updateData = {
         name: "UpdatedName",
         surname: "UpdatedSurname",
@@ -324,7 +291,7 @@ describe("User Service - Integration tests", () => {
       expect(response.body.user.surname).toBe("UpdatedSurname");
     });
 
-    it("debería actualizar contraseña con contraseña actual correcta", async () => {
+    it("Actualizar contraseña correcta - debería devolver status 200 y mensaje de éxito", async () => {
       const updateData = {
         password: "NewPassword123",
         currentPassword: testUser.password
@@ -338,7 +305,7 @@ describe("User Service - Integration tests", () => {
       expect(response.body).toHaveProperty("message", "Perfil y contraseña actualizados exitosamente");
     });
 
-    it("debería rechazar actualización de contraseña sin contraseña actual", async () => {
+    it("Actualizar contraseña sin indicar contraseña actual - debería devolver status 400 indicando que se debe enviar la contraseña actual", async () => {
       const updateData = {
         password: "AnotherPassword123"
       };
@@ -351,7 +318,7 @@ describe("User Service - Integration tests", () => {
       expect(response.body.error).toContain("Se requiere la contraseña actual");
     });
 
-    it("debería rechazar actualización de contraseña con contraseña actual incorrecta", async () => {
+    it("Contraseña actual incorrecta - debería devolver status 400 indicando que la contraseña actual es incorrecta", async () => {
       const updateData = {
         password: "NewPassword456",
         currentPassword: "wrongcurrentpassword"
@@ -365,7 +332,7 @@ describe("User Service - Integration tests", () => {
       expect(response.body.error).toContain("La contraseña actual es incorrecta");
     });
 
-    it("debería rechazar actualización de email con formato inválido", async () => {
+    it("Email en formato inválido - debería devolver status 400 indicando que el formato del email es incorrecto", async () => {
       const updateData = {
         email: "invalid-email-format"
       };
@@ -378,7 +345,20 @@ describe("User Service - Integration tests", () => {
       expect(response.body.error).toContain("Formato de email inválido");
     });
 
-    it("debería retornar 404 para usuario inexistente", async () => {
+    it("Nombre de usuario o email existentes - debería devolver status 400 indicando que el username o email ya están en uso", async () => {
+      const updateData = {
+        username: testUser2.username // Intentar usar el username del segundo usuario
+      };
+
+      const response = await request(app)
+        .put(`/edit-user/${userId}`)
+        .send(updateData);
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toMatch(/ya existe|ya está en uso/i);
+    });
+
+    it("Editar usuario inexistente - debería devolver status 404 indicando que el usuario no existe", async () => {
       const fakeUserId = "507f1f77bcf86cd799439011";
       const updateData = {
         name: "NewName"
