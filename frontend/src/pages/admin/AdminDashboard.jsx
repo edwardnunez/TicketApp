@@ -1,17 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { 
-  Layout, 
-  Typography, 
-  Button, 
-  Row, 
-  Col, 
-  Table, 
-  Alert, 
-  Card, 
-  Space, 
-  Statistic, 
-  Tag, 
-  Tooltip, 
+import {
+  Layout,
+  Typography,
+  Button,
+  Row,
+  Col,
+  Table,
+  Alert,
+  Card,
+  Space,
+  Statistic,
+  Tag,
   Breadcrumb,
   Input,
   Select,
@@ -116,9 +115,9 @@ const AdminDashboard = () => {
     switch(state) {
       case "activo": return COLORS?.status?.success || "#52c41a";
       case "proximo": return COLORS?.status?.info || "#1890ff";
-      case "finalizado": return COLORS?.neutral?.grey4 || "#8c8c8c";
+      case "finalizado": return COLORS?.neutral?.grey500 || "#6B7280";
       case "cancelado": return COLORS?.status?.error || "#ff4d4f";
-      default: return COLORS?.neutral?.grey3 || "#d9d9d9";
+      default: return COLORS?.neutral?.grey400 || "#9CA3AF";
     }
   };
 
@@ -277,7 +276,7 @@ const AdminDashboard = () => {
       },
       cancelButtonProps: {
         style: {
-          borderColor: COLORS?.neutral?.grey3 || "#d9d9d9"
+          borderColor: COLORS?.neutral?.grey400 || "#9CA3AF"
         }
       },
       onOk: async () => {
@@ -345,7 +344,7 @@ const AdminDashboard = () => {
       },
       cancelButtonProps: {
         style: {
-          borderColor: COLORS?.neutral?.grey3 || "#d9d9d9"
+          borderColor: COLORS?.neutral?.grey400 || "#9CA3AF"
         }
       },
       onOk: async () => {
@@ -434,7 +433,7 @@ const AdminDashboard = () => {
       key: 'location',
       render: (text, record) => (
         <Space>
-          <EnvironmentOutlined style={{ color: COLORS?.neutral?.grey4 || "#8c8c8c" }} />
+          <EnvironmentOutlined style={{ color: COLORS?.neutral?.grey600 || "#4B5563" }} />
           <span>{record.location?.name || 'Desconocido'}</span>
         </Space>
       ),
@@ -485,52 +484,52 @@ const AdminDashboard = () => {
         console.log('Record createdBy:', record.createdBy, 'CurrentUserId:', currentUserId, 'Comparison:', String(record.createdBy) === String(currentUserId));
         return (
           <Space>
-            <Tooltip title="Ver detalles">
-              <Link to={`/event/${record._id}`}>
-                <Button 
-                  type="primary" 
-                  icon={<EyeOutlined />} 
-                  size="small"
-                  style={{ 
-                    backgroundColor: COLORS?.primary?.main || "#1890ff",
-                    borderColor: COLORS?.primary?.main || "#1890ff"
-                  }}
-                >
-                  Ver
-                </Button>
-              </Link>
-            </Tooltip>
+            <Link to={`/event/${record._id}`}>
+              <Button
+                type="primary"
+                icon={<EyeOutlined />}
+                size="small"
+                title="Ver detalles del evento"
+                aria-label={`Ver detalles del evento ${record.name}`}
+                style={{
+                  backgroundColor: COLORS?.primary?.main || "#1890ff",
+                  borderColor: COLORS?.primary?.main || "#1890ff"
+                }}
+              >
+                Ver
+              </Button>
+            </Link>
             {String(record.createdBy) === String(currentUserId) && record.state !== 'cancelado' && (
-              <Tooltip title="Cancelar evento">
-                <Button 
-                  danger
-                  icon={<DeleteOutlined />}
-                  size="small"
-                  onClick={() => cancelEvent(record._id, record.name)}
-                  style={{ 
-                    borderColor: COLORS?.status?.error || "#ff4d4f",
-                    color: COLORS?.status?.error || "#ff4d4f"
-                  }}
-                >
-                  Cancelar
-                </Button>
-              </Tooltip>
-            )}
-            <Tooltip title="Eliminar evento de la base de datos">
-              <Button 
+              <Button
                 danger
                 icon={<DeleteOutlined />}
                 size="small"
-                onClick={() => deleteEvent(record._id, record.name)}
-                style={{ 
-                  borderColor: COLORS?.status?.error || "#ff4d4f",
-                  color: COLORS?.status?.error || "#ff4d4f",
-                  backgroundColor: '#fff0f0'
+                onClick={() => cancelEvent(record._id, record.name)}
+                title="Cancelar este evento"
+                aria-label={`Cancelar evento ${record.name}`}
+                style={{
+                  borderColor: COLORS?.status?.error || "#D32F2F",
+                  color: COLORS?.status?.error || "#D32F2F"
                 }}
               >
-                Eliminar
+                Cancelar
               </Button>
-            </Tooltip>
+            )}
+            <Button
+              danger
+              icon={<DeleteOutlined />}
+              size="small"
+              onClick={() => deleteEvent(record._id, record.name)}
+              title="Eliminar evento de la base de datos"
+              aria-label={`Eliminar evento ${record.name} de la base de datos`}
+              style={{
+                borderColor: COLORS?.status?.error || "#D32F2F",
+                color: COLORS?.status?.error || "#D32F2F",
+                backgroundColor: '#fff0f0'
+              }}
+            >
+              Eliminar
+            </Button>
           </Space>
         );
       },
@@ -557,11 +556,11 @@ const AdminDashboard = () => {
       icon: <ClockCircleOutlined />, 
       color: COLORS?.status?.info || "#1890ff"
     },
-    { 
-      title: 'Finalizados', 
-      value: filteredEvents.filter(e => e.state === 'finalizado').length, 
-      icon: <BarChartOutlined />, 
-      color: COLORS?.neutral?.grey4 || "#8c8c8c"
+    {
+      title: 'Finalizados',
+      value: filteredEvents.filter(e => e.state === 'finalizado').length,
+      icon: <BarChartOutlined />,
+      color: COLORS?.neutral?.grey600 || "#4B5563"
     }
   ];
 
@@ -576,10 +575,48 @@ const AdminDashboard = () => {
   }, []);
 
   return (
-    <Layout style={{ backgroundColor: COLORS.neutral.grey1, minHeight: "100vh" }}>
-      {/* Agregamos los context holders para que funcionen las notificaciones y modales */}
-      {contextHolder}
-      {modalContextHolder}
+    <>
+      <style>
+        {`
+          /* Mejorar contraste del separador en Breadcrumb */
+          .ant-breadcrumb-separator {
+            color: rgba(0, 0, 0, 0.65) !important;
+          }
+
+          /* Mejorar contraste en breadcrumb links */
+          .ant-breadcrumb-link {
+            color: rgba(0, 0, 0, 0.65) !important;
+          }
+
+          /* Mejorar contraste del texto secundario */
+          .ant-typography-secondary {
+            color: rgba(0, 0, 0, 0.65) !important;
+          }
+
+          /* Ocultar completamente el textarea oculto de autosize */
+          textarea[aria-hidden="true"][name="hiddenTextarea"] {
+            display: none !important;
+            visibility: hidden !important;
+            position: absolute !important;
+            left: -9999px !important;
+          }
+
+          /* Mejorar contraste en links de paginación */
+          .ant-pagination-item a {
+            color: rgba(0, 0, 0, 0.85) !important;
+          }
+
+          /* Mejorar contraste en placeholders */
+          .ant-select-selection-placeholder,
+          .ant-input-placeholder {
+            color: rgba(0, 0, 0, 0.65) !important;
+          }
+        `}
+      </style>
+      <Layout style={{ backgroundColor: COLORS.neutral.grey1, minHeight: "100vh" }}>
+        {/* Agregamos los context holders para que funcionen las notificaciones y modales */}
+        {contextHolder}
+        {modalContextHolder}
       
       <Content style={{ padding: isMobile ? "18px 4px" : "40px 20px" }}>
         <div style={{ maxWidth: isMobile ? "100%" : "1200px", margin: "0 auto" }}>
@@ -665,7 +702,7 @@ const AdminDashboard = () => {
                 >
                   <Statistic
                     title={
-                      <Text style={{ fontSize: '14px', color: COLORS?.neutral?.grey4 || "#8c8c8c", fontWeight: '500' }}>
+                      <Text style={{ fontSize: '14px', color: COLORS?.neutral?.grey600 || "#4B5563", fontWeight: '500' }}>
                         {stat.title}
                       </Text>
                     }
@@ -721,12 +758,13 @@ const AdminDashboard = () => {
               <Col xs={24} md={6}>
                 <Input
                   placeholder="Buscar eventos..."
-                  prefix={<SearchOutlined style={{ color: COLORS?.neutral?.grey3 || "#d9d9d9" }} />}
+                  prefix={<SearchOutlined style={{ color: COLORS?.neutral?.grey500 || "#6B7280" }} />}
                   allowClear
                   value={filters.searchText}
                   onChange={handleSearchChange}
                   style={{ borderRadius: '6px' }}
                   size="large"
+                  aria-label="Buscar eventos por nombre"
                 />
               </Col>
               <Col xs={24} md={5}>
@@ -736,20 +774,12 @@ const AdminDashboard = () => {
                   size="large"
                   value={filters.category}
                   onChange={handleCategoryChange}
+                  aria-label="Filtrar por categoría"
                 >
                   <Option value="all">Todas las categorías</Option>
                   {getUniqueCategories().map(category => (
-                    <Option key={category} value={category}>
-                      <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <span style={{ 
-                          width: '8px', 
-                          height: '8px', 
-                          borderRadius: '50%', 
-                          backgroundColor: getCategoryColor(category),
-                          marginRight: '8px'
-                        }}></span>
-                        {category}
-                      </div>
+                    <Option key={category} value={category} label={category}>
+                      {category}
                     </Option>
                   ))}
                 </Select>
@@ -761,16 +791,12 @@ const AdminDashboard = () => {
                   size="large"
                   value={filters.state}
                   onChange={handleStateChange}
+                  aria-label="Filtrar por estado"
                 >
                   <Option value="all">Todos los estados</Option>
                   {getUniqueStates().map(state => (
-                    <Option key={state} value={state}>
-                      <div style={{ display: 'flex', alignItems: 'center' }}>
-                        {getStateIcon(state)}
-                        <span style={{ marginLeft: '8px' }}>
-                          {getStateLabel(state)}
-                        </span>
-                      </div>
+                    <Option key={state} value={state} label={getStateLabel(state)}>
+                      {getStateLabel(state)}
                     </Option>
                   ))}
                 </Select>
@@ -783,6 +809,7 @@ const AdminDashboard = () => {
                   value={filters.dateRange}
                   onChange={handleDateRangeChange}
                   format="DD/MM/YYYY"
+                  aria-label="Filtrar por rango de fechas"
                 />
               </Col>
             </Row>
@@ -870,7 +897,8 @@ const AdminDashboard = () => {
           </Card>
         </div>
       </Content>
-    </Layout>
+      </Layout>
+    </>
   );
 };
 

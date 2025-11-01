@@ -47,7 +47,10 @@ const SeatSelectionViewSwitcher = ({ currentView, onViewChange }) => {
           block={isMobile}
           style={{
             borderRadius: '8px',
-            fontWeight: currentView === 'map' ? 'bold' : 'normal'
+            fontWeight: currentView === 'map' ? 'bold' : 'normal',
+            backgroundColor: currentView === 'map' ? COLORS.primary.main : undefined,
+            borderColor: currentView === 'map' ? COLORS.primary.main : undefined,
+            color: currentView === 'map' ? '#FFFFFF' : undefined
           }}
         >
           Mapa de asientos
@@ -60,7 +63,10 @@ const SeatSelectionViewSwitcher = ({ currentView, onViewChange }) => {
           block={isMobile}
           style={{
             borderRadius: '8px',
-            fontWeight: currentView === 'manual' ? 'bold' : 'normal'
+            fontWeight: currentView === 'manual' ? 'bold' : 'normal',
+            backgroundColor: currentView === 'manual' ? COLORS.primary.main : undefined,
+            borderColor: currentView === 'manual' ? COLORS.primary.main : undefined,
+            color: currentView === 'manual' ? '#FFFFFF' : undefined
           }}
         >
           Selección manual

@@ -144,7 +144,7 @@ const Register = () => {
               fontSize: isMobile ? "15px" : "18px",
               maxWidth: "700px",
               margin: "0 auto 16px",
-              color: "rgba(255, 255, 255, 0.85)",
+              color: "rgba(255, 255, 255, 0.95)",
             }}
           >
             Únete para descubrir y reservar los mejores eventos
@@ -169,7 +169,7 @@ const Register = () => {
               <Title level={isMobile ? 4 : 3} style={{ margin: "0 0 8px 0", color: COLORS.neutral.dark, fontSize: isMobile ? "1.1rem" : undefined }}>
                 Registro de usuario
               </Title>
-              <Text style={{ color: COLORS.neutral.grey4, fontSize: isMobile ? "13px" : undefined }}>Crea tu cuenta para acceder a todos los beneficios</Text>
+              <Text style={{ color: COLORS.neutral.grey600, fontSize: isMobile ? "13px" : undefined }}>Crea tu cuenta para acceder a todos los beneficios</Text>
             </div>
 
             <Form
@@ -186,7 +186,13 @@ const Register = () => {
                 validateStatus={registerError["name"] ? "error" : ""}
                 help={registerError["name"]}
               >
-                <Input data-cy="name-input" prefix={<UserOutlined style={{ color: COLORS.neutral.grey4 }} />} placeholder="Nombre" style={{ borderRadius: "6px" }} />
+                <Input
+                  data-cy="name-input"
+                  prefix={<UserOutlined style={{ color: COLORS.neutral.grey500 }} />}
+                  placeholder="Nombre"
+                  style={{ borderRadius: "6px" }}
+                  aria-label="Nombre"
+                />
               </Form.Item>
 
               <Form.Item
@@ -195,7 +201,13 @@ const Register = () => {
                 validateStatus={registerError["surname"] ? "error" : ""}
                 help={registerError["surname"]}
               >
-                <Input data-cy="surname-input" prefix={<UserOutlined style={{ color: COLORS.neutral.grey4 }} />} placeholder="Apellidos" style={{ borderRadius: "6px" }} />
+                <Input
+                  data-cy="surname-input"
+                  prefix={<UserOutlined style={{ color: COLORS.neutral.grey500 }} />}
+                  placeholder="Apellidos"
+                  style={{ borderRadius: "6px" }}
+                  aria-label="Apellidos"
+                />
               </Form.Item>
 
               <Form.Item
@@ -204,7 +216,13 @@ const Register = () => {
                 validateStatus={registerError["username"] ? "error" : ""}
                 help={registerError["username"]}
               >
-                <Input data-cy="username-input" prefix={<UserOutlined style={{ color: COLORS.neutral.grey4 }} />} placeholder="Nombre de usuario" style={{ borderRadius: "6px" }} />
+                <Input
+                  data-cy="username-input"
+                  prefix={<UserOutlined style={{ color: COLORS.neutral.grey500 }} />}
+                  placeholder="Nombre de usuario"
+                  style={{ borderRadius: "6px" }}
+                  aria-label="Nombre de usuario"
+                />
               </Form.Item>
 
               <Form.Item
@@ -213,7 +231,13 @@ const Register = () => {
                 validateStatus={registerError["email"] ? "error" : ""}
                 help={registerError["email"]}
               >
-                <Input data-cy="email-input" prefix={<MailOutlined style={{ color: COLORS.neutral.grey4 }} />} placeholder="Email" style={{ borderRadius: "6px" }} />
+                <Input
+                  data-cy="email-input"
+                  prefix={<MailOutlined style={{ color: COLORS.neutral.grey500 }} />}
+                  placeholder="Email"
+                  style={{ borderRadius: "6px" }}
+                  aria-label="Correo electrónico"
+                />
               </Form.Item>
 
               <Form.Item
@@ -222,7 +246,13 @@ const Register = () => {
                 validateStatus={registerError["password"] ? "error" : ""}
                 help={registerError["password"]}
               >
-                <Input.Password data-cy="password-input" prefix={<LockOutlined style={{ color: COLORS.neutral.grey4 }} />} placeholder="Contraseña" style={{ borderRadius: "6px" }} />
+                <Input.Password
+                  data-cy="password-input"
+                  prefix={<LockOutlined style={{ color: COLORS.neutral.grey500 }} />}
+                  placeholder="Contraseña"
+                  style={{ borderRadius: "6px" }}
+                  aria-label="Contraseña"
+                />
               </Form.Item>
 
               <Form.Item
@@ -232,7 +262,13 @@ const Register = () => {
                 validateStatus={registerError["confirmPassword"] ? "error" : ""}
                 help={registerError["confirmPassword"]}
               >
-                <Input.Password data-cy="confirm-password-input" prefix={<LockOutlined style={{ color: COLORS.neutral.grey4 }} />} placeholder="Confirmar contraseña" style={{ borderRadius: "6px" }} />
+                <Input.Password
+                  data-cy="confirm-password-input"
+                  prefix={<LockOutlined style={{ color: COLORS.neutral.grey500 }} />}
+                  placeholder="Confirmar contraseña"
+                  style={{ borderRadius: "6px" }}
+                  aria-label="Confirmar contraseña"
+                />
               </Form.Item>
 
               {registerError["general"] && (
@@ -266,7 +302,7 @@ const Register = () => {
               </Form.Item>
 
               <div style={{ textAlign: "center" }}>
-                <Text style={{ color: COLORS.neutral.grey4 }}>
+                <Text style={{ color: COLORS.neutral.grey600 }}>
                   ¿Ya tienes cuenta?{" "}
                   <Link to="/login" style={{ color: COLORS.primary.main, fontWeight: "500" }}>
                     Inicia sesión

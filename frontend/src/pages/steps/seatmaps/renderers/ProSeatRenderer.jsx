@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Tooltip, Button } from 'antd';
+import { Button } from 'antd';
 import {
   CheckOutlined,
   UserOutlined,
@@ -448,6 +448,7 @@ const ProSeatRenderer = ({
         }}
         className="professional-seat"
         aria-label={`${sectionName} Fila ${getRowNumber(row)} Asiento ${seat + 1} ${state}`}
+        title={showTooltips ? `${tooltipInfo.title} - ${tooltipInfo.content}` : undefined}
       >
         {getSeatIcon(seatId, row, seat)}
         
@@ -490,35 +491,6 @@ const ProSeatRenderer = ({
         )}
       </button>
     );
-
-    if (showTooltips) {
-      return (
-        <Tooltip
-          key={seatId}
-          title={
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ 
-                fontWeight: 'bold', 
-                marginBottom: '4px',
-                color: tooltipInfo.color 
-              }}>
-                {tooltipInfo.title}
-              </div>
-              <div style={{ fontSize: '12px', opacity: 0.9 }}>
-                {tooltipInfo.content}
-              </div>
-            </div>
-          }
-          placement="top"
-          overlayStyle={{ 
-            maxWidth: '200px',
-            borderRadius: '8px'
-          }}
-        >
-          {seatElement}
-        </Tooltip>
-      );
-    }
 
     return seatElement;
   };

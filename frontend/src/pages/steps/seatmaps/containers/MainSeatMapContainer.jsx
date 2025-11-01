@@ -81,7 +81,7 @@ const SelectionTopBar = ({ selectedSeats, maxSeats, formatPrice, event, showLege
           Selección de asientos
         </Title>
         <Text style={{
-          color: COLORS.neutral.grey4,
+          color: COLORS.neutral.grey600,
           fontSize: isMobile ? '11px' : '12px',
           whiteSpace: isMobile ? 'normal' : 'nowrap',
           lineHeight: '1.3'
@@ -109,7 +109,7 @@ const SelectionTopBar = ({ selectedSeats, maxSeats, formatPrice, event, showLege
           <div style={{ textAlign: 'center' }}>
             <Text style={{
               fontSize: isMobile ? '10px' : '12px',
-              color: COLORS.neutral.grey4,
+              color: COLORS.neutral.grey600,
               display: 'block',
               whiteSpace: 'nowrap'
             }}>
@@ -129,7 +129,7 @@ const SelectionTopBar = ({ selectedSeats, maxSeats, formatPrice, event, showLege
             <div style={{ textAlign: 'center' }}>
               <Text style={{
                 fontSize: isMobile ? '10px' : '12px',
-                color: COLORS.neutral.grey4,
+                color: COLORS.neutral.grey600,
                 display: 'block',
                 whiteSpace: 'nowrap'
               }}>

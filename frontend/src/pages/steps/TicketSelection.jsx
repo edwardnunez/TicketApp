@@ -379,13 +379,13 @@ export default function SelectTickets({
         alignItems: 'center'
       }}>
         <div style={{ display: 'flex', alignItems: 'center' }}>
-          <Text style={{ color: COLORS.neutral.grey4 }}>
+          <Text style={{ color: COLORS.neutral.grey700 }}>
             Entradas disponibles:
           </Text>
           {availabilityLoading && (
-            <div style={{ 
-              width: '12px', 
-              height: '12px', 
+            <div style={{
+              width: '12px',
+              height: '12px',
               border: '2px solid #f3f3f3',
               borderTop: '2px solid #1890ff',
               borderRadius: '50%',
@@ -394,7 +394,7 @@ export default function SelectTickets({
             }} />
           )}
         </div>
-        <Text strong style={{ color: COLORS.primary.main }}>
+        <Text strong style={{ color: COLORS.neutral.grey800 }}>
           {availableTickets}
         </Text>
       </div>
@@ -470,10 +470,10 @@ export default function SelectTickets({
       <>
         {renderAvailabilityAlert()}
         <Card style={{ textAlign: 'center', padding: '40px' }}>
-          <Title level={3} style={{ color: COLORS.neutral.grey4 }}>
+          <Title level={3} style={{ color: COLORS.neutral.grey600 }}>
             Evento agotado
           </Title>
-          <Text style={{ color: COLORS.neutral.grey4 }}>
+          <Text style={{ color: COLORS.neutral.grey600 }}>
             Te recomendamos que revises otros eventos disponibles
           </Text>
         </Card>
@@ -539,7 +539,7 @@ export default function SelectTickets({
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div>
                         <Text strong>{seat.section}</Text><br />
-                        <Text style={{ color: COLORS.neutral.grey4 }}>
+                        <Text style={{ color: COLORS.neutral.grey600 }}>
                           {seat.row != null && seat.seat != null
                             ? `Fila ${seat.row}, Asiento ${seat.seat}`
                             : `Entrada general`}
@@ -600,8 +600,9 @@ export default function SelectTickets({
               onChange={setQuantity}
               size="large"
               style={{ width: '120px' }}
+              aria-label="Cantidad de tickets"
             />
-            <Text style={{ color: COLORS.neutral.grey4 }}>
+            <Text style={{ color: COLORS.neutral.grey600 }}>
               (Máximo {maxSelectableTickets} tickets por compra)
             </Text>
           </div>

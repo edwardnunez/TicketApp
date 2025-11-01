@@ -57,7 +57,7 @@ const Footer = () => {
           </Link>
         </div>
 
-        <Text style={{ color: COLORS.neutral.grey3, fontSize: isMobile ? 12 : 14 }}>
+        <Text style={{ color: COLORS.neutral.grey4, fontSize: isMobile ? 12 : 14 }}>
           © 2025 TicketApp. Todos los derechos reservados.
         </Text>
       </div>

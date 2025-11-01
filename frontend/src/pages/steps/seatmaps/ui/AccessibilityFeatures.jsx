@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Tooltip, Switch, Space, Typography } from 'antd';
+import { Button, Switch, Space, Typography } from 'antd';
 import {
   EyeOutlined,
   BulbOutlined,
@@ -95,7 +95,7 @@ const AccessibilityFeatures = ({
   return (
     <>
       {/* Botón de accesibilidad */}
-      <div 
+      <div
         className="accessibility-toggle"
         style={{
           position: 'fixed',
@@ -104,20 +104,20 @@ const AccessibilityFeatures = ({
           zIndex: 1000
         }}
       >
-        <Tooltip title="Configuración de accesibilidad">
-          <Button
-            type="primary"
-            shape="circle"
-            icon={<QuestionCircleOutlined />}
-            onClick={() => setShowAccessibilityPanel(!showAccessibilityPanel)}
-            style={{
-              backgroundColor: COLORS.accent.purple,
-              borderColor: COLORS.accent.purple,
-              boxShadow: COLORS.shadows.lg
-            }}
-            size={isMobile ? 'small' : 'middle'}
-          />
-        </Tooltip>
+        <Button
+          type="primary"
+          shape="circle"
+          icon={<QuestionCircleOutlined />}
+          onClick={() => setShowAccessibilityPanel(!showAccessibilityPanel)}
+          aria-label="Configuración de accesibilidad"
+          title="Configuración de accesibilidad"
+          style={{
+            backgroundColor: COLORS.accent.purple,
+            borderColor: COLORS.accent.purple,
+            boxShadow: COLORS.shadows.lg
+          }}
+          size={isMobile ? 'small' : 'middle'}
+        />
       </div>
 
       {/* Panel de accesibilidad */}
