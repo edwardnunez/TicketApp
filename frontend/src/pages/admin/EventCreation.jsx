@@ -1301,33 +1301,36 @@ const EventCreation = () => {
           }
 
           /* Ocultar completamente el textarea oculto de autosize */
-          textarea[aria-hidden="true"][name="hiddenTextarea"] {
+          textarea[aria-hidden="true"][name="hiddenTextarea"],
+          textarea[name="hiddenTextarea"] {
             display: none !important;
             visibility: hidden !important;
             position: absolute !important;
             left: -9999px !important;
+            top: -9999px !important;
             width: 0 !important;
             height: 0 !important;
             opacity: 0 !important;
             pointer-events: none !important;
+            z-index: -9999 !important;
           }
 
           /* Ocultar tooltips con aria-describedby que causan broken ARIA */
           .ant-form-item-tooltip[aria-describedby],
           span.ant-form-item-tooltip[aria-describedby],
-          .anticon-question-circle.ant-form-item-tooltip {
+          .anticon-question-circle.ant-form-item-tooltip,
+          .ant-form-item-label .ant-form-item-tooltip,
+          [aria-describedby^=":r"] {
             display: none !important;
             visibility: hidden !important;
             position: absolute !important;
             left: -9999px !important;
+            top: -9999px !important;
             width: 0 !important;
             height: 0 !important;
             opacity: 0 !important;
-          }
-
-          /* Ocultar el icono del tooltip cuando tiene aria-describedby */
-          .ant-form-item-label .ant-form-item-tooltip {
-            display: none !important;
+            pointer-events: none !important;
+            z-index: -9999 !important;
           }
         `}
       </style>
@@ -1525,8 +1528,8 @@ const EventCreation = () => {
                             <InfoCircleOutlined style={{ marginRight: '8px' }} />
                             Por favor seleccione primero un tipo de evento
                           </div> : 
-                          <div style={{ textAlign: 'center', padding: '8px' }}>
-                            No se encontraron ubicaciones compatibles
+                          <div style={{ textAlign: 'left', padding: '8px' }}>
+                            Seleccionar...
                           </div>
                       }
                       {locationOptions.map((location) => {
@@ -1634,7 +1637,11 @@ const EventCreation = () => {
                         { required: true, message: 'Por favor ingrese el precio' },
                         { type: 'number', min: 0, message: 'El precio debe ser al menos 0', transform: (value) => Number(value) }
                       ]}
-                      tooltip="Precio base por entrada"
+                      help={
+                        <span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>
+                          Precio base por entrada
+                        </span>
+                      }
                     >
                       <Input
                         type="number"

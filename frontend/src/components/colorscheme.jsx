@@ -12,6 +12,7 @@ const PRIMARY = {
   main: '#00856F',
   light: '#5DF2D6',
   dark: '#008E76',
+  darker: '#064e42ff',
   contrast: '#FFFFFF'
 };
 
@@ -45,7 +46,7 @@ const STATUS = {
   success: '#00856F', // Mismo que color primario - 4.5:1 ✓
   info: '#0277BD', // Azul oscuro - 6.1:1 ✓ (anteriormente #4DD0E1 con bajo contraste)
   warning: '#F57C00', // Naranja oscuro - 4.6:1 ✓ (anteriormente #FFC107 con bajo contraste)
-  error: '#D32F2F', // Rojo oscuro - 5.9:1 ✓
+  error: '#881818ff', // Rojo oscuro - 5.9:1 ✓
 };
 
 /**

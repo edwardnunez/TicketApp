@@ -523,8 +523,8 @@ const AdminDashboard = () => {
               title="Eliminar evento de la base de datos"
               aria-label={`Eliminar evento ${record.name} de la base de datos`}
               style={{
-                borderColor: COLORS?.status?.error || "#D32F2F",
-                color: COLORS?.status?.error || "#D32F2F",
+                borderColor: COLORS?.status?.error || "#842020ff",
+                color: COLORS?.status?.error || "#842020ff",
                 backgroundColor: '#fff0f0'
               }}
             >

@@ -612,7 +612,7 @@ const TicketPurchase = () => {
             <Button 
               type="text" 
               icon={<ArrowLeftOutlined />}
-              style={{ color: COLORS.primary.dark, marginBottom: '16px' }}
+              style={{ color: COLORS.primary.darker, marginBottom: '16px' }}
             >
               Volver al evento
             </Button>

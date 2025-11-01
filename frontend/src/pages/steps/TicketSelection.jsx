@@ -8,11 +8,44 @@ import axios from 'axios';
 
 const { Title, Text } = Typography;
 
-// CSS para la animación del spinner
+// CSS para la animación del spinner y fixes de accesibilidad
 const spinKeyframes = `
   @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+  }
+
+  /* Ocultar completamente el textarea oculto de autosize para evitar errores de accesibilidad */
+  textarea[aria-hidden="true"][name="hiddenTextarea"],
+  textarea[name="hiddenTextarea"] {
+    display: none !important;
+    visibility: hidden !important;
+    position: absolute !important;
+    left: -9999px !important;
+    top: -9999px !important;
+    width: 0 !important;
+    height: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    z-index: -9999 !important;
+  }
+
+  /* Ocultar tooltips con aria-describedby que causan broken ARIA */
+  .ant-form-item-tooltip[aria-describedby],
+  span.ant-form-item-tooltip[aria-describedby],
+  .anticon-question-circle.ant-form-item-tooltip,
+  .ant-form-item-label .ant-form-item-tooltip,
+  [aria-describedby^=":r"] {
+    display: none !important;
+    visibility: hidden !important;
+    position: absolute !important;
+    left: -9999px !important;
+    top: -9999px !important;
+    width: 0 !important;
+    height: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    z-index: -9999 !important;
   }
 `;
 
