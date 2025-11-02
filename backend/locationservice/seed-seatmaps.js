@@ -24,14 +24,10 @@ const seedSeatMaps = async (dbConnection) => {
       ...rest
     } = section;
 
-    // defaultPrice: usar existente o 0 si no existe
-    const defaultPrice = section.defaultPrice !== undefined ? section.defaultPrice : 0;
-
     if (section.hasNumberedSeats === false) {
       // Entrada general: sin filas/asientos
       return {
         ...rest,
-        defaultPrice,
         rows: [],
         rowPricing: [],
       };
@@ -39,7 +35,6 @@ const seedSeatMaps = async (dbConnection) => {
 
     return {
       ...rest,
-      defaultPrice,
       rows: Array.isArray(section.rows) ? section.rows : buildRows(rows, seatsPerRow),
       rowPricing: Array.isArray(section.rowPricing) ? section.rowPricing : [],
       totalCapacity: undefined
@@ -64,7 +59,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Tribuna Norte',
           rows: 8,
           seatsPerRow: 15,
-          defaultPrice: 0,
           color: '#4CAF50',
           position: 'north',
           order: 1
@@ -74,7 +68,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Tribuna Este',
           rows: 6,
           seatsPerRow: 14,
-          defaultPrice: 0,
           color: '#2196F3',
           position: 'east',
           order: 2
@@ -84,7 +77,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Tribuna Oeste',
           rows: 6,
           seatsPerRow: 14,
-          defaultPrice: 0,
           color: '#2196F3',
           position: 'west',
           order: 3
@@ -94,7 +86,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Tribuna Sur',
           rows: 8,
           seatsPerRow: 15,
-          defaultPrice: 0,
           color: '#4CAF50',
           position: 'south',
           order: 4
@@ -104,7 +95,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Palcos VIP',
           rows: 2,
           seatsPerRow: 14,
-          defaultPrice: 150,
           color: '#FF9800',
           position: 'vip',
           order: 5
@@ -127,7 +117,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Tribuna Norte',
           rows: 10,
           seatsPerRow: 18,
-          defaultPrice: 0,
           color: '#4CAF50',
           position: 'north',
           order: 1
@@ -251,7 +240,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Grada Baja',
           rows: 7,
           seatsPerRow: 10,
-          defaultPrice: 80,
           color: '#4CAF50',
           position: 'lower',
           order: 2,
@@ -262,7 +250,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Grada Media',
           rows: 5,
           seatsPerRow: 8,
-          defaultPrice: 60,
           color: '#2196F3',
           position: 'middle',
           order: 3,
@@ -283,7 +270,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Palcos VIP',
           rows: 2,
           seatsPerRow: 5,
-          defaultPrice: 200,
           color: '#9C27B0',
           position: 'vip',
           order: 5,
@@ -361,7 +347,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Palcos Premium',
           rows: 2,
           seatsPerRow: 10,
-          defaultPrice: 180,
           color: '#9C27B0',
           position: 'vip',
           order: 6,
@@ -413,7 +398,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Delanteras',
           rows: 3,
           seatsPerRow: 16,
-          defaultPrice: 8,
           color: '#4CAF50',
           position: 'front',
           order: 1
@@ -542,7 +526,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Platea',
           rows: 15,
           seatsPerRow: 20,
-          defaultPrice: 120,
           color: '#4CAF50',
           position: 'orchestra',
           order: 1
@@ -561,7 +544,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Balcón',
           rows: 6,
           seatsPerRow: 16,
-          defaultPrice: 80,
           color: '#FF9800',
           position: 'balcony',
           order: 3
@@ -583,7 +565,6 @@ const seedSeatMaps = async (dbConnection) => {
           name: 'Palcos VIP',
           rows: 3,
           seatsPerRow: 4,
-          defaultPrice: 300,
           color: '#9C27B0',
           position: 'boxes',
           order: 1

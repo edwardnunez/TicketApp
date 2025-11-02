@@ -397,6 +397,7 @@ const EditProfile = () => {
                               <Avatar
                                 size={60}
                                 src={avatar}
+                                alt={`Avatar predefinido ${index + 1}`}
                                 style={{
                                   border: selectedAvatar === avatar ? `2px solid ${COLORS.primary.main}` : "1px solid " + COLORS.neutral.grey3,
                                   boxShadow: selectedAvatar === avatar ? `0 0 0 2px ${COLORS.primary.light}` : "none",

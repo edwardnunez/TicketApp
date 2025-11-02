@@ -123,13 +123,14 @@ const AboutUs = () => {
                         hoverable
                       >
                         <div style={{ textAlign: "center", marginBottom: "16px" }}>
-                          <Avatar 
-                            size={80} 
-                            icon={<UserOutlined />} 
+                          <Avatar
+                            size={80}
+                            icon={<UserOutlined />}
                             src={member.avatar}
-                            style={{ 
+                            alt={`Foto de perfil de ${member.name}`}
+                            style={{
                               backgroundColor: COLORS?.primary?.light || "#69c0ff",
-                              marginBottom: "16px" 
+                              marginBottom: "16px"
                             }}
                           />
                           <Title level={4} style={{ margin: "8px 0" }}>

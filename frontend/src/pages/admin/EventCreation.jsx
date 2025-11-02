@@ -1507,7 +1507,17 @@ const EventCreation = () => {
                   <Form.Item
                     label="Ubicación"
                     name="location"
-                    rules={[{ required: true, message: 'Por favor seleccione la ubicación del evento' }]}
+                    rules={[
+                      { required: true, message: 'Por favor seleccione la ubicación del evento' },
+                      {
+                        validator: (_, value) => {
+                          if (!value) {
+                            return Promise.reject('Debe seleccionar una ubicación válida');
+                          }
+                          return Promise.resolve();
+                        }
+                      }
+                    ]}
                   >
                     <Select
                       placeholder="Seleccionar ubicación"
@@ -1521,17 +1531,17 @@ const EventCreation = () => {
                         option.label?.toLowerCase().indexOf(input.toLowerCase()) >= 0
                       }
                       aria-label="Ubicación del evento"
-                    >
                       notFoundContent={
-                        !type ? 
+                        !type ?
                           <div style={{ textAlign: 'center', padding: '8px' }}>
                             <InfoCircleOutlined style={{ marginRight: '8px' }} />
                             Por favor seleccione primero un tipo de evento
-                          </div> : 
+                          </div> :
                           <div style={{ textAlign: 'left', padding: '8px' }}>
-                            Seleccionar...
+                            No hay ubicaciones disponibles
                           </div>
                       }
+                    >
                       {locationOptions.map((location) => {
                         const seatMapInfo = location.seatMapId ? getSeatMapInfo(location.seatMapId) : null;
                         const hasCompatibleSeatMap = seatMapInfo?.isCompatible !== false;

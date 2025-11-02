@@ -53,15 +53,22 @@ const Navbar = () => {
     navigate("/login");
   };
 
+  const handleMenuClick = ({ key }) => {
+    if (key === 'logout') {
+      handleLogout();
+    } else if (key === 'profile') {
+      navigate('/profile');
+    }
+  };
+
   const menuItems = [
     {
       key: 'profile',
-      label: <Link to="/profile" data-cy="profile-link">Perfil</Link>,
+      label: 'Perfil',
     },
     {
       key: 'logout',
-      label: <span data-cy="logout-button">Cerrar sesión</span>,
-      onClick: handleLogout,
+      label: 'Cerrar sesión',
     },
   ];
 
@@ -128,7 +135,7 @@ const Navbar = () => {
         )}
 
         {isLoggedIn && (
-          <Dropdown menu={{ items: menuItems }} placement="bottomRight" trigger={["click"]}>
+          <Dropdown menu={{ items: menuItems, onClick: handleMenuClick }} placement="bottomRight" trigger={["click"]}>
             <Avatar
               data-cy="user-menu"
               icon={<UserOutlined />}
