@@ -208,7 +208,6 @@ const MainSeatMapContainer = ({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showLegend, setShowLegend] = useState(false);
   const [hoveredSection, setHoveredSection] = useState(null);
-  const [hasInitialized, setHasInitialized] = useState(false);
 
   // Estados de accesibilidad
   const [isHighContrast, setIsHighContrast] = useState(false);
@@ -271,93 +270,33 @@ const MainSeatMapContainer = ({
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
-  // Centrar el scroll en móvil cuando se carga el mapa
+  // Centrar el scroll en móvil cuando se carga el mapa o cambia el zoom
   useEffect(() => {
     if (isMobile && seatMapRef.current) {
       const centerScroll = () => {
         const container = seatMapRef.current;
         if (container) {
-          // Asegurar que el scroll sea instantáneo, no smooth
-          const originalScrollBehavior = container.style.scrollBehavior;
-          container.style.scrollBehavior = 'auto';
-
-          // Calcular la posición central
           const scrollWidth = container.scrollWidth;
           const clientWidth = container.clientWidth;
           const scrollHeight = container.scrollHeight;
           const clientHeight = container.clientHeight;
 
-          // Solo centrar si hay contenido que hacer scroll
-          if (scrollWidth > clientWidth || scrollHeight > clientHeight) {
-            const centerX = Math.max(0, (scrollWidth - clientWidth) / 2);
-            const centerY = Math.max(0, (scrollHeight - clientHeight) / 2);
+          const centerX = (scrollWidth - clientWidth) / 2;
+          const centerY = (scrollHeight - clientHeight) / 2;
 
-            // Centrar usando scrollTo para mejor compatibilidad
-            container.scrollTo({
-              left: centerX,
-              top: centerY,
-              behavior: 'auto'
-            });
-          }
-
-          // Restaurar el scroll behavior original
-          container.style.scrollBehavior = originalScrollBehavior;
+          container.scrollTo({
+            left: centerX,
+            top: centerY,
+            behavior: 'auto'
+          });
         }
       };
 
-      let timerId;
-      // Usar requestAnimationFrame para asegurar que el DOM esté actualizado
-      const frameId = requestAnimationFrame(() => {
-        // Luego un pequeño delay adicional para asegurar que todo esté renderizado
-        timerId = setTimeout(centerScroll, 250);
-      });
-
-      return () => {
-        cancelAnimationFrame(frameId);
-        if (timerId) clearTimeout(timerId);
-      };
-    }
-  }, [isMobile, seatMapData]);
-
-  // Recentrar cuando cambie el nivel de zoom en móvil (después de la carga inicial)
-  useEffect(() => {
-    if (isMobile && seatMapRef.current && seatMapData) {
-      setHasInitialized(true);
-    }
-  }, [isMobile, seatMapData]);
-
-  useEffect(() => {
-    if (isMobile && seatMapRef.current && hasInitialized && zoomLevel) {
-      const timer = setTimeout(() => {
-        const container = seatMapRef.current;
-        if (container) {
-          // Asegurar que el scroll sea instantáneo
-          const originalScrollBehavior = container.style.scrollBehavior;
-          container.style.scrollBehavior = 'auto';
-
-          const scrollWidth = container.scrollWidth;
-          const clientWidth = container.clientWidth;
-          const scrollHeight = container.scrollHeight;
-          const clientHeight = container.clientHeight;
-
-          if (scrollWidth > clientWidth || scrollHeight > clientHeight) {
-            const centerX = Math.max(0, (scrollWidth - clientWidth) / 2);
-            const centerY = Math.max(0, (scrollHeight - clientHeight) / 2);
-
-            container.scrollTo({
-              left: centerX,
-              top: centerY,
-              behavior: 'auto'
-            });
-          }
-
-          container.style.scrollBehavior = originalScrollBehavior;
-        }
-      }, 100);
-
+      // Centrar después de un breve delay para asegurar que el DOM esté actualizado
+      const timer = setTimeout(centerScroll, 50);
       return () => clearTimeout(timer);
     }
-  }, [isMobile, zoomLevel, hasInitialized]);
+  }, [isMobile, seatMapData, zoomLevel]);
 
   if (!seatMapData) return null;
 
@@ -985,9 +924,9 @@ const MainSeatMapContainer = ({
             height: '100%',
             overflow: isMobile ? 'auto' : 'hidden', // En móvil permitir scroll, en desktop usar pan
             cursor: !isMobile && isInteracting ? 'grabbing' : (isMobile ? 'auto' : 'grab'),
-            display: 'flex',
-            justifyContent: isMobile ? 'flex-start' : 'center',
-            alignItems: isMobile ? 'flex-start' : 'center',
+            display: isMobile ? 'block' : 'flex',
+            justifyContent: isMobile ? 'initial' : 'center',
+            alignItems: isMobile ? 'initial' : 'center',
             padding: 0,
             flex: 1,
             touchAction: isMobile ? 'pan-x pan-y pinch-zoom' : 'none', // En móvil permitir scroll nativo + pinch zoom
@@ -1002,24 +941,56 @@ const MainSeatMapContainer = ({
           onTouchMove={zoomPanHandlers.onTouchMove}
           onTouchEnd={zoomPanHandlers.onTouchEnd}
         >
-          <div
-            className="seatmap-transform"
-            style={{
-              transform: isMobile ? `scale(${zoomLevel})` : `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`,
-              transformOrigin: isMobile ? 'top left' : 'center center',
-              transition: isInteracting ? 'none' : 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-              width: 'fit-content',
-              height: 'fit-content',
-              position: 'relative',
-              minWidth: isMobile ? '1400px' : 'auto', // En móvil mantener tamaño AMPLIO para evitar apelotonamiento
-              minHeight: 'auto',
-              maxWidth: 'none',
-              maxHeight: 'none',
-              willChange: isInteracting ? 'transform' : 'auto'
-            }}
-          >
-            {renderVenueLayout()}
-          </div>
+          {isMobile ? (
+            // En móvil: wrapper adicional para centrado con scroll
+            <div
+              style={{
+                display: 'inline-block',
+                minWidth: '100%',
+                minHeight: '100%',
+                textAlign: 'center',
+                padding: '50vh 50vw', // Padding para permitir centrado con scroll
+                boxSizing: 'content-box'
+              }}
+            >
+              <div
+                className="seatmap-transform"
+                style={{
+                  transform: `scale(${zoomLevel})`,
+                  transformOrigin: 'center center',
+                  transition: isInteracting ? 'none' : 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                  display: 'inline-block',
+                  width: 'fit-content',
+                  height: 'fit-content',
+                  position: 'relative',
+                  minWidth: '1400px',
+                  willChange: isInteracting ? 'transform' : 'auto'
+                }}
+              >
+                {renderVenueLayout()}
+              </div>
+            </div>
+          ) : (
+            // En desktop: comportamiento normal con pan
+            <div
+              className="seatmap-transform"
+              style={{
+                transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`,
+                transformOrigin: 'center center',
+                transition: isInteracting ? 'none' : 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                width: 'fit-content',
+                height: 'fit-content',
+                position: 'relative',
+                minWidth: 'auto',
+                minHeight: 'auto',
+                maxWidth: 'none',
+                maxHeight: 'none',
+                willChange: isInteracting ? 'transform' : 'auto'
+              }}
+            >
+              {renderVenueLayout()}
+            </div>
+          )}
         </div>
 
         {/* Leyenda - No mostrar en modo de vista previa */}
