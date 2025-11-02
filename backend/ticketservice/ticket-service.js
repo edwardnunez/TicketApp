@@ -208,6 +208,67 @@ app.post('/tickets/purchase', async (req, res) => {
       });
     }
 
+    // Validar que el evento existe y obtener sus detalles
+    let eventDetails;
+    try {
+      eventDetails = await getEventDetails(eventId);
+
+      if (!eventDetails || !eventDetails._id) {
+        return res.status(404).json({
+          error: "Evento no encontrado",
+          message: "El evento especificado no existe"
+        });
+      }
+    } catch (error) {
+      return res.status(500).json({
+        error: "Error obteniendo evento",
+        message: "No se pudo verificar la información del evento"
+      });
+    }
+
+    // Validar estado del evento
+    if (eventDetails.state === 'finalizado') {
+      return res.status(400).json({
+        error: "Evento finalizado",
+        message: "No se pueden comprar entradas para un evento que ya ha finalizado"
+      });
+    }
+
+    if (eventDetails.state === 'cancelado') {
+      return res.status(400).json({
+        error: "Evento cancelado",
+        message: "No se pueden comprar entradas para un evento cancelado"
+      });
+    }
+
+    // Validar capacidad disponible
+    const soldTickets = await Ticket.aggregate([
+      {
+        $match: {
+          eventId: new mongoose.Types.ObjectId(eventId),
+          status: { $in: ['paid', 'pending'] }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalQuantity: { $sum: '$quantity' }
+        }
+      }
+    ]);
+
+    const ticketsSold = soldTickets.length > 0 ? soldTickets[0].totalQuantity : 0;
+    const availableCapacity = eventDetails.capacity - ticketsSold;
+
+    if (availableCapacity < quantity) {
+      return res.status(400).json({
+        error: "Capacidad insuficiente",
+        message: `No hay suficientes entradas disponibles. Entradas disponibles: ${availableCapacity}, solicitadas: ${quantity}`,
+        available: availableCapacity,
+        requested: quantity
+      });
+    }
+
     // Generar identificadores únicos
     const ticketNumber = generateTicketNumber();
     const validationCode = generateValidationCode();
