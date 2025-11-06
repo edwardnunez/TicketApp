@@ -278,7 +278,6 @@ const EventCreation = () => {
     if (!username) return;
     axios.get(`${gatewayUrl}/users/search?username=${username}`)
       .then(res => {
-        console.log('User data from search:', res.data);
         setCurrentUserId(res.data._id);
       })
       .catch(() => setCurrentUserId(null));
@@ -662,8 +661,6 @@ const EventCreation = () => {
         state: values.state || 'proximo'
       };
 
-      console.log('Event data before pricing:', eventData);
-
       // Añadir pricing según el tipo
       if (usesSectionPricing && usesRowPricing && sectionPricing.length > 0) {
         const hasInvalidDefaultPrices = sectionPricing.some(section => 
@@ -748,8 +745,6 @@ const EventCreation = () => {
             price: Math.round((parseFloat(rowPrice.price) || 0) * 100) / 100
           }))
         }));
-        
-        console.log('EventCreation - Section pricing prepared:', eventData.sectionPricing);
 
         // Capacidad se calcula automáticamente en el backend
         eventData.capacity = sectionPricing.reduce((total, section) => {
@@ -795,17 +790,10 @@ const EventCreation = () => {
 
       eventData.createdBy = currentUserId || 'Anonymous admin';
 
-      console.log('Event data prepared:', eventData);
-      console.log('LocationObj:', locationObj);
-      console.log('LocationObj.seatMapId:', locationObj?.seatMapId);
-      console.log('Condition check:', locationObj && locationObj.seatMapId);
-
       if (imageFile) {
         try {
-          console.log('Procesando imagen...');
           const imageData = await convertFileToBase64(imageFile);
           eventData.imageData = imageData;
-          console.log('Imagen procesada, tamaño final:', imageData.size);
         } catch (error) {
           console.error('Error al procesar imagen:', error);
           message.warning('Error al procesar la imagen, el evento se creará sin imagen');
@@ -813,10 +801,7 @@ const EventCreation = () => {
       }
       
       if (locationObj && locationObj.seatMapId) {
-        // Si tiene seatmap, crear el evento directamente y redirigir a configuración
         try {
-          console.log('Creating event with seatmap, redirecting to configuration...');
-
           // Crear el evento
           const createEventResponse = await authenticatedPost('/events', eventData);
           const createdEvent = createEventResponse.data;
@@ -1316,11 +1301,10 @@ const EventCreation = () => {
           }
 
           /* Ocultar tooltips con aria-describedby que causan broken ARIA */
-          .ant-form-item-tooltip[aria-describedby],
-          span.ant-form-item-tooltip[aria-describedby],
-          .anticon-question-circle.ant-form-item-tooltip,
-          .ant-form-item-label .ant-form-item-tooltip,
-          [aria-describedby^=":r"] {
+          .ant-form-item-label .ant-form-item-tooltip[aria-describedby],
+          .ant-form-item-label span.ant-form-item-tooltip[aria-describedby],
+          .ant-form-item-label .anticon-question-circle.ant-form-item-tooltip,
+          .ant-form-item-label [aria-describedby^=":r"].ant-form-item-tooltip {
             display: none !important;
             visibility: hidden !important;
             position: absolute !important;

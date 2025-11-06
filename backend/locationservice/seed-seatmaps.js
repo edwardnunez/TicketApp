@@ -644,7 +644,6 @@ const seedSeatMaps = async (dbConnection) => {
         prepared,
         { upsert: true, new: true }
       );
-      console.log(`SeatMap ${seatMapData.id} insertado/actualizado correctamente`);
     } catch (error) {
       console.error(`Error insertando seatmap ${seatMapData.id}:`, error);
     }

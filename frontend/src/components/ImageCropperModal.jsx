@@ -118,5 +118,3 @@ const ImageCropperModal = ({
 };
 
 export default ImageCropperModal;
-
-

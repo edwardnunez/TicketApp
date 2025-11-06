@@ -31,11 +31,10 @@ const spinKeyframes = `
   }
 
   /* Ocultar tooltips con aria-describedby que causan broken ARIA */
-  .ant-form-item-tooltip[aria-describedby],
-  span.ant-form-item-tooltip[aria-describedby],
-  .anticon-question-circle.ant-form-item-tooltip,
-  .ant-form-item-label .ant-form-item-tooltip,
-  [aria-describedby^=":r"] {
+  .ant-form-item-label .ant-form-item-tooltip[aria-describedby],
+  .ant-form-item-label span.ant-form-item-tooltip[aria-describedby],
+  .ant-form-item-label .anticon-question-circle.ant-form-item-tooltip,
+  .ant-form-item-label [aria-describedby^=":r"].ant-form-item-tooltip {
     display: none !important;
     visibility: hidden !important;
     position: absolute !important;
@@ -238,10 +237,6 @@ export default function SelectTickets({
   }, [selectedSeats]);
 
   const handleSeatSelection = useCallback((seats) => {
-    console.log('🎯 handleSeatSelection called with:', seats);
-    console.log('🎯 maxSelectableTickets:', maxSelectableTickets);
-    
-    // Limitar la selección según disponibilidad
     const limitedSeats = seats.slice(0, maxSelectableTickets);
     
     const seatsWithFullInfo = limitedSeats.map(seat => ({
@@ -253,8 +248,7 @@ export default function SelectTickets({
         row: seat.row,
         seat: seat.seat
       }));
-      
-      console.log('🎯 Calling onSeatSelect with:', seatsWithFullInfo);
+
       onSeatSelect(seatsWithFullInfo);
       setQuantity(seatsWithFullInfo.length);
     }, [onSeatSelect, setQuantity, maxSelectableTickets]);
@@ -308,15 +302,6 @@ export default function SelectTickets({
         }
         
         setSeatMapData(updatedSeatMapData);
-        
-        // Log para depuración
-        console.log('TicketSelection - Event pricing debug:', {
-          eventId: memoizedEvent._id,
-          usesSectionPricing: memoizedEvent.usesSectionPricing,
-          usesRowPricing: memoizedEvent.usesRowPricing,
-          sectionPricing: memoizedEvent.sectionPricing,
-          updatedSeatMapData: updatedSeatMapData
-        });
       } catch (err) {
         console.error('Error loading seatmap:', err);
         if (err.response?.status === 404) {
@@ -341,7 +326,6 @@ export default function SelectTickets({
 
     // Solo limpiar si el evento realmente cambió (y no es la primera carga)
     if (currentEventId && previousEventId.current !== null && currentEventId !== previousEventId.current) {
-      console.log('🔄 Event changed, clearing selected seats');
       onSeatSelect([]);
       setQuantity(0);
       previousEventId.current = currentEventId;

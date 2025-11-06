@@ -175,11 +175,6 @@ const createSectionPricing = (seatMapInfo, pricingData) => {
  * @returns {Object} Created event data
  */
 app.post("/event", largePayloadMiddleware, largeUrlEncodedMiddleware, async (req, res) => {
-  const requestId = Math.random().toString(36).substr(2, 9);
-  console.log(`=== INICIO CREACIÓN DE EVENTO [${requestId}] ===`);
-  console.log('Timestamp:', new Date().toISOString());
-  console.log('Body recibido:', JSON.stringify(req.body, null, 2));
-  
   try {
     const { 
       name, 
@@ -314,31 +309,15 @@ app.post("/event", largePayloadMiddleware, largeUrlEncodedMiddleware, async (req
     }
 
     // Validación: no permitir eventos en la misma ubicación con menos de 24h de diferencia
-    const eventDateStart = new Date(eventDate.getTime() - 24 * 60 * 60 * 1000); // 24h antes
-    const eventDateEnd = new Date(eventDate.getTime() + 24 * 60 * 60 * 1000); // 24h después
-    
-    console.log('Validando conflicto de eventos:');
-    console.log('Fecha del nuevo evento:', eventDate);
-    console.log('Rango de búsqueda:', eventDateStart, 'a', eventDateEnd);
-    console.log('Ubicación:', eventData.location);
-    console.log('Nombre del nuevo evento:', eventData.name);
-    
+    const eventDateStart = new Date(eventDate.getTime() - 24 * 60 * 60 * 1000);
+    const eventDateEnd = new Date(eventDate.getTime() + 24 * 60 * 60 * 1000);
+
     const conflictEvent = await EventModel.findOne({
       location: eventData.location,
       date: { $gte: eventDateStart, $lte: eventDateEnd },
-      state: { $ne: 'cancelado' } // Excluir eventos cancelados
+      state: { $ne: 'cancelado' }
     });
-    
-    console.log('Evento conflictivo encontrado:', conflictEvent);
-    if (conflictEvent) {
-      console.log('Detalles del conflicto:');
-      console.log('- Evento existente ID:', conflictEvent._id);
-      console.log('- Evento existente nombre:', conflictEvent.name);
-      console.log('- Evento existente fecha:', conflictEvent.date);
-      console.log('- Evento existente estado:', conflictEvent.state);
-      console.log('- Nuevo evento nombre:', eventData.name);
-      console.log('- Nuevo evento fecha:', eventDate);
-    }
+
     if (conflictEvent) {
       return res.status(400).json({
         error: "Ya existe un evento en esta ubicación con menos de 24 horas de diferencia.",
@@ -350,17 +329,9 @@ app.post("/event", largePayloadMiddleware, largeUrlEncodedMiddleware, async (req
       });
     }
 
-    console.log('=== GUARDANDO EVENTO ===');
-    console.log('EventData a guardar:', JSON.stringify(eventData, null, 2));
-    
     const newEvent = new EventModel(eventData);
     await newEvent.save();
-    
-    console.log('=== EVENTO GUARDADO ===');
-    console.log('ID del evento creado:', newEvent._id);
-    console.log('Nombre del evento creado:', newEvent.name);
-    console.log('Fecha del evento creado:', newEvent.date);
-    
+
     const savedEvent = await EventModel.findById(newEvent._id);
     const eventObj = savedEvent.toObject();
     eventObj.location = location;
@@ -369,7 +340,6 @@ app.post("/event", largePayloadMiddleware, largeUrlEncodedMiddleware, async (req
       eventObj.imageUrl = savedEvent.getImageDataUrl();
     }
 
-    console.log(`=== FIN CREACIÓN DE EVENTO [${requestId}] ===`);
     res.status(201).json(eventObj);
   } catch (error) {
     console.error("Error creating event:", error);
@@ -577,15 +547,6 @@ app.get("/events/:eventId", stateService.updateStatesMiddleware.bind(stateServic
         max: event.getMaxPrice(),
         display: event.getPriceRange()
       };
-      
-      // Log para depuración
-      console.log('Event pricing debug:', {
-        eventId: eventObj._id,
-        usesSectionPricing: eventObj.usesSectionPricing,
-        usesRowPricing: eventObj.usesRowPricing,
-        sectionPricing: eventObj.sectionPricing,
-        priceRange: eventObj.priceRange
-      });
     } else {
       eventObj.priceRange = {
         min: eventObj.price,
@@ -801,14 +762,10 @@ app.patch("/events/:eventId/state", async (req, res) => {
   }
 });
 
-// Ruta para actualizar un evento completo
 app.put("/events/:eventId", async (req, res) => {
   try {
     const { eventId } = req.params;
     const eventData = req.body;
-
-    console.log(`=== ACTUALIZANDO EVENTO ${eventId} ===`);
-    console.log('Datos recibidos:', JSON.stringify(eventData, null, 2));
 
     // Verificar que el evento existe
     const existingEvent = await EventModel.findById(eventId);
@@ -855,17 +812,11 @@ app.put("/events/:eventId", async (req, res) => {
 
     // Validar conflicto de eventos (excluyendo el evento actual)
     const eventDate = new Date(eventData.date);
-    const startRange = new Date(eventDate.getTime() - 12 * 60 * 60 * 1000); // 12 horas antes
-    const endRange = new Date(eventDate.getTime() + 12 * 60 * 60 * 1000); // 12 horas después
-
-    console.log('Validando conflicto de eventos:');
-    console.log('Fecha del evento a actualizar:', eventData.date);
-    console.log('Rango de búsqueda:', startRange.toISOString(), 'a', endRange.toISOString());
-    console.log('Ubicación:', eventData.location);
-    console.log('Nombre del evento a actualizar:', eventData.name);
+    const startRange = new Date(eventDate.getTime() - 12 * 60 * 60 * 1000);
+    const endRange = new Date(eventDate.getTime() + 12 * 60 * 60 * 1000);
 
     const conflictEvent = await EventModel.findOne({
-      _id: { $ne: eventId }, // Excluir el evento actual
+      _id: { $ne: eventId },
       location: eventData.location,
       date: {
         $gte: startRange,
@@ -873,21 +824,7 @@ app.put("/events/:eventId", async (req, res) => {
       }
     });
 
-    console.log('Evento conflictivo encontrado:', conflictEvent ? {
-      id: conflictEvent._id,
-      name: conflictEvent.name,
-      date: conflictEvent.date
-    } : null);
-
     if (conflictEvent) {
-      console.log('Detalles del conflicto:');
-      console.log('- Evento existente ID:', conflictEvent._id);
-      console.log('- Evento existente nombre:', conflictEvent.name);
-      console.log('- Evento existente fecha:', conflictEvent.date);
-      console.log('- Evento existente estado:', conflictEvent.state);
-      console.log('- Nuevo evento nombre:', eventData.name);
-      console.log('- Nuevo evento fecha:', eventData.date);
-
       return res.status(400).json({
         error: 'Ya existe un evento en esta ubicación con menos de 24 horas de diferencia.',
         conflictEvent: {
@@ -917,20 +854,11 @@ app.put("/events/:eventId", async (req, res) => {
       seatMapConfiguration: eventData.seatMapConfiguration
     };
 
-    console.log('=== ACTUALIZANDO EVENTO ===');
-    console.log('Datos a actualizar:', JSON.stringify(updateData, null, 2));
-
-    // Actualizar el evento
     const updatedEvent = await EventModel.findByIdAndUpdate(
       eventId,
       updateData,
       { new: true, runValidators: true }
     );
-
-    console.log('=== EVENTO ACTUALIZADO ===');
-    console.log('ID del evento actualizado:', updatedEvent._id);
-    console.log('Nombre del evento actualizado:', updatedEvent.name);
-    console.log('Fecha del evento actualizado:', updatedEvent.date);
 
     res.json({
       success: true,
@@ -990,14 +918,7 @@ app.put("/events/:eventId/seat-blocks", async (req, res) => {
       };
     }
 
-
-
     await event.save();
-
-    console.log(`Updated seat blocks for event ${eventId}:`, {
-      blockedSeats: event.seatMapConfiguration?.blockedSeats?.length || 0,
-      blockedSections: event.seatMapConfiguration?.blockedSections?.length || 0
-    });
 
     res.status(200).json({
       message: "Bloqueos de asientos actualizados exitosamente",
@@ -1065,22 +986,18 @@ app.delete("/events/:eventId/cancel", async (req, res) => {
           emailsEnviados.add(emailDestino);
         }
       }
-      console.log(`Emails de cancelación enviados a ${emailsEnviados.size} compradores`);
     } catch (err) {
       console.error('Error al enviar emails de cancelación:', err);
     }
-    // === FIN EMAILS ===
-
     try {
       await axiosInstance.delete(`${ticketServiceUrl}/tickets/event/${eventId}`);
-      console.log(`Tickets eliminados para el evento ${eventId}`);
     } catch (ticketError) {
       console.warn(`Error eliminando tickets para evento ${eventId}:`, ticketError.message);
     }
-    // Cambiar el estado del evento a cancelado
+
     event.state = 'cancelado';
     await event.save();
-    console.log(`Evento ${eventId} cancelado correctamente`);
+
     res.status(200).json({
       success: true,
       message: "Evento cancelado y tickets asociados eliminados correctamente",
@@ -1248,12 +1165,12 @@ app.delete("/events/:eventId", async (req, res) => {
     }
     try {
       await axiosInstance.delete(`${ticketServiceUrl}/tickets/event/${eventId}`);
-      console.log(`Tickets eliminados para el evento ${eventId}`);
     } catch (ticketError) {
       console.warn(`Error eliminando tickets para evento ${eventId}:`, ticketError.message);
     }
+
     await EventModel.findByIdAndDelete(eventId);
-    console.log(`Evento ${eventId} eliminado de la base de datos`);
+
     res.status(200).json({
       success: true,
       message: "Evento y tickets asociados eliminados de la base de datos",
@@ -1271,18 +1188,11 @@ app.delete("/events/:eventId", async (req, res) => {
 
 const server = app.listen(port, async () => {
   console.log(`🚀 Event Service listening at http://localhost:${port}`);
-  
+
   stateService.startCronJobs();
-  
-  // Ejecutar actualización inicial después de 2 segundos
+
   setTimeout(async () => {
-    console.log('🔄 Ejecutando actualización inicial de estados...');
-    const result = await stateService.updateEventStates();
-    if (result.finalizados > 0 || result.activados > 0) {
-      console.log('✅ Actualización inicial completada:', result);
-    } else {
-      console.log('✅ Estados ya actualizados');
-    }
+    await stateService.updateEventStates();
   }, 2000);
 });
 

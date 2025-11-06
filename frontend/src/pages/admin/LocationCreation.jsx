@@ -271,8 +271,6 @@ const LocationCreation = () => {
         seatMapId: createdSeatMapId || null
       };
 
-      console.log('Creating location with data:', locationData);
-
       const response = await authenticatedPost('/location', locationData);
 
       if (response.status === 201 || response.status === 200) {
@@ -654,57 +652,66 @@ const LocationCreation = () => {
       }
     },
     {
-      title: 'Capacidad (si entrada general)',
+      title: 'Capacidad',
+      width: 120,
       render: (_, record) => (
         record.hasNumberedSeats === false ? (
           <InputNumber
             value={record.totalCapacity}
             onChange={(value) => updateSection(record.key, 'totalCapacity', value)}
             min={1}
-            max={1000}
+            max={10000}
             placeholder="Capacidad"
+            style={{ width: '100%' }}
           />
-        ) : null
+        ) : (
+          <InputNumber
+            value={record.rows * record.seatsPerRow}
+            disabled={true}
+            style={{ width: '100%' }}
+          />
+        )
       )
     },
     {
       title: 'Color',
-      dataIndex: 'color',
-      render: (text, record) => (
-        <ColorPicker 
-          value={text}
+      key: 'color',
+      width: 120,
+      render: (_, record) => (
+        <ColorPicker
+          value={record.color || '#1890ff'}
           onChange={(color) => updateSection(record.key, 'color', color.toHexString())}
           showText
+          format="hex"
         />
       )
     },
     {
-      title: 'Total',
-      render: (_, record) => (
-        <Tag color="blue">
-          {record.hasNumberedSeats === false 
-            ? (record.totalCapacity || 0).toLocaleString() + ' asientos'
-            : (record.rows * record.seatsPerRow).toLocaleString() + ' asientos'
-          }
-        </Tag>
-      )
-    },
-    {
       title: 'Acciones',
-      render: (_, record) => (
-        <Popconfirm
-          title="¿Eliminar esta sección?"
-          onConfirm={() => removeSection(record.key)}
-          okText="Sí"
-          cancelText="No"
-        >
-          <Button 
-            danger 
-            size="small" 
-            icon={<DeleteOutlined />}
-          />
-        </Popconfirm>
-      )
+      key: 'actions',
+      width: 100,
+      align: 'center',
+      render: (text, record, index) => {
+        return (
+          <Popconfirm
+            title="¿Eliminar esta sección?"
+            description={`¿Está seguro de eliminar "${record.name}"?`}
+            onConfirm={() => removeSection(record.key)}
+            okText="Sí"
+            cancelText="No"
+            okType="danger"
+          >
+            <Button
+              type="primary"
+              danger
+              size="small"
+              icon={<DeleteOutlined />}
+            >
+              Eliminar
+            </Button>
+          </Popconfirm>
+        );
+      }
     }
   ];
 
@@ -730,8 +737,24 @@ const LocationCreation = () => {
 
 
   return (
-    <Layout style={{ backgroundColor: COLORS.neutral.grey1, minHeight: "100vh" }}>
-      <Content style={{ padding: isMobile ? "18px 4px" : "40px 20px" }}>
+    <>
+      <style>{`
+        /* Asegurar que los componentes de la tabla se muestren correctamente */
+        .ant-table button,
+        .ant-table .ant-btn,
+        .ant-table .ant-popconfirm,
+        .ant-table input[type="color"],
+        .ant-table .ant-input {
+          display: inline-flex !important;
+          visibility: visible !important;
+          opacity: 1 !important;
+          position: relative !important;
+          width: auto !important;
+          height: auto !important;
+        }
+      `}</style>
+      <Layout style={{ backgroundColor: COLORS.neutral.grey1, minHeight: "100vh" }}>
+        <Content style={{ padding: isMobile ? "18px 4px" : "40px 20px" }}>
         <div style={{ maxWidth: isMobile ? "100%" : "1200px", margin: "0 auto" }}>
           {/* Header with breadcrumb */}
           <Row style={{ marginBottom: '24px' }}>
@@ -1224,7 +1247,8 @@ const LocationCreation = () => {
                 ]}
             />
             </Modal>
-    </Layout>
+      </Layout>
+    </>
   );
 };
 

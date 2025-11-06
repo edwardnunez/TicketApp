@@ -37,9 +37,6 @@ export default function PaymentMethod({
   };
 
   const handlePayPalSuccess = (details, data) => {
-    console.log('PayPal payment successful:', details);
-    
-    // Aquí manejas el éxito del pago
     message.success('¡Pago procesado exitosamente!');
     
     // Llama a la función para completar la compra
@@ -54,8 +51,7 @@ export default function PaymentMethod({
   };
 
   const handlePayPalCancel = (data) => {
-    console.log('PayPal payment cancelled:', data);
-    message.warning('Pago cancelado por el usuario.');
+    message.warning('Pago cancelado por el usuario');
   };
 
   const handlePayPalScriptLoadError = (error) => {

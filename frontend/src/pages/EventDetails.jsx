@@ -1,20 +1,20 @@
 import { useEffect, useState, useCallback } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom"; 
-import { 
-  Layout, 
-  Typography, 
-  Card, 
-  Row, 
-  Col, 
-  Button, 
-  Tag, 
+import { useParams, Link, useNavigate } from "react-router-dom";
+import {
+  Layout,
+  Typography,
+  Card,
+  Row,
+  Col,
+  Button,
+  Tag,
   Space,
   Skeleton,
   Alert,
   Divider,
-  Table
+  Table,
+  notification
 } from "antd";
-import { notification } from 'antd';
 import {
   CalendarOutlined,
   EnvironmentOutlined,
@@ -36,11 +36,9 @@ import axios from "axios";
 import dayjs from "dayjs";
 import "dayjs/locale/es";
 
-// Import color scheme
 import { COLORS } from "../components/colorscheme";
 import FramedImage from "../components/FramedImage";
 
-// Configure dayjs in Spanish
 dayjs.locale('es');
 
 // CSS for spinner animation

@@ -238,7 +238,6 @@ const EditProfile = () => {
     setShowProfileModal(false);
     setPendingProfileValues(null);
     setUpdatedFieldsList([]);
-    console.log('Actualización de perfil cancelada');
   };
 
   const executePasswordChange = (values) => {
@@ -313,7 +312,6 @@ const EditProfile = () => {
   const handleCancelPasswordChange = () => {
     setShowPasswordModal(false);
     setPendingPasswordValues(null);
-    console.log('Cambio de contraseña cancelado');
   };
 
   return (

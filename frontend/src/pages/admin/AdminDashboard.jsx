@@ -231,7 +231,6 @@ const AdminDashboard = () => {
     if (!username) return;
     axios.get(`${gatewayUrl}/users/search?username=${username}`)
       .then(res => {
-        console.log('User data from search:', res.data);
         setCurrentUserId(res.data._id);
       })
       .catch(() => setCurrentUserId(null));
@@ -391,9 +390,7 @@ const AdminDashboard = () => {
         .catch(() => ({ id, username: id }))
     )).then(results => {
       const newMap = { ...usernamesById };
-      console.log('Fetched usernames:', results);
       results.forEach(({ id, username }) => { newMap[id] = username; });
-      console.log('Fetched newMap:', newMap);
       setUsernamesById(newMap);
     });
   // eslint-disable-next-line
@@ -481,7 +478,6 @@ const AdminDashboard = () => {
       title: 'Acciones',
       key: 'actions',
       render: (text, record) => {
-        console.log('Record createdBy:', record.createdBy, 'CurrentUserId:', currentUserId, 'Comparison:', String(record.createdBy) === String(currentUserId));
         return (
           <Space>
             <Link to={`/event/${record._id}`}>
