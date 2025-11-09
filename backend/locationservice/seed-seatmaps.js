@@ -51,7 +51,7 @@ const seedSeatMaps = async (dbConnection) => {
       compatibleEventTypes: ['football', 'concert'], 
       config: {
         stadiumName: 'Estadio Santiago Bernabéu',
-        fieldDimensions: { width: 400, height: 260 }
+        fieldDimensions: { width: 900, height: 660 }
       },
       sections: [
         {
@@ -109,7 +109,7 @@ const seedSeatMaps = async (dbConnection) => {
       compatibleEventTypes: ['football', 'concert'], 
       config: {
         stadiumName: 'Estadio Camp Nou',
-        fieldDimensions: { width: 450, height: 280 }
+        fieldDimensions: { width: 900, height: 660 }
       },
       sections: [
         {
@@ -167,7 +167,7 @@ const seedSeatMaps = async (dbConnection) => {
       compatibleEventTypes: ['football'], 
       config: {
         stadiumName: 'Estadio La Rosaleda',
-        fieldDimensions: { width: 350, height: 220 }
+        fieldDimensions: { width: 900, height: 660 }
       },
       sections: [
         {
@@ -390,7 +390,7 @@ const seedSeatMaps = async (dbConnection) => {
       type: 'cinema',
       config: {
         cinemaName: 'Cines Callao',
-        screenWidth: 300
+        screenWidth: 900
       },
       sections: [
         {
@@ -429,7 +429,7 @@ const seedSeatMaps = async (dbConnection) => {
       type: 'cinema',
       config: {
         cinemaName: 'Cinesa La Maquinista',
-        screenWidth: 400
+        screenWidth: 900
       },
       sections: [
         {
@@ -477,7 +477,7 @@ const seedSeatMaps = async (dbConnection) => {
       type: 'cinema',
       config: {
         cinemaName: 'Cines Verdi',
-        screenWidth: 200
+        screenWidth: 900
       },
       sections: [
         {
@@ -518,7 +518,7 @@ const seedSeatMaps = async (dbConnection) => {
       type: 'theater',
       config: {
         theaterName: 'Teatro Real',
-        stageWidth: 250
+        stageWidth: 850
       },
       sections: [
         {
@@ -557,7 +557,7 @@ const seedSeatMaps = async (dbConnection) => {
       type: 'theater',
       config: {
         theaterName: 'Teatro Español',
-        stageWidth: 280
+        stageWidth: 800
       },
       sections: [
         {
@@ -587,7 +587,7 @@ const seedSeatMaps = async (dbConnection) => {
       type: 'theater',
       config: {
         theaterName: 'Gran Teatre del Liceu',
-        stageWidth: 400
+        stageWidth: 850
       },
       sections: [
         {

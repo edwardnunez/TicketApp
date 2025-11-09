@@ -11,23 +11,23 @@ import { COLORS } from '../../../../components/colorscheme';
  */
 const VenueStageRenderer = ({ type, config, venueColors }) => {
   const renderFootballField = () => (
-    <div 
+    <div
       className="football-field"
       style={{
-        width: config?.fieldDimensions?.width || 600,
-        height: config?.fieldDimensions?.height || 400,
+        width: config?.fieldDimensions?.width || 960,
+        height: config?.fieldDimensions?.height || 640,
         background: COLORS.gradients.field,
-        borderRadius: '12px',
+        borderRadius: '20px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         color: 'white',
-        fontSize: '20px',
+        fontSize: '32px',
         fontWeight: 'bold',
-        boxShadow: '0 8px 32px rgba(34, 197, 94, 0.3), inset 0 2px 4px rgba(255,255,255,0.1)',
-        border: '4px solid #16A34A',
+        boxShadow: '0 12px 48px rgba(34, 197, 94, 0.3), inset 0 3px 6px rgba(255,255,255,0.1)',
+        border: '6px solid #16A34A',
         position: 'relative',
-        textShadow: '2px 2px 4px rgba(0,0,0,0.7)',
+        textShadow: '3px 3px 6px rgba(0,0,0,0.7)',
         overflow: 'hidden'
       }}
     >
@@ -47,61 +47,61 @@ const VenueStageRenderer = ({ type, config, venueColors }) => {
       }} />
       
       {/* Líneas del campo */}
-      <div style={{ 
-        position: 'absolute', 
-        top: '50%', 
-        left: '50%', 
-        transform: 'translate(-50%, -50%)', 
-        width: '90%', 
-        height: '80%', 
-        border: '3px solid white', 
-        borderRadius: '8px',
+      <div style={{
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: '90%',
+        height: '80%',
+        border: '5px solid white',
+        borderRadius: '12px',
         opacity: 0.8,
         zIndex: 2
       }} />
-      
+
       {/* Círculo central */}
-      <div style={{ 
-        position: 'absolute', 
-        top: '50%', 
-        left: '50%', 
-        transform: 'translate(-50%, -50%)', 
-        width: 60, 
-        height: 60, 
-        border: '3px solid white', 
+      <div style={{
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: 96,
+        height: 96,
+        border: '5px solid white',
         borderRadius: '50%',
         opacity: 0.8,
         zIndex: 2
       }} />
       
       {/* Áreas de portería */}
-      <div style={{ 
-        position: 'absolute', 
-        top: '20%', 
-        left: '5%', 
-        width: '15%', 
-        height: '60%', 
-        border: '3px solid white', 
-        borderRadius: '8px',
+      <div style={{
+        position: 'absolute',
+        top: '20%',
+        left: '5%',
+        width: '15%',
+        height: '60%',
+        border: '5px solid white',
+        borderRadius: '12px',
         opacity: 0.8,
         zIndex: 2
       }} />
-      <div style={{ 
-        position: 'absolute', 
-        top: '20%', 
-        right: '5%', 
-        width: '15%', 
-        height: '60%', 
-        border: '3px solid white', 
-        borderRadius: '8px',
+      <div style={{
+        position: 'absolute',
+        top: '20%',
+        right: '5%',
+        width: '15%',
+        height: '60%',
+        border: '5px solid white',
+        borderRadius: '12px',
         opacity: 0.8,
         zIndex: 2
       }} />
-      
-      <span style={{ 
-        position: 'relative', 
+
+      <span style={{
+        position: 'relative',
         zIndex: 3,
-        fontSize: '18px',
+        fontSize: '28px',
         fontWeight: '700'
       }}>
         CAMPO
@@ -113,57 +113,57 @@ const VenueStageRenderer = ({ type, config, venueColors }) => {
     <div
       className="concert-stage"
       style={{
-        width: config?.stageWidth || 300,
-        height: config?.stageHeight || 300,
+        width: config?.stageWidth || 480,
+        height: config?.stageHeight || 480,
         background: COLORS.gradients.stage,
-        borderRadius: '20px',
+        borderRadius: '32px',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
         color: 'white',
-        fontSize: 18,
+        fontSize: 28,
         fontWeight: 'bold',
-        boxShadow: '0 12px 32px rgba(0,0,0,0.4), inset 0 2px 8px rgba(255,255,255,0.1)',
-        border: '4px solid #374151',
+        boxShadow: '0 18px 48px rgba(0,0,0,0.4), inset 0 3px 12px rgba(255,255,255,0.1)',
+        border: '6px solid #374151',
         position: 'relative',
-        textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+        textShadow: '3px 3px 6px rgba(0,0,0,0.8)',
         overflow: 'hidden'
       }}
     >
       {/* Sistema de luces del escenario */}
       <div style={{
         position: 'absolute',
-        top: '-12px',
+        top: '-20px',
         left: '10%',
         right: '10%',
-        height: '8px',
+        height: '12px',
         background: 'linear-gradient(90deg, #FFD700, #FFA500, #FFD700, #FFA500, #FFD700)',
-        borderRadius: '4px',
-        boxShadow: '0 0 20px rgba(255, 215, 0, 0.9), 0 4px 8px rgba(255, 215, 0, 0.3)',
+        borderRadius: '6px',
+        boxShadow: '0 0 32px rgba(255, 215, 0, 0.9), 0 6px 12px rgba(255, 215, 0, 0.3)',
         animation: 'stageLights 3s ease-in-out infinite'
       }} />
-      
+
       {/* Parrillas de luces laterales */}
       <div style={{
         position: 'absolute',
         top: '20%',
-        left: '-8px',
-        width: '6px',
+        left: '-12px',
+        width: '10px',
         height: '60%',
         background: 'linear-gradient(180deg, #FFD700, #FFA500, #FFD700)',
-        borderRadius: '3px',
-        boxShadow: '0 0 15px rgba(255, 215, 0, 0.7)'
+        borderRadius: '5px',
+        boxShadow: '0 0 24px rgba(255, 215, 0, 0.7)'
       }} />
       <div style={{
         position: 'absolute',
         top: '20%',
-        right: '-8px',
-        width: '6px',
+        right: '-12px',
+        width: '10px',
         height: '60%',
         background: 'linear-gradient(180deg, #FFD700, #FFA500, #FFD700)',
-        borderRadius: '3px',
-        boxShadow: '0 0 15px rgba(255, 215, 0, 0.7)'
+        borderRadius: '5px',
+        boxShadow: '0 0 24px rgba(255, 215, 0, 0.7)'
       }} />
       
       {/* Textura del escenario */}
@@ -181,48 +181,48 @@ const VenueStageRenderer = ({ type, config, venueColors }) => {
         borderRadius: '16px 16px 4px 4px'
       }} />
       
-      <div style={{ 
-        fontSize: '20px', 
-        marginBottom: '4px',
+      <div style={{
+        fontSize: '32px',
+        marginBottom: '6px',
         position: 'relative',
         zIndex: 2,
-        letterSpacing: '2px'
+        letterSpacing: '3px'
       }}>
         ESCENARIO
       </div>
-      
+
       {/* Indicador de sonido */}
       <div style={{
         position: 'absolute',
-        bottom: '8px',
-        right: '12px',
-        width: '20px',
-        height: '12px',
+        bottom: '12px',
+        right: '20px',
+        width: '32px',
+        height: '20px',
         background: 'linear-gradient(45deg, #00ff00, #00cc00)',
-        borderRadius: '2px',
-        boxShadow: '0 0 8px rgba(0, 255, 0, 0.6)'
+        borderRadius: '3px',
+        boxShadow: '0 0 12px rgba(0, 255, 0, 0.6)'
       }} />
     </div>
   );
 
   const renderCinemaScreen = () => (
-    <div style={{ position: 'relative', marginBottom: '24px' }}>
+    <div style={{ position: 'relative', marginBottom: '40px' }}>
       <div
         className="cinema-screen"
         style={{
-          width: config?.screenWidth || 600,
-          height: 36,
+          width: config?.screenWidth || 960,
+          height: 58,
           background: 'linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #000000 100%)',
-          borderRadius: '12px 12px 0 0',
+          borderRadius: '20px 20px 0 0',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           color: '#ffd700',
-          fontSize: 14,
+          fontSize: 22,
           fontWeight: 'bold',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)',
-          border: '2px solid #333',
-          textShadow: '0 0 8px rgba(255,215,0,0.5)',
+          boxShadow: '0 6px 20px rgba(0,0,0,0.5), inset 0 2px 0 rgba(255,255,255,0.1)',
+          border: '3px solid #333',
+          textShadow: '0 0 12px rgba(255,215,0,0.5)',
           position: 'relative'
         }}
       >
@@ -230,49 +230,49 @@ const VenueStageRenderer = ({ type, config, venueColors }) => {
         {/* Efecto de brillo en la pantalla */}
         <div style={{
           position: 'absolute',
-          top: '2px',
+          top: '3px',
           left: '10%',
           right: '10%',
-          height: '1px',
+          height: '2px',
           background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
-          borderRadius: '1px'
+          borderRadius: '2px'
         }} />
       </div>
-      
+
       {/* Marco de la pantalla */}
       <div style={{
         position: 'absolute',
-        top: '-4px',
-        left: '-8px',
-        right: '-8px',
-        bottom: '4px',
-        border: '3px solid #666',
-        borderRadius: '16px',
+        top: '-6px',
+        left: '-12px',
+        right: '-12px',
+        bottom: '6px',
+        border: '5px solid #666',
+        borderRadius: '26px',
         background: 'linear-gradient(135deg, #444 0%, #222 100%)',
         zIndex: -1,
-        boxShadow: '0 4px 16px rgba(0,0,0,0.4)'
+        boxShadow: '0 6px 26px rgba(0,0,0,0.4)'
       }} />
     </div>
   );
 
   const renderTheaterStage = () => (
-    <div style={{ position: 'relative', marginBottom: '32px' }}>
+    <div style={{ position: 'relative', marginBottom: '50px' }}>
       <div
         className="theater-stage"
         style={{
-          width: config?.stageWidth || 500,
-          height: 60,
+          width: config?.stageWidth || 800,
+          height: 96,
           background: 'linear-gradient(135deg, #8B4513 0%, #A0522D 50%, #8B4513 100%)',
-          borderRadius: '12px',
+          borderRadius: '20px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           color: '#FFD700',
-          fontSize: 16,
+          fontSize: 26,
           fontWeight: 'bold',
-          boxShadow: '0 6px 20px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.1)',
-          border: '3px solid #654321',
-          textShadow: '0 0 8px rgba(255,215,0,0.5)',
+          boxShadow: '0 10px 32px rgba(0,0,0,0.5), inset 0 3px 6px rgba(255,255,255,0.1)',
+          border: '5px solid #654321',
+          textShadow: '0 0 12px rgba(255,215,0,0.5)',
           position: 'relative'
         }}
       >
@@ -280,28 +280,28 @@ const VenueStageRenderer = ({ type, config, venueColors }) => {
         {/* Luces del escenario */}
         <div style={{
           position: 'absolute',
-          top: '-8px',
+          top: '-12px',
           left: '20%',
           right: '20%',
-          height: '4px',
+          height: '6px',
           background: 'linear-gradient(90deg, #FFD700, #FFA500, #FFD700)',
-          borderRadius: '2px',
-          boxShadow: '0 0 12px rgba(255, 215, 0, 0.8)'
+          borderRadius: '3px',
+          boxShadow: '0 0 20px rgba(255, 215, 0, 0.8)'
         }} />
       </div>
-      
+
       {/* Proscenio */}
       <div style={{
         position: 'absolute',
-        top: '-6px',
-        left: '-12px',
-        right: '-12px',
-        bottom: '6px',
-        border: '4px solid #654321',
-        borderRadius: '16px',
+        top: '-10px',
+        left: '-20px',
+        right: '-20px',
+        bottom: '10px',
+        border: '6px solid #654321',
+        borderRadius: '26px',
         background: 'linear-gradient(135deg, #A0522D 0%, #8B4513 100%)',
         zIndex: -1,
-        boxShadow: '0 6px 24px rgba(0,0,0,0.5)'
+        boxShadow: '0 10px 40px rgba(0,0,0,0.5)'
       }} />
     </div>
   );
@@ -310,20 +310,20 @@ const VenueStageRenderer = ({ type, config, venueColors }) => {
     <div
       className="arena-stage"
       style={{
-        width: config?.stageDimensions?.width || 450,
-        height: config?.stageDimensions?.height || 60,
+        width: config?.stageDimensions?.width || 720,
+        height: config?.stageDimensions?.height || 96,
         backgroundColor: '#374151',
-        borderRadius: 8,
+        borderRadius: 12,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         color: 'white',
-        fontSize: 18,
+        fontSize: 28,
         fontWeight: 'bold',
-        boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-        border: '3px solid #4B5563',
-        textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
-        margin: '10px 0'
+        boxShadow: '0 6px 12px rgba(0,0,0,0.1)',
+        border: '5px solid #4B5563',
+        textShadow: '3px 3px 6px rgba(0,0,0,0.5)',
+        margin: '16px 0'
       }}
     >
       ESCENARIO
