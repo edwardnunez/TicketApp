@@ -29,7 +29,6 @@ import {
   PercentageOutlined,
   ShoppingCartOutlined
 } from '@ant-design/icons';
-import axios from 'axios';
 import dayjs from 'dayjs';
 import { COLORS } from '../../components/colorscheme';
 import { authenticatedGet } from '../../utils/api';
@@ -55,8 +54,6 @@ const AdminStatistics = () => {
     dateRange: null,
     search: ''
   });
-
-  const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
 
   // Cargar estadísticas
   const loadStatistics = useCallback(async () => {
@@ -91,7 +88,7 @@ const AdminStatistics = () => {
     } finally {
       setLoading(false);
     }
-  }, [filters, gatewayUrl]);
+  }, [filters]);
 
   useEffect(() => {
     loadStatistics();

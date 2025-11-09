@@ -194,7 +194,7 @@ export const userAuthenticatedPut = (endpoint, data, config = {}) => {
   });
 };
 
-export default {
+const api = {
   // Admin operations (use roleToken)
   get: authenticatedGet,
   post: authenticatedPost,
@@ -212,3 +212,5 @@ export default {
   getUserHeaders,
   getAuthHeaders
 };
+
+export default api;
