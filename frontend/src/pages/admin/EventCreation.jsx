@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Layout, 
-  Form, 
-  Input, 
-  Button, 
-  DatePicker, 
-  Select, 
-  message, 
+import {
+  Layout,
+  Form,
+  Input,
+  Button,
+  DatePicker,
+  Select,
+  message,
   Modal,
   Alert,
   Card,
@@ -16,7 +16,6 @@ import {
   Space,
   Divider,
   Breadcrumb,
-  Tooltip,
   Tag,
   Upload,
   Table,
@@ -80,6 +79,7 @@ const RowPricingTable = React.memo(({ section, updateRowPrice, removeRowPrice, a
           value={text}
           onChange={(value) => updateRowPrice(section.sectionId, index, 'row', value)}
           style={{ width: '100%' }}
+          aria-label={`Número de fila ${index + 1}`}
         />
       )
     },
@@ -95,6 +95,7 @@ const RowPricingTable = React.memo(({ section, updateRowPrice, removeRowPrice, a
           onChange={(value) => updateRowPrice(section.sectionId, index, 'price', value)}
           style={{ width: '100%' }}
           prefix="€"
+          aria-label={`Precio para fila ${index + 1} en euros`}
         />
       )
     },
@@ -200,7 +201,7 @@ const EventCreation = () => {
   const stateColors = {
     activo: COLORS?.status?.success || "#52c41a",
     proximo: COLORS?.status?.info || "#1890ff",
-    finalizado: COLORS?.neutral?.grey4 || "#8c8c8c",
+    finalizado: COLORS?.neutral?.grey500 || "#6B7280",
     cancelado: COLORS?.status?.error || "#ff4d4f"
   };
 
@@ -277,7 +278,6 @@ const EventCreation = () => {
     if (!username) return;
     axios.get(`${gatewayUrl}/users/search?username=${username}`)
       .then(res => {
-        console.log('User data from search:', res.data);
         setCurrentUserId(res.data._id);
       })
       .catch(() => setCurrentUserId(null));
@@ -529,43 +529,6 @@ const EventCreation = () => {
     }
   };
 
-  // Función no utilizada - comentada para evitar warnings de linting
-  // const resizeImage = (file, maxWidth = 800, maxHeight = 600, quality = 0.8) => {
-  //   return new Promise((resolve) => {
-  //     const canvas = document.createElement('canvas');
-  //     const ctx = canvas.getContext('2d');
-  //     const img = new Image();
-      
-  //     img.onload = () => {
-  //       // Calcular nuevas dimensiones manteniendo proporción
-  //       let { width, height } = img;
-        
-  //       if (width > height) {
-  //         if (width > maxWidth) {
-  //           height = (height * maxWidth) / width;
-  //           width = maxWidth;
-  //         }
-  //       } else {
-  //         if (height > maxHeight) {
-  //           width = (width * maxHeight) / height;
-  //           height = maxHeight;
-  //         }
-  //       }
-        
-  //       canvas.width = width;
-  //       canvas.height = height;
-        
-  //       // Dibujar imagen redimensionada
-  //       ctx.drawImage(img, 0, 0, width, height);
-        
-  //       // Convertir a blob
-  //       canvas.toBlob(resolve, file.type, quality);
-  //     };
-      
-  //     img.src = URL.createObjectURL(file);
-  //   });
-  // };
-
   // Transforma la imagen a un lienzo fijo (contain) para que se vea entera en un marco 16:9
   const processImageToFixedCanvas = (file, targetWidth = 1280, targetHeight = 720, background = '#111', quality = 0.8) => {
     return new Promise((resolve) => {
@@ -698,8 +661,6 @@ const EventCreation = () => {
         state: values.state || 'proximo'
       };
 
-      console.log('Event data before pricing:', eventData);
-
       // Añadir pricing según el tipo
       if (usesSectionPricing && usesRowPricing && sectionPricing.length > 0) {
         const hasInvalidDefaultPrices = sectionPricing.some(section => 
@@ -784,8 +745,6 @@ const EventCreation = () => {
             price: Math.round((parseFloat(rowPrice.price) || 0) * 100) / 100
           }))
         }));
-        
-        console.log('EventCreation - Section pricing prepared:', eventData.sectionPricing);
 
         // Capacidad se calcula automáticamente en el backend
         eventData.capacity = sectionPricing.reduce((total, section) => {
@@ -831,17 +790,10 @@ const EventCreation = () => {
 
       eventData.createdBy = currentUserId || 'Anonymous admin';
 
-      console.log('Event data prepared:', eventData);
-      console.log('LocationObj:', locationObj);
-      console.log('LocationObj.seatMapId:', locationObj?.seatMapId);
-      console.log('Condition check:', locationObj && locationObj.seatMapId);
-
       if (imageFile) {
         try {
-          console.log('Procesando imagen...');
           const imageData = await convertFileToBase64(imageFile);
           eventData.imageData = imageData;
-          console.log('Imagen procesada, tamaño final:', imageData.size);
         } catch (error) {
           console.error('Error al procesar imagen:', error);
           message.warning('Error al procesar la imagen, el evento se creará sin imagen');
@@ -849,10 +801,7 @@ const EventCreation = () => {
       }
       
       if (locationObj && locationObj.seatMapId) {
-        // Si tiene seatmap, crear el evento directamente y redirigir a configuración
         try {
-          console.log('Creating event with seatmap, redirecting to configuration...');
-
           // Crear el evento
           const createEventResponse = await authenticatedPost('/events', eventData);
           const createdEvent = createEventResponse.data;
@@ -1142,11 +1091,12 @@ const EventCreation = () => {
                         type="number"
                         value={section.defaultPrice || 0}
                         onChange={(e) => handleSectionDefaultPrice(section.sectionId, e.target.value)}
-                        prefix={<EuroOutlined />}
+                        prefix={<EuroOutlined style={{ color: COLORS?.neutral?.grey500 || '#6B7280' }} />}
                         placeholder="Ej: 25"
                         min={0}
                         step={0.01}
                         style={{ width: '100%' }}
+                        aria-label={`Precio por defecto para ${section.sectionName}`}
                       />
                     </Form.Item>
 
@@ -1190,6 +1140,7 @@ const EventCreation = () => {
                           max={section.maxCapacity || undefined}
                           style={{ width: '100%' }}
                           suffix="personas"
+                          aria-label={`Capacidad de ${section.sectionName}`}
                         />
                       </Form.Item>
                     )}
@@ -1304,8 +1255,71 @@ const EventCreation = () => {
   };
 
   return (
-    <Layout style={{ backgroundColor: COLORS.neutral.grey1, minHeight: "100vh" }}>
-      <Content style={{ padding: isMobile ? "18px 4px" : "40px 20px" }}>
+    <>
+      <style>
+        {`
+          /* Mejorar contraste de placeholders en Select */
+          .ant-select-selection-placeholder {
+            color: rgba(0, 0, 0, 0.65) !important;
+          }
+
+          /* Mejorar contraste del texto opcional en Form.Item */
+          .ant-form-item-optional {
+            color: rgba(0, 0, 0, 0.65) !important;
+          }
+
+          /* Mejorar contraste en textos de ayuda (help text) */
+          .ant-form-item-extra,
+          .ant-form-item-extra > div {
+            color: rgba(0, 0, 0, 0.65) !important;
+          }
+
+          /* Mejorar contraste del separador en Breadcrumb */
+          .ant-breadcrumb-separator {
+            color: rgba(0, 0, 0, 0.65) !important;
+          }
+
+          /* Mejorar contraste del contador de caracteres en TextArea */
+          .ant-input-textarea-show-count::after,
+          .ant-input-data-count {
+            color: rgba(0, 0, 0, 0.65) !important;
+          }
+
+          /* Ocultar completamente el textarea oculto de autosize */
+          textarea[aria-hidden="true"][name="hiddenTextarea"],
+          textarea[name="hiddenTextarea"] {
+            display: none !important;
+            visibility: hidden !important;
+            position: absolute !important;
+            left: -9999px !important;
+            top: -9999px !important;
+            width: 0 !important;
+            height: 0 !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            z-index: -9999 !important;
+          }
+
+          /* Ocultar tooltips con aria-describedby que causan broken ARIA */
+          .ant-form-item-label .ant-form-item-tooltip[aria-describedby],
+          .ant-form-item-label span.ant-form-item-tooltip[aria-describedby],
+          .ant-form-item-label .anticon-question-circle.ant-form-item-tooltip,
+          .ant-form-item-label [aria-describedby^=":r"].ant-form-item-tooltip {
+            display: none !important;
+            visibility: hidden !important;
+            position: absolute !important;
+            left: -9999px !important;
+            top: -9999px !important;
+            width: 0 !important;
+            height: 0 !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            z-index: -9999 !important;
+          }
+        `}
+      </style>
+      <Layout style={{ backgroundColor: COLORS.neutral.grey1, minHeight: "100vh" }}>
+        <Content style={{ padding: isMobile ? "18px 4px" : "40px 20px" }}>
         <div style={{
           maxWidth: isMobile ? "100%" : "1200px",
           margin: "0 auto",
@@ -1315,21 +1329,21 @@ const EventCreation = () => {
           {/* Header with breadcrumb */}
           <Row style={{ marginBottom: '24px' }}>
             <Col span={24}>
-              <Breadcrumb 
+              <Breadcrumb
                 items={[
-                  { 
-                    title: <Link to="/admin">Administración</Link> 
+                  {
+                    title: <Link to="/admin" style={{ color: 'rgba(0, 0, 0, 0.85)' }}>Administración</Link>
                   },
-                  { 
-                    title: 'Crear evento' 
+                  {
+                    title: 'Crear evento'
                   }
                 ]}
                 style={{ marginBottom: '8px' }}
               />
-              <Title 
-                level={2} 
-                style={{ 
-                  margin: 0, 
+              <Title
+                level={2}
+                style={{
+                  margin: 0,
                   color: COLORS?.neutral?.darker || "#262626",
                   display: 'flex',
                   alignItems: 'center'
@@ -1338,7 +1352,7 @@ const EventCreation = () => {
                 <FormOutlined style={{ marginRight: '12px', color: COLORS?.primary?.main || "#1890ff" }} />
                 Crear nuevo evento
               </Title>
-              <Paragraph type="secondary" style={{ marginTop: '8px' }}>
+              <Paragraph style={{ marginTop: '8px', color: 'rgba(0, 0, 0, 0.65)' }}>
                 Complete los detalles a continuación para crear un nuevo evento en el sistema
               </Paragraph>
             </Col>
@@ -1382,10 +1396,11 @@ const EventCreation = () => {
                     name="name"
                     rules={[{ required: true, message: 'Por favor ingrese el nombre del evento' }]}
                   >
-                    <Input 
-                      placeholder="Ingrese el nombre del evento" 
-                      size="large" 
-                      prefix={<AppstoreOutlined style={{ color: COLORS?.neutral?.grey3 || '#d9d9d9' }} />} 
+                    <Input
+                      placeholder="Ingrese el nombre del evento"
+                      size="large"
+                      prefix={<AppstoreOutlined style={{ color: COLORS?.neutral?.grey500 || '#6B7280' }} />}
+                      aria-label="Nombre del evento"
                     />
                   </Form.Item>
                 </Col>
@@ -1401,6 +1416,7 @@ const EventCreation = () => {
                       onChange={handleTypeChange}
                       size="large"
                       suffixIcon={<TagOutlined style={{ color: COLORS?.primary?.main || '#1890ff' }} />}
+                      aria-label="Tipo de evento"
                     >
                       <Option value="football">
                         <Tag color={categoryColors.football} style={{ marginRight: '8px' }}>
@@ -1458,14 +1474,15 @@ const EventCreation = () => {
                       }
                     ]}
                   >
-                    <DatePicker 
-                      showTime 
+                    <DatePicker
+                      showTime
                       format="YYYY-MM-DD HH:mm"
-                      style={{ width: '100%' }} 
+                      style={{ width: '100%' }}
                       size="large"
                       suffixIcon={<CalendarOutlined style={{ color: COLORS?.primary?.main || '#1890ff' }} />}
                       onChange={handleDateChange}
                       placeholder="Seleccionar fecha y hora"
+                      aria-label="Fecha y hora del evento"
                     />
                   </Form.Item>
                 </Col>
@@ -1474,9 +1491,19 @@ const EventCreation = () => {
                   <Form.Item
                     label="Ubicación"
                     name="location"
-                    rules={[{ required: true, message: 'Por favor seleccione la ubicación del evento' }]}
+                    rules={[
+                      { required: true, message: 'Por favor seleccione la ubicación del evento' },
+                      {
+                        validator: (_, value) => {
+                          if (!value) {
+                            return Promise.reject('Debe seleccionar una ubicación válida');
+                          }
+                          return Promise.resolve();
+                        }
+                      }
+                    ]}
                   >
-                    <Select 
+                    <Select
                       placeholder="Seleccionar ubicación"
                       size="large"
                       suffixIcon={<EnvironmentOutlined style={{ color: COLORS?.primary?.main || '#1890ff' }} />}
@@ -1485,44 +1512,34 @@ const EventCreation = () => {
                       onChange={handleLocationChange}
                       value={selectedLocation?._id}
                       filterOption={(input, option) =>
-                        option.children.props.children[0].props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                        option.label?.toLowerCase().indexOf(input.toLowerCase()) >= 0
                       }
+                      aria-label="Ubicación del evento"
                       notFoundContent={
-                        !type ? 
+                        !type ?
                           <div style={{ textAlign: 'center', padding: '8px' }}>
                             <InfoCircleOutlined style={{ marginRight: '8px' }} />
                             Por favor seleccione primero un tipo de evento
-                          </div> : 
-                          <div style={{ textAlign: 'center', padding: '8px' }}>
-                            No se encontraron ubicaciones compatibles
+                          </div> :
+                          <div style={{ textAlign: 'left', padding: '8px' }}>
+                            No hay ubicaciones disponibles
                           </div>
                       }
                     >
                       {locationOptions.map((location) => {
                         const seatMapInfo = location.seatMapId ? getSeatMapInfo(location.seatMapId) : null;
                         const hasCompatibleSeatMap = seatMapInfo?.isCompatible !== false;
-                        
+                        const labelSuffix = !location.seatMapId && type === 'concert' ? ' (Entrada general)' : '';
+
                         return (
-                          <Option key={location._id} value={location._id} disabled={seatMapInfo && !hasCompatibleSeatMap}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <span style={{ 
-                                flex: 1,
-                                opacity: seatMapInfo && !hasCompatibleSeatMap ? 0.5 : 1 
-                              }}>
-                                {location.name}
-                              </span>
-                              <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
-                                {!location.seatMapId && type === 'concert' && (
-                                  <Tag 
-                                    color="orange" 
-                                    size="small" 
-                                    style={{ fontSize: '10px', margin: 0 }}
-                                  >
-                                    Entrada general
-                                  </Tag>
-                                )}
-                              </div>
-                            </div>
+                          <Option
+                            key={location._id}
+                            value={location._id}
+                            disabled={seatMapInfo && !hasCompatibleSeatMap}
+                            label={`${location.name}${labelSuffix}`}
+                          >
+                            {location.name}
+                            {!location.seatMapId && type === 'concert' && ' (Entrada general)'}
                           </Option>
                         );
                       })}
@@ -1538,11 +1555,12 @@ const EventCreation = () => {
                     name="description"
                     rules={[{ required: true, message: 'Por favor ingrese la descripción del evento' }]}
                   >
-                    <Input.TextArea 
-                      placeholder="Ingrese la descripción del evento" 
-                      autoSize={{ minRows: 4, maxRows: 6 }} 
-                      showCount 
-                      maxLength={500} 
+                    <Input.TextArea
+                      placeholder="Ingrese la descripción del evento"
+                      autoSize={{ minRows: 4, maxRows: 6 }}
+                      showCount
+                      maxLength={500}
+                      aria-label="Descripción del evento"
                     />
                   </Form.Item>
                 </Col>
@@ -1573,27 +1591,30 @@ const EventCreation = () => {
                         }
                       ]}
                     >
-                      <Input 
-                        type="number" 
+                      <Input
+                        type="number"
                         placeholder={isCapacityLocked ? "Capacidad establecida por el mapa de asientos" : "Ingrese la capacidad"}
                         disabled={isCapacityLocked}
-                        prefix={isCapacityLocked ? <LockOutlined style={{ color: COLORS?.neutral?.grey3 || '#d9d9d9' }} /> : null}
+                        prefix={isCapacityLocked ? <LockOutlined style={{ color: COLORS?.neutral?.grey500 || '#6B7280' }} /> : null}
                         suffix={
-                          <span style={{ color: COLORS?.neutral?.grey3 || '#d9d9d9' }}>
+                          <span style={{ color: COLORS?.neutral?.grey600 || '#4B5563' }}>
                             personas
                             {isCapacityLocked && selectedLocation && (
-                              <Tooltip title={`Capacidad ${selectedLocation.seatMapId ? 'calculada desde el mapa de asientos' : 'fija'} de ${selectedLocation.name}`}>
-                                <InfoCircleOutlined style={{ marginLeft: '4px' }} />
-                              </Tooltip>
+                              <InfoCircleOutlined
+                                style={{ marginLeft: '4px' }}
+                                aria-label={`Capacidad ${selectedLocation.seatMapId ? 'calculada desde el mapa de asientos' : 'fija'} de ${selectedLocation.name}`}
+                                title={`Capacidad ${selectedLocation.seatMapId ? 'calculada desde el mapa de asientos' : 'fija'} de ${selectedLocation.name}`}
+                              />
                             )}
                           </span>
                         }
+                        aria-label="Capacidad del evento"
                       />
                     </Form.Item>
                     {selectedLocation && selectedLocation.capacity > 0 && !isCapacityLocked && (
-                      <div style={{ 
-                        fontSize: '12px', 
-                        color: COLORS?.neutral?.grey4 || '#8c8c8c',
+                      <div style={{
+                        fontSize: '12px',
+                        color: COLORS?.neutral?.grey600 || '#4B5563',
                         marginTop: '-8px',
                         marginBottom: '16px'
                       }}>
@@ -1610,17 +1631,19 @@ const EventCreation = () => {
                         { required: true, message: 'Por favor ingrese el precio' },
                         { type: 'number', min: 0, message: 'El precio debe ser al menos 0', transform: (value) => Number(value) }
                       ]}
+                      help={
+                        <span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>
+                          Precio base por entrada
+                        </span>
+                      }
                     >
-                      <Input 
+                      <Input
                         type="number"
-                        placeholder="Ingrese el precio" 
-                        prefix={<EuroOutlined />}
-                        suffix={
-                          <Tooltip title="Precio base por entrada">
-                            <InfoCircleOutlined style={{ color: COLORS?.neutral?.grey3 || '#d9d9d9' }} />
-                          </Tooltip>
-                        } 
+                        placeholder="Ingrese el precio"
+                        prefix={<EuroOutlined style={{ color: COLORS?.neutral?.grey500 || '#6B7280' }} />}
                         step={0.01}
+                        aria-label="Precio por entrada en euros"
+                        id="price-input"
                       />
                     </Form.Item>
                   </Col>
@@ -1632,13 +1655,22 @@ const EventCreation = () => {
                   <Form.Item
                     label="Imagen del evento"
                     name="image"
-                    help="Formatos soportados: JPG, PNG, GIF. Tamaño máximo: 5MB"
+                    help={
+                      <span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>
+                        Formatos soportados: JPG, PNG, GIF. Tamaño máximo: 5MB
+                      </span>
+                    }
                   >
-                    <Upload {...uploadProps} listType="picture">
-                      <Button 
-                        icon={<UploadOutlined />} 
+                    <Upload
+                      {...uploadProps}
+                      listType="picture"
+                      aria-label="Subir imagen del evento"
+                    >
+                      <Button
+                        icon={<UploadOutlined />}
                         loading={uploadLoading}
                         disabled={loading}
+                        aria-label={imageFile ? 'Cambiar imagen del evento' : 'Seleccionar imagen del evento'}
                       >
                         {imageFile ? 'Cambiar imagen' : 'Seleccionar imagen'}
                       </Button>
@@ -1892,7 +1924,8 @@ const EventCreation = () => {
           </p>
         </div>
       </Modal>
-    </Layout>
+      </Layout>
+    </>
   );
 };
 

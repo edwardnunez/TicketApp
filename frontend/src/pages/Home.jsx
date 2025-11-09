@@ -1,20 +1,19 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { 
-  Layout, 
-  Typography, 
-  Card, 
-  Row, 
-  Col, 
-  Button, 
-  DatePicker, 
+import {
+  Layout,
+  Typography,
+  Card,
+  Row,
+  Col,
+  Button,
+  DatePicker,
   Input,
-  Skeleton, 
-  Empty, 
+  Skeleton,
+  Empty,
   Tag,
-  Tabs, 
-  Space, 
-  Tooltip,
+  Tabs,
+  Space,
   notification,
   Select,
   Pagination,
@@ -222,9 +221,9 @@ const Home = () => {
     switch(state) {
       case "activo": return COLORS.accent.green;
       case "proximo": return COLORS.primary.main;
-      case "finalizado": return COLORS.neutral.grey400;
+      case "finalizado": return COLORS.neutral.grey500;
       case "cancelado": return COLORS.secondary.main;
-      default: return COLORS.neutral.grey300;
+      default: return COLORS.neutral.grey400;
     }
   };
 
@@ -265,7 +264,7 @@ const Home = () => {
               backgroundColor: COLORS.neutral.grey50,
               borderRadius: 8
             }}>
-              <PictureOutlined style={{ fontSize: isMobile ? '32px' : '48px', color: COLORS.neutral.grey300 }} />
+              <PictureOutlined style={{ fontSize: isMobile ? '32px' : '48px', color: COLORS.neutral.grey400 }} />
             </div>
           )}
           {featured && (
@@ -317,18 +316,16 @@ const Home = () => {
     >
       <Meta
         title={
-          <Tooltip title={event.name}>
-            <div data-cy="event-name" style={{
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              fontSize: isMobile ? '14px' : '16px',
-              fontWeight: '600',
-              color: COLORS.neutral.grey800
-            }}>
-              {event.name}
-            </div>
-          </Tooltip>
+          <div data-cy="event-name" title={event.name} style={{
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            fontSize: isMobile ? '14px' : '16px',
+            fontWeight: '600',
+            color: COLORS.neutral.grey800
+          }}>
+            {event.name}
+          </div>
         }
         description={
           <Space direction="vertical" size={2} style={{ width: '100%' }}>
@@ -336,31 +333,29 @@ const Home = () => {
               <Text data-cy="event-date" style={{
                 display: 'flex',
                 alignItems: 'center',
-                color: COLORS.neutral.grey400,
+                color: COLORS.neutral.grey600,
                 fontSize: isMobile ? '12px' : '14px'
               }}>
-                <CalendarOutlined style={{ marginRight: '4px', color: COLORS.neutral.grey400 }} />
+                <CalendarOutlined style={{ marginRight: '4px', color: COLORS.neutral.grey600 }} />
                 {dayjs(event.date).format(isMobile ? "DD MMM" : "DD MMM YYYY")}
               </Text>
             </div>
             <Text style={{
               display: 'flex',
               alignItems: 'center',
-              color: COLORS.neutral.grey400,
+              color: COLORS.neutral.grey600,
               fontSize: isMobile ? '12px' : '14px'
             }}>
-              <EnvironmentOutlined style={{ marginRight: '4px', color: COLORS.neutral.grey400 }} />
-              <Tooltip title={event.location.name}>
-                <span style={{
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  maxWidth: isMobile ? '120px' : '180px',
-                  display: 'inline-block'
-                }}>
-                  {event.location.name}
-                </span>
-              </Tooltip>
+              <EnvironmentOutlined style={{ marginRight: '4px', color: COLORS.neutral.grey600 }} />
+              <span title={event.location.name} style={{
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                maxWidth: isMobile ? '120px' : '180px',
+                display: 'inline-block'
+              }}>
+                {event.location.name}
+              </span>
             </Text>
           </Space>
         }
@@ -397,10 +392,12 @@ const Home = () => {
             key={category.name}
             type={activeCategory === category.name ? 'primary' : 'default'}
             size={isMobile ? 'small' : 'default'}
-            style={{ 
+            style={{
               borderColor: category.color,
-              color: activeCategory === category.name ? COLORS.neutral.white : category.color,
-              backgroundColor: activeCategory === category.name ? category.color : 'transparent'
+              borderWidth: '2px',
+              color: activeCategory === category.name ? COLORS.neutral.white : COLORS.neutral.grey700,
+              backgroundColor: activeCategory === category.name ? category.color : 'transparent',
+              fontWeight: activeCategory === category.name ? '600' : '500'
             }}
             onClick={() => handleCategoryFilter(category.name)}
           >
@@ -431,11 +428,11 @@ const Home = () => {
             }}>
               Descubre eventos increíbles
             </Title>
-            <Paragraph style={{ 
-              fontSize: isMobile ? '16px' : '18px', 
-              maxWidth: '700px', 
+            <Paragraph style={{
+              fontSize: isMobile ? '16px' : '18px',
+              maxWidth: '700px',
               margin: isMobile ? '0 auto 24px' : '0 auto 32px',
-              color: 'rgba(255, 255, 255, 0.85)'
+              color: 'rgba(255, 255, 255, 0.95)'
             }}>
               Encuentra y reserva entradas para los mejores conciertos, obras de teatro, 
               eventos deportivos y mucho más.
@@ -453,21 +450,23 @@ const Home = () => {
                 <Input
                   size="large"
                   placeholder="Buscar eventos..."
-                  prefix={<SearchOutlined style={{ color: COLORS.neutral.grey400 }} />}
+                  prefix={<SearchOutlined style={{ color: COLORS.neutral.grey500 }} />}
                   value={searchText}
                   onChange={handleSearch}
                   style={{ width: '100%' }}
+                  aria-label="Buscar eventos por nombre o ubicación"
                 />
                 
                 {!isMobile ? (
                   <Row gutter={16} align="middle">
                     <Col xs={24} sm={12} md={14}>
-                      <RangePicker 
+                      <RangePicker
                         size="large"
                         value={dateRange}
                         onChange={handleDateFilter}
                         style={{ width: '100%' }}
                         placeholder={['Desde', 'Hasta']}
+                        aria-label="Filtrar eventos por rango de fechas"
                       />
                     </Col>
                     <Col xs={24} sm={12} md={10}>
@@ -484,12 +483,13 @@ const Home = () => {
                 ) : (
                   <Row gutter={8}>
                     <Col span={18}>
-                      <RangePicker 
+                      <RangePicker
                         size="large"
                         value={dateRange}
                         onChange={handleDateFilter}
                         style={{ width: '100%' }}
                         placeholder={['Desde', 'Hasta']}
+                        aria-label="Filtrar eventos por rango de fechas"
                       />
                     </Col>
                     <Col span={6}>
@@ -526,7 +526,7 @@ const Home = () => {
               <Row gutter={[16, 12]} justify="space-between" align="middle">
                 <Col xs={24} md={12}>
                   <Space size={isMobile ? 'small' : 'middle'} wrap>
-                    <Text strong style={{ fontSize: isMobile ? '14px' : '16px' }}>
+                    <Text strong style={{ fontSize: isMobile ? '14px' : '16px' }} id="sort-label">
                       Ordenar por:
                     </Text>
                     <Select
@@ -534,10 +534,9 @@ const Home = () => {
                       onChange={setSortBy}
                       style={{ width: isMobile ? 100 : 120 }}
                       size={isMobile ? 'small' : 'default'}
+                      aria-labelledby="sort-label"
                     >
-                      <Option value="date">
-                        <CalendarOutlined /> Fecha
-                      </Option>
+                      <Option value="date">Fecha</Option>
                       <Option value="name">Nombre</Option>
                       <Option value="state">Estado</Option>
                     </Select>
@@ -554,7 +553,7 @@ const Home = () => {
                   textAlign: isMobile ? 'center' : 'right',
                   marginTop: isMobile ? '8px' : '0'
                 }}>
-                  <Text type="secondary" style={{ fontSize: isMobile ? '12px' : '14px' }}>
+                  <Text style={{ fontSize: isMobile ? '12px' : '14px', color: COLORS.neutral.grey600 }}>
                     Mostrando {displayedEvents.length} de {filteredEvents.length} eventos
                   </Text>
                 </Col>
@@ -571,13 +570,13 @@ const Home = () => {
                 }
               }}
             >
-              <TabPane 
+              <TabPane
                 tab={
-                  <span style={{ fontSize: isMobile ? '12px' : '14px' }}>
-                    <StarOutlined style={{ color: COLORS.primary.main }} />
+                  <span style={{ fontSize: isMobile ? '12px' : '14px', color: COLORS.neutral.grey700 }}>
+                    <StarOutlined style={{ color: COLORS.accent.green, marginRight: '4px' }} />
                     Eventos ({filteredEvents.length})
                   </span>
-                } 
+                }
                 key="1"
               >
                 {loading ? (
@@ -632,7 +631,7 @@ const Home = () => {
                       <Empty
                         image={Empty.PRESENTED_IMAGE_SIMPLE}
                         description={
-                          <span style={{ color: COLORS.neutral.grey400 }}>
+                          <span style={{ color: COLORS.neutral.grey600 }}>
                             No se encontraron eventos con los filtros seleccionados
                           </span>
                         }

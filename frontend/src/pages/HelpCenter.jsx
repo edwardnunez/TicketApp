@@ -135,10 +135,7 @@ const HelpCenter = () => {
 
   const handleContactSubmit = () => {
     if (contactMessage.trim()) {
-      // Aquí se enviaría el mensaje al backend
-      console.log('Mensaje enviado:', contactMessage);
       setContactMessage('');
-      // Mostrar mensaje de éxito
     }
   };
 

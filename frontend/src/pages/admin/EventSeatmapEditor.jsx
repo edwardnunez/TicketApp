@@ -61,10 +61,8 @@ const EventSeatMapEditor = () => {
     }
   }, [eventData, navigate, location.state, selectedLocation]);
 
-  // Cargar asientos bloqueados iniciales del evento existente
   useEffect(() => {
     if (eventData?.seatMapConfiguration) {
-      console.log('Loading initial blocked seats from event:', eventData.seatMapConfiguration);
       setBlockedSeats(eventData.seatMapConfiguration.blockedSeats || []);
       setBlockedSections(eventData.seatMapConfiguration.blockedSections || []);
       setGeneralAdmissionCapacities(eventData.seatMapConfiguration.generalAdmissionCapacities || {});
@@ -83,12 +81,10 @@ const EventSeatMapEditor = () => {
     const loadLocationData = async () => {
       if (locationData || !eventData?.location) return;
 
-      console.log('Loading location data for:', eventData.location);
       setLoading(true);
 
       try {
         const response = await axios.get(`${gatewayUrl}/locations/${eventData.location}`);
-        console.log('Location data loaded:', response.data);
         setLocationData(response.data);
       } catch (err) {
         console.error('Error loading location:', err);
@@ -104,20 +100,14 @@ const EventSeatMapEditor = () => {
   useEffect(() => {
     const loadSeatMapData = async () => {
       if (!requiresSeatMap() || !locationData?.seatMapId) {
-        console.log('Not loading seatmap:', {
-          requiresSeatMap: requiresSeatMap(),
-          seatMapId: locationData?.seatMapId
-        });
         return;
       }
 
-      console.log('Loading seatmap for ID:', locationData.seatMapId);
       setLoading(true);
       setError(null);
 
       try {
         const response = await axios.get(`${gatewayUrl}/seatmaps/${locationData.seatMapId}`);
-        console.log('Seatmap data loaded:', response.data);
         setSeatMapData(response.data);
 
         const initialCapacities = {};
@@ -226,11 +216,9 @@ const EventSeatMapEditor = () => {
       };
 
       if (eventData._id) {
-        console.log('Actualizando evento existente:', eventData._id);
         await authenticatedPut(`/events/${eventData._id}`, eventPayload);
         message.success('Mapa de asientos guardado exitosamente');
       } else {
-        console.log('Creando nuevo evento');
         await authenticatedPost('/events', eventPayload);
         message.success('Evento creado exitosamente');
       }

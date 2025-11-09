@@ -1,4 +1,3 @@
-
 import cron from 'node-cron';
 
 class EventStateService {
@@ -119,9 +118,9 @@ class EventStateService {
     }
     next();
   }
-    setEventModel(eventModel) {
+
+  setEventModel(eventModel) {
     this.EventModel = eventModel;
-    // Make EventModel available globally for the methods above
     global.EventModel = eventModel;
   }
 }

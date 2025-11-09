@@ -238,7 +238,6 @@ const EditProfile = () => {
     setShowProfileModal(false);
     setPendingProfileValues(null);
     setUpdatedFieldsList([]);
-    console.log('Actualización de perfil cancelada');
   };
 
   const executePasswordChange = (values) => {
@@ -313,7 +312,6 @@ const EditProfile = () => {
   const handleCancelPasswordChange = () => {
     setShowPasswordModal(false);
     setPendingPasswordValues(null);
-    console.log('Cambio de contraseña cancelado');
   };
 
   return (
@@ -397,6 +395,7 @@ const EditProfile = () => {
                               <Avatar
                                 size={60}
                                 src={avatar}
+                                alt={`Avatar predefinido ${index + 1}`}
                                 style={{
                                   border: selectedAvatar === avatar ? `2px solid ${COLORS.primary.main}` : "1px solid " + COLORS.neutral.grey3,
                                   boxShadow: selectedAvatar === avatar ? `0 0 0 2px ${COLORS.primary.light}` : "none",

@@ -617,6 +617,7 @@ const Profile = () => {
                   <Avatar
                     size={120}
                     src={user.avatar}
+                    alt={user.avatar ? "Avatar del usuario seleccionado" : "Avatar genérico del usuario"}
                     icon={!user.avatar && <UserOutlined />}
                     style={{
                       border: `4px solid ${COLORS.neutral.white}`,

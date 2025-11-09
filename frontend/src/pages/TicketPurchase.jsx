@@ -420,8 +420,6 @@ const TicketPurchase = () => {
           }
         };
 
-      console.log('Enviando datos del ticket con PayPal:', ticketData);
-
       const response = await axios.post(`${gatewayUrl}/tickets/purchase`, ticketData, {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -612,7 +610,7 @@ const TicketPurchase = () => {
             <Button 
               type="text" 
               icon={<ArrowLeftOutlined />}
-              style={{ color: COLORS.primary.main, marginBottom: '16px' }}
+              style={{ color: COLORS.primary.darker, marginBottom: '16px' }}
             >
               Volver al evento
             </Button>
@@ -631,13 +629,13 @@ const TicketPurchase = () => {
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <CalendarOutlined style={{ color: COLORS.primary.main }} />
-                  <Text style={{ color: COLORS.neutral.grey4 }}>
+                  <Text style={{ color: COLORS.neutral.grey600 }}>
                     {dayjs(event.date).format("dddd, DD [de] MMMM [de] YYYY")}
                   </Text>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <EnvironmentOutlined style={{ color: COLORS.primary.main }} />
-                  <Text style={{ color: COLORS.neutral.grey4 }}>
+                  <Text style={{ color: COLORS.neutral.grey600 }}>
                     {typeof event.location === 'string' ? event.location : event.location?.name || 'Ubicación no especificada'}
                   </Text>
                 </div>

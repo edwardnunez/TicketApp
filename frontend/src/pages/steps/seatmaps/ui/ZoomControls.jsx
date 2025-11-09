@@ -1,8 +1,8 @@
 import React from 'react';
-import { Button, Tooltip } from 'antd';
-import { 
-  ZoomInOutlined, 
-  ZoomOutOutlined, 
+import { Button } from 'antd';
+import {
+  ZoomInOutlined,
+  ZoomOutOutlined,
   ReloadOutlined,
   FullscreenOutlined,
   CompressOutlined
@@ -103,45 +103,42 @@ const ZoomControls = ({
         }}
       >
         {controls.map(control => (
-          <Tooltip
+          <Button
             key={control.key}
+            icon={control.icon}
+            onClick={control.onClick}
+            disabled={control.disabled}
+            size={isMobile ? 'middle' : 'middle'}
+            aria-label={control.tooltip}
             title={control.tooltip}
-            placement={isMobile ? 'top' : 'left'}
-          >
-            <Button
-              icon={control.icon}
-              onClick={control.onClick}
-              disabled={control.disabled}
-              size={isMobile ? 'middle' : 'middle'}
-              style={{
-                minWidth: isMobile ? '44px' : '40px', // Botones más grandes en móvil para mejor touch
-                height: isMobile ? '44px' : '40px',
-                borderRadius: '10px',
-                border: '1px solid #E5E7EB',
-                backgroundColor: control.disabled ? COLORS.neutral.grey100 : 'white',
-                color: control.disabled ? COLORS.neutral.grey400 : COLORS.neutral.grey700,
-                transition: 'all 0.2s ease',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                // Mejoras para touch
-                WebkitTapHighlightColor: 'transparent',
-                touchAction: 'manipulation'
-              }}
-              onMouseEnter={(e) => {
-                if (!control.disabled && !isMobile) {
-                  e.currentTarget.style.borderColor = COLORS.primary.main;
-                  e.currentTarget.style.boxShadow = `0 2px 8px ${COLORS.primary.main}20`;
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!control.disabled && !isMobile) {
-                  e.currentTarget.style.borderColor = '#E5E7EB';
-                  e.currentTarget.style.boxShadow = 'none';
-                }
-              }}
-            />
-          </Tooltip>
+            style={{
+              minWidth: isMobile ? '44px' : '40px', // Botones más grandes en móvil para mejor touch
+              height: isMobile ? '44px' : '40px',
+              borderRadius: '10px',
+              border: '1px solid #E5E7EB',
+              backgroundColor: control.disabled ? COLORS.neutral.grey100 : 'white',
+              color: control.disabled ? COLORS.neutral.grey400 : COLORS.neutral.grey700,
+              transition: 'all 0.2s ease',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              // Mejoras para touch
+              WebkitTapHighlightColor: 'transparent',
+              touchAction: 'manipulation'
+            }}
+            onMouseEnter={(e) => {
+              if (!control.disabled && !isMobile) {
+                e.currentTarget.style.borderColor = COLORS.primary.main;
+                e.currentTarget.style.boxShadow = `0 2px 8px ${COLORS.primary.main}20`;
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!control.disabled && !isMobile) {
+                e.currentTarget.style.borderColor = '#E5E7EB';
+                e.currentTarget.style.boxShadow = 'none';
+              }
+            }}
+          />
         ))}
       </div>
 

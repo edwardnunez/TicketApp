@@ -1,23 +1,23 @@
 import { useEffect, useState, useCallback } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom"; 
-import { 
-  Layout, 
-  Typography, 
-  Card, 
-  Row, 
-  Col, 
-  Button, 
-  Tag, 
+import { useParams, Link, useNavigate } from "react-router-dom";
+import {
+  Layout,
+  Typography,
+  Card,
+  Row,
+  Col,
+  Button,
+  Tag,
   Space,
   Skeleton,
   Alert,
   Divider,
-  Table
+  Table,
+  notification
 } from "antd";
-import { notification } from 'antd';
-import { 
-  CalendarOutlined, 
-  EnvironmentOutlined, 
+import {
+  CalendarOutlined,
+  EnvironmentOutlined,
   TeamOutlined,
   ClockCircleOutlined,
   ArrowLeftOutlined,
@@ -28,17 +28,17 @@ import {
   PictureOutlined,
   EuroOutlined,
   StopOutlined,
-  CheckCircleOutlined
+  CheckCircleOutlined,
+  PauseCircleOutlined,
+  PlayCircleOutlined
 } from "@ant-design/icons";
 import axios from "axios";
 import dayjs from "dayjs";
 import "dayjs/locale/es";
 
-// Import color scheme
 import { COLORS } from "../components/colorscheme";
 import FramedImage from "../components/FramedImage";
 
-// Configure dayjs in Spanish
 dayjs.locale('es');
 
 // CSS for spinner animation
@@ -72,6 +72,7 @@ const EventDetails = () => {
   const [error, setError] = useState(null);
   const [ticketAvailability, setTicketAvailability] = useState(null);
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
+  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true);
   const showNotification = (type, message, description) => {
     notification[type]({
       message,
@@ -184,14 +185,14 @@ const EventDetails = () => {
 
   // Configure automatic availability update every 30 seconds
   useEffect(() => {
-    if (!event) return;
+    if (!event || !autoRefreshEnabled) return;
 
     const interval = setInterval(() => {
       fetchTicketAvailability();
     }, 30000); // Actualizar cada 30 segundos
 
     return () => clearInterval(interval);
-  }, [event, fetchTicketAvailability]);
+  }, [event, fetchTicketAvailability, autoRefreshEnabled]);
 
   // Refrescar disponibilidad inmediatamente cuando el evento cambia
   useEffect(() => {
@@ -383,30 +384,52 @@ const EventDetails = () => {
         marginTop: '24px',
         borderLeft: `4px solid ${isSoldOut ? COLORS.secondary.main : COLORS.accent.green}`
       }}>
-        <Title level={5} style={{ 
-          color: COLORS.neutral.grey800,
-          marginBottom: '12px',
+        <div style={{
           display: 'flex',
-          alignItems: 'center'
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '12px'
         }}>
-          <TeamOutlined style={{ 
-            marginRight: '8px', 
-            color: isSoldOut ? COLORS.secondary.main : COLORS.accent.green 
-          }} />
-          Disponibilidad de entradas
-          {availabilityLoading && (
-            <div style={{ marginLeft: '8px' }}>
-              <div style={{ 
-                width: '12px', 
-                height: '12px', 
-                border: '2px solid #f3f3f3',
-                borderTop: '2px solid #1890ff',
-                borderRadius: '50%',
-                animation: 'spin 1s linear infinite'
-              }} />
-            </div>
-          )}
-        </Title>
+          <Title level={5} style={{
+            color: COLORS.neutral.grey800,
+            margin: 0,
+            display: 'flex',
+            alignItems: 'center'
+          }}>
+            <TeamOutlined style={{
+              marginRight: '8px',
+              color: isSoldOut ? COLORS.secondary.main : COLORS.accent.green
+            }} />
+            Disponibilidad de entradas
+            {availabilityLoading && (
+              <div style={{ marginLeft: '8px' }}>
+                <div style={{
+                  width: '12px',
+                  height: '12px',
+                  border: '2px solid #f3f3f3',
+                  borderTop: '2px solid #1890ff',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite'
+                }} />
+              </div>
+            )}
+          </Title>
+          <Button
+            type="text"
+            size="small"
+            icon={autoRefreshEnabled ? <PauseCircleOutlined /> : <PlayCircleOutlined />}
+            onClick={() => setAutoRefreshEnabled(!autoRefreshEnabled)}
+            style={{
+              color: COLORS.primary.main,
+              display: 'flex',
+              alignItems: 'center'
+            }}
+            title={autoRefreshEnabled ? 'Pausar actualizaciones automáticas' : 'Reanudar actualizaciones automáticas'}
+            aria-label={autoRefreshEnabled ? 'Pausar actualizaciones automáticas' : 'Reanudar actualizaciones automáticas'}
+          >
+            {autoRefreshEnabled ? 'Pausar' : 'Reanudar'}
+          </Button>
+        </div>
         
         <Row gutter={[16, 8]}>
           <Col xs={24} sm={8}>
@@ -475,13 +498,14 @@ const EventDetails = () => {
           </div>
         )}
         
-        <Text style={{ 
-          fontSize: '10px', 
+        <Text style={{
+          fontSize: '10px',
           color: COLORS.neutral.grey3,
           marginTop: '8px',
           display: 'block'
         }}>
           Última actualización: {dayjs(lastUpdated).format('HH:mm:ss')}
+          {!autoRefreshEnabled && ' (Actualizaciones pausadas)'}
         </Text>
       </Card>
     );

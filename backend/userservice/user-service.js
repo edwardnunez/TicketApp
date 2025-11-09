@@ -27,11 +27,7 @@ const __dirname = dirname(__filename);
 // En Docker, las variables vienen del contenedor
 const envPath = resolve(__dirname, '../../.env');
 if (existsSync(envPath)) {
-  console.log('Loading .env from:', envPath);
   dotenv.config({ path: envPath });
-  console.log('Environment variables loaded from file');
-} else {
-  console.log('No .env file found, using environment variables from container');
 }
 
 const app = express();

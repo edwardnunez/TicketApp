@@ -37,10 +37,10 @@ const SeatMapContainer = ({
 
   if (!seatMapData) {
     return (
-      <div style={{ 
-        textAlign: 'center', 
+      <div style={{
+        textAlign: 'center',
         padding: '40px',
-        color: COLORS.neutral.grey4 
+        color: COLORS.neutral.grey600
       }}>
         <Text>No hay datos del mapa de asientos disponibles</Text>
       </div>
