@@ -1,6 +1,5 @@
 node_modules
 .vscode
-.claude
 
 # Environment variables
 .env
