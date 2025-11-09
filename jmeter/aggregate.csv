@@ -1,0 +1,7 @@
+Label,# Samples,Average,Median,90% Line,95% Line,99% Line,Min,Max,Error %,Throughput,Received KB/sec,Sent KB/sec
+GET /tickets/user/:userId/details,750,6,4,12,17,33,1,136,100.000%,76.84426,28.74,14.86
+GET /tickets/occupied/:eventId,1500,12,9,27,34,48,4,136,0.000%,126.95726,43.27,19.47
+POST /tickets/purchase,400,6,4,12,18,27,1,136,100.000%,27.49519,10.28,17.27
+GET /events,2400,24,16,52,67,95,6,265,0.000%,160.62107,904.28,19.14
+POST /login,1000,419,434,602,663,703,59,727,0.000%,58.85122,44.66,13.45
+TOTAL,6050,83,13,374,525,642,1,727,19.008%,356.04991,895.24,67.13

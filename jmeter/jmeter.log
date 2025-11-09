@@ -1,0 +1,217 @@
+2025-10-27 22:51:43,564 INFO o.a.j.u.JMeterUtils: Setting Locale to en_EN
+2025-10-27 22:51:43,584 INFO o.a.j.JMeter: Loading user properties from: C:\Users\iyanf\Downloads\apache-jmeter-5.6.3\apache-jmeter-5.6.3\bin\user.properties
+2025-10-27 22:51:43,584 INFO o.a.j.JMeter: Loading system properties from: C:\Users\iyanf\Downloads\apache-jmeter-5.6.3\apache-jmeter-5.6.3\bin\system.properties
+2025-10-27 22:51:43,590 INFO o.a.j.JMeter: Copyright (c) 1998-2024 The Apache Software Foundation
+2025-10-27 22:51:43,591 INFO o.a.j.JMeter: Version 5.6.3
+2025-10-27 22:51:43,591 INFO o.a.j.JMeter: java.version=21.0.5
+2025-10-27 22:51:43,591 INFO o.a.j.JMeter: java.vm.name=OpenJDK 64-Bit Server VM
+2025-10-27 22:51:43,591 INFO o.a.j.JMeter: os.name=Windows 11
+2025-10-27 22:51:43,591 INFO o.a.j.JMeter: os.arch=amd64
+2025-10-27 22:51:43,591 INFO o.a.j.JMeter: os.version=10.0
+2025-10-27 22:51:43,591 INFO o.a.j.JMeter: file.encoding=UTF-8
+2025-10-27 22:51:43,591 INFO o.a.j.JMeter: java.awt.headless=true
+2025-10-27 22:51:43,591 INFO o.a.j.JMeter: Max memory     =1073741824
+2025-10-27 22:51:43,591 INFO o.a.j.JMeter: Available Processors =12
+2025-10-27 22:51:43,592 INFO o.a.j.JMeter: Default Locale=English (EN)
+2025-10-27 22:51:43,592 INFO o.a.j.JMeter: JMeter  Locale=English (EN)
+2025-10-27 22:51:43,592 INFO o.a.j.JMeter: JMeterHome=C:\Users\iyanf\Downloads\apache-jmeter-5.6.3\apache-jmeter-5.6.3
+2025-10-27 22:51:43,592 INFO o.a.j.JMeter: user.dir  =C:\Users\iyanf\OneDrive\Escritorio\ticketapp\jmeter
+2025-10-27 22:51:43,592 INFO o.a.j.JMeter: PWD       =C:\Users\iyanf\OneDrive\Escritorio\ticketapp\jmeter
+2025-10-27 22:51:43,592 INFO o.a.j.JMeter: IP: 192.168.0.8 Name: Portátil-Iyán FullName: Portátil-Iyán
+2025-10-27 22:51:43,607 INFO o.a.j.JMeter: Setting property 'jmeter.reportgenerator.outputdir' to:'C:\Users\iyanf\OneDrive\Escritorio\ticketapp\jmeter\reports\seat-selection'
+2025-10-27 22:51:43,607 INFO o.a.j.s.FileServer: Default base='C:\Users\iyanf\OneDrive\Escritorio\ticketapp\jmeter'
+2025-10-27 22:51:43,607 INFO o.a.j.s.FileServer: Set new base='C:\Users\iyanf\OneDrive\Escritorio\ticketapp\jmeter'
+2025-10-27 22:51:43,764 INFO o.a.j.s.SaveService: Testplan (JMX) version: 2.2. Testlog (JTL) version: 2.2
+2025-10-27 22:51:43,795 INFO o.a.j.s.SaveService: Using SaveService properties version 5.0
+2025-10-27 22:51:43,795 INFO o.a.j.s.SaveService: Using SaveService properties file encoding UTF-8
+2025-10-27 22:51:43,811 INFO o.a.j.s.SaveService: Loading file: 5-Seat-Selection-Test.jmx
+2025-10-27 22:51:43,859 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for text/html is org.apache.jmeter.protocol.http.parser.LagartoBasedHtmlParser
+2025-10-27 22:51:43,859 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for application/xhtml+xml is org.apache.jmeter.protocol.http.parser.LagartoBasedHtmlParser
+2025-10-27 22:51:43,859 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for application/xml is org.apache.jmeter.protocol.http.parser.LagartoBasedHtmlParser
+2025-10-27 22:51:43,859 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for text/xml is org.apache.jmeter.protocol.http.parser.LagartoBasedHtmlParser
+2025-10-27 22:51:43,859 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for text/vnd.wap.wml is org.apache.jmeter.protocol.http.parser.RegexpHTMLParser
+2025-10-27 22:51:43,859 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for text/css is org.apache.jmeter.protocol.http.parser.CssParser
+2025-10-27 22:51:43,900 INFO o.a.j.JMeter: Creating summariser <summary>
+2025-10-27 22:51:43,900 INFO o.a.j.r.d.ReportGenerator: ReportGenerator will use for Parsing the separator: ','
+2025-10-27 22:51:43,900 INFO o.a.j.r.d.ReportGenerator: Will generate report at end of test from  results file: results/seat-selection.jtl
+2025-10-27 22:51:43,906 INFO o.a.j.r.d.ReportGenerator: Reading report generator properties from: C:\Users\iyanf\Downloads\apache-jmeter-5.6.3\apache-jmeter-5.6.3\bin\reportgenerator.properties
+2025-10-27 22:51:43,907 INFO o.a.j.r.d.ReportGenerator: Merging with JMeter properties
+2025-10-27 22:51:43,907 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.temp_dir' not found, using default value 'temp' instead.
+2025-10-27 22:51:43,907 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.apdex_per_transaction' not found, using default value 'null' instead.
+2025-10-27 22:51:43,907 INFO o.a.j.r.c.ReportGeneratorConfiguration: apdex_per_transaction is empty, not APDEX per transaction customization
+2025-10-27 22:51:43,907 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.sample_filter' not found, using default value 'null' instead.
+2025-10-27 22:51:43,907 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.report_title' not found, using default value 'null' instead.
+2025-10-27 22:51:43,907 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.start_date' not found, using default value 'null' instead.
+2025-10-27 22:51:43,907 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.end_date' not found, using default value 'null' instead.
+2025-10-27 22:51:43,907 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.date_format' not found, using default value 'null' instead.
+2025-10-27 22:51:43,907 INFO o.a.j.r.c.ReportGeneratorConfiguration: Will use date range start date: null, end date: null
+2025-10-27 22:51:43,917 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.totalTPS.exclude_controllers' not found, using default value 'false' instead.
+2025-10-27 22:51:43,917 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.activeThreadsOverTime.exclude_controllers' not found, using default value 'false' instead.
+2025-10-27 22:51:43,917 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.timeVsThreads.exclude_controllers' not found, using default value 'false' instead.
+2025-10-27 22:51:43,917 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.responseTimeDistribution.exclude_controllers' not found, using default value 'false' instead.
+2025-10-27 22:51:43,917 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.transactionsPerSecond.exclude_controllers' not found, using default value 'false' instead.
+2025-10-27 22:51:43,917 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.responseTimePercentiles.exclude_controllers' not found, using default value 'false' instead.
+2025-10-27 22:51:43,917 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.responseTimePercentilesOverTime.exclude_controllers' not found, using default value 'false' instead.
+2025-10-27 22:51:43,917 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.responseTimesOverTime.exclude_controllers' not found, using default value 'false' instead.
+2025-10-27 22:51:43,917 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.connectTimeOverTime.exclude_controllers' not found, using default value 'false' instead.
+2025-10-27 22:51:43,917 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.latenciesOverTime.exclude_controllers' not found, using default value 'false' instead.
+2025-10-27 22:51:43,917 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.exporter.json.filters_only_sample_series' not found, using default value 'true' instead.
+2025-10-27 22:51:43,917 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.exporter.json.series_filter' not found, using default value '' instead.
+2025-10-27 22:51:43,917 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.exporter.json.show_controllers_only' not found, using default value 'false' instead.
+2025-10-27 22:51:43,917 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.exporter.html.filters_only_sample_series' not found, using default value 'true' instead.
+2025-10-27 22:51:43,917 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.exporter.html.series_filter' not found, using default value '' instead.
+2025-10-27 22:51:43,917 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.exporter.html.show_controllers_only' not found, using default value 'false' instead.
+2025-10-27 22:51:43,922 INFO o.a.j.e.StandardJMeterEngine: Running the test!
+2025-10-27 22:51:43,922 INFO o.a.j.s.SampleEvent: List of sample_variables: []
+2025-10-27 22:51:43,922 INFO o.a.j.s.SampleEvent: List of sample_variables: []
+2025-10-27 22:51:43,922 INFO o.a.j.e.u.CompoundVariable: Note: Function class names must contain the string: '.functions.'
+2025-10-27 22:51:43,938 INFO o.a.j.e.u.CompoundVariable: Note: Function class names must not contain the string: '.gui.'
+2025-10-27 22:51:44,012 INFO o.a.j.JMeter: Running test (1761601904012)
+2025-10-27 22:51:44,027 INFO o.a.j.e.StandardJMeterEngine: Starting ThreadGroup: 1 : Seat Selection - 30 Concurrent Users
+2025-10-27 22:51:44,027 INFO o.a.j.e.StandardJMeterEngine: Starting 30 threads for group Seat Selection - 30 Concurrent Users.
+2025-10-27 22:51:44,027 INFO o.a.j.e.StandardJMeterEngine: Thread will continue on error
+2025-10-27 22:51:44,027 INFO o.a.j.t.ThreadGroup: Starting thread group... number=1 threads=30 ramp-up=10 delayedStart=false
+2025-10-27 22:51:44,039 INFO o.a.j.t.JMeterThread: Thread started: Seat Selection - 30 Concurrent Users 1-1
+2025-10-27 22:51:44,051 INFO o.a.j.t.ThreadGroup: Started thread group number 1
+2025-10-27 22:51:44,051 INFO o.a.j.e.StandardJMeterEngine: All thread groups have been started
+2025-10-27 22:51:44,373 INFO o.a.j.t.JMeterThread: Thread started: Seat Selection - 30 Concurrent Users 1-2
+2025-10-27 22:51:44,557 INFO o.a.j.p.h.s.HTTPHCAbstractImpl: Local host = Portátil-Iyán
+2025-10-27 22:51:44,562 INFO o.a.j.p.h.s.HTTPHC4Impl: HTTP request retry count = 0
+2025-10-27 22:51:44,563 INFO o.a.j.s.SampleResult: Note: Sample TimeStamps are START times
+2025-10-27 22:51:44,563 INFO o.a.j.s.SampleResult: sampleresult.default.encoding is set to UTF-8
+2025-10-27 22:51:44,563 INFO o.a.j.s.SampleResult: sampleresult.useNanoTime=true
+2025-10-27 22:51:44,563 INFO o.a.j.s.SampleResult: sampleresult.nanoThreadSleep=5000
+2025-10-27 22:51:44,707 INFO o.a.j.t.JMeterThread: Thread started: Seat Selection - 30 Concurrent Users 1-3
+2025-10-27 22:51:45,033 INFO o.a.j.t.JMeterThread: Thread started: Seat Selection - 30 Concurrent Users 1-4
+2025-10-27 22:51:45,363 INFO o.a.j.t.JMeterThread: Thread started: Seat Selection - 30 Concurrent Users 1-5
+2025-10-27 22:51:45,695 INFO o.a.j.t.JMeterThread: Thread started: Seat Selection - 30 Concurrent Users 1-6
+2025-10-27 22:51:46,028 INFO o.a.j.t.JMeterThread: Thread started: Seat Selection - 30 Concurrent Users 1-7
+2025-10-27 22:51:46,361 INFO o.a.j.t.JMeterThread: Thread started: Seat Selection - 30 Concurrent Users 1-8
+2025-10-27 22:51:46,692 INFO o.a.j.t.JMeterThread: Thread started: Seat Selection - 30 Concurrent Users 1-9
+2025-10-27 22:51:47,025 INFO o.a.j.t.JMeterThread: Thread started: Seat Selection - 30 Concurrent Users 1-10
+2025-10-27 22:51:47,359 INFO o.a.j.t.JMeterThread: Thread started: Seat Selection - 30 Concurrent Users 1-11
+2025-10-27 22:51:47,691 INFO o.a.j.t.JMeterThread: Thread started: Seat Selection - 30 Concurrent Users 1-12
+2025-10-27 22:51:48,024 INFO o.a.j.t.JMeterThread: Thread started: Seat Selection - 30 Concurrent Users 1-13
+2025-10-27 22:51:48,358 INFO o.a.j.t.JMeterThread: Thread started: Seat Selection - 30 Concurrent Users 1-14
+2025-10-27 22:51:48,691 INFO o.a.j.t.JMeterThread: Thread started: Seat Selection - 30 Concurrent Users 1-15
+2025-10-27 22:51:49,024 INFO o.a.j.t.JMeterThread: Thread started: Seat Selection - 30 Concurrent Users 1-16
+2025-10-27 22:51:49,356 INFO o.a.j.t.JMeterThread: Thread started: Seat Selection - 30 Concurrent Users 1-17
+2025-10-27 22:51:49,689 INFO o.a.j.t.JMeterThread: Thread started: Seat Selection - 30 Concurrent Users 1-18
+2025-10-27 22:51:50,023 INFO o.a.j.t.JMeterThread: Thread started: Seat Selection - 30 Concurrent Users 1-19
+2025-10-27 22:51:50,356 INFO o.a.j.t.JMeterThread: Thread started: Seat Selection - 30 Concurrent Users 1-20
+2025-10-27 22:51:50,687 INFO o.a.j.t.JMeterThread: Thread started: Seat Selection - 30 Concurrent Users 1-21
+2025-10-27 22:51:51,021 INFO o.a.j.t.JMeterThread: Thread started: Seat Selection - 30 Concurrent Users 1-22
+2025-10-27 22:51:51,354 INFO o.a.j.t.JMeterThread: Thread started: Seat Selection - 30 Concurrent Users 1-23
+2025-10-27 22:51:51,687 INFO o.a.j.t.JMeterThread: Thread started: Seat Selection - 30 Concurrent Users 1-24
+2025-10-27 22:51:52,020 INFO o.a.j.t.JMeterThread: Thread started: Seat Selection - 30 Concurrent Users 1-25
+2025-10-27 22:51:52,358 INFO o.a.j.t.JMeterThread: Thread started: Seat Selection - 30 Concurrent Users 1-26
+2025-10-27 22:51:52,686 INFO o.a.j.t.JMeterThread: Thread started: Seat Selection - 30 Concurrent Users 1-27
+2025-10-27 22:51:53,020 INFO o.a.j.t.JMeterThread: Thread started: Seat Selection - 30 Concurrent Users 1-28
+2025-10-27 22:51:53,352 INFO o.a.j.t.JMeterThread: Thread started: Seat Selection - 30 Concurrent Users 1-29
+2025-10-27 22:51:53,687 INFO o.a.j.t.JMeterThread: Thread started: Seat Selection - 30 Concurrent Users 1-30
+2025-10-27 22:51:54,533 INFO o.a.j.t.JMeterThread: Thread is done: Seat Selection - 30 Concurrent Users 1-1
+2025-10-27 22:51:54,533 INFO o.a.j.t.JMeterThread: Thread finished: Seat Selection - 30 Concurrent Users 1-1
+2025-10-27 22:51:54,618 INFO o.a.j.t.JMeterThread: Thread is done: Seat Selection - 30 Concurrent Users 1-2
+2025-10-27 22:51:54,618 INFO o.a.j.t.JMeterThread: Thread finished: Seat Selection - 30 Concurrent Users 1-2
+2025-10-27 22:51:54,932 INFO o.a.j.t.JMeterThread: Thread is done: Seat Selection - 30 Concurrent Users 1-3
+2025-10-27 22:51:54,932 INFO o.a.j.t.JMeterThread: Thread finished: Seat Selection - 30 Concurrent Users 1-3
+2025-10-27 22:51:55,267 INFO o.a.j.t.JMeterThread: Thread is done: Seat Selection - 30 Concurrent Users 1-4
+2025-10-27 22:51:55,267 INFO o.a.j.t.JMeterThread: Thread finished: Seat Selection - 30 Concurrent Users 1-4
+2025-10-27 22:51:55,600 INFO o.a.j.t.JMeterThread: Thread is done: Seat Selection - 30 Concurrent Users 1-5
+2025-10-27 22:51:55,600 INFO o.a.j.t.JMeterThread: Thread finished: Seat Selection - 30 Concurrent Users 1-5
+2025-10-27 22:51:55,976 INFO o.a.j.t.JMeterThread: Thread is done: Seat Selection - 30 Concurrent Users 1-6
+2025-10-27 22:51:55,976 INFO o.a.j.t.JMeterThread: Thread finished: Seat Selection - 30 Concurrent Users 1-6
+2025-10-27 22:51:56,282 INFO o.a.j.t.JMeterThread: Thread is done: Seat Selection - 30 Concurrent Users 1-7
+2025-10-27 22:51:56,282 INFO o.a.j.t.JMeterThread: Thread finished: Seat Selection - 30 Concurrent Users 1-7
+2025-10-27 22:51:56,583 INFO o.a.j.t.JMeterThread: Thread is done: Seat Selection - 30 Concurrent Users 1-8
+2025-10-27 22:51:56,583 INFO o.a.j.t.JMeterThread: Thread finished: Seat Selection - 30 Concurrent Users 1-8
+2025-10-27 22:51:56,995 INFO o.a.j.t.JMeterThread: Thread is done: Seat Selection - 30 Concurrent Users 1-9
+2025-10-27 22:51:56,995 INFO o.a.j.t.JMeterThread: Thread finished: Seat Selection - 30 Concurrent Users 1-9
+2025-10-27 22:51:57,293 INFO o.a.j.t.JMeterThread: Thread is done: Seat Selection - 30 Concurrent Users 1-10
+2025-10-27 22:51:57,293 INFO o.a.j.t.JMeterThread: Thread finished: Seat Selection - 30 Concurrent Users 1-10
+2025-10-27 22:51:57,614 INFO o.a.j.t.JMeterThread: Thread is done: Seat Selection - 30 Concurrent Users 1-11
+2025-10-27 22:51:57,615 INFO o.a.j.t.JMeterThread: Thread finished: Seat Selection - 30 Concurrent Users 1-11
+2025-10-27 22:51:57,962 INFO o.a.j.t.JMeterThread: Thread is done: Seat Selection - 30 Concurrent Users 1-12
+2025-10-27 22:51:57,962 INFO o.a.j.t.JMeterThread: Thread finished: Seat Selection - 30 Concurrent Users 1-12
+2025-10-27 22:51:58,299 INFO o.a.j.t.JMeterThread: Thread is done: Seat Selection - 30 Concurrent Users 1-13
+2025-10-27 22:51:58,299 INFO o.a.j.t.JMeterThread: Thread finished: Seat Selection - 30 Concurrent Users 1-13
+2025-10-27 22:51:58,629 INFO o.a.j.t.JMeterThread: Thread is done: Seat Selection - 30 Concurrent Users 1-14
+2025-10-27 22:51:58,629 INFO o.a.j.t.JMeterThread: Thread finished: Seat Selection - 30 Concurrent Users 1-14
+2025-10-27 22:51:59,018 INFO o.a.j.t.JMeterThread: Thread is done: Seat Selection - 30 Concurrent Users 1-15
+2025-10-27 22:51:59,019 INFO o.a.j.t.JMeterThread: Thread finished: Seat Selection - 30 Concurrent Users 1-15
+2025-10-27 22:51:59,304 INFO o.a.j.t.JMeterThread: Thread is done: Seat Selection - 30 Concurrent Users 1-16
+2025-10-27 22:51:59,304 INFO o.a.j.t.JMeterThread: Thread finished: Seat Selection - 30 Concurrent Users 1-16
+2025-10-27 22:51:59,646 INFO o.a.j.t.JMeterThread: Thread is done: Seat Selection - 30 Concurrent Users 1-17
+2025-10-27 22:51:59,646 INFO o.a.j.t.JMeterThread: Thread finished: Seat Selection - 30 Concurrent Users 1-17
+2025-10-27 22:51:59,976 INFO o.a.j.t.JMeterThread: Thread is done: Seat Selection - 30 Concurrent Users 1-18
+2025-10-27 22:51:59,976 INFO o.a.j.t.JMeterThread: Thread finished: Seat Selection - 30 Concurrent Users 1-18
+2025-10-27 22:52:00,086 INFO o.a.j.r.Summariser: summary +    545 in 00:00:16 =   33.9/s Avg:     9 Min:     1 Max:    71 Err:   132 (24.22%) Active: 12 Started: 30 Finished: 18
+2025-10-27 22:52:00,352 INFO o.a.j.t.JMeterThread: Thread is done: Seat Selection - 30 Concurrent Users 1-19
+2025-10-27 22:52:00,352 INFO o.a.j.t.JMeterThread: Thread finished: Seat Selection - 30 Concurrent Users 1-19
+2025-10-27 22:52:00,693 INFO o.a.j.t.JMeterThread: Thread is done: Seat Selection - 30 Concurrent Users 1-20
+2025-10-27 22:52:00,693 INFO o.a.j.t.JMeterThread: Thread finished: Seat Selection - 30 Concurrent Users 1-20
+2025-10-27 22:52:00,981 INFO o.a.j.t.JMeterThread: Thread is done: Seat Selection - 30 Concurrent Users 1-21
+2025-10-27 22:52:00,981 INFO o.a.j.t.JMeterThread: Thread finished: Seat Selection - 30 Concurrent Users 1-21
+2025-10-27 22:52:01,374 INFO o.a.j.t.JMeterThread: Thread is done: Seat Selection - 30 Concurrent Users 1-22
+2025-10-27 22:52:01,374 INFO o.a.j.t.JMeterThread: Thread finished: Seat Selection - 30 Concurrent Users 1-22
+2025-10-27 22:52:01,700 INFO o.a.j.t.JMeterThread: Thread is done: Seat Selection - 30 Concurrent Users 1-23
+2025-10-27 22:52:01,700 INFO o.a.j.t.JMeterThread: Thread finished: Seat Selection - 30 Concurrent Users 1-23
+2025-10-27 22:52:02,015 INFO o.a.j.t.JMeterThread: Thread is done: Seat Selection - 30 Concurrent Users 1-24
+2025-10-27 22:52:02,015 INFO o.a.j.t.JMeterThread: Thread finished: Seat Selection - 30 Concurrent Users 1-24
+2025-10-27 22:52:02,375 INFO o.a.j.t.JMeterThread: Thread is done: Seat Selection - 30 Concurrent Users 1-25
+2025-10-27 22:52:02,375 INFO o.a.j.t.JMeterThread: Thread finished: Seat Selection - 30 Concurrent Users 1-25
+2025-10-27 22:52:02,720 INFO o.a.j.t.JMeterThread: Thread is done: Seat Selection - 30 Concurrent Users 1-26
+2025-10-27 22:52:02,720 INFO o.a.j.t.JMeterThread: Thread finished: Seat Selection - 30 Concurrent Users 1-26
+2025-10-27 22:52:03,051 INFO o.a.j.t.JMeterThread: Thread is done: Seat Selection - 30 Concurrent Users 1-27
+2025-10-27 22:52:03,051 INFO o.a.j.t.JMeterThread: Thread finished: Seat Selection - 30 Concurrent Users 1-27
+2025-10-27 22:52:03,393 INFO o.a.j.t.JMeterThread: Thread is done: Seat Selection - 30 Concurrent Users 1-28
+2025-10-27 22:52:03,393 INFO o.a.j.t.JMeterThread: Thread finished: Seat Selection - 30 Concurrent Users 1-28
+2025-10-27 22:52:03,707 INFO o.a.j.t.JMeterThread: Thread is done: Seat Selection - 30 Concurrent Users 1-29
+2025-10-27 22:52:03,707 INFO o.a.j.t.JMeterThread: Thread finished: Seat Selection - 30 Concurrent Users 1-29
+2025-10-27 22:52:04,068 INFO o.a.j.t.JMeterThread: Thread is done: Seat Selection - 30 Concurrent Users 1-30
+2025-10-27 22:52:04,068 INFO o.a.j.t.JMeterThread: Thread finished: Seat Selection - 30 Concurrent Users 1-30
+2025-10-27 22:52:04,068 INFO o.a.j.e.StandardJMeterEngine: Notifying test listeners of end of test
+2025-10-27 22:52:04,069 INFO o.a.j.r.Summariser: summary +     55 in 00:00:04 =   13.8/s Avg:     7 Min:     1 Max:    27 Err:    18 (32.73%) Active: 0 Started: 30 Finished: 30
+2025-10-27 22:52:04,070 INFO o.a.j.r.Summariser: summary =    600 in 00:00:20 =   29.9/s Avg:     9 Min:     1 Max:    71 Err:   150 (25.00%)
+2025-10-27 22:52:04,071 INFO o.a.j.JMeter: Generating Dashboard
+2025-10-27 22:52:04,071 INFO o.a.j.r.d.ReportGenerator: Flushing result collector before report Generation
+2025-10-27 22:52:04,085 INFO o.a.j.r.p.NormalizerSampleConsumer: Using format, 'ms', to parse timeStamp field
+2025-10-27 22:52:04,295 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.AggregateConsumer#stopProducing(): beginDate produced 0 samples
+2025-10-27 22:52:04,295 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.AggregateConsumer#stopProducing(): endDate produced 0 samples
+2025-10-27 22:52:04,299 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.ApdexSummaryConsumer#stopProducing(): apdexSummary produced 0 samples
+2025-10-27 22:52:04,299 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.RequestsSummaryConsumer#stopProducing(): requestsSummary produced 0 samples
+2025-10-27 22:52:04,305 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.StatisticsSummaryConsumer#stopProducing(): statisticsSummary produced 0 samples
+2025-10-27 22:52:04,313 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.Top5ErrorsBySamplerConsumer#stopProducing(): top5ErrorsBySampler produced 0 samples
+2025-10-27 22:52:04,313 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.ErrorsSummaryConsumer#stopProducing(): errorsSummary produced 0 samples
+2025-10-27 22:52:04,313 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.HitsPerSecondGraphConsumer#stopProducing(): hitsPerSecond produced 0 samples
+2025-10-27 22:52:04,362 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.LatencyVSRequestGraphConsumer#stopProducing(): latencyVsRequest produced 0 samples
+2025-10-27 22:52:04,364 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.SyntheticResponseTimeDistributionGraphConsumer#stopProducing(): syntheticResponseTimeDistribution produced 0 samples
+2025-10-27 22:52:04,364 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.BytesThroughputGraphConsumer#stopProducing(): bytesThroughputOverTime produced 0 samples
+2025-10-27 22:52:04,364 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.CodesPerSecondGraphConsumer#stopProducing(): codesPerSecond produced 0 samples
+2025-10-27 22:52:04,384 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.ResponseTimeVSRequestGraphConsumer#stopProducing(): responseTimeVsRequest produced 0 samples
+2025-10-27 22:52:04,385 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.FilterConsumer#stopProducing(): startIntervalControlerFilter produced 4200 samples
+2025-10-27 22:52:04,385 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.TotalTPSGraphConsumer#stopProducing(): totalTPS produced 0 samples
+2025-10-27 22:52:04,385 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.ActiveThreadsGraphConsumer#stopProducing(): activeThreadsOverTime produced 0 samples
+2025-10-27 22:52:04,386 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.TimeVSThreadGraphConsumer#stopProducing(): timeVsThreads produced 0 samples
+2025-10-27 22:52:04,387 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.ResponseTimeDistributionGraphConsumer#stopProducing(): responseTimeDistribution produced 0 samples
+2025-10-27 22:52:04,387 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.TransactionsPerSecondGraphConsumer#stopProducing(): transactionsPerSecond produced 0 samples
+2025-10-27 22:52:04,387 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.ResponseTimePercentilesGraphConsumer#stopProducing(): responseTimePercentiles produced 0 samples
+2025-10-27 22:52:04,389 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.ResponseTimePercentilesOverTimeGraphConsumer#stopProducing(): responseTimePercentilesOverTime produced 0 samples
+2025-10-27 22:52:04,390 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.ResponseTimeOverTimeGraphConsumer#stopProducing(): responseTimesOverTime produced 0 samples
+2025-10-27 22:52:04,390 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.ConnectTimeOverTimeGraphConsumer#stopProducing(): connectTimeOverTime produced 0 samples
+2025-10-27 22:52:04,390 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.LatencyOverTimeGraphConsumer#stopProducing(): latenciesOverTime produced 0 samples
+2025-10-27 22:52:04,391 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.FilterConsumer#stopProducing(): nameFilter produced 9000 samples
+2025-10-27 22:52:04,391 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.FilterConsumer#stopProducing(): dateRangeFilter produced 1800 samples
+2025-10-27 22:52:04,391 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.NormalizerSampleConsumer#stopProducing(): normalizer produced 600 samples
+2025-10-27 22:52:04,391 INFO o.a.j.r.p.CsvFileSampleSource: produce(): 600 samples produced in 273ms on channel 0
+2025-10-27 22:52:04,392 INFO o.a.j.r.d.ReportGenerator: Exporting data using exporter:'json' of className:'org.apache.jmeter.report.dashboard.JsonExporter'
+2025-10-27 22:52:04,532 INFO o.a.j.r.d.JsonExporter: Found data for consumer statisticsSummary in context
+2025-10-27 22:52:04,532 INFO o.a.j.r.d.JsonExporter: Creating statistics for overall
+2025-10-27 22:52:04,533 INFO o.a.j.r.d.JsonExporter: Creating statistics for other transactions
+2025-10-27 22:52:04,533 INFO o.a.j.r.d.JsonExporter: Checking output folder
+2025-10-27 22:52:04,535 INFO o.a.j.r.d.JsonExporter: Writing statistics JSON to C:\Users\iyanf\OneDrive\Escritorio\ticketapp\jmeter\reports\seat-selection\statistics.json
+2025-10-27 22:52:04,612 INFO o.a.j.r.d.ReportGenerator: Exporting data using exporter:'html' of className:'org.apache.jmeter.report.dashboard.HtmlTemplateExporter'
+2025-10-27 22:52:04,615 INFO o.a.j.r.d.HtmlTemplateExporter: Will generate dashboard in folder: C:\Users\iyanf\OneDrive\Escritorio\ticketapp\jmeter\reports\seat-selection
+2025-10-27 22:52:04,867 INFO o.a.j.r.d.HtmlTemplateExporter: Report will be generated in: C:\Users\iyanf\OneDrive\Escritorio\ticketapp\jmeter\reports\seat-selection, creating folder structure
+2025-10-27 22:52:04,874 INFO o.a.j.r.d.TemplateVisitor: Copying folder from 'C:\Users\iyanf\Downloads\apache-jmeter-5.6.3\apache-jmeter-5.6.3\bin\report-template' to 'C:\Users\iyanf\OneDrive\Escritorio\ticketapp\jmeter\reports\seat-selection', got message: C:\Users\iyanf\OneDrive\Escritorio\ticketapp\jmeter\reports\seat-selection, found non empty folder with following content [C:\Users\iyanf\OneDrive\Escritorio\ticketapp\jmeter\reports\seat-selection\statistics.json], will be ignored
+2025-10-27 22:52:05,585 INFO o.a.j.JMeter: Dashboard generated

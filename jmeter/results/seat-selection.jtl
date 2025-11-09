@@ -1,0 +1,1501 @@
+timeStamp,elapsed,label,responseCode,responseMessage,threadName,dataType,success,failureMessage,bytes,sentBytes,grpThreads,allThreads,URL,Latency,IdleTime,Connect
+1761601904645,62,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-1,text,true,,13735,147,3,3,http://localhost:8000/events/68ffe76a75fd07503811e37c,59,0,18
+1761601904875,23,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-2,text,true,,13735,147,3,3,http://localhost:8000/events/68ffe76a75fd07503811e37c,22,0,1
+1761601905208,24,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-3,text,true,,13735,147,4,4,http://localhost:8000/events/68ffe76a75fd07503811e37c,24,0,1
+1761601905244,11,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-1,text,true,,4648,158,4,4,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,11,0,0
+1761601905401,15,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-2,text,true,,4648,158,5,5,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,15,0,0
+1761601905541,24,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-4,text,true,,13735,147,5,5,http://localhost:8000/events/68ffe76a75fd07503811e37c,24,0,1
+1761601905734,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-3,text,true,,4648,158,6,6,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601905756,71,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-1,text,true,,349,157,6,6,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,71,0,0
+1761601905864,21,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-5,text,true,,13735,147,6,6,http://localhost:8000/events/68ffe76a75fd07503811e37c,21,0,1
+1761601905917,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-2,text,true,,349,157,6,6,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601906066,10,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-4,text,true,,4648,158,7,7,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,10,0,0
+1761601906196,24,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-6,text,true,,13735,147,7,7,http://localhost:8000/events/68ffe76a75fd07503811e37c,24,0,1
+1761601906243,8,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-3,text,true,,349,157,7,7,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,8,0,0
+1761601906328,6,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-1,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,7,7,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,6,0,0
+1761601906387,10,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-5,text,true,,4648,158,8,8,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,10,0,0
+1761601906425,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-2,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,8,8,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601906533,22,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-7,text,true,,13735,147,8,8,http://localhost:8000/events/68ffe76a75fd07503811e37c,22,0,1
+1761601906578,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-4,text,true,,349,157,8,8,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601906722,10,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-6,text,true,,4648,158,9,9,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,10,0,0
+1761601906753,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-3,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,9,9,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601906836,19,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-1,text,true,,13735,147,9,9,http://localhost:8000/events/68ffe76a75fd07503811e37c,19,0,0
+1761601906862,22,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-8,text,true,,13735,147,9,9,http://localhost:8000/events/68ffe76a75fd07503811e37c,22,0,2
+1761601906898,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-5,text,true,,349,157,9,9,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601906928,20,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-2,text,true,,13735,147,9,9,http://localhost:8000/events/68ffe76a75fd07503811e37c,20,0,0
+1761601907057,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-7,text,true,,4648,158,10,10,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601907085,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-4,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,10,10,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601907194,37,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-9,text,true,,13735,147,10,10,http://localhost:8000/events/68ffe76a75fd07503811e37c,37,0,1
+1761601907233,8,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-6,text,true,,349,157,10,10,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,8,0,0
+1761601907256,17,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-3,text,true,,13735,147,10,10,http://localhost:8000/events/68ffe76a75fd07503811e37c,17,0,0
+1761601907356,9,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-1,text,true,,4648,158,11,11,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,9,0,0
+1761601907385,9,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-8,text,true,,4648,158,11,11,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,9,0,0
+1761601907405,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-5,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,11,11,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601907449,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-2,text,true,,4648,158,11,11,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601907531,19,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-10,text,true,,13735,147,11,11,http://localhost:8000/events/68ffe76a75fd07503811e37c,19,0,1
+1761601907566,7,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-7,text,true,,349,157,11,11,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,7,0,0
+1761601907589,20,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-4,text,true,,13735,147,11,11,http://localhost:8000/events/68ffe76a75fd07503811e37c,20,0,0
+1761601907733,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-9,text,true,,4648,158,12,12,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601907742,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-6,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,12,12,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601907774,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-3,text,true,,4648,158,12,12,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601907867,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-1,text,true,,349,157,12,12,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601907860,20,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-11,text,true,,13735,147,12,12,http://localhost:8000/events/68ffe76a75fd07503811e37c,20,0,1
+1761601907895,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-8,text,true,,349,157,12,12,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601907909,17,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-5,text,true,,13735,147,12,12,http://localhost:8000/events/68ffe76a75fd07503811e37c,17,0,0
+1761601907958,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-2,text,true,,349,157,12,12,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601908052,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-10,text,true,,4648,158,13,13,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601908074,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-7,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,13,13,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601908111,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-4,text,true,,4648,158,13,13,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601908192,18,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-12,text,true,,13735,147,13,13,http://localhost:8000/events/68ffe76a75fd07503811e37c,18,0,1
+1761601908242,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-9,text,true,,349,157,13,13,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601908245,17,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-6,text,true,,13735,147,13,13,http://localhost:8000/events/68ffe76a75fd07503811e37c,17,0,0
+1761601908283,7,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-3,text,true,,349,157,13,13,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,7,0,0
+1761601908374,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-1,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,14,14,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601908381,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-11,text,true,,4648,158,14,14,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601908401,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-8,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,14,14,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601908427,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-5,text,true,,4648,158,14,14,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601908465,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-2,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,14,14,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601908529,20,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-13,text,true,,13735,147,14,14,http://localhost:8000/events/68ffe76a75fd07503811e37c,20,0,1
+1761601908561,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-10,text,true,,349,157,14,14,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601908578,19,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-7,text,true,,13735,147,14,14,http://localhost:8000/events/68ffe76a75fd07503811e37c,19,0,0
+1761601908619,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-4,text,true,,349,157,14,14,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601908711,11,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-12,text,true,,4648,158,15,15,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,11,0,0
+1761601908749,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-9,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,15,15,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601908764,7,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-6,text,true,,4648,158,15,15,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,7,0,0
+1761601908791,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-3,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,15,15,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601908859,21,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-14,text,true,,13735,147,15,15,http://localhost:8000/events/68ffe76a75fd07503811e37c,21,0,1
+1761601908889,7,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-11,text,true,,349,157,15,15,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,7,0,0
+1761601908879,20,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-1,text,true,,13735,147,15,15,http://localhost:8000/events/68ffe76a75fd07503811e37c,20,0,0
+1761601908904,21,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-8,text,true,,13735,147,15,15,http://localhost:8000/events/68ffe76a75fd07503811e37c,21,0,0
+1761601908936,7,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-5,text,true,,349,157,15,15,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,7,0,0
+1761601908969,23,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-2,text,true,,13735,147,15,15,http://localhost:8000/events/68ffe76a75fd07503811e37c,23,0,0
+1761601909051,13,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-13,text,true,,4648,158,16,16,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,13,0,0
+1761601909067,4,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-10,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,16,16,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,4,0,0
+1761601909098,10,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-7,text,true,,4648,158,16,16,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,10,0,0
+1761601909126,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-4,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,16,16,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601909191,21,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-15,text,true,,13735,147,16,16,http://localhost:8000/events/68ffe76a75fd07503811e37c,21,0,1
+1761601909223,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-12,text,true,,349,157,16,16,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601909252,18,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-9,text,true,,13735,147,16,16,http://localhost:8000/events/68ffe76a75fd07503811e37c,18,0,0
+1761601909273,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-6,text,true,,349,157,16,16,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601909294,19,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-3,text,true,,13735,147,16,16,http://localhost:8000/events/68ffe76a75fd07503811e37c,19,0,0
+1761601909382,9,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-14,text,true,,4648,158,17,17,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,9,0,0
+1761601909398,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-11,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,17,17,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601909401,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-1,text,true,,4648,158,17,17,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601909427,7,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-8,text,true,,4648,158,17,17,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,7,0,0
+1761601909444,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-5,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,17,17,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601909494,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-2,text,true,,4648,158,17,17,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,7,0,0
+1761601909527,22,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-16,text,true,,13735,147,17,17,http://localhost:8000/events/68ffe76a75fd07503811e37c,22,0,1
+1761601909566,9,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-13,text,true,,349,157,17,17,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,9,0,0
+1761601909572,26,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-10,text,true,,13735,147,17,17,http://localhost:8000/events/68ffe76a75fd07503811e37c,26,0,0
+1761601909610,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-7,text,true,,349,157,17,17,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601909631,20,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-4,text,true,,13735,147,17,17,http://localhost:8000/events/68ffe76a75fd07503811e37c,20,0,0
+1761601909714,9,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-15,text,true,,4648,158,18,18,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,9,0,0
+1761601909730,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-12,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,18,18,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601909773,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-9,text,true,,4648,158,18,18,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601909780,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-6,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,18,18,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601909816,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-3,text,true,,4648,158,18,18,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601909858,18,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-17,text,true,,13735,147,18,18,http://localhost:8000/events/68ffe76a75fd07503811e37c,18,0,1
+1761601909893,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-14,text,true,,349,157,18,18,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601909912,7,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-1,text,true,,349,157,18,18,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601909903,18,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-11,text,true,,13735,147,18,18,http://localhost:8000/events/68ffe76a75fd07503811e37c,18,0,0
+1761601909936,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-8,text,true,,349,157,18,18,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601909948,17,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-5,text,true,,13735,147,18,18,http://localhost:8000/events/68ffe76a75fd07503811e37c,17,0,0
+1761601910003,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-2,text,true,,349,157,18,18,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601910051,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-16,text,true,,4648,158,19,19,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601910078,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-13,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,19,19,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601910100,10,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-10,text,true,,4648,158,19,19,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,10,0,0
+1761601910116,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-7,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,19,19,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601910153,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-4,text,true,,4648,158,19,19,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601910191,18,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-18,text,true,,13735,147,19,19,http://localhost:8000/events/68ffe76a75fd07503811e37c,18,0,1
+1761601910224,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-15,text,true,,349,157,19,19,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601910233,16,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-12,text,true,,13735,147,19,19,http://localhost:8000/events/68ffe76a75fd07503811e37c,16,0,0
+1761601910281,7,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-9,text,true,,349,157,19,19,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,7,0,0
+1761601910283,16,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-6,text,true,,13735,147,19,19,http://localhost:8000/events/68ffe76a75fd07503811e37c,16,0,0
+1761601910324,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-3,text,true,,349,157,19,19,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601910378,9,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-17,text,true,,4648,158,20,20,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,9,0,0
+1761601910400,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-14,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,20,20,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601910420,4,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-1,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,20,20,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,4,0,0
+1761601910422,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-11,text,true,,4648,158,20,20,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601910442,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-8,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,20,20,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601910466,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-5,text,true,,4648,158,20,20,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601910510,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-2,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,20,20,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601910530,18,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-19,text,true,,13735,147,20,20,http://localhost:8000/events/68ffe76a75fd07503811e37c,18,0,1
+1761601910561,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-16,text,true,,349,157,20,20,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,4,0,0
+1761601910581,16,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-13,text,true,,13735,147,20,20,http://localhost:8000/events/68ffe76a75fd07503811e37c,16,0,0
+1761601910611,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-10,text,true,,349,157,20,20,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601910619,16,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-7,text,true,,13735,147,20,20,http://localhost:8000/events/68ffe76a75fd07503811e37c,16,0,0
+1761601910662,4,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-4,text,true,,349,157,20,20,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,4,0,0
+1761601910710,9,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-18,text,true,,4648,158,21,21,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,9,0,0
+1761601910730,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-15,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,21,21,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601910750,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-12,text,true,,4648,158,21,21,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601910789,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-9,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,21,21,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601910800,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-6,text,true,,4648,158,21,21,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601910830,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-3,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,21,21,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601910858,18,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-20,text,true,,13735,147,21,21,http://localhost:8000/events/68ffe76a75fd07503811e37c,18,0,1
+1761601910889,4,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-17,text,true,,349,157,21,21,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,4,0,0
+1761601910903,16,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-14,text,true,,13735,147,21,21,http://localhost:8000/events/68ffe76a75fd07503811e37c,16,0,0
+1761601910931,7,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-11,text,true,,349,157,21,21,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,7,0,0
+1761601910925,19,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-1,text,true,,13735,147,21,21,http://localhost:8000/events/68ffe76a75fd07503811e37c,19,0,0
+1761601910945,17,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-8,text,true,,13735,147,21,21,http://localhost:8000/events/68ffe76a75fd07503811e37c,17,0,0
+1761601910975,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-5,text,true,,349,157,21,21,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601911013,18,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-2,text,true,,13735,147,22,22,http://localhost:8000/events/68ffe76a75fd07503811e37c,18,0,0
+1761601911048,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-19,text,true,,4648,158,22,22,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601911068,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-16,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,22,22,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601911098,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-13,text,true,,4648,158,22,22,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601911118,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-10,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,22,22,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601911136,9,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-7,text,true,,4648,158,22,22,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,9,0,0
+1761601911167,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-4,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,22,22,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601911197,16,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-21,text,true,,13735,147,22,22,http://localhost:8000/events/68ffe76a75fd07503811e37c,16,0,0
+1761601911227,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-18,text,true,,349,157,22,22,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601911242,18,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-15,text,true,,13735,147,22,22,http://localhost:8000/events/68ffe76a75fd07503811e37c,18,0,0
+1761601911272,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-12,text,true,,349,157,22,22,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601911303,20,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-9,text,true,,13735,147,22,22,http://localhost:8000/events/68ffe76a75fd07503811e37c,20,0,0
+1761601911318,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-6,text,true,,349,157,22,22,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601911334,16,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-3,text,true,,13735,147,22,22,http://localhost:8000/events/68ffe76a75fd07503811e37c,16,0,0
+1761601911379,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-20,text,true,,4648,158,23,23,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601911394,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-17,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,23,23,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601911425,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-14,text,true,,4648,158,23,23,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601911440,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-11,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,23,23,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601911456,7,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-1,text,true,,4648,158,23,23,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,7,0,0
+1761601911471,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-8,text,true,,4648,158,23,23,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601911486,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-5,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,23,23,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601911532,11,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-2,text,true,,4648,158,23,23,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,10,0,0
+1761601911533,24,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-22,text,true,,13735,147,23,23,http://localhost:8000/events/68ffe76a75fd07503811e37c,24,0,2
+1761601911557,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-19,text,true,,349,157,23,23,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601911572,16,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-16,text,true,,13735,147,23,23,http://localhost:8000/events/68ffe76a75fd07503811e37c,16,0,0
+1761601911608,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-13,text,true,,349,157,23,23,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601911622,27,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-10,text,true,,13735,147,23,23,http://localhost:8000/events/68ffe76a75fd07503811e37c,27,0,0
+1761601911645,10,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-7,text,true,,349,157,23,23,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,10,0,0
+1761601911670,19,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-4,text,true,,13735,147,24,24,http://localhost:8000/events/68ffe76a75fd07503811e37c,19,0,0
+1761601911715,9,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-21,text,true,,4648,158,24,24,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,9,0,0
+1761601911734,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-18,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,24,24,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601911762,9,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-15,text,true,,4648,158,24,24,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,9,0,0
+1761601911778,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-12,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,24,24,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601911826,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-6,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,24,24,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601911824,10,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-9,text,true,,4648,158,24,24,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,10,0,0
+1761601911852,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-3,text,true,,4648,158,24,24,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601911856,19,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-23,text,true,,13735,147,24,24,http://localhost:8000/events/68ffe76a75fd07503811e37c,19,0,1
+1761601911888,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-20,text,true,,349,157,24,24,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601911897,16,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-17,text,true,,13735,147,24,24,http://localhost:8000/events/68ffe76a75fd07503811e37c,16,0,0
+1761601911934,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-14,text,true,,349,157,24,24,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601911943,16,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-11,text,true,,13735,147,24,24,http://localhost:8000/events/68ffe76a75fd07503811e37c,16,0,0
+1761601911964,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-1,text,true,,349,157,24,24,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601911979,7,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-8,text,true,,349,157,24,24,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601911990,16,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-5,text,true,,13735,147,24,24,http://localhost:8000/events/68ffe76a75fd07503811e37c,16,0,0
+1761601912043,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-2,text,true,,349,157,25,25,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601912063,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-19,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,25,25,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601912058,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-22,text,true,,4648,158,25,25,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601912089,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-16,text,true,,4648,158,25,25,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,7,0,0
+1761601912114,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-13,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,25,25,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601912150,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-10,text,true,,4648,158,25,25,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601912156,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-7,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,25,25,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601912190,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-4,text,true,,4648,158,25,25,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,7,0,0
+1761601912189,20,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-24,text,true,,13735,147,25,25,http://localhost:8000/events/68ffe76a75fd07503811e37c,20,0,0
+1761601912225,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-21,text,true,,349,157,25,25,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601912237,15,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-18,text,true,,13735,147,25,25,http://localhost:8000/events/68ffe76a75fd07503811e37c,15,0,0
+1761601912273,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-15,text,true,,349,157,25,25,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601912282,15,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-12,text,true,,13735,147,25,25,http://localhost:8000/events/68ffe76a75fd07503811e37c,15,0,0
+1761601912335,9,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-9,text,true,,349,157,25,25,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,9,0,0
+1761601912362,8,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-3,text,true,,349,157,26,26,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,7,0,0
+1761601912331,38,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-6,text,true,,13735,147,26,26,http://localhost:8000/events/68ffe76a75fd07503811e37c,38,0,0
+1761601912376,9,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-23,text,true,,4648,158,26,26,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,9,0,0
+1761601912394,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-20,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,26,26,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601912415,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-17,text,true,,4648,158,26,26,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601912440,1,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-14,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,26,26,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,1,0,0
+1761601912460,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-11,text,true,,4648,158,26,26,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601912471,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-1,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,26,26,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601912487,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-8,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,26,26,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601912506,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-5,text,true,,4648,158,26,26,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601912528,17,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-25,text,true,,13735,147,26,26,http://localhost:8000/events/68ffe76a75fd07503811e37c,17,0,1
+1761601912560,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-2,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,26,26,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601912567,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-22,text,true,,349,157,26,26,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601912567,15,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-19,text,true,,13735,147,26,26,http://localhost:8000/events/68ffe76a75fd07503811e37c,15,0,0
+1761601912597,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-16,text,true,,349,157,26,26,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601912618,17,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-13,text,true,,13735,147,26,26,http://localhost:8000/events/68ffe76a75fd07503811e37c,17,0,0
+1761601912658,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-10,text,true,,349,157,26,26,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601912660,19,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-7,text,true,,13735,147,26,26,http://localhost:8000/events/68ffe76a75fd07503811e37c,18,0,0
+1761601912698,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-4,text,true,,349,157,27,27,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601912711,9,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-24,text,true,,4648,158,27,27,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,9,0,0
+1761601912733,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-21,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,27,27,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601912753,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-18,text,true,,4648,158,27,27,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601912780,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-15,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,27,27,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601912798,7,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-12,text,true,,4648,158,27,27,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,7,0,0
+1761601912846,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-9,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,27,27,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601912871,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-3,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,27,27,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601912860,18,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-26,text,true,,13735,147,27,27,http://localhost:8000/events/68ffe76a75fd07503811e37c,18,0,1
+1761601912871,11,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-6,text,true,,4648,158,27,27,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,11,0,0
+1761601912886,4,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-23,text,true,,349,157,27,27,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,4,0,0
+1761601912897,17,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-20,text,true,,13735,147,27,27,http://localhost:8000/events/68ffe76a75fd07503811e37c,17,0,0
+1761601912923,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-17,text,true,,349,157,27,27,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601912943,16,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-14,text,true,,13735,147,27,27,http://localhost:8000/events/68ffe76a75fd07503811e37c,16,0,0
+1761601912969,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-11,text,true,,349,157,27,27,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601912974,16,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-1,text,true,,13735,147,27,27,http://localhost:8000/events/68ffe76a75fd07503811e37c,16,0,0
+1761601912990,16,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-8,text,true,,13735,147,27,27,http://localhost:8000/events/68ffe76a75fd07503811e37c,16,0,0
+1761601913015,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-5,text,true,,349,157,27,27,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601913045,9,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-25,text,true,,4648,158,28,28,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,9,0,0
+1761601913073,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-22,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,28,28,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601913063,16,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-2,text,true,,13735,147,28,28,http://localhost:8000/events/68ffe76a75fd07503811e37c,16,0,0
+1761601913083,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-19,text,true,,4648,158,28,28,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601913103,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-16,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,28,28,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601913135,7,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-13,text,true,,4648,158,28,28,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,7,0,0
+1761601913166,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-10,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,28,28,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601913180,10,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-7,text,true,,4648,158,28,28,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,10,0,0
+1761601913189,16,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-27,text,true,,13735,147,28,28,http://localhost:8000/events/68ffe76a75fd07503811e37c,16,0,1
+1761601913205,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-4,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,28,28,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601913220,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-24,text,true,,349,157,28,28,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601913236,17,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-21,text,true,,13735,147,28,28,http://localhost:8000/events/68ffe76a75fd07503811e37c,17,0,0
+1761601913262,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-18,text,true,,349,157,28,28,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601913283,15,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-15,text,true,,13735,147,28,28,http://localhost:8000/events/68ffe76a75fd07503811e37c,15,0,0
+1761601913307,4,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-12,text,true,,349,157,28,28,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,4,0,0
+1761601913349,17,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-9,text,true,,13735,147,29,29,http://localhost:8000/events/68ffe76a75fd07503811e37c,17,0,0
+1761601913382,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-6,text,true,,349,157,29,29,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601913374,21,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-3,text,true,,13735,147,29,29,http://localhost:8000/events/68ffe76a75fd07503811e37c,21,0,0
+1761601913392,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-23,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,29,29,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601913378,23,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-26,text,true,,4648,158,29,29,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,23,0,0
+1761601913416,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-20,text,true,,4648,158,29,29,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601913429,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-17,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,29,29,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601913460,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-14,text,true,,4648,158,29,29,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601913475,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-11,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,29,29,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601913491,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-1,text,true,,4648,158,29,29,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601913507,7,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-8,text,true,,4648,158,29,29,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,7,0,0
+1761601913525,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-5,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,29,29,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601913526,17,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-28,text,true,,13735,147,29,29,http://localhost:8000/events/68ffe76a75fd07503811e37c,17,0,1
+1761601913555,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-25,text,true,,349,157,29,29,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601913580,10,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-2,text,true,,4648,158,29,29,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,10,0,0
+1761601913576,21,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-22,text,true,,13735,147,29,29,http://localhost:8000/events/68ffe76a75fd07503811e37c,21,0,0
+1761601913592,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-19,text,true,,349,157,29,29,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601913606,17,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-16,text,true,,13735,147,29,29,http://localhost:8000/events/68ffe76a75fd07503811e37c,17,0,0
+1761601913643,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-13,text,true,,349,157,29,29,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601913669,14,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-10,text,true,,13735,147,29,29,http://localhost:8000/events/68ffe76a75fd07503811e37c,14,0,0
+1761601913691,4,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-7,text,true,,349,157,30,30,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,4,0,0
+1761601913706,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-27,text,true,,4648,158,30,30,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601913708,18,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-4,text,true,,13735,147,30,30,http://localhost:8000/events/68ffe76a75fd07503811e37c,18,0,0
+1761601913726,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-24,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,30,30,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601913754,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-21,text,true,,4648,158,30,30,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601913768,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-18,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,30,30,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601913799,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-15,text,true,,4648,158,30,30,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601913812,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-12,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,30,30,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601913866,20,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-29,text,true,,13735,147,30,30,http://localhost:8000/events/68ffe76a75fd07503811e37c,20,0,1
+1761601913881,10,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-9,text,true,,4648,158,30,30,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,10,0,0
+1761601913898,4,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-6,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,30,30,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,4,0,0
+1761601913898,9,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-3,text,true,,4648,158,30,30,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,9,0,0
+1761601913913,8,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-26,text,true,,349,157,30,30,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,8,0,0
+1761601913898,28,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-23,text,true,,13735,147,30,30,http://localhost:8000/events/68ffe76a75fd07503811e37c,28,0,0
+1761601913928,8,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-20,text,true,,349,157,30,30,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,8,0,0
+1761601913943,21,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-17,text,true,,13735,147,30,30,http://localhost:8000/events/68ffe76a75fd07503811e37c,21,0,0
+1761601913980,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-14,text,true,,349,157,30,30,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601913980,20,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-11,text,true,,13735,147,30,30,http://localhost:8000/events/68ffe76a75fd07503811e37c,20,0,0
+1761601914011,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-1,text,true,,349,157,30,30,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601914026,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-8,text,true,,349,157,30,30,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,4,0,0
+1761601914041,18,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-5,text,true,,13735,147,30,30,http://localhost:8000/events/68ffe76a75fd07503811e37c,18,0,0
+1761601914057,9,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-28,text,true,,4648,158,30,30,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,9,0,0
+1761601914071,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-25,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,30,30,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601914097,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-19,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,30,30,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601914097,7,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-2,text,true,,349,157,30,30,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,7,0,0
+1761601914097,9,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-22,text,true,,4648,158,30,30,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,9,0,0
+1761601914128,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-16,text,true,,4648,158,30,30,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,7,0,0
+1761601914158,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-13,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,30,30,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601914189,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-10,text,true,,4648,158,30,30,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601914204,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-7,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,30,30,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601914190,20,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-30,text,true,,13735,147,30,30,http://localhost:8000/events/68ffe76a75fd07503811e37c,20,0,0
+1761601914220,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-27,text,true,,349,157,30,30,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601914235,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-4,text,true,,4648,158,30,30,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601914235,18,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-24,text,true,,13735,147,30,30,http://localhost:8000/events/68ffe76a75fd07503811e37c,18,0,0
+1761601914265,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-21,text,true,,349,157,30,30,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601914281,17,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-18,text,true,,13735,147,30,30,http://localhost:8000/events/68ffe76a75fd07503811e37c,17,0,0
+1761601914313,7,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-15,text,true,,349,157,30,30,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,7,0,0
+1761601914328,18,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-12,text,true,,13735,147,30,30,http://localhost:8000/events/68ffe76a75fd07503811e37c,18,0,0
+1761601914388,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-29,text,true,,4648,158,30,30,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601914398,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-9,text,true,,349,157,30,30,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601914413,7,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-3,text,true,,349,157,30,30,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,7,0,0
+1761601914413,18,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-6,text,true,,13735,147,30,30,http://localhost:8000/events/68ffe76a75fd07503811e37c,18,0,0
+1761601914429,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-26,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,30,30,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601914428,10,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-23,text,true,,4648,158,30,30,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,10,0,0
+1761601914444,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-20,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,30,30,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601914465,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-17,text,true,,4648,158,30,30,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601914496,1,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-14,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,30,30,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,1,0,0
+1761601914512,7,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-11,text,true,,4648,158,30,30,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,7,0,0
+1761601914531,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-1,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,30,30,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601914532,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-8,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,30,30,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601914564,7,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-5,text,true,,4648,158,29,29,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,7,0,0
+1761601914570,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-28,text,true,,349,157,29,29,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601914586,14,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-25,text,true,,13735,147,29,29,http://localhost:8000/events/68ffe76a75fd07503811e37c,14,0,0
+1761601914615,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-2,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,29,29,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601914601,17,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-19,text,true,,13735,147,29,29,http://localhost:8000/events/68ffe76a75fd07503811e37c,17,0,0
+1761601914615,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-22,text,true,,349,157,28,28,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601914646,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-16,text,true,,349,157,28,28,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601914665,17,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-13,text,true,,13735,147,28,28,http://localhost:8000/events/68ffe76a75fd07503811e37c,17,0,0
+1761601914710,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-10,text,true,,349,157,28,28,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601914710,18,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-7,text,true,,13735,147,28,28,http://localhost:8000/events/68ffe76a75fd07503811e37c,18,0,0
+1761601914726,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-27,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,28,28,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601914726,9,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-30,text,true,,4648,158,28,28,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,9,0,0
+1761601914756,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-4,text,true,,349,157,28,28,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601914756,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-24,text,true,,4648,158,28,28,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601914771,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-21,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,28,28,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601914804,7,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-18,text,true,,4648,158,28,28,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,7,0,0
+1761601914831,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-15,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,28,28,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601914847,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-12,text,true,,4648,158,28,28,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601914901,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-29,text,true,,349,157,28,28,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601914915,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-9,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,28,28,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601914931,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-3,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,28,28,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601914946,7,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-23,text,true,,349,157,27,27,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,7,0,0
+1761601914946,9,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-6,text,true,,4648,158,27,27,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,9,0,0
+1761601914946,19,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-26,text,true,,13735,147,27,27,http://localhost:8000/events/68ffe76a75fd07503811e37c,19,0,0
+1761601914961,19,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-20,text,true,,13735,147,27,27,http://localhost:8000/events/68ffe76a75fd07503811e37c,19,0,0
+1761601914981,4,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-17,text,true,,349,157,27,27,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,4,0,0
+1761601915011,16,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-14,text,true,,13735,147,27,27,http://localhost:8000/events/68ffe76a75fd07503811e37c,16,0,0
+1761601915026,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-11,text,true,,349,157,27,27,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601915041,15,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-8,text,true,,13735,147,27,27,http://localhost:8000/events/68ffe76a75fd07503811e37c,15,0,0
+1761601915078,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-28,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,27,27,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601915078,7,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-5,text,true,,349,157,27,27,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,7,0,0
+1761601915109,7,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-25,text,true,,4648,158,27,27,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,7,0,0
+1761601915123,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-22,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,27,27,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601915123,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-19,text,true,,4648,158,27,27,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601915154,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-16,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,27,27,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601915196,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-13,text,true,,4648,158,27,27,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601915227,1,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-10,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,27,27,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,1,0,0
+1761601915242,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-30,text,true,,349,157,27,27,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601915242,9,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-7,text,true,,4648,158,27,27,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,9,0,0
+1761601915242,24,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-27,text,true,,13735,147,27,27,http://localhost:8000/events/68ffe76a75fd07503811e37c,24,0,0
+1761601915264,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-4,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,27,27,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601915265,9,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-24,text,true,,349,157,26,26,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,9,0,0
+1761601915280,19,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-21,text,true,,13735,147,26,26,http://localhost:8000/events/68ffe76a75fd07503811e37c,19,0,0
+1761601915313,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-18,text,true,,349,157,26,26,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601915345,16,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-15,text,true,,13735,147,26,26,http://localhost:8000/events/68ffe76a75fd07503811e37c,16,0,0
+1761601915360,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-12,text,true,,349,157,26,26,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601915412,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-29,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,26,26,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601915427,16,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-9,text,true,,13735,147,26,26,http://localhost:8000/events/68ffe76a75fd07503811e37c,16,0,0
+1761601915458,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-23,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,26,26,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601915458,4,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-6,text,true,,349,157,26,26,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,4,0,0
+1761601915473,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-26,text,true,,4648,158,26,26,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601915488,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-17,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,26,26,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601915488,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-20,text,true,,4648,158,26,26,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601915530,7,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-14,text,true,,4648,158,26,26,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,7,0,0
+1761601915545,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-11,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,26,26,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601915560,7,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-8,text,true,,4648,158,26,26,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,7,0,0
+1761601915598,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-5,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,26,26,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601915582,18,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-28,text,true,,13735,147,26,26,http://localhost:8000/events/68ffe76a75fd07503811e37c,18,0,0
+1761601915629,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-25,text,true,,349,157,25,25,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601915629,19,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-22,text,true,,13735,147,25,25,http://localhost:8000/events/68ffe76a75fd07503811e37c,19,0,0
+1761601915645,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-19,text,true,,349,157,25,25,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601915663,16,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-16,text,true,,13735,147,25,25,http://localhost:8000/events/68ffe76a75fd07503811e37c,16,0,0
+1761601915705,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-13,text,true,,349,157,25,25,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601915736,17,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-10,text,true,,13735,147,25,25,http://localhost:8000/events/68ffe76a75fd07503811e37c,17,0,0
+1761601915751,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-30,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,25,25,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601915767,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-7,text,true,,349,157,25,25,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601915767,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-27,text,true,,4648,158,25,25,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601915783,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-24,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,25,25,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601915813,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-21,text,true,,4648,158,25,25,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601915829,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-18,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,25,25,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601915875,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-12,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,25,25,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601915875,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-15,text,true,,4648,158,25,25,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601915928,16,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-29,text,true,,13735,147,25,25,http://localhost:8000/events/68ffe76a75fd07503811e37c,16,0,0
+1761601915958,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-9,text,true,,4648,158,25,25,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601915973,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-6,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,25,25,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601915982,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-26,text,true,,349,157,24,24,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601915973,20,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-23,text,true,,13735,147,24,24,http://localhost:8000/events/68ffe76a75fd07503811e37c,20,0,0
+1761601916011,7,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-20,text,true,,349,157,24,24,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,7,0,0
+1761601915996,24,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-17,text,true,,13735,147,24,24,http://localhost:8000/events/68ffe76a75fd07503811e37c,24,0,0
+1761601916042,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-14,text,true,,349,157,24,24,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601916057,21,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-11,text,true,,13735,147,24,24,http://localhost:8000/events/68ffe76a75fd07503811e37c,21,0,0
+1761601916073,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-8,text,true,,349,157,24,24,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601916111,9,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-28,text,true,,4648,158,24,24,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,9,0,0
+1761601916141,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-25,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,24,24,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601916156,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-19,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,24,24,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601916156,9,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-22,text,true,,4648,158,24,24,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,9,0,0
+1761601916195,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-16,text,true,,4648,158,24,24,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601916218,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-13,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,24,24,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601916263,9,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-10,text,true,,4648,158,24,24,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,9,0,0
+1761601916278,4,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-7,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,24,24,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,4,0,0
+1761601916278,11,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-27,text,true,,349,157,23,23,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,10,0,0
+1761601916263,37,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-30,text,true,,13735,147,23,23,http://localhost:8000/events/68ffe76a75fd07503811e37c,37,0,0
+1761601916293,22,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-24,text,true,,13735,147,23,23,http://localhost:8000/events/68ffe76a75fd07503811e37c,22,0,0
+1761601916329,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-21,text,true,,349,157,23,23,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601916334,17,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-18,text,true,,13735,147,23,23,http://localhost:8000/events/68ffe76a75fd07503811e37c,17,0,0
+1761601916392,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-15,text,true,,349,157,23,23,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601916392,17,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-12,text,true,,13735,147,23,23,http://localhost:8000/events/68ffe76a75fd07503811e37c,17,0,0
+1761601916447,9,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-29,text,true,,4648,158,23,23,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,9,0,0
+1761601916478,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-9,text,true,,349,157,23,23,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601916493,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-26,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,23,23,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601916508,10,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-23,text,true,,4648,158,23,23,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,10,0,0
+1761601916524,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-20,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,23,23,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601916524,10,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-17,text,true,,4648,158,23,23,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,10,0,0
+1761601916563,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-14,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,23,23,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601916579,4,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-8,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,23,23,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,4,0,0
+1761601916579,10,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-11,text,true,,4648,158,22,22,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,10,0,0
+1761601916627,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-28,text,true,,349,157,22,22,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601916673,9,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-22,text,true,,349,157,22,22,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,8,0,0
+1761601916658,26,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-25,text,true,,13735,147,22,22,http://localhost:8000/events/68ffe76a75fd07503811e37c,26,0,0
+1761601916673,26,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-19,text,true,,13735,147,22,22,http://localhost:8000/events/68ffe76a75fd07503811e37c,26,0,0
+1761601916704,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-16,text,true,,349,157,22,22,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601916729,22,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-13,text,true,,13735,147,22,22,http://localhost:8000/events/68ffe76a75fd07503811e37c,22,0,0
+1761601916775,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-10,text,true,,349,157,22,22,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601916796,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-27,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,22,22,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601916811,10,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-30,text,true,,4648,158,22,22,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,10,0,0
+1761601916828,9,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-24,text,true,,4648,158,22,22,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,9,0,0
+1761601916844,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-21,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,22,22,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601916859,9,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-18,text,true,,4648,158,22,22,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,9,0,0
+1761601916905,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-15,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,22,22,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601916920,9,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-12,text,true,,4648,158,22,22,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,9,0,0
+1761601916962,7,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-29,text,true,,349,157,22,22,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,7,0,0
+1761601916993,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-9,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,22,22,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601917008,21,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-26,text,true,,13735,147,21,21,http://localhost:8000/events/68ffe76a75fd07503811e37c,21,0,0
+1761601917023,7,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-23,text,true,,349,157,21,21,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,7,0,0
+1761601917038,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-17,text,true,,349,157,21,21,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601917038,20,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-20,text,true,,13735,147,21,21,http://localhost:8000/events/68ffe76a75fd07503811e37c,20,0,0
+1761601917077,17,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-14,text,true,,13735,147,21,21,http://localhost:8000/events/68ffe76a75fd07503811e37c,17,0,0
+1761601917094,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-11,text,true,,349,157,21,21,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601917143,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-28,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,21,21,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601917194,4,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-22,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,21,21,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,4,0,0
+1761601917194,15,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-25,text,true,,4648,158,21,21,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,14,0,0
+1761601917210,4,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-16,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,21,21,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,4,0,0
+1761601917210,21,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-19,text,true,,4648,158,21,21,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,21,0,0
+1761601917260,10,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-13,text,true,,4648,158,21,21,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,10,0,0
+1761601917291,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-10,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,21,21,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601917310,16,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-27,text,true,,13735,147,20,20,http://localhost:8000/events/68ffe76a75fd07503811e37c,16,0,0
+1761601917325,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-30,text,true,,349,157,20,20,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601917344,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-24,text,true,,349,157,20,20,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601917347,18,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-21,text,true,,13735,147,20,20,http://localhost:8000/events/68ffe76a75fd07503811e37c,17,0,0
+1761601917377,9,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-18,text,true,,349,157,20,20,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,9,0,0
+1761601917436,13,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-12,text,true,,349,157,20,20,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,13,0,0
+1761601917421,44,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-15,text,true,,13735,147,20,20,http://localhost:8000/events/68ffe76a75fd07503811e37c,44,0,0
+1761601917477,4,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-29,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,20,20,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,4,0,0
+1761601917538,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-23,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,20,20,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601917538,10,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-26,text,true,,4648,158,20,20,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,10,0,0
+1761601917553,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-17,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,20,20,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601917568,9,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-20,text,true,,4648,158,20,20,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,9,0,0
+1761601917599,7,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-14,text,true,,4648,158,20,20,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,7,0,0
+1761601917612,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-11,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,20,20,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601917652,28,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-28,text,true,,13735,147,19,19,http://localhost:8000/events/68ffe76a75fd07503811e37c,28,0,0
+1761601917713,8,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-25,text,true,,349,157,19,19,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,8,0,0
+1761601917713,24,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-22,text,true,,13735,147,19,19,http://localhost:8000/events/68ffe76a75fd07503811e37c,24,0,0
+1761601917744,11,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-19,text,true,,349,157,19,19,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,11,0,0
+1761601917728,28,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-16,text,true,,13735,147,19,19,http://localhost:8000/events/68ffe76a75fd07503811e37c,28,0,0
+1761601917775,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-13,text,true,,349,157,19,19,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601917836,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-30,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,19,19,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601917836,10,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-27,text,true,,4648,158,19,19,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,10,0,0
+1761601917851,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-24,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,19,19,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601917867,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-21,text,true,,4648,158,19,19,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601917897,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-18,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,19,19,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601917960,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-12,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,19,19,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601917975,9,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-15,text,true,,4648,158,18,18,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,9,0,0
+1761601917991,18,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-29,text,true,,13735,147,18,18,http://localhost:8000/events/68ffe76a75fd07503811e37c,18,0,0
+1761601918052,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-26,text,true,,349,157,18,18,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601918052,20,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-23,text,true,,13735,147,18,18,http://localhost:8000/events/68ffe76a75fd07503811e37c,20,0,0
+1761601918067,23,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-17,text,true,,13735,147,18,18,http://localhost:8000/events/68ffe76a75fd07503811e37c,23,0,0
+1761601918083,9,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-20,text,true,,349,157,18,18,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,9,0,0
+1761601918114,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-14,text,true,,349,157,18,18,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601918189,11,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-28,text,true,,4648,158,18,18,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,11,0,0
+1761601918235,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-25,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,18,18,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601918251,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-22,text,true,,4648,158,18,18,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601918266,4,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-19,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,18,18,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,4,0,0
+1761601918266,10,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-16,text,true,,4648,158,18,18,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,10,0,0
+1761601918297,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-13,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,18,18,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601918344,16,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-30,text,true,,13735,147,17,17,http://localhost:8000/events/68ffe76a75fd07503811e37c,16,0,0
+1761601918359,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-27,text,true,,349,157,17,17,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601918359,21,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-24,text,true,,13735,147,17,17,http://localhost:8000/events/68ffe76a75fd07503811e37c,21,0,0
+1761601918390,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-21,text,true,,349,157,17,17,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601918405,19,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-18,text,true,,13735,147,17,17,http://localhost:8000/events/68ffe76a75fd07503811e37c,19,0,0
+1761601918498,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-15,text,true,,349,157,17,17,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601918514,9,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-29,text,true,,4648,158,17,17,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,9,0,0
+1761601918560,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-26,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,17,17,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601918575,9,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-23,text,true,,4648,158,17,17,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,9,0,0
+1761601918606,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-20,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,17,17,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601918606,10,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-17,text,true,,4648,158,17,17,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,10,0,0
+1761601918626,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-14,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,17,17,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601918706,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-28,text,true,,349,157,16,16,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601918753,19,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-25,text,true,,13735,147,16,16,http://localhost:8000/events/68ffe76a75fd07503811e37c,19,0,0
+1761601918768,8,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-22,text,true,,349,157,16,16,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,8,0,0
+1761601918784,7,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-16,text,true,,349,157,16,16,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,7,0,0
+1761601918784,20,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-19,text,true,,13735,147,16,16,http://localhost:8000/events/68ffe76a75fd07503811e37c,20,0,0
+1761601918876,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-27,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,16,16,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601918876,10,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-30,text,true,,4648,158,16,16,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,10,0,0
+1761601918891,10,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-24,text,true,,4648,158,16,16,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,10,0,0
+1761601918907,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-21,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,16,16,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601918938,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-18,text,true,,4648,158,16,16,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601919016,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-15,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,16,16,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601919031,8,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-29,text,true,,349,157,15,15,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,8,0,0
+1761601919092,9,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-23,text,true,,349,157,15,15,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,9,0,0
+1761601919077,32,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-26,text,true,,13735,147,15,15,http://localhost:8000/events/68ffe76a75fd07503811e37c,32,0,0
+1761601919123,8,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-17,text,true,,349,157,15,15,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,8,0,0
+1761601919123,28,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-20,text,true,,13735,147,15,15,http://localhost:8000/events/68ffe76a75fd07503811e37c,28,0,0
+1761601919225,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-28,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,15,15,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601919286,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-22,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,15,15,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601919286,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-25,text,true,,4648,158,15,15,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601919302,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-16,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,15,15,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601919317,7,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-19,text,true,,4648,158,14,14,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,7,0,0
+1761601919395,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-30,text,true,,349,157,14,14,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601919395,18,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-27,text,true,,13735,147,14,14,http://localhost:8000/events/68ffe76a75fd07503811e37c,18,0,0
+1761601919411,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-24,text,true,,349,157,14,14,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601919411,20,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-21,text,true,,13735,147,14,14,http://localhost:8000/events/68ffe76a75fd07503811e37c,20,0,0
+1761601919456,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-18,text,true,,349,157,14,14,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601919549,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-29,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,14,14,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601919611,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-23,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,14,14,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601919611,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-26,text,true,,4648,158,14,14,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601919643,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-17,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,14,14,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601919658,10,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-20,text,true,,4648,158,13,13,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,10,0,0
+1761601919739,19,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-28,text,true,,13735,147,13,13,http://localhost:8000/events/68ffe76a75fd07503811e37c,19,0,0
+1761601919802,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-25,text,true,,349,157,13,13,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601919802,19,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-22,text,true,,13735,147,13,13,http://localhost:8000/events/68ffe76a75fd07503811e37c,19,0,0
+1761601919833,4,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-19,text,true,,349,157,13,13,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,4,0,0
+1761601919910,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-30,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,13,13,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601919926,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-24,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,13,13,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601919926,9,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-27,text,true,,4648,158,13,13,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,9,0,0
+1761601919941,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-21,text,true,,4648,158,13,13,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601919973,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-18,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,13,13,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601920066,17,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-29,text,true,,13735,147,12,12,http://localhost:8000/events/68ffe76a75fd07503811e37c,17,0,0
+1761601920128,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-26,text,true,,349,157,12,12,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601920128,20,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-23,text,true,,13735,147,12,12,http://localhost:8000/events/68ffe76a75fd07503811e37c,20,0,0
+1761601920175,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-20,text,true,,349,157,12,12,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601920273,9,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-28,text,true,,4648,158,12,12,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,9,0,0
+1761601920319,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-25,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,12,12,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601920334,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-22,text,true,,4648,158,12,12,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601920349,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-19,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,12,12,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601920442,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-27,text,true,,349,157,11,11,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601920426,27,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-30,text,true,,13735,147,11,11,http://localhost:8000/events/68ffe76a75fd07503811e37c,27,0,0
+1761601920457,7,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-21,text,true,,349,157,11,11,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,7,0,0
+1761601920442,25,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-24,text,true,,13735,147,11,11,http://localhost:8000/events/68ffe76a75fd07503811e37c,25,0,0
+1761601920597,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-29,text,true,,4648,158,11,11,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601920643,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-26,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,11,11,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601920658,9,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-23,text,true,,4648,158,11,11,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,9,0,0
+1761601920689,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-20,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,11,11,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601920788,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-28,text,true,,349,157,10,10,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601920823,16,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-25,text,true,,13735,147,10,10,http://localhost:8000/events/68ffe76a75fd07503811e37c,16,0,0
+1761601920854,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-22,text,true,,349,157,10,10,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601920962,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-27,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,10,10,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601920962,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-30,text,true,,4648,158,10,10,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601920977,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-21,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,10,10,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601920977,11,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-24,text,true,,4648,158,9,9,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,11,0,0
+1761601921116,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-29,text,true,,349,157,9,9,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601921147,18,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-26,text,true,,13735,147,9,9,http://localhost:8000/events/68ffe76a75fd07503811e37c,18,0,0
+1761601921178,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-23,text,true,,349,157,9,9,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601921306,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-28,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,9,9,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601921341,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-25,text,true,,4648,158,9,9,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601921371,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-22,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,9,9,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601921480,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-30,text,true,,349,157,8,8,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601921480,17,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-27,text,true,,13735,147,8,8,http://localhost:8000/events/68ffe76a75fd07503811e37c,17,0,0
+1761601921495,4,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-24,text,true,,349,157,8,8,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,4,0,0
+1761601921634,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-29,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,8,8,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601921681,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-26,text,true,,4648,158,8,8,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601921697,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-23,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,8,8,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601921820,23,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-28,text,true,,13735,147,7,7,http://localhost:8000/events/68ffe76a75fd07503811e37c,23,0,0
+1761601921853,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-25,text,true,,349,157,7,7,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601921997,1,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-30,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,7,7,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,1,0,0
+1761601922012,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-24,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,7,7,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601922012,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-27,text,true,,4648,158,6,6,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601922151,17,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-29,text,true,,13735,147,6,6,http://localhost:8000/events/68ffe76a75fd07503811e37c,17,0,0
+1761601922197,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-26,text,true,,349,157,6,6,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601922353,10,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-28,text,true,,4648,158,6,6,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,10,0,0
+1761601922372,3,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-25,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,6,6,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,3,0,0
+1761601922500,18,GET /events/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-30,text,true,,13735,147,5,5,http://localhost:8000/events/68ffe76a75fd07503811e37c,18,0,0
+1761601922531,4,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-27,text,true,,349,157,5,5,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,4,0,0
+1761601922671,8,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-29,text,true,,4648,158,5,5,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,8,0,0
+1761601922717,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-26,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,5,5,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601922873,4,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-28,text,true,,349,157,4,4,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,4,0,0
+1761601923033,9,GET /location/68fd33feaf67053ed16ff2fc/sections,200,OK,Seat Selection - 30 Concurrent Users 1-30,text,true,,4648,158,4,4,http://localhost:8000/location/68fd33feaf67053ed16ff2fc/sections,9,0,0
+1761601923048,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-27,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,4,4,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601923187,5,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-29,text,true,,349,157,3,3,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,5,0,0
+1761601923388,4,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-28,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,3,3,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,4,0,0
+1761601923549,6,GET /tickets/occupied/68ffe76a75fd07503811e37c,200,OK,Seat Selection - 30 Concurrent Users 1-30,text,true,,349,157,2,2,http://localhost:8000/tickets/occupied/68ffe76a75fd07503811e37c,6,0,0
+1761601923704,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-29,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,2,2,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
+1761601924065,2,POST /events/68ffe76a75fd07503811e37c/seats-pricing,404,Not Found,Seat Selection - 30 Concurrent Users 1-30,text,false,"Test failed: code expected to equal /
+
+****** received  : [[[404]]]
+
+****** comparison: [[[200]]]
+
+/",489,396,1,1,http://localhost:8000/events/68ffe76a75fd07503811e37c/seats-pricing,2,0,0
