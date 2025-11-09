@@ -37,7 +37,7 @@ const ProSeatRenderer = ({
   onSectionToggle = null
 }) => {
   const [hoveredSeat, setHoveredSeat] = useState(null);
-  const [seatSize, setSeatSize] = useState({ width: 24, height: 24, fontSize: 10 });
+  const [seatSize, setSeatSize] = useState({ width: 48, height: 48, fontSize: 16 });
 
   // Calcular tamaño de asiento basado en número de asientos
   // Mantenemos tamaños más consistentes entre dispositivos
@@ -45,36 +45,36 @@ const ProSeatRenderer = ({
   useEffect(() => {
     const calculateSeatSize = () => {
       const totalSeats = rows * seatsPerRow;
-      let baseSize = 36;
-      let fontSize = 12;
+      let baseSize = 56;
+      let fontSize = 18;
 
       // Ajuste basado en densidad de asientos, no en tipo de dispositivo
       // Esto mantiene la misma apariencia visual en todos los dispositivos
       if (totalSeats > 300) {
-        baseSize = 28;
-        fontSize = 10;
+        baseSize = 48;
+        fontSize = 16;
       } else if (totalSeats > 200) {
-        baseSize = 32;
-        fontSize = 11;
+        baseSize = 52;
+        fontSize = 17;
       } else if (totalSeats > 100) {
-        baseSize = 36;
-        fontSize = 12;
+        baseSize = 56;
+        fontSize = 18;
       } else if (totalSeats > 50) {
-        baseSize = 40;
-        fontSize = 13;
+        baseSize = 60;
+        fontSize = 19;
       } else {
-        baseSize = 44;
-        fontSize = 14;
+        baseSize = 64;
+        fontSize = 20;
       }
 
       // Ajuste mínimo para touch en móviles (pero mantener proporciones similares)
       if (isMobile) {
         // Solo reducción ligera para móviles, el zoom hace el resto
-        baseSize = Math.max(26, baseSize - 4);
-        fontSize = Math.max(9, fontSize - 1);
+        baseSize = Math.max(40, baseSize - 6);
+        fontSize = Math.max(14, fontSize - 2);
       } else if (isTablet) {
-        baseSize = Math.max(28, baseSize - 2);
-        fontSize = Math.max(10, fontSize - 1);
+        baseSize = Math.max(44, baseSize - 4);
+        fontSize = Math.max(15, fontSize - 2);
       }
 
       setSeatSize({ width: baseSize, height: baseSize, fontSize });
@@ -282,15 +282,15 @@ const ProSeatRenderer = ({
     // Determinar categoría basada en el nombre de la sección, no en el precio
 
     // Aumentar área de touch en móviles para mejor interacción
-    const touchPadding = isMobile ? 2 : 1;
+    const touchPadding = isMobile ? 3 : 2;
 
     const baseStyle = {
       width: `${seatSize.width}px`,
       height: `${seatSize.height}px`,
       minWidth: `${seatSize.width}px`,
       minHeight: `${seatSize.height}px`,
-      border: `2px solid ${stateColors.border}`,
-      borderRadius: isMobile ? '6px' : '4px', // Bordes ligeramente más redondeados en móvil
+      border: `3px solid ${stateColors.border}`,
+      borderRadius: isMobile ? '10px' : '8px', // Bordes más redondeados
       backgroundColor: stateColors.background,
       color: stateColors.color,
       cursor: isAdminMode
@@ -304,7 +304,7 @@ const ProSeatRenderer = ({
       fontSize: `${seatSize.fontSize}px`,
       fontWeight: '600',
       position: 'relative',
-      boxShadow: state === 'selected' ? stateColors.shadow : '0 1px 3px rgba(0,0,0,0.1)',
+      boxShadow: state === 'selected' ? stateColors.shadow : '0 2px 6px rgba(0,0,0,0.15)',
       transform: hovered && state === 'available' ? 'scale(1.05)' : 'scale(1)',
       fontFamily: 'system-ui, -apple-system, sans-serif',
       outline: 'none',
@@ -376,12 +376,12 @@ const ProSeatRenderer = ({
     const seatPrice = getSeatPrice(row, seat);
     const formattedPrice = isAdminMode ? '' : (formatPrice ? formatPrice(seatPrice) : `€${seatPrice}`);
     const state = getSeatState(seatId);
-    const isPremium = sectionName.toLowerCase().includes('premium') || 
+    const isPremium = sectionName.toLowerCase().includes('premium') ||
                      sectionName.toLowerCase().includes('vip');
-    
+
     const dimensions = getSectionDimensions();
     let actualRow, actualSeat;
-    
+
     if (dimensions.isInverted) {
       // Para secciones laterales: usar las coordenadas invertidas
       actualRow = seat;
@@ -391,26 +391,33 @@ const ProSeatRenderer = ({
       actualRow = row;
       actualSeat = seat;
     }
-    
+
+    const rowNumber = getRowNumber(actualRow);
+    const seatNumber = actualSeat + 1;
+
     const tooltips = {
       occupied: {
-        title: 'Asiento ocupado',
-        content: `${sectionName} - Fila ${getRowNumber(actualRow)}, Asiento ${actualSeat + 1}`,
+        title: sectionName,
+        content: `Fila ${rowNumber}, Asiento ${seatNumber}`,
+        subtitle: 'Ocupado',
         color: COLORS.neutral.grey500
       },
       blocked: {
-        title: isAdminMode ? 'Asiento bloqueado - Click para desbloquear' : (sectionBlocked ? 'Sección bloqueada' : 'Asiento bloqueado'),
-        content: sectionBlocked ? 'Esta sección no está disponible' : `${sectionName} - Fila ${getRowNumber(actualRow)}, Asiento ${actualSeat + 1}`,
+        title: sectionName,
+        content: sectionBlocked ? 'Sección bloqueada' : `Fila ${rowNumber}, Asiento ${seatNumber}`,
+        subtitle: isAdminMode ? 'Click para desbloquear' : 'Bloqueado',
         color: COLORS.secondary.main
       },
       selected: {
-        title: 'Asiento seleccionado',
-        content: `${sectionName} - Fila ${getRowNumber(actualRow)}, Asiento ${actualSeat + 1}${isAdminMode ? '' : ` - ${formattedPrice}`}`,
+        title: sectionName,
+        content: `Fila ${rowNumber}, Asiento ${seatNumber}`,
+        subtitle: isAdminMode ? 'Seleccionado' : `${formattedPrice} - Seleccionado`,
         color: COLORS.primary.main
       },
       available: {
-        title: isAdminMode ? `Click para bloquear - Fila ${getRowNumber(actualRow)}, Asiento ${actualSeat + 1}` : (isPremium ? 'Asiento premium' : `${sectionName} - Fila ${getRowNumber(actualRow)}, Asiento ${actualSeat + 1}`),
-        content: isAdminMode ? (isPremium ? 'Asiento premium disponible' : `${sectionName}`) : `Precio: ${formattedPrice}${isPremium ? ' (Premium)' : ''}`,
+        title: sectionName,
+        content: `Fila ${rowNumber}, Asiento ${seatNumber}`,
+        subtitle: isAdminMode ? 'Click para bloquear' : (isPremium ? `${formattedPrice} (Premium)` : formattedPrice),
         color: isPremium ? COLORS.accent.gold : (color || COLORS.primary.main)
       }
     };
@@ -421,98 +428,179 @@ const ProSeatRenderer = ({
   const renderSeat = (row, seat) => {
     const seatId = getSeatId(row, seat);
     const state = getSeatState(seatId);
-    // En modo admin, todos los asientos menos ocupados son interactuables
-    // En modo usuario, solo disponibles y seleccionados son interactuables
     const isInteractable = isAdminMode
       ? state !== 'occupied'
       : (state === 'available' || state === 'selected');
     const seatStyle = getSeatStyle(seatId);
     const tooltipInfo = getSeatTooltip(row, seat, seatId);
 
-    const seatElement = (
-      <button
+    return (
+      <div
         key={seatId}
-        style={seatStyle}
-        onClick={() => handleSeatClick(row, seat)}
-        onMouseEnter={() => setHoveredSeat(seatId)}
-        onMouseLeave={() => setHoveredSeat(null)}
-        disabled={!isInteractable}
-        onFocus={(e) => {
-          if (isInteractable) {
-            e.target.style.outline = `2px solid ${color || COLORS.primary.main}`;
-            e.target.style.outlineOffset = '2px';
-          }
+        style={{
+          position: 'relative',
+          display: 'inline-block'
         }}
-        onBlur={(e) => {
-          e.target.style.outline = 'none';
-        }}
-        className="professional-seat"
-        aria-label={`${sectionName} Fila ${getRowNumber(row)} Asiento ${seat + 1} ${state}`}
-        title={showTooltips ? `${tooltipInfo.title} - ${tooltipInfo.content}` : undefined}
       >
-        {getSeatIcon(seatId, row, seat)}
-        
-        {/* Indicador premium */}
-        {false && state === 'available' && ( // isPremium not defined, using false for now
-          <div 
-            className="premium-indicator"
-            style={{
-              position: 'absolute',
-              top: '-2px',
-              right: '-2px',
-              width: '6px',
-              height: '6px',
-              backgroundColor: COLORS.accent.gold,
-              borderRadius: '50%',
-              border: '1px solid white',
-              boxShadow: COLORS.shadows.glowGold
-            }} 
-          />
-        )}
+        <button
+          style={seatStyle}
+          onClick={() => handleSeatClick(row, seat)}
+          onMouseEnter={() => setHoveredSeat(seatId)}
+          onMouseLeave={() => setHoveredSeat(null)}
+          disabled={!isInteractable}
+          onFocus={(e) => {
+            if (isInteractable) {
+              e.target.style.outline = `2px solid ${color || COLORS.primary.main}`;
+              e.target.style.outlineOffset = '2px';
+            }
+          }}
+          onBlur={(e) => {
+            e.target.style.outline = 'none';
+          }}
+          className="professional-seat"
+          aria-label={`${sectionName} Fila ${getRowNumber(row)} Asiento ${seat + 1} ${state}`}
+          data-tooltip-title={showTooltips ? tooltipInfo.title : undefined}
+          data-tooltip-content={showTooltips ? tooltipInfo.content : undefined}
+          data-tooltip-color={showTooltips ? tooltipInfo.color : undefined}
+        >
+          {getSeatIcon(seatId, row, seat)}
 
-        {/* Indicador accesible */}
-        {(sectionName.toLowerCase().includes('accesible') || 
-          sectionName.toLowerCase().includes('accessible')) && 
-          state === 'available' && (
-          <div 
-            className="accessible-indicator"
+          {/* Indicador premium */}
+          {false && state === 'available' && ( // isPremium not defined, using false for now
+            <div
+              className="premium-indicator"
+              style={{
+                position: 'absolute',
+                top: '-3px',
+                right: '-3px',
+                width: '10px',
+                height: '10px',
+                backgroundColor: COLORS.accent.gold,
+                borderRadius: '50%',
+                border: '2px solid white',
+                boxShadow: COLORS.shadows.glowGold
+              }}
+            />
+          )}
+
+          {/* Indicador accesible */}
+          {(sectionName.toLowerCase().includes('accesible') ||
+            sectionName.toLowerCase().includes('accessible')) &&
+            state === 'available' && (
+            <div
+              className="accessible-indicator"
+              style={{
+                position: 'absolute',
+                bottom: '-3px',
+                left: '-3px',
+                width: '10px',
+                height: '10px',
+                backgroundColor: COLORS.accent.green,
+                borderRadius: '50%',
+                border: '2px solid white',
+                boxShadow: '0 0 12px rgba(16, 185, 129, 0.5)'
+              }}
+            />
+          )}
+        </button>
+
+        {/* Tooltip CSS personalizado - sin ARIA */}
+        {showTooltips && hoveredSeat === seatId && (
+          <div
             style={{
               position: 'absolute',
-              bottom: '-2px',
-              left: '-2px',
-              width: '6px',
-              height: '6px',
-              backgroundColor: COLORS.accent.green,
-              borderRadius: '50%',
-              border: '1px solid white',
-              boxShadow: '0 0 8px rgba(16, 185, 129, 0.4)'
-            }} 
-          />
+              bottom: '100%',
+              left: '50%',
+              transform: 'translateX(-50%) translateY(-12px)',
+              backgroundColor: 'rgba(0, 0, 0, 0.87)',
+              color: 'white',
+              padding: '18px 26px',
+              borderRadius: '12px',
+              fontSize: '18px',
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.35)',
+              zIndex: 9999,
+              pointerEvents: 'none',
+              width: 'max-content',
+              maxWidth: '380px',
+              minWidth: '240px',
+              textAlign: 'center',
+              animation: 'tooltipFadeIn 0.2s ease-in-out',
+              whiteSpace: 'normal',
+              wordWrap: 'break-word'
+            }}
+          >
+            {/* Título: Nombre de la sección */}
+            <div style={{
+              fontWeight: 'bold',
+              marginBottom: '10px',
+              fontSize: '20px',
+              color: 'white',
+              lineHeight: '1.3'
+            }}>
+              {tooltipInfo.title}
+            </div>
+
+            {/* Contenido: Fila y Asiento */}
+            <div style={{
+              fontSize: '17px',
+              opacity: 0.95,
+              lineHeight: '1.4',
+              marginBottom: tooltipInfo.subtitle ? '8px' : '0'
+            }}>
+              {tooltipInfo.content}
+            </div>
+
+            {/* Subtítulo: Precio o estado */}
+            {tooltipInfo.subtitle && (
+              <div style={{
+                fontSize: '16px',
+                opacity: 0.85,
+                lineHeight: '1.3',
+                fontStyle: 'italic'
+              }}>
+                {tooltipInfo.subtitle}
+              </div>
+            )}
+
+            {/* Flecha del tooltip */}
+            <div
+              style={{
+                position: 'absolute',
+                top: '100%',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: 0,
+                height: 0,
+                borderLeft: '10px solid transparent',
+                borderRight: '10px solid transparent',
+                borderTop: '10px solid rgba(0, 0, 0, 0.87)'
+              }}
+            />
+          </div>
         )}
-      </button>
+      </div>
     );
-
-    return seatElement;
   };
 
   const renderRow = (row) => {
     const dimensions = getSectionDimensions();
     // Calcular el ancho exacto necesario para los asientos
-    const seatTotalWidth = (seatSize.width + 2) * dimensions.displaySeatsPerRow;
-    const labelWidth = isMobile ? 20 : 28;
-    
+    const seatTotalWidth = (seatSize.width + 4) * dimensions.displaySeatsPerRow;
+    const labelWidth = isMobile ? 36 : 48;
+
     return (
-      <div 
-        key={`row-${row}`} 
+      <div
+        key={`row-${row}`}
         className="seat-row"
-        style={{ 
-          display: 'flex', 
+        style={{
+          display: 'flex',
           alignItems: 'center',
           justifyContent: 'flex-start',
-          marginBottom: isMobile ? '1px' : '2px',
+          marginBottom: isMobile ? '2px' : '4px',
           width: '100%',
-          minHeight: `${seatSize.height + 4}px`,
-          position: 'relative'
+          minHeight: `${seatSize.height + 8}px`,
+          position: 'relative',
+          overflow: 'visible'
         }}
       >
         {/* Etiqueta de fila */}
@@ -525,29 +613,29 @@ const ProSeatRenderer = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: `${isMobile ? 9 : 11}px`,
+            fontSize: `${isMobile ? 14 : 16}px`,
             fontWeight: '600',
             // Detección automática: texto negro para fondos claros, blanco para fondos oscuros
             color: getRowLabelColor(color, sectionBlocked),
             backgroundColor: getContrastInfoBackground(color, sectionBlocked),
-            borderRadius: '3px',
-            marginRight: '4px',
-            border: `1px solid ${getContrastBorderColor(color, sectionBlocked)}`,
+            borderRadius: '4px',
+            marginRight: '8px',
+            border: `2px solid ${getContrastBorderColor(color, sectionBlocked)}`,
             transition: 'all 0.2s ease',
             flexShrink: 0
           }}
         >
           {getRowNumber(row)}
         </div>
-        
+
         {/* Grid de asientos - Mejorado para secciones laterales */}
-        <div 
+        <div
           className="seats-grid"
-          style={{ 
+          style={{
             display: 'grid',
             gridTemplateColumns: `repeat(${dimensions.displaySeatsPerRow}, ${seatSize.width}px)`,
             gridTemplateRows: `${seatSize.height}px`,
-            gap: '1px',
+            gap: '2px',
             alignItems: 'center',
             justifyContent: 'start',
             width: 'fit-content',
@@ -596,24 +684,24 @@ const ProSeatRenderer = ({
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: '4px',
-          marginBottom: '12px',
-          paddingBottom: '8px',
-          borderBottom: `2px solid ${COLORS.neutral.grey100}`,
+          gap: '8px',
+          marginBottom: '20px',
+          paddingBottom: '12px',
+          borderBottom: `3px solid ${COLORS.neutral.grey100}`,
           width: '100%',
           position: 'relative'
         }}
       >
         {/* Nombre de la sección con indicador de color */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
           <div
             className="section-color-indicator"
             style={{
-              width: '12px',
-              height: '12px',
+              width: '18px',
+              height: '18px',
               backgroundColor: sectionBlocked ? COLORS.neutral.grey300 : (color || COLORS.primary.main),
               borderRadius: '50%',
-              border: '2px solid white',
+              border: '3px solid white',
               boxShadow: COLORS.shadows.sm
             }}
           />
@@ -660,9 +748,9 @@ const ProSeatRenderer = ({
             fontWeight: '600',
             color: getSectionDimensionColor(color, sectionBlocked),
             backgroundColor: getContrastInfoBackground(color, sectionBlocked),
-            padding: '4px 10px',
-            borderRadius: '12px',
-            border: `1px solid ${getContrastBorderColor(color, sectionBlocked)}`,
+            padding: '6px 16px',
+            borderRadius: '14px',
+            border: `2px solid ${getContrastBorderColor(color, sectionBlocked)}`,
             textAlign: 'center'
           }}
         >
@@ -680,7 +768,7 @@ const ProSeatRenderer = ({
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: isMobile ? '2px' : '3px',
+          gap: isMobile ? '3px' : '5px',
           backgroundColor: 'transparent',
           borderRadius: '0',
           overflow: 'visible',

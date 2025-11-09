@@ -422,6 +422,18 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+/* Animación de tooltip personalizado */
+@keyframes tooltipFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-12px);
+  }
+}
+
 /* Efectos responsivos */
 @media (max-width: 768px) {
   .professional-seat {
