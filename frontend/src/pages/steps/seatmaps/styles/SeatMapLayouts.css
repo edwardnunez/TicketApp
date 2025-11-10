@@ -71,7 +71,6 @@
   max-width: none;
   box-sizing: border-box;
   background: linear-gradient(135deg, #1a4d1a 0%, #2d5a2d 50%, #1a4d1a 100%);
-  borderRadius: 16px;
   position: relative;
   overflow: visible;
   margin: 0 auto;
@@ -217,19 +216,6 @@
   width: 100%; /* Ocupar todo el ancho disponible */
   max-width: none; /* Sin límite de ancho máximo */
   overflow: visible; /* Asegurar que nada se corte */
-}
-
-/* Estilos para secciones de gradas */
-.grada-alta {
-  /* Sin rotación - se maneja por lógica de numeración */
-}
-
-.grada-media {
-  /* Sin rotación - se maneja por lógica de numeración */
-}
-
-.grada-baja {
-  /* Sin rotación - se maneja por lógica de numeración */
 }
 
 /* Layout de venue de concierto tipo estadio */
@@ -402,17 +388,6 @@
   justify-content: center;
   width: 100%;
   margin-bottom: 4px;
-}
-
-/* Layouts específicos para diferentes tipos de secciones */
-.high-tier-section .seats-container {
-  /* transform: perspective(100px) rotateX(5deg); */
-  /* transform-origin: bottom center; */
-}
-
-.low-tier-section .seats-container {
-  /* transform: perspective(100px) rotateX(-3deg); */
-  /* transform-origin: top center; */
 }
 
 .side-section .seats-container {
