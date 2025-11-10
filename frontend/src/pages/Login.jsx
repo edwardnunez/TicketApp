@@ -11,8 +11,9 @@ const { Content } = Layout;
 const { Title, Text } = Typography;
 
 /**
- * Login page component for user authentication
- * @returns {JSX.Element} Login form with username and password fields
+ * Componente de página de inicio de sesión para autenticación de usuarios.
+ * Proporciona un formulario con validación de credenciales y manejo de errores.
+ * @returns {JSX.Element} Formulario de login con campos de usuario y contraseña
  */
 const Login = () => {
   const [loading, setLoading] = useState(false);
@@ -34,10 +35,10 @@ const Login = () => {
   }, []);
 
   /**
-   * Validates username field
-   * @param {*} _ - Field rule (unused)
-   * @param {string} value - Username value
-   * @returns {Promise} Validation result
+   * Valida el campo de nombre de usuario del formulario.
+   * @param {Object} _ - Regla del campo (no utilizado)
+   * @param {string} value - Valor del nombre de usuario ingresado
+   * @returns {Promise} Promesa que se resuelve si es válido o se rechaza con mensaje de error
    */
   const validateUsername = (_, value) => {
     if (!value) {
@@ -47,10 +48,10 @@ const Login = () => {
   };
 
   /**
-   * Validates password field
-   * @param {*} _ - Field rule (unused)
-   * @param {string} value - Password value
-   * @returns {Promise} Validation result
+   * Valida el campo de contraseña del formulario.
+   * @param {Object} _ - Regla del campo (no utilizado)
+   * @param {string} value - Valor de la contraseña ingresada
+   * @returns {Promise} Promesa que se resuelve si es válido o se rechaza con mensaje de error
    */
   const validatePassword = (_, value) => {
     if (!value) {
@@ -60,8 +61,11 @@ const Login = () => {
   };
 
   /**
-   * Handles form submission for user login
-   * @param {Object} values - Form values containing username and password
+   * Maneja el envío del formulario de inicio de sesión.
+   * Realiza la petición de autenticación al servidor y gestiona la sesión del usuario.
+   * @param {Object} values - Valores del formulario que contienen username y password
+   * @param {string} values.username - Nombre de usuario
+   * @param {string} values.password - Contraseña del usuario
    */
   const onFinish = async (values) => {
     setLoading(true);
@@ -98,6 +102,11 @@ const Login = () => {
     }
   };
 
+  /**
+   * Maneja los errores de validación del formulario.
+   * Se ejecuta cuando la validación del formulario falla antes de enviar.
+   * @param {Object} errorInfo - Información sobre los errores de validación del formulario
+   */
   const onFinishFailed = (errorInfo) => {
     setLoading(false);
   };
