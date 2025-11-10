@@ -192,6 +192,7 @@ const Register = () => {
                   placeholder="Nombre"
                   style={{ borderRadius: "6px" }}
                   aria-label="Nombre"
+                  maxLength={50}
                 />
               </Form.Item>
 
@@ -207,6 +208,7 @@ const Register = () => {
                   placeholder="Apellidos"
                   style={{ borderRadius: "6px" }}
                   aria-label="Apellidos"
+                  maxLength={100}
                 />
               </Form.Item>
 
@@ -222,6 +224,7 @@ const Register = () => {
                   placeholder="Nombre de usuario"
                   style={{ borderRadius: "6px" }}
                   aria-label="Nombre de usuario"
+                  maxLength={30}
                 />
               </Form.Item>
 
@@ -237,6 +240,7 @@ const Register = () => {
                   placeholder="Email"
                   style={{ borderRadius: "6px" }}
                   aria-label="Correo electrónico"
+                  maxLength={100}
                 />
               </Form.Item>
 
@@ -252,6 +256,7 @@ const Register = () => {
                   placeholder="Contraseña"
                   style={{ borderRadius: "6px" }}
                   aria-label="Contraseña"
+                  maxLength={128}
                 />
               </Form.Item>
 
@@ -268,6 +273,7 @@ const Register = () => {
                   placeholder="Confirmar contraseña"
                   style={{ borderRadius: "6px" }}
                   aria-label="Confirmar contraseña"
+                  maxLength={128}
                 />
               </Form.Item>
 

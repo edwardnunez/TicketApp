@@ -662,44 +662,31 @@
   overflow: visible;
 }
 
-/* Estilos para entrada general */
+/* Estilos base para entrada general (los estilos inline tienen prioridad) */
 .general-admission {
-  min-width: 480px;
-  padding: 48px;
-  background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%);
-  border: 3px solid #D1D5DB;
-  border-radius: 26px;
+  min-width: 420px;
+  max-width: 480px;
+  padding: 36px 44px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 6px 26px rgba(0,0,0,0.08);
-  transform: scale(1);
-  backdrop-filter: blur(10px);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   text-align: center;
+  border-radius: 24px;
 }
 
 .general-admission:hover {
   transform: scale(1.02);
-  box-shadow: 0 12px 38px rgba(0,0,0,0.12);
-}
-
-.general-admission.selected {
-  background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
-  border-color: #1E3A8A;
-  color: white;
-  box-shadow: 0 12px 50px rgba(30, 64, 175, 0.3), 0 0 0 6px rgba(30, 64, 175, 0.2);
-  transform: scale(1.02);
 }
 
 .general-admission-blocked {
-  padding: 48px;
-  text-align: center;
-  color: #9CA3AF;
-  font-size: 22px;
+  min-width: 380px;
+  padding: 40px;
   background: #F3F4F6;
   border: 3px dashed #D1D5DB;
-  border-radius: 26px;
+  border-radius: 20px;
+  text-align: center;
+  color: #9CA3AF;
   opacity: 0.7;
 }
 
@@ -710,101 +697,12 @@
 
 .blocked-text {
   font-weight: bold;
+  font-size: 20px;
   margin-bottom: 6px;
 }
 
 .blocked-subtext {
-  font-size: 20px;
-}
-
-.ga-icon {
-  font-size: 38px;
-  margin-bottom: 12px;
-  filter: brightness(0) invert(1);
-}
-
-.general-admission:not(.selected) .ga-icon {
-  filter: none;
-}
-
-.ga-title {
-  font-weight: bold;
-  display: block;
-  margin-bottom: 12px;
-  font-size: 22px;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-}
-
-.capacity-bar {
-  width: 100%;
-  height: 6px;
-  background-color: rgba(255,255,255,0.3);
-  border-radius: 3px;
-  margin-bottom: 12px;
-  overflow: hidden;
-}
-
-.general-admission:not(.selected) .capacity-bar {
-  background-color: #E5E7EB;
-}
-
-.capacity-fill {
-  height: 100%;
-  background-color: rgba(255,255,255,0.8);
-  border-radius: 3px;
-  transition: width 0.3s ease;
-}
-
-.general-admission:not(.selected) .capacity-fill {
-  background-color: #1E40AF;
-}
-
-.capacity-info {
-  font-size: 18px;
-  display: block;
-  margin-bottom: 20px;
-  opacity: 0.9;
-}
-
-.general-admission:not(.selected) .capacity-info {
-  color: #6B7280;
-}
-
-.capacity-warning {
-  color: #EF4444;
-  margin-left: 6px;
-}
-
-.ga-price {
-  padding: 12px 26px;
-  background: rgba(255,255,255,0.2);
-  border-radius: 32px;
-  display: inline-block;
-  font-size: 26px;
-  font-weight: bold;
-}
-
-.general-admission:not(.selected) .ga-price {
-  background: #F3F4F6;
-  color: #1E40AF;
-}
-
-.selection-count {
-  position: absolute;
-  top: -12px;
-  right: -12px;
-  width: 38px;
-  height: 38px;
-  background-color: #1E40AF;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 20px;
-  font-weight: bold;
-  box-shadow: 0 3px 12px rgba(0,0,0,0.2);
+  font-size: 16px;
 }
 
 /* Estilos para header del mapa */

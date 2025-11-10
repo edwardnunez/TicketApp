@@ -116,29 +116,44 @@ const SectionShapeRenderer = ({
     </div>
   );
 
-  const renderPitShape = () => (
-    <div
-      className="pit-section"
-      style={{
-        position: 'relative',
-        background: `linear-gradient(135deg, ${sectionColor || COLORS.secondary.light} 0%, ${sectionColor || COLORS.secondary.main} 100%)`,
-        borderRadius: '50%',
-        padding: isMobile ? '16px' : '20px',
-        border: `3px solid ${sectionBlocked ? COLORS.neutral.grey300 : (sectionColor || COLORS.secondary.dark)}`,
-        boxShadow: `0 8px 24px rgba(220, 38, 38, 0.3)`,
-        width: 'fit-content',
-        maxWidth: 'none',
-        minHeight: 'auto',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        overflow: 'visible'
-      }}
-    >
-      {children}
-    </div>
-  );
+  const renderPitShape = () => {
+    // Función para extraer RGB de un color hex
+    const hexToRgb = (hex) => {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+      } : { r: 220, g: 38, b: 38 }; // Fallback color
+    };
+
+    const color = sectionColor || COLORS.secondary.main;
+    const rgb = hexToRgb(color);
+
+    return (
+      <div
+        className="pit-section"
+        style={{
+          position: 'relative',
+          background: `linear-gradient(135deg, ${color}E6 0%, ${color}D9 100%)`,
+          borderRadius: '24px',
+          padding: isMobile ? '16px' : '20px',
+          border: `3px solid ${sectionBlocked ? COLORS.neutral.grey300 : color}`,
+          boxShadow: `0 8px 24px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.25)`,
+          width: 'fit-content',
+          maxWidth: 'none',
+          minHeight: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'visible'
+        }}
+      >
+        {children}
+      </div>
+    );
+  };
 
   const renderSideShape = () => (
     <div

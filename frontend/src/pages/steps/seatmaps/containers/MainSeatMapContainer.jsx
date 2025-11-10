@@ -5,7 +5,7 @@ import {
   CompressOutlined,
   InfoCircleOutlined
 } from '@ant-design/icons';
-import { COLORS, getVenueColors } from '../../../../components/colorscheme';
+import { COLORS, getVenueColors, getContrastColor } from '../../../../components/colorscheme';
 import ProSeatRenderer from '../renderers/ProSeatRenderer';
 import AltSeatMapLegend from '../ui/AltSeatMapLegend';
 import VenueStageRenderer from '../renderers/VenueStageRenderer';
@@ -1035,7 +1035,7 @@ const ProfessionalGeneralAdmissionRenderer = ({
   isHighContrast = false
 }) => {
   const sameSectionSelected = selectedSeats.filter(s => s.sectionId === section.id);
-  const isSelected = sameSectionSelected.length > 0;
+  const selectedCount = sameSectionSelected.length;
 
   const pricingCapacity = sectionCapacityFromPricing;
   const occupiedCount = occupiedSeats.filter(seatId => seatId.startsWith(section.id)).length;
@@ -1045,6 +1045,12 @@ const ProfessionalGeneralAdmissionRenderer = ({
 
   const isFullyBooked = sectionBlocked || remainingCapacity <= 0;
   const isNearCapacity = capacityPercentage > 80;
+
+  // Obtener el color de la sección o usar un color por defecto
+  const sectionColor = section.color || COLORS.primary.main;
+
+  // Calcular el color de texto con buen contraste sobre el fondo de la sección
+  const textColor = getContrastColor(sectionColor, COLORS.neutral.white, COLORS.neutral.darker);
 
   const handleSectionClick = () => {
     if (isFullyBooked) return;
@@ -1081,42 +1087,168 @@ const ProfessionalGeneralAdmissionRenderer = ({
 
   if (isFullyBooked) {
     return (
-      <div className="general-admission-blocked">
-        <div className="blocked-icon">⚠️</div>
-        <div className="blocked-text">AGOTADO</div>
-        <div className="blocked-subtext">No hay entradas disponibles</div>
+      <div
+        style={{
+          minWidth: '380px',
+          padding: '40px',
+          background: '#F3F4F6',
+          border: '3px dashed #D1D5DB',
+          borderRadius: '20px',
+          textAlign: 'center',
+          color: '#9CA3AF',
+          opacity: 0.7
+        }}
+      >
+        <div style={{ fontSize: '32px', marginBottom: '12px' }}>⚠️</div>
+        <div style={{ fontWeight: 'bold', fontSize: '20px', marginBottom: '6px' }}>AGOTADO</div>
+        <div style={{ fontSize: '16px' }}>No hay entradas disponibles</div>
       </div>
     );
   }
 
   return (
     <div
-      className={`general-admission ${isSelected ? 'selected' : ''}`}
       onClick={handleSectionClick}
+      style={{
+        minWidth: '420px',
+        maxWidth: '480px',
+        padding: '36px 44px',
+        background: `linear-gradient(135deg, ${sectionColor}E6 0%, ${sectionColor}D9 100%)`,
+        border: `3px solid ${sectionColor}`,
+        borderRadius: '24px',
+        cursor: 'pointer',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        boxShadow: selectedCount > 0
+          ? `0 8px 32px ${sectionColor}40, 0 0 0 4px ${sectionColor}20`
+          : `0 4px 16px rgba(0,0,0,0.08)`,
+        transform: selectedCount > 0 ? 'scale(1.02)' : 'scale(1)',
+        position: 'relative',
+        overflow: 'visible'
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = 'scale(1.02)';
+        e.currentTarget.style.boxShadow = `0 8px 32px ${sectionColor}40`;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = selectedCount > 0 ? 'scale(1.02)' : 'scale(1)';
+        e.currentTarget.style.boxShadow = selectedCount > 0
+          ? `0 8px 32px ${sectionColor}40, 0 0 0 4px ${sectionColor}20`
+          : `0 4px 16px rgba(0,0,0,0.08)`;
+      }}
     >
-      <div className="ga-icon">
-        {isSelected ? '✓' : '🎫'}
-      </div>
-      
-      <div className="ga-title">
-        {isSelected ? 'SELECCIONADO' : 'ENTRADA GENERAL'}
+      {/* Indicador de color de sección */}
+      <div style={{
+        width: '32px',
+        height: '32px',
+        backgroundColor: sectionColor,
+        borderRadius: '50%',
+        margin: '0 auto 16px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '18px',
+        boxShadow: `0 4px 12px ${sectionColor}60`
+      }}>
+        🎫
       </div>
 
-      <div className="capacity-bar">
-        <div 
-          className="capacity-fill"
-          style={{ width: `${capacityPercentage}%` }}
+      {/* Nombre de la sección */}
+      <div style={{
+        fontSize: '18px',
+        fontWeight: '700',
+        color: textColor,
+        textAlign: 'center',
+        marginBottom: '20px',
+        textTransform: 'uppercase',
+        letterSpacing: '1px'
+      }}>
+        {section.name}
+      </div>
+
+      {/* Contador de entradas seleccionadas */}
+      {selectedCount > 0 && (
+        <div style={{
+          backgroundColor: `${sectionColor}`,
+          color: '#FFFFFF',
+          padding: '20px',
+          borderRadius: '16px',
+          marginBottom: '20px',
+          textAlign: 'center',
+          boxShadow: `0 6px 20px ${sectionColor}50`
+        }}>
+          <div style={{
+            fontSize: '48px',
+            fontWeight: '900',
+            lineHeight: '1',
+            marginBottom: '8px'
+          }}>
+            {selectedCount}
+          </div>
+          <div style={{
+            fontSize: '14px',
+            fontWeight: '600',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+            opacity: 0.95
+          }}>
+            {selectedCount === 1 ? 'Entrada seleccionada' : 'Entradas seleccionadas'}
+          </div>
+        </div>
+      )}
+
+      {/* Barra de capacidad */}
+      <div style={{
+        width: '100%',
+        height: '8px',
+        backgroundColor: `${sectionColor}40`,
+        borderRadius: '4px',
+        marginBottom: '12px',
+        overflow: 'hidden'
+      }}>
+        <div
+          style={{
+            height: '100%',
+            width: `${capacityPercentage}%`,
+            backgroundColor: sectionColor,
+            borderRadius: '4px',
+            transition: 'width 0.3s ease'
+          }}
         />
       </div>
-      
-      <div className="capacity-info">
+
+      {/* Información de capacidad */}
+      <div style={{
+        fontSize: '15px',
+        color: textColor,
+        textAlign: 'center',
+        marginBottom: '20px',
+        fontWeight: '500',
+        opacity: 0.9
+      }}>
         {remainingCapacity} de {totalCapacity} disponibles
-        {isNearCapacity && !isSelected && (
-          <span className="capacity-warning"> (¡Pocas quedan!)</span>
+        {isNearCapacity && (
+          <div style={{
+            color: '#EF4444',
+            fontSize: '13px',
+            marginTop: '4px',
+            fontWeight: '600'
+          }}>
+            ¡Pocas quedan!
+          </div>
         )}
       </div>
 
-      <div className="ga-price">
+      {/* Precio */}
+      <div style={{
+        padding: '14px 28px',
+        background: `${sectionColor}`,
+        borderRadius: '12px',
+        textAlign: 'center',
+        fontSize: '24px',
+        fontWeight: '700',
+        color: '#FFFFFF',
+        boxShadow: `0 4px 12px ${sectionColor}40`
+      }}>
         {(() => {
           let correctPrice = section.defaultPrice || 0;
           if (event && event.usesSectionPricing && event.sectionPricing?.length > 0) {
@@ -1129,9 +1261,17 @@ const ProfessionalGeneralAdmissionRenderer = ({
         })()}
       </div>
 
-      {sameSectionSelected.length > 1 && (
-        <div className="selection-count">
-          {sameSectionSelected.length}
+      {/* Indicador de "Click para seleccionar" */}
+      {selectedCount === 0 && (
+        <div style={{
+          marginTop: '16px',
+          fontSize: '13px',
+          color: textColor,
+          textAlign: 'center',
+          fontWeight: '600',
+          opacity: 0.8
+        }}>
+          Click para añadir entrada
         </div>
       )}
     </div>
