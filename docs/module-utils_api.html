@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Module: utils/api</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Module: utils/api</h1>
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        
+            
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+            <div class="description"><p>Provides helper functions to make authenticated HTTP requests with tokens</p></div>
+        
+
+        
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="frontend_src_utils_api.js.html">frontend/src/utils/api.js</a>, <a href="frontend_src_utils_api.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Members</h3>
+
+        
+            
+<h4 class="name" id=".authenticatedDelete"><span class="type-signature">(static, constant) </span>authenticatedDelete<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Makes an authenticated DELETE request (uses roleToken for admin operations)</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="frontend_src_utils_api.js.html">frontend/src/utils/api.js</a>, <a href="frontend_src_utils_api.js.html#line137">line 137</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id=".authenticatedGet"><span class="type-signature">(static, constant) </span>authenticatedGet<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Makes an authenticated GET request (uses roleToken for admin operations)</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="frontend_src_utils_api.js.html">frontend/src/utils/api.js</a>, <a href="frontend_src_utils_api.js.html#line70">line 70</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id=".authenticatedPatch"><span class="type-signature">(static, constant) </span>authenticatedPatch<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Makes an authenticated PATCH request (uses roleToken for admin operations)</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="frontend_src_utils_api.js.html">frontend/src/utils/api.js</a>, <a href="frontend_src_utils_api.js.html#line121">line 121</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id=".authenticatedPost"><span class="type-signature">(static, constant) </span>authenticatedPost<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Makes an authenticated POST request (uses roleToken for admin operations)</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="frontend_src_utils_api.js.html">frontend/src/utils/api.js</a>, <a href="frontend_src_utils_api.js.html#line87">line 87</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id=".authenticatedPut"><span class="type-signature">(static, constant) </span>authenticatedPut<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Makes an authenticated PUT request (uses roleToken for admin operations)</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="frontend_src_utils_api.js.html">frontend/src/utils/api.js</a>, <a href="frontend_src_utils_api.js.html#line104">line 104</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id=".getAdminHeaders"><span class="type-signature">(static, constant) </span>getAdminHeaders<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Gets the admin authentication headers (roleToken for admin operations)</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="frontend_src_utils_api.js.html">frontend/src/utils/api.js</a>, <a href="frontend_src_utils_api.js.html#line15">line 15</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id=".getAuthHeaders"><span class="type-signature">(static, constant) </span>getAuthHeaders<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Gets the authentication headers (tries roleToken for admin, falls back to token)</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <dt class="important tag-deprecated">Deprecated:</dt><dd><ul class="dummy"><li>Use getAdminHeaders() or getUserHeaders() instead</li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="frontend_src_utils_api.js.html">frontend/src/utils/api.js</a>, <a href="frontend_src_utils_api.js.html#line48">line 48</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id=".getUserHeaders"><span class="type-signature">(static, constant) </span>getUserHeaders<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Gets the user authentication headers (token for user operations)</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="frontend_src_utils_api.js.html">frontend/src/utils/api.js</a>, <a href="frontend_src_utils_api.js.html#line31">line 31</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id=".userAuthenticatedGet"><span class="type-signature">(static, constant) </span>userAuthenticatedGet<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Makes a user-authenticated GET request (uses regular token, not roleToken)</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="frontend_src_utils_api.js.html">frontend/src/utils/api.js</a>, <a href="frontend_src_utils_api.js.html#line153">line 153</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id=".userAuthenticatedPost"><span class="type-signature">(static, constant) </span>userAuthenticatedPost<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Makes a user-authenticated POST request (uses regular token, not roleToken)</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="frontend_src_utils_api.js.html">frontend/src/utils/api.js</a>, <a href="frontend_src_utils_api.js.html#line170">line 170</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id=".userAuthenticatedPut"><span class="type-signature">(static, constant) </span>userAuthenticatedPut<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Makes a user-authenticated PUT request (uses regular token, not roleToken)</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="frontend_src_utils_api.js.html">frontend/src/utils/api.js</a>, <a href="frontend_src_utils_api.js.html#line187">line 187</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-components_colorscheme.html">components/colorscheme</a></li><li><a href="module-models_Event.html">models/Event</a></li><li><a href="module-models_Location.html">models/Location</a></li><li><a href="module-models_SeatMap.html">models/SeatMap</a></li><li><a href="module-models_Ticket.html">models/Ticket</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-services_UserService.html">services/UserService</a></li><li><a href="module-utils_api.html">utils/api</a></li><li><a href="module-utils_authSession.html">utils/authSession</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AboutUs">AboutUs</a></li><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#AdminStatistics">AdminStatistics</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#BlockingViewSwitcher">BlockingViewSwitcher</a></li><li><a href="global.html#EditProfile">EditProfile</a></li><li><a href="global.html#EditableSeatRenderer">EditableSeatRenderer</a></li><li><a href="global.html#ErrorPage">ErrorPage</a></li><li><a href="global.html#EventCreation">EventCreation</a></li><li><a href="global.html#EventDetails">EventDetails</a></li><li><a href="global.html#FramedImage">FramedImage</a></li><li><a href="global.html#GeneralAdmissionRenderer">GeneralAdmissionRenderer</a></li><li><a href="global.html#GenericSeatRenderer">GenericSeatRenderer</a></li><li><a href="global.html#HelpCenter">HelpCenter</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#ManualBlockingSelection">ManualBlockingSelection</a></li><li><a href="global.html#ManualSeatSelection">ManualSeatSelection</a></li><li><a href="global.html#Profile">Profile</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#RowPricingTable">RowPricingTable</a></li><li><a href="global.html#SeatMapContainer">SeatMapContainer</a></li><li><a href="global.html#SeatRenderer">SeatRenderer</a></li><li><a href="global.html#SeatSelectionViewSwitcher">SeatSelectionViewSwitcher</a></li><li><a href="global.html#SectionShapeRenderer">SectionShapeRenderer</a></li><li><a href="global.html#SelectionTopBar">SelectionTopBar</a></li><li><a href="global.html#TicketPurchase">TicketPurchase</a></li><li><a href="global.html#VenueStageRenderer">VenueStageRenderer</a></li><li><a href="global.html#ZoomControls">ZoomControls</a></li><li><a href="global.html#enviarEmailConfirmacionCompra">enviarEmailConfirmacionCompra</a></li><li><a href="global.html#generateTicketNumber">generateTicketNumber</a></li><li><a href="global.html#generateToken">generateToken</a></li><li><a href="global.html#generateValidationCode">generateValidationCode</a></li><li><a href="global.html#returnError">returnError</a></li><li><a href="global.html#tokens">tokens</a></li><li><a href="global.html#transporter">transporter</a></li><li><a href="global.html#useAdvancedZoomPan">useAdvancedZoomPan</a></li><li><a href="global.html#useDeviceDetection">useDeviceDetection</a></li><li><a href="global.html#useUserRole">useUserRole</a></li><li><a href="global.html#verifyAdmin">verifyAdmin</a></li><li><a href="global.html#verifyAuthenticated">verifyAuthenticated</a></li><li><a href="global.html#verifyOwnership">verifyOwnership</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Nov 10 2025 20:21:21 GMT+0100 (hora estándar de Europa central)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

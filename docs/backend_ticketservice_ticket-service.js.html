@@ -211,7 +211,6 @@ app.post('/tickets/purchase', async (req, res) => {
     const { 
       userId, 
       eventId, 
-      ticketType, 
       quantity, 
       price, 
       customerInfo, 
@@ -234,6 +233,67 @@ app.post('/tickets/purchase', async (req, res) => {
       return res.status(400).json({
         error: "Cantidad inválida",
         message: "La cantidad debe estar entre 1 y 6 tickets"
+      });
+    }
+
+    // Validar que el evento existe y obtener sus detalles
+    let eventDetails;
+    try {
+      eventDetails = await getEventDetails(eventId);
+
+      if (!eventDetails || !eventDetails._id) {
+        return res.status(404).json({
+          error: "Evento no encontrado",
+          message: "El evento especificado no existe"
+        });
+      }
+    } catch (error) {
+      return res.status(500).json({
+        error: "Error obteniendo evento",
+        message: "No se pudo verificar la información del evento"
+      });
+    }
+
+    // Validar estado del evento
+    if (eventDetails.state === 'finalizado') {
+      return res.status(400).json({
+        error: "Evento finalizado",
+        message: "No se pueden comprar entradas para un evento que ya ha finalizado"
+      });
+    }
+
+    if (eventDetails.state === 'cancelado') {
+      return res.status(400).json({
+        error: "Evento cancelado",
+        message: "No se pueden comprar entradas para un evento cancelado"
+      });
+    }
+
+    // Validar capacidad disponible
+    const soldTickets = await Ticket.aggregate([
+      {
+        $match: {
+          eventId: new mongoose.Types.ObjectId(eventId),
+          status: { $in: ['paid', 'pending'] }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalQuantity: { $sum: '$quantity' }
+        }
+      }
+    ]);
+
+    const ticketsSold = soldTickets.length > 0 ? soldTickets[0].totalQuantity : 0;
+    const availableCapacity = eventDetails.capacity - ticketsSold;
+
+    if (availableCapacity &lt; quantity) {
+      return res.status(400).json({
+        error: "Capacidad insuficiente",
+        message: `No hay suficientes entradas disponibles. Entradas disponibles: ${availableCapacity}, solicitadas: ${quantity}`,
+        available: availableCapacity,
+        requested: quantity
       });
     }
 
@@ -441,7 +501,7 @@ app.get('/tickets/user/:userId', validateObjectId, async (req, res) => {
     const { userId } = req.params;
     const { status, eventId } = req.query;
 
-    let query = { userId };
+    const query = { userId };
     
     if (status &amp;&amp; ['pending', 'paid', 'cancelled'].includes(status)) {
       query.status = status;
@@ -476,7 +536,7 @@ app.get('/tickets/user/:userId/details', validateObjectId, async (req, res) => {
     const { userId } = req.params;
     const { status, eventId, limit = 50 } = req.query;
 
-    let query = { userId };
+    const query = { userId };
     
     if (status &amp;&amp; ['pending', 'paid', 'cancelled'].includes(status)) {
       query.status = status;
@@ -542,7 +602,7 @@ app.get('/tickets/event/:eventId', validateObjectId, async (req, res) => {
     const { eventId } = req.params;
     const { status } = req.query;
 
-    let query = { eventId };
+    const query = { eventId };
     
     if (status &amp;&amp; ['pending', 'paid', 'cancelled'].includes(status)) {
       query.status = status;
@@ -714,7 +774,7 @@ app.get('/tickets/admin/statistics', async (req, res) => {
     const { eventType, dateFrom, dateTo, status } = req.query;
 
     // Construir filtros
-    let matchFilters = {};
+    const matchFilters = {};
     
     if (status &amp;&amp; ['pending', 'paid', 'cancelled'].includes(status)) {
       matchFilters.status = status;
@@ -906,7 +966,7 @@ app.get('/tickets/admin/statistics', async (req, res) => {
 
 
 // Middleware de manejo de errores
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
   console.error('Error no manejado:', err);
   res.status(500).json({
     error: "Error interno del servidor",
@@ -938,13 +998,13 @@ export default server;</code></pre>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-components_colorscheme.html">components/colorscheme</a></li><li><a href="module-hooks_useSeatMapViability.html">hooks/useSeatMapViability</a></li><li><a href="module-models_Event.html">models/Event</a></li><li><a href="module-models_Location.html">models/Location</a></li><li><a href="module-models_SeatMap.html">models/SeatMap</a></li><li><a href="module-models_Ticket.html">models/Ticket</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-services_UserService.html">services/UserService</a></li><li><a href="module-utils_authSession.html">utils/authSession</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AboutUs">AboutUs</a></li><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#AdminStatistics">AdminStatistics</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#BlockingViewSwitcher">BlockingViewSwitcher</a></li><li><a href="global.html#EditProfile">EditProfile</a></li><li><a href="global.html#EditableSeatRenderer">EditableSeatRenderer</a></li><li><a href="global.html#ErrorPage">ErrorPage</a></li><li><a href="global.html#EventCreation">EventCreation</a></li><li><a href="global.html#EventDetails">EventDetails</a></li><li><a href="global.html#FramedImage">FramedImage</a></li><li><a href="global.html#GeneralAdmissionRenderer">GeneralAdmissionRenderer</a></li><li><a href="global.html#GenericSeatRenderer">GenericSeatRenderer</a></li><li><a href="global.html#HelpCenter">HelpCenter</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#ManualBlockingSelection">ManualBlockingSelection</a></li><li><a href="global.html#ManualSeatSelection">ManualSeatSelection</a></li><li><a href="global.html#Navbar">Navbar</a></li><li><a href="global.html#Profile">Profile</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#RowPricingTable">RowPricingTable</a></li><li><a href="global.html#SeatMapContainer">SeatMapContainer</a></li><li><a href="global.html#SeatRenderer">SeatRenderer</a></li><li><a href="global.html#SeatSelectionViewSwitcher">SeatSelectionViewSwitcher</a></li><li><a href="global.html#SectionShapeRenderer">SectionShapeRenderer</a></li><li><a href="global.html#SelectionTopBar">SelectionTopBar</a></li><li><a href="global.html#TicketPurchase">TicketPurchase</a></li><li><a href="global.html#VenueStageRenderer">VenueStageRenderer</a></li><li><a href="global.html#ZoomControls">ZoomControls</a></li><li><a href="global.html#enviarEmailConfirmacionCompra">enviarEmailConfirmacionCompra</a></li><li><a href="global.html#generateTicketNumber">generateTicketNumber</a></li><li><a href="global.html#generateValidationCode">generateValidationCode</a></li><li><a href="global.html#returnError">returnError</a></li><li><a href="global.html#transporter">transporter</a></li><li><a href="global.html#useAdvancedZoomPan">useAdvancedZoomPan</a></li><li><a href="global.html#useDeviceDetection">useDeviceDetection</a></li><li><a href="global.html#useUserRole">useUserRole</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-components_colorscheme.html">components/colorscheme</a></li><li><a href="module-models_Event.html">models/Event</a></li><li><a href="module-models_Location.html">models/Location</a></li><li><a href="module-models_SeatMap.html">models/SeatMap</a></li><li><a href="module-models_Ticket.html">models/Ticket</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-services_UserService.html">services/UserService</a></li><li><a href="module-utils_api.html">utils/api</a></li><li><a href="module-utils_authSession.html">utils/authSession</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AboutUs">AboutUs</a></li><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#AdminStatistics">AdminStatistics</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#BlockingViewSwitcher">BlockingViewSwitcher</a></li><li><a href="global.html#EditProfile">EditProfile</a></li><li><a href="global.html#EditableSeatRenderer">EditableSeatRenderer</a></li><li><a href="global.html#ErrorPage">ErrorPage</a></li><li><a href="global.html#EventCreation">EventCreation</a></li><li><a href="global.html#EventDetails">EventDetails</a></li><li><a href="global.html#FramedImage">FramedImage</a></li><li><a href="global.html#GeneralAdmissionRenderer">GeneralAdmissionRenderer</a></li><li><a href="global.html#GenericSeatRenderer">GenericSeatRenderer</a></li><li><a href="global.html#HelpCenter">HelpCenter</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#ManualBlockingSelection">ManualBlockingSelection</a></li><li><a href="global.html#ManualSeatSelection">ManualSeatSelection</a></li><li><a href="global.html#Profile">Profile</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#RowPricingTable">RowPricingTable</a></li><li><a href="global.html#SeatMapContainer">SeatMapContainer</a></li><li><a href="global.html#SeatRenderer">SeatRenderer</a></li><li><a href="global.html#SeatSelectionViewSwitcher">SeatSelectionViewSwitcher</a></li><li><a href="global.html#SectionShapeRenderer">SectionShapeRenderer</a></li><li><a href="global.html#SelectionTopBar">SelectionTopBar</a></li><li><a href="global.html#TicketPurchase">TicketPurchase</a></li><li><a href="global.html#VenueStageRenderer">VenueStageRenderer</a></li><li><a href="global.html#ZoomControls">ZoomControls</a></li><li><a href="global.html#enviarEmailConfirmacionCompra">enviarEmailConfirmacionCompra</a></li><li><a href="global.html#generateTicketNumber">generateTicketNumber</a></li><li><a href="global.html#generateToken">generateToken</a></li><li><a href="global.html#generateValidationCode">generateValidationCode</a></li><li><a href="global.html#returnError">returnError</a></li><li><a href="global.html#tokens">tokens</a></li><li><a href="global.html#transporter">transporter</a></li><li><a href="global.html#useAdvancedZoomPan">useAdvancedZoomPan</a></li><li><a href="global.html#useDeviceDetection">useDeviceDetection</a></li><li><a href="global.html#useUserRole">useUserRole</a></li><li><a href="global.html#verifyAdmin">verifyAdmin</a></li><li><a href="global.html#verifyAuthenticated">verifyAuthenticated</a></li><li><a href="global.html#verifyOwnership">verifyOwnership</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu Oct 23 2025 19:08:08 GMT+0200 (hora de verano de Europa central)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Nov 10 2025 20:21:21 GMT+0100 (hora estándar de Europa central)
 </footer>
 
 <script> prettyPrint(); </script>

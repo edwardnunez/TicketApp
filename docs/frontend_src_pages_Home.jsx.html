@@ -28,21 +28,20 @@
         <article>
             <pre class="prettyprint source linenums"><code>import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { 
-  Layout, 
-  Typography, 
-  Card, 
-  Row, 
-  Col, 
-  Button, 
-  DatePicker, 
+import {
+  Layout,
+  Typography,
+  Card,
+  Row,
+  Col,
+  Button,
+  DatePicker,
   Input,
-  Skeleton, 
-  Empty, 
+  Skeleton,
+  Empty,
   Tag,
-  Tabs, 
-  Space, 
-  Tooltip,
+  Tabs,
+  Space,
   notification,
   Select,
   Pagination,
@@ -250,9 +249,9 @@ const Home = () => {
     switch(state) {
       case "activo": return COLORS.accent.green;
       case "proximo": return COLORS.primary.main;
-      case "finalizado": return COLORS.neutral.grey400;
+      case "finalizado": return COLORS.neutral.grey500;
       case "cancelado": return COLORS.secondary.main;
-      default: return COLORS.neutral.grey300;
+      default: return COLORS.neutral.grey400;
     }
   };
 
@@ -293,7 +292,7 @@ const Home = () => {
               backgroundColor: COLORS.neutral.grey50,
               borderRadius: 8
             }}>
-              &lt;PictureOutlined style={{ fontSize: isMobile ? '32px' : '48px', color: COLORS.neutral.grey300 }} />
+              &lt;PictureOutlined style={{ fontSize: isMobile ? '32px' : '48px', color: COLORS.neutral.grey400 }} />
             &lt;/div>
           )}
           {featured &amp;&amp; (
@@ -345,18 +344,16 @@ const Home = () => {
     >
       &lt;Meta
         title={
-          &lt;Tooltip title={event.name}>
-            &lt;div data-cy="event-name" style={{
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              fontSize: isMobile ? '14px' : '16px',
-              fontWeight: '600',
-              color: COLORS.neutral.grey800
-            }}>
-              {event.name}
-            &lt;/div>
-          &lt;/Tooltip>
+          &lt;div data-cy="event-name" title={event.name} style={{
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            fontSize: isMobile ? '14px' : '16px',
+            fontWeight: '600',
+            color: COLORS.neutral.grey800
+          }}>
+            {event.name}
+          &lt;/div>
         }
         description={
           &lt;Space direction="vertical" size={2} style={{ width: '100%' }}>
@@ -364,31 +361,29 @@ const Home = () => {
               &lt;Text data-cy="event-date" style={{
                 display: 'flex',
                 alignItems: 'center',
-                color: COLORS.neutral.grey400,
+                color: COLORS.neutral.grey600,
                 fontSize: isMobile ? '12px' : '14px'
               }}>
-                &lt;CalendarOutlined style={{ marginRight: '4px', color: COLORS.neutral.grey400 }} />
+                &lt;CalendarOutlined style={{ marginRight: '4px', color: COLORS.neutral.grey600 }} />
                 {dayjs(event.date).format(isMobile ? "DD MMM" : "DD MMM YYYY")}
               &lt;/Text>
             &lt;/div>
             &lt;Text style={{
               display: 'flex',
               alignItems: 'center',
-              color: COLORS.neutral.grey400,
+              color: COLORS.neutral.grey600,
               fontSize: isMobile ? '12px' : '14px'
             }}>
-              &lt;EnvironmentOutlined style={{ marginRight: '4px', color: COLORS.neutral.grey400 }} />
-              &lt;Tooltip title={event.location.name}>
-                &lt;span style={{
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  maxWidth: isMobile ? '120px' : '180px',
-                  display: 'inline-block'
-                }}>
-                  {event.location.name}
-                &lt;/span>
-              &lt;/Tooltip>
+              &lt;EnvironmentOutlined style={{ marginRight: '4px', color: COLORS.neutral.grey600 }} />
+              &lt;span title={event.location.name} style={{
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                maxWidth: isMobile ? '120px' : '180px',
+                display: 'inline-block'
+              }}>
+                {event.location.name}
+              &lt;/span>
             &lt;/Text>
           &lt;/Space>
         }
@@ -425,10 +420,12 @@ const Home = () => {
             key={category.name}
             type={activeCategory === category.name ? 'primary' : 'default'}
             size={isMobile ? 'small' : 'default'}
-            style={{ 
+            style={{
               borderColor: category.color,
-              color: activeCategory === category.name ? COLORS.neutral.white : category.color,
-              backgroundColor: activeCategory === category.name ? category.color : 'transparent'
+              borderWidth: '2px',
+              color: activeCategory === category.name ? COLORS.neutral.white : COLORS.neutral.grey700,
+              backgroundColor: activeCategory === category.name ? category.color : 'transparent',
+              fontWeight: activeCategory === category.name ? '600' : '500'
             }}
             onClick={() => handleCategoryFilter(category.name)}
           >
@@ -459,11 +456,11 @@ const Home = () => {
             }}>
               Descubre eventos increíbles
             &lt;/Title>
-            &lt;Paragraph style={{ 
-              fontSize: isMobile ? '16px' : '18px', 
-              maxWidth: '700px', 
+            &lt;Paragraph style={{
+              fontSize: isMobile ? '16px' : '18px',
+              maxWidth: '700px',
               margin: isMobile ? '0 auto 24px' : '0 auto 32px',
-              color: 'rgba(255, 255, 255, 0.85)'
+              color: 'rgba(255, 255, 255, 0.95)'
             }}>
               Encuentra y reserva entradas para los mejores conciertos, obras de teatro, 
               eventos deportivos y mucho más.
@@ -481,21 +478,23 @@ const Home = () => {
                 &lt;Input
                   size="large"
                   placeholder="Buscar eventos..."
-                  prefix={&lt;SearchOutlined style={{ color: COLORS.neutral.grey400 }} />}
+                  prefix={&lt;SearchOutlined style={{ color: COLORS.neutral.grey500 }} />}
                   value={searchText}
                   onChange={handleSearch}
                   style={{ width: '100%' }}
+                  aria-label="Buscar eventos por nombre o ubicación"
                 />
                 
                 {!isMobile ? (
                   &lt;Row gutter={16} align="middle">
                     &lt;Col xs={24} sm={12} md={14}>
-                      &lt;RangePicker 
+                      &lt;RangePicker
                         size="large"
                         value={dateRange}
                         onChange={handleDateFilter}
                         style={{ width: '100%' }}
                         placeholder={['Desde', 'Hasta']}
+                        aria-label="Filtrar eventos por rango de fechas"
                       />
                     &lt;/Col>
                     &lt;Col xs={24} sm={12} md={10}>
@@ -512,12 +511,13 @@ const Home = () => {
                 ) : (
                   &lt;Row gutter={8}>
                     &lt;Col span={18}>
-                      &lt;RangePicker 
+                      &lt;RangePicker
                         size="large"
                         value={dateRange}
                         onChange={handleDateFilter}
                         style={{ width: '100%' }}
                         placeholder={['Desde', 'Hasta']}
+                        aria-label="Filtrar eventos por rango de fechas"
                       />
                     &lt;/Col>
                     &lt;Col span={6}>
@@ -554,7 +554,7 @@ const Home = () => {
               &lt;Row gutter={[16, 12]} justify="space-between" align="middle">
                 &lt;Col xs={24} md={12}>
                   &lt;Space size={isMobile ? 'small' : 'middle'} wrap>
-                    &lt;Text strong style={{ fontSize: isMobile ? '14px' : '16px' }}>
+                    &lt;Text strong style={{ fontSize: isMobile ? '14px' : '16px' }} id="sort-label">
                       Ordenar por:
                     &lt;/Text>
                     &lt;Select
@@ -562,10 +562,9 @@ const Home = () => {
                       onChange={setSortBy}
                       style={{ width: isMobile ? 100 : 120 }}
                       size={isMobile ? 'small' : 'default'}
+                      aria-labelledby="sort-label"
                     >
-                      &lt;Option value="date">
-                        &lt;CalendarOutlined /> Fecha
-                      &lt;/Option>
+                      &lt;Option value="date">Fecha&lt;/Option>
                       &lt;Option value="name">Nombre&lt;/Option>
                       &lt;Option value="state">Estado&lt;/Option>
                     &lt;/Select>
@@ -582,7 +581,7 @@ const Home = () => {
                   textAlign: isMobile ? 'center' : 'right',
                   marginTop: isMobile ? '8px' : '0'
                 }}>
-                  &lt;Text type="secondary" style={{ fontSize: isMobile ? '12px' : '14px' }}>
+                  &lt;Text style={{ fontSize: isMobile ? '12px' : '14px', color: COLORS.neutral.grey600 }}>
                     Mostrando {displayedEvents.length} de {filteredEvents.length} eventos
                   &lt;/Text>
                 &lt;/Col>
@@ -599,13 +598,13 @@ const Home = () => {
                 }
               }}
             >
-              &lt;TabPane 
+              &lt;TabPane
                 tab={
-                  &lt;span style={{ fontSize: isMobile ? '12px' : '14px' }}>
-                    &lt;StarOutlined style={{ color: COLORS.primary.main }} />
+                  &lt;span style={{ fontSize: isMobile ? '12px' : '14px', color: COLORS.neutral.grey700 }}>
+                    &lt;StarOutlined style={{ color: COLORS.accent.green, marginRight: '4px' }} />
                     Eventos ({filteredEvents.length})
                   &lt;/span>
-                } 
+                }
                 key="1"
               >
                 {loading ? (
@@ -660,7 +659,7 @@ const Home = () => {
                       &lt;Empty
                         image={Empty.PRESENTED_IMAGE_SIMPLE}
                         description={
-                          &lt;span style={{ color: COLORS.neutral.grey400 }}>
+                          &lt;span style={{ color: COLORS.neutral.grey600 }}>
                             No se encontraron eventos con los filtros seleccionados
                           &lt;/span>
                         }
@@ -723,13 +722,13 @@ export default Home;</code></pre>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-components_colorscheme.html">components/colorscheme</a></li><li><a href="module-hooks_useSeatMapViability.html">hooks/useSeatMapViability</a></li><li><a href="module-models_Event.html">models/Event</a></li><li><a href="module-models_Location.html">models/Location</a></li><li><a href="module-models_SeatMap.html">models/SeatMap</a></li><li><a href="module-models_Ticket.html">models/Ticket</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-services_UserService.html">services/UserService</a></li><li><a href="module-utils_authSession.html">utils/authSession</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AboutUs">AboutUs</a></li><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#AdminStatistics">AdminStatistics</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#BlockingViewSwitcher">BlockingViewSwitcher</a></li><li><a href="global.html#EditProfile">EditProfile</a></li><li><a href="global.html#EditableSeatRenderer">EditableSeatRenderer</a></li><li><a href="global.html#ErrorPage">ErrorPage</a></li><li><a href="global.html#EventCreation">EventCreation</a></li><li><a href="global.html#EventDetails">EventDetails</a></li><li><a href="global.html#FramedImage">FramedImage</a></li><li><a href="global.html#GeneralAdmissionRenderer">GeneralAdmissionRenderer</a></li><li><a href="global.html#GenericSeatRenderer">GenericSeatRenderer</a></li><li><a href="global.html#HelpCenter">HelpCenter</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#ManualBlockingSelection">ManualBlockingSelection</a></li><li><a href="global.html#ManualSeatSelection">ManualSeatSelection</a></li><li><a href="global.html#Navbar">Navbar</a></li><li><a href="global.html#Profile">Profile</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#RowPricingTable">RowPricingTable</a></li><li><a href="global.html#SeatMapContainer">SeatMapContainer</a></li><li><a href="global.html#SeatRenderer">SeatRenderer</a></li><li><a href="global.html#SeatSelectionViewSwitcher">SeatSelectionViewSwitcher</a></li><li><a href="global.html#SectionShapeRenderer">SectionShapeRenderer</a></li><li><a href="global.html#SelectionTopBar">SelectionTopBar</a></li><li><a href="global.html#TicketPurchase">TicketPurchase</a></li><li><a href="global.html#VenueStageRenderer">VenueStageRenderer</a></li><li><a href="global.html#ZoomControls">ZoomControls</a></li><li><a href="global.html#enviarEmailConfirmacionCompra">enviarEmailConfirmacionCompra</a></li><li><a href="global.html#generateTicketNumber">generateTicketNumber</a></li><li><a href="global.html#generateValidationCode">generateValidationCode</a></li><li><a href="global.html#returnError">returnError</a></li><li><a href="global.html#transporter">transporter</a></li><li><a href="global.html#useAdvancedZoomPan">useAdvancedZoomPan</a></li><li><a href="global.html#useDeviceDetection">useDeviceDetection</a></li><li><a href="global.html#useUserRole">useUserRole</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-components_colorscheme.html">components/colorscheme</a></li><li><a href="module-models_Event.html">models/Event</a></li><li><a href="module-models_Location.html">models/Location</a></li><li><a href="module-models_SeatMap.html">models/SeatMap</a></li><li><a href="module-models_Ticket.html">models/Ticket</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-services_UserService.html">services/UserService</a></li><li><a href="module-utils_api.html">utils/api</a></li><li><a href="module-utils_authSession.html">utils/authSession</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AboutUs">AboutUs</a></li><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#AdminStatistics">AdminStatistics</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#BlockingViewSwitcher">BlockingViewSwitcher</a></li><li><a href="global.html#EditProfile">EditProfile</a></li><li><a href="global.html#EditableSeatRenderer">EditableSeatRenderer</a></li><li><a href="global.html#ErrorPage">ErrorPage</a></li><li><a href="global.html#EventCreation">EventCreation</a></li><li><a href="global.html#EventDetails">EventDetails</a></li><li><a href="global.html#FramedImage">FramedImage</a></li><li><a href="global.html#GeneralAdmissionRenderer">GeneralAdmissionRenderer</a></li><li><a href="global.html#GenericSeatRenderer">GenericSeatRenderer</a></li><li><a href="global.html#HelpCenter">HelpCenter</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#ManualBlockingSelection">ManualBlockingSelection</a></li><li><a href="global.html#ManualSeatSelection">ManualSeatSelection</a></li><li><a href="global.html#Profile">Profile</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#RowPricingTable">RowPricingTable</a></li><li><a href="global.html#SeatMapContainer">SeatMapContainer</a></li><li><a href="global.html#SeatRenderer">SeatRenderer</a></li><li><a href="global.html#SeatSelectionViewSwitcher">SeatSelectionViewSwitcher</a></li><li><a href="global.html#SectionShapeRenderer">SectionShapeRenderer</a></li><li><a href="global.html#SelectionTopBar">SelectionTopBar</a></li><li><a href="global.html#TicketPurchase">TicketPurchase</a></li><li><a href="global.html#VenueStageRenderer">VenueStageRenderer</a></li><li><a href="global.html#ZoomControls">ZoomControls</a></li><li><a href="global.html#enviarEmailConfirmacionCompra">enviarEmailConfirmacionCompra</a></li><li><a href="global.html#generateTicketNumber">generateTicketNumber</a></li><li><a href="global.html#generateToken">generateToken</a></li><li><a href="global.html#generateValidationCode">generateValidationCode</a></li><li><a href="global.html#returnError">returnError</a></li><li><a href="global.html#tokens">tokens</a></li><li><a href="global.html#transporter">transporter</a></li><li><a href="global.html#useAdvancedZoomPan">useAdvancedZoomPan</a></li><li><a href="global.html#useDeviceDetection">useDeviceDetection</a></li><li><a href="global.html#useUserRole">useUserRole</a></li><li><a href="global.html#verifyAdmin">verifyAdmin</a></li><li><a href="global.html#verifyAuthenticated">verifyAuthenticated</a></li><li><a href="global.html#verifyOwnership">verifyOwnership</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu Oct 23 2025 19:08:08 GMT+0200 (hora de verano de Europa central)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Nov 10 2025 20:21:21 GMT+0100 (hora estándar de Europa central)
 </footer>
 
 <script> prettyPrint(); </script>

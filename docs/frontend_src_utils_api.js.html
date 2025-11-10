@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: frontend/src/utils/api.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: frontend/src/utils/api.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file API utility functions for authenticated requests
+ * @module utils/api
+ * @description Provides helper functions to make authenticated HTTP requests with tokens
+ */
+
+import axios from 'axios';
+
+const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
+
+/**
+ * Gets the admin authentication headers (roleToken for admin operations)
+ * @returns {Object} Headers object with Authorization roleToken
+ */
+export const getAdminHeaders = () => {
+  const roleToken = localStorage.getItem('roleToken');
+
+  if (!roleToken) {
+    return {};
+  }
+
+  return {
+    Authorization: `Bearer ${roleToken}`
+  };
+};
+
+/**
+ * Gets the user authentication headers (token for user operations)
+ * @returns {Object} Headers object with Authorization token
+ */
+export const getUserHeaders = () => {
+  const token = localStorage.getItem('token');
+
+  if (!token) {
+    return {};
+  }
+
+  return {
+    Authorization: `Bearer ${token}`
+  };
+};
+
+/**
+ * Gets the authentication headers (tries roleToken for admin, falls back to token)
+ * @deprecated Use getAdminHeaders() or getUserHeaders() instead
+ * @returns {Object} Headers object with Authorization token
+ */
+export const getAuthHeaders = () => {
+  // For backwards compatibility, prefer roleToken (admin) but fallback to token (user)
+  const roleToken = localStorage.getItem('roleToken');
+  const token = localStorage.getItem('token');
+
+  const authToken = roleToken || token;
+
+  if (!authToken) {
+    return {};
+  }
+
+  return {
+    Authorization: `Bearer ${authToken}`
+  };
+};
+
+/**
+ * Makes an authenticated GET request (uses roleToken for admin operations)
+ * @param {string} endpoint - API endpoint (without base URL)
+ * @param {Object} config - Additional axios config
+ * @returns {Promise} Axios response promise
+ */
+export const authenticatedGet = (endpoint, config = {}) => {
+  return axios.get(`${gatewayUrl}${endpoint}`, {
+    ...config,
+    headers: {
+      ...getAdminHeaders(),
+      ...config.headers
+    }
+  });
+};
+
+/**
+ * Makes an authenticated POST request (uses roleToken for admin operations)
+ * @param {string} endpoint - API endpoint (without base URL)
+ * @param {Object} data - Request body data
+ * @param {Object} config - Additional axios config
+ * @returns {Promise} Axios response promise
+ */
+export const authenticatedPost = (endpoint, data, config = {}) => {
+  return axios.post(`${gatewayUrl}${endpoint}`, data, {
+    ...config,
+    headers: {
+      ...getAdminHeaders(),
+      ...config.headers
+    }
+  });
+};
+
+/**
+ * Makes an authenticated PUT request (uses roleToken for admin operations)
+ * @param {string} endpoint - API endpoint (without base URL)
+ * @param {Object} data - Request body data
+ * @param {Object} config - Additional axios config
+ * @returns {Promise} Axios response promise
+ */
+export const authenticatedPut = (endpoint, data, config = {}) => {
+  return axios.put(`${gatewayUrl}${endpoint}`, data, {
+    ...config,
+    headers: {
+      ...getAdminHeaders(),
+      ...config.headers
+    }
+  });
+};
+
+/**
+ * Makes an authenticated PATCH request (uses roleToken for admin operations)
+ * @param {string} endpoint - API endpoint (without base URL)
+ * @param {Object} data - Request body data
+ * @param {Object} config - Additional axios config
+ * @returns {Promise} Axios response promise
+ */
+export const authenticatedPatch = (endpoint, data, config = {}) => {
+  return axios.patch(`${gatewayUrl}${endpoint}`, data, {
+    ...config,
+    headers: {
+      ...getAdminHeaders(),
+      ...config.headers
+    }
+  });
+};
+
+/**
+ * Makes an authenticated DELETE request (uses roleToken for admin operations)
+ * @param {string} endpoint - API endpoint (without base URL)
+ * @param {Object} config - Additional axios config
+ * @returns {Promise} Axios response promise
+ */
+export const authenticatedDelete = (endpoint, config = {}) => {
+  return axios.delete(`${gatewayUrl}${endpoint}`, {
+    ...config,
+    headers: {
+      ...getAdminHeaders(),
+      ...config.headers
+    }
+  });
+};
+
+/**
+ * Makes a user-authenticated GET request (uses regular token, not roleToken)
+ * @param {string} endpoint - API endpoint (without base URL)
+ * @param {Object} config - Additional axios config
+ * @returns {Promise} Axios response promise
+ */
+export const userAuthenticatedGet = (endpoint, config = {}) => {
+  return axios.get(`${gatewayUrl}${endpoint}`, {
+    ...config,
+    headers: {
+      ...getUserHeaders(),
+      ...config.headers
+    }
+  });
+};
+
+/**
+ * Makes a user-authenticated POST request (uses regular token, not roleToken)
+ * @param {string} endpoint - API endpoint (without base URL)
+ * @param {Object} data - Request body data
+ * @param {Object} config - Additional axios config
+ * @returns {Promise} Axios response promise
+ */
+export const userAuthenticatedPost = (endpoint, data, config = {}) => {
+  return axios.post(`${gatewayUrl}${endpoint}`, data, {
+    ...config,
+    headers: {
+      ...getUserHeaders(),
+      ...config.headers
+    }
+  });
+};
+
+/**
+ * Makes a user-authenticated PUT request (uses regular token, not roleToken)
+ * @param {string} endpoint - API endpoint (without base URL)
+ * @param {Object} data - Request body data
+ * @param {Object} config - Additional axios config
+ * @returns {Promise} Axios response promise
+ */
+export const userAuthenticatedPut = (endpoint, data, config = {}) => {
+  return axios.put(`${gatewayUrl}${endpoint}`, data, {
+    ...config,
+    headers: {
+      ...getUserHeaders(),
+      ...config.headers
+    }
+  });
+};
+
+const api = {
+  // Admin operations (use roleToken)
+  get: authenticatedGet,
+  post: authenticatedPost,
+  put: authenticatedPut,
+  patch: authenticatedPatch,
+  delete: authenticatedDelete,
+
+  // User operations (use regular token)
+  userGet: userAuthenticatedGet,
+  userPost: userAuthenticatedPost,
+  userPut: userAuthenticatedPut,
+
+  // Headers
+  getAdminHeaders,
+  getUserHeaders,
+  getAuthHeaders
+};
+
+export default api;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-components_colorscheme.html">components/colorscheme</a></li><li><a href="module-models_Event.html">models/Event</a></li><li><a href="module-models_Location.html">models/Location</a></li><li><a href="module-models_SeatMap.html">models/SeatMap</a></li><li><a href="module-models_Ticket.html">models/Ticket</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-services_UserService.html">services/UserService</a></li><li><a href="module-utils_api.html">utils/api</a></li><li><a href="module-utils_authSession.html">utils/authSession</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AboutUs">AboutUs</a></li><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#AdminStatistics">AdminStatistics</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#BlockingViewSwitcher">BlockingViewSwitcher</a></li><li><a href="global.html#EditProfile">EditProfile</a></li><li><a href="global.html#EditableSeatRenderer">EditableSeatRenderer</a></li><li><a href="global.html#ErrorPage">ErrorPage</a></li><li><a href="global.html#EventCreation">EventCreation</a></li><li><a href="global.html#EventDetails">EventDetails</a></li><li><a href="global.html#FramedImage">FramedImage</a></li><li><a href="global.html#GeneralAdmissionRenderer">GeneralAdmissionRenderer</a></li><li><a href="global.html#GenericSeatRenderer">GenericSeatRenderer</a></li><li><a href="global.html#HelpCenter">HelpCenter</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#ManualBlockingSelection">ManualBlockingSelection</a></li><li><a href="global.html#ManualSeatSelection">ManualSeatSelection</a></li><li><a href="global.html#Profile">Profile</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#RowPricingTable">RowPricingTable</a></li><li><a href="global.html#SeatMapContainer">SeatMapContainer</a></li><li><a href="global.html#SeatRenderer">SeatRenderer</a></li><li><a href="global.html#SeatSelectionViewSwitcher">SeatSelectionViewSwitcher</a></li><li><a href="global.html#SectionShapeRenderer">SectionShapeRenderer</a></li><li><a href="global.html#SelectionTopBar">SelectionTopBar</a></li><li><a href="global.html#TicketPurchase">TicketPurchase</a></li><li><a href="global.html#VenueStageRenderer">VenueStageRenderer</a></li><li><a href="global.html#ZoomControls">ZoomControls</a></li><li><a href="global.html#enviarEmailConfirmacionCompra">enviarEmailConfirmacionCompra</a></li><li><a href="global.html#generateTicketNumber">generateTicketNumber</a></li><li><a href="global.html#generateToken">generateToken</a></li><li><a href="global.html#generateValidationCode">generateValidationCode</a></li><li><a href="global.html#returnError">returnError</a></li><li><a href="global.html#tokens">tokens</a></li><li><a href="global.html#transporter">transporter</a></li><li><a href="global.html#useAdvancedZoomPan">useAdvancedZoomPan</a></li><li><a href="global.html#useDeviceDetection">useDeviceDetection</a></li><li><a href="global.html#useUserRole">useUserRole</a></li><li><a href="global.html#verifyAdmin">verifyAdmin</a></li><li><a href="global.html#verifyAuthenticated">verifyAuthenticated</a></li><li><a href="global.html#verifyOwnership">verifyOwnership</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Nov 10 2025 20:21:21 GMT+0100 (hora estándar de Europa central)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

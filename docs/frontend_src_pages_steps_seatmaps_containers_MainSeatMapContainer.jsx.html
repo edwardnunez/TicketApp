@@ -33,7 +33,7 @@ import {
   CompressOutlined,
   InfoCircleOutlined
 } from '@ant-design/icons';
-import { COLORS, getVenueColors } from '../../../../components/colorscheme';
+import { COLORS, getVenueColors, getContrastColor } from '../../../../components/colorscheme';
 import ProSeatRenderer from '../renderers/ProSeatRenderer';
 import AltSeatMapLegend from '../ui/AltSeatMapLegend';
 import VenueStageRenderer from '../renderers/VenueStageRenderer';
@@ -109,7 +109,7 @@ const SelectionTopBar = ({ selectedSeats, maxSeats, formatPrice, event, showLege
           Selección de asientos
         &lt;/Title>
         &lt;Text style={{
-          color: COLORS.neutral.grey4,
+          color: COLORS.neutral.grey600,
           fontSize: isMobile ? '11px' : '12px',
           whiteSpace: isMobile ? 'normal' : 'nowrap',
           lineHeight: '1.3'
@@ -137,7 +137,7 @@ const SelectionTopBar = ({ selectedSeats, maxSeats, formatPrice, event, showLege
           &lt;div style={{ textAlign: 'center' }}>
             &lt;Text style={{
               fontSize: isMobile ? '10px' : '12px',
-              color: COLORS.neutral.grey4,
+              color: COLORS.neutral.grey600,
               display: 'block',
               whiteSpace: 'nowrap'
             }}>
@@ -157,7 +157,7 @@ const SelectionTopBar = ({ selectedSeats, maxSeats, formatPrice, event, showLege
             &lt;div style={{ textAlign: 'center' }}>
               &lt;Text style={{
                 fontSize: isMobile ? '10px' : '12px',
-                color: COLORS.neutral.grey4,
+                color: COLORS.neutral.grey600,
                 display: 'block',
                 whiteSpace: 'nowrap'
               }}>
@@ -297,6 +297,34 @@ const MainSeatMapContainer = ({
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
+
+  // Centrar el scroll en móvil cuando se carga el mapa o cambia el zoom
+  useEffect(() => {
+    if (isMobile &amp;&amp; seatMapRef.current) {
+      const centerScroll = () => {
+        const container = seatMapRef.current;
+        if (container) {
+          const scrollWidth = container.scrollWidth;
+          const clientWidth = container.clientWidth;
+          const scrollHeight = container.scrollHeight;
+          const clientHeight = container.clientHeight;
+
+          const centerX = (scrollWidth - clientWidth) / 2;
+          const centerY = (scrollHeight - clientHeight) / 2;
+
+          container.scrollTo({
+            left: centerX,
+            top: centerY,
+            behavior: 'auto'
+          });
+        }
+      };
+
+      // Centrar después de un breve delay para asegurar que el DOM esté actualizado
+      const timer = setTimeout(centerScroll, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [isMobile, seatMapData, zoomLevel]);
 
   if (!seatMapData) return null;
 
@@ -725,23 +753,28 @@ const MainSeatMapContainer = ({
 
   // Layout para teatro
   const renderTheaterLayout = () => {
-    const orchestraSection = sections.find(s => 
+    const orchestraSection = sections.find(s =>
       s.id.includes('orchestra') || s.name.toLowerCase().includes('orchestra') ||
       s.id.includes('orquesta') || s.name.toLowerCase().includes('orquesta')
     );
-    const mezzanineSection = sections.find(s => 
+    const mezzanineSection = sections.find(s =>
       s.id.includes('mezzanine') || s.name.toLowerCase().includes('mezzanine') ||
       s.id.includes('mezanine') || s.name.toLowerCase().includes('mezanine')
     );
-    const balconySection = sections.find(s => 
+    const balconySection = sections.find(s =>
       s.id.includes('balcony') || s.name.toLowerCase().includes('balcony') ||
       s.id.includes('balcón') || s.name.toLowerCase().includes('balcón')
     );
-    const boxesSection = sections.find(s => 
+    const boxesSection = sections.find(s =>
       s.id.includes('boxes') || s.name.toLowerCase().includes('boxes') ||
       s.id.includes('palcos') || s.name.toLowerCase().includes('palcos')
     );
-    const vipSection = sections.find(s => s.id.includes('vip') || s.name.toLowerCase().includes('vip'));
+    // VIP section solo si no es parte de boxes (palcos)
+    const vipSection = sections.find(s =>
+      (s.id.includes('vip') || s.name.toLowerCase().includes('vip')) &amp;&amp;
+      !s.id.includes('boxes') &amp;&amp; !s.name.toLowerCase().includes('boxes') &amp;&amp;
+      !s.id.includes('palcos') &amp;&amp; !s.name.toLowerCase().includes('palcos')
+    );
 
     return (
       &lt;div className="theater-layout">
@@ -919,9 +952,9 @@ const MainSeatMapContainer = ({
             height: '100%',
             overflow: isMobile ? 'auto' : 'hidden', // En móvil permitir scroll, en desktop usar pan
             cursor: !isMobile &amp;&amp; isInteracting ? 'grabbing' : (isMobile ? 'auto' : 'grab'),
-            display: 'flex',
-            justifyContent: isMobile ? 'flex-start' : 'center',
-            alignItems: isMobile ? 'flex-start' : 'center',
+            display: isMobile ? 'block' : 'flex',
+            justifyContent: isMobile ? 'initial' : 'center',
+            alignItems: isMobile ? 'initial' : 'center',
             padding: 0,
             flex: 1,
             touchAction: isMobile ? 'pan-x pan-y pinch-zoom' : 'none', // En móvil permitir scroll nativo + pinch zoom
@@ -936,24 +969,56 @@ const MainSeatMapContainer = ({
           onTouchMove={zoomPanHandlers.onTouchMove}
           onTouchEnd={zoomPanHandlers.onTouchEnd}
         >
-          &lt;div
-            className="seatmap-transform"
-            style={{
-              transform: isMobile ? `scale(${zoomLevel})` : `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`,
-              transformOrigin: isMobile ? 'top left' : 'center center',
-              transition: isInteracting ? 'none' : 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-              width: 'fit-content',
-              height: 'fit-content',
-              position: 'relative',
-              minWidth: isMobile ? '1400px' : 'auto', // En móvil mantener tamaño AMPLIO para evitar apelotonamiento
-              minHeight: 'auto',
-              maxWidth: 'none',
-              maxHeight: 'none',
-              willChange: isInteracting ? 'transform' : 'auto'
-            }}
-          >
-            {renderVenueLayout()}
-          &lt;/div>
+          {isMobile ? (
+            // En móvil: wrapper adicional para centrado con scroll
+            &lt;div
+              style={{
+                display: 'inline-block',
+                minWidth: '100%',
+                minHeight: '100%',
+                textAlign: 'center',
+                padding: '50vh 50vw', // Padding para permitir centrado con scroll
+                boxSizing: 'content-box'
+              }}
+            >
+              &lt;div
+                className="seatmap-transform"
+                style={{
+                  transform: `scale(${zoomLevel})`,
+                  transformOrigin: 'center center',
+                  transition: isInteracting ? 'none' : 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                  display: 'inline-block',
+                  width: 'fit-content',
+                  height: 'fit-content',
+                  position: 'relative',
+                  minWidth: '1400px',
+                  willChange: isInteracting ? 'transform' : 'auto'
+                }}
+              >
+                {renderVenueLayout()}
+              &lt;/div>
+            &lt;/div>
+          ) : (
+            // En desktop: comportamiento normal con pan
+            &lt;div
+              className="seatmap-transform"
+              style={{
+                transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`,
+                transformOrigin: 'center center',
+                transition: isInteracting ? 'none' : 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                width: 'fit-content',
+                height: 'fit-content',
+                position: 'relative',
+                minWidth: 'auto',
+                minHeight: 'auto',
+                maxWidth: 'none',
+                maxHeight: 'none',
+                willChange: isInteracting ? 'transform' : 'auto'
+              }}
+            >
+              {renderVenueLayout()}
+            &lt;/div>
+          )}
         &lt;/div>
 
         {/* Leyenda - No mostrar en modo de vista previa */}
@@ -998,7 +1063,7 @@ const ProfessionalGeneralAdmissionRenderer = ({
   isHighContrast = false
 }) => {
   const sameSectionSelected = selectedSeats.filter(s => s.sectionId === section.id);
-  const isSelected = sameSectionSelected.length > 0;
+  const selectedCount = sameSectionSelected.length;
 
   const pricingCapacity = sectionCapacityFromPricing;
   const occupiedCount = occupiedSeats.filter(seatId => seatId.startsWith(section.id)).length;
@@ -1008,6 +1073,12 @@ const ProfessionalGeneralAdmissionRenderer = ({
 
   const isFullyBooked = sectionBlocked || remainingCapacity &lt;= 0;
   const isNearCapacity = capacityPercentage > 80;
+
+  // Obtener el color de la sección o usar un color por defecto
+  const sectionColor = section.color || COLORS.primary.main;
+
+  // Calcular el color de texto con buen contraste sobre el fondo de la sección
+  const textColor = getContrastColor(sectionColor, COLORS.neutral.white, COLORS.neutral.darker);
 
   const handleSectionClick = () => {
     if (isFullyBooked) return;
@@ -1044,42 +1115,168 @@ const ProfessionalGeneralAdmissionRenderer = ({
 
   if (isFullyBooked) {
     return (
-      &lt;div className="general-admission-blocked">
-        &lt;div className="blocked-icon">⚠️&lt;/div>
-        &lt;div className="blocked-text">AGOTADO&lt;/div>
-        &lt;div className="blocked-subtext">No hay entradas disponibles&lt;/div>
+      &lt;div
+        style={{
+          minWidth: '380px',
+          padding: '40px',
+          background: '#F3F4F6',
+          border: '3px dashed #D1D5DB',
+          borderRadius: '20px',
+          textAlign: 'center',
+          color: '#9CA3AF',
+          opacity: 0.7
+        }}
+      >
+        &lt;div style={{ fontSize: '32px', marginBottom: '12px' }}>⚠️&lt;/div>
+        &lt;div style={{ fontWeight: 'bold', fontSize: '20px', marginBottom: '6px' }}>AGOTADO&lt;/div>
+        &lt;div style={{ fontSize: '16px' }}>No hay entradas disponibles&lt;/div>
       &lt;/div>
     );
   }
 
   return (
     &lt;div
-      className={`general-admission ${isSelected ? 'selected' : ''}`}
       onClick={handleSectionClick}
+      style={{
+        minWidth: '420px',
+        maxWidth: '480px',
+        padding: '36px 44px',
+        background: `linear-gradient(135deg, ${sectionColor}E6 0%, ${sectionColor}D9 100%)`,
+        border: `3px solid ${sectionColor}`,
+        borderRadius: '24px',
+        cursor: 'pointer',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        boxShadow: selectedCount > 0
+          ? `0 8px 32px ${sectionColor}40, 0 0 0 4px ${sectionColor}20`
+          : `0 4px 16px rgba(0,0,0,0.08)`,
+        transform: selectedCount > 0 ? 'scale(1.02)' : 'scale(1)',
+        position: 'relative',
+        overflow: 'visible'
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = 'scale(1.02)';
+        e.currentTarget.style.boxShadow = `0 8px 32px ${sectionColor}40`;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = selectedCount > 0 ? 'scale(1.02)' : 'scale(1)';
+        e.currentTarget.style.boxShadow = selectedCount > 0
+          ? `0 8px 32px ${sectionColor}40, 0 0 0 4px ${sectionColor}20`
+          : `0 4px 16px rgba(0,0,0,0.08)`;
+      }}
     >
-      &lt;div className="ga-icon">
-        {isSelected ? '✓' : '🎫'}
-      &lt;/div>
-      
-      &lt;div className="ga-title">
-        {isSelected ? 'SELECCIONADO' : 'ENTRADA GENERAL'}
+      {/* Indicador de color de sección */}
+      &lt;div style={{
+        width: '32px',
+        height: '32px',
+        backgroundColor: sectionColor,
+        borderRadius: '50%',
+        margin: '0 auto 16px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '18px',
+        boxShadow: `0 4px 12px ${sectionColor}60`
+      }}>
+        🎫
       &lt;/div>
 
-      &lt;div className="capacity-bar">
-        &lt;div 
-          className="capacity-fill"
-          style={{ width: `${capacityPercentage}%` }}
+      {/* Nombre de la sección */}
+      &lt;div style={{
+        fontSize: '18px',
+        fontWeight: '700',
+        color: textColor,
+        textAlign: 'center',
+        marginBottom: '20px',
+        textTransform: 'uppercase',
+        letterSpacing: '1px'
+      }}>
+        {section.name}
+      &lt;/div>
+
+      {/* Contador de entradas seleccionadas */}
+      {selectedCount > 0 &amp;&amp; (
+        &lt;div style={{
+          backgroundColor: `${sectionColor}`,
+          color: '#FFFFFF',
+          padding: '20px',
+          borderRadius: '16px',
+          marginBottom: '20px',
+          textAlign: 'center',
+          boxShadow: `0 6px 20px ${sectionColor}50`
+        }}>
+          &lt;div style={{
+            fontSize: '48px',
+            fontWeight: '900',
+            lineHeight: '1',
+            marginBottom: '8px'
+          }}>
+            {selectedCount}
+          &lt;/div>
+          &lt;div style={{
+            fontSize: '14px',
+            fontWeight: '600',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+            opacity: 0.95
+          }}>
+            {selectedCount === 1 ? 'Entrada seleccionada' : 'Entradas seleccionadas'}
+          &lt;/div>
+        &lt;/div>
+      )}
+
+      {/* Barra de capacidad */}
+      &lt;div style={{
+        width: '100%',
+        height: '8px',
+        backgroundColor: `${sectionColor}40`,
+        borderRadius: '4px',
+        marginBottom: '12px',
+        overflow: 'hidden'
+      }}>
+        &lt;div
+          style={{
+            height: '100%',
+            width: `${capacityPercentage}%`,
+            backgroundColor: sectionColor,
+            borderRadius: '4px',
+            transition: 'width 0.3s ease'
+          }}
         />
       &lt;/div>
-      
-      &lt;div className="capacity-info">
+
+      {/* Información de capacidad */}
+      &lt;div style={{
+        fontSize: '15px',
+        color: textColor,
+        textAlign: 'center',
+        marginBottom: '20px',
+        fontWeight: '500',
+        opacity: 0.9
+      }}>
         {remainingCapacity} de {totalCapacity} disponibles
-        {isNearCapacity &amp;&amp; !isSelected &amp;&amp; (
-          &lt;span className="capacity-warning"> (¡Pocas quedan!)&lt;/span>
+        {isNearCapacity &amp;&amp; (
+          &lt;div style={{
+            color: '#EF4444',
+            fontSize: '13px',
+            marginTop: '4px',
+            fontWeight: '600'
+          }}>
+            ¡Pocas quedan!
+          &lt;/div>
         )}
       &lt;/div>
 
-      &lt;div className="ga-price">
+      {/* Precio */}
+      &lt;div style={{
+        padding: '14px 28px',
+        background: `${sectionColor}`,
+        borderRadius: '12px',
+        textAlign: 'center',
+        fontSize: '24px',
+        fontWeight: '700',
+        color: '#FFFFFF',
+        boxShadow: `0 4px 12px ${sectionColor}40`
+      }}>
         {(() => {
           let correctPrice = section.defaultPrice || 0;
           if (event &amp;&amp; event.usesSectionPricing &amp;&amp; event.sectionPricing?.length > 0) {
@@ -1092,9 +1289,17 @@ const ProfessionalGeneralAdmissionRenderer = ({
         })()}
       &lt;/div>
 
-      {sameSectionSelected.length > 1 &amp;&amp; (
-        &lt;div className="selection-count">
-          {sameSectionSelected.length}
+      {/* Indicador de "Click para seleccionar" */}
+      {selectedCount === 0 &amp;&amp; (
+        &lt;div style={{
+          marginTop: '16px',
+          fontSize: '13px',
+          color: textColor,
+          textAlign: 'center',
+          fontWeight: '600',
+          opacity: 0.8
+        }}>
+          Click para añadir entrada
         &lt;/div>
       )}
     &lt;/div>
@@ -1112,13 +1317,13 @@ export default MainSeatMapContainer;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-components_colorscheme.html">components/colorscheme</a></li><li><a href="module-hooks_useSeatMapViability.html">hooks/useSeatMapViability</a></li><li><a href="module-models_Event.html">models/Event</a></li><li><a href="module-models_Location.html">models/Location</a></li><li><a href="module-models_SeatMap.html">models/SeatMap</a></li><li><a href="module-models_Ticket.html">models/Ticket</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-services_UserService.html">services/UserService</a></li><li><a href="module-utils_authSession.html">utils/authSession</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AboutUs">AboutUs</a></li><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#AdminStatistics">AdminStatistics</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#BlockingViewSwitcher">BlockingViewSwitcher</a></li><li><a href="global.html#EditProfile">EditProfile</a></li><li><a href="global.html#EditableSeatRenderer">EditableSeatRenderer</a></li><li><a href="global.html#ErrorPage">ErrorPage</a></li><li><a href="global.html#EventCreation">EventCreation</a></li><li><a href="global.html#EventDetails">EventDetails</a></li><li><a href="global.html#FramedImage">FramedImage</a></li><li><a href="global.html#GeneralAdmissionRenderer">GeneralAdmissionRenderer</a></li><li><a href="global.html#GenericSeatRenderer">GenericSeatRenderer</a></li><li><a href="global.html#HelpCenter">HelpCenter</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#ManualBlockingSelection">ManualBlockingSelection</a></li><li><a href="global.html#ManualSeatSelection">ManualSeatSelection</a></li><li><a href="global.html#Navbar">Navbar</a></li><li><a href="global.html#Profile">Profile</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#RowPricingTable">RowPricingTable</a></li><li><a href="global.html#SeatMapContainer">SeatMapContainer</a></li><li><a href="global.html#SeatRenderer">SeatRenderer</a></li><li><a href="global.html#SeatSelectionViewSwitcher">SeatSelectionViewSwitcher</a></li><li><a href="global.html#SectionShapeRenderer">SectionShapeRenderer</a></li><li><a href="global.html#SelectionTopBar">SelectionTopBar</a></li><li><a href="global.html#TicketPurchase">TicketPurchase</a></li><li><a href="global.html#VenueStageRenderer">VenueStageRenderer</a></li><li><a href="global.html#ZoomControls">ZoomControls</a></li><li><a href="global.html#enviarEmailConfirmacionCompra">enviarEmailConfirmacionCompra</a></li><li><a href="global.html#generateTicketNumber">generateTicketNumber</a></li><li><a href="global.html#generateValidationCode">generateValidationCode</a></li><li><a href="global.html#returnError">returnError</a></li><li><a href="global.html#transporter">transporter</a></li><li><a href="global.html#useAdvancedZoomPan">useAdvancedZoomPan</a></li><li><a href="global.html#useDeviceDetection">useDeviceDetection</a></li><li><a href="global.html#useUserRole">useUserRole</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-components_colorscheme.html">components/colorscheme</a></li><li><a href="module-models_Event.html">models/Event</a></li><li><a href="module-models_Location.html">models/Location</a></li><li><a href="module-models_SeatMap.html">models/SeatMap</a></li><li><a href="module-models_Ticket.html">models/Ticket</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-services_UserService.html">services/UserService</a></li><li><a href="module-utils_api.html">utils/api</a></li><li><a href="module-utils_authSession.html">utils/authSession</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AboutUs">AboutUs</a></li><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#AdminStatistics">AdminStatistics</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#BlockingViewSwitcher">BlockingViewSwitcher</a></li><li><a href="global.html#EditProfile">EditProfile</a></li><li><a href="global.html#EditableSeatRenderer">EditableSeatRenderer</a></li><li><a href="global.html#ErrorPage">ErrorPage</a></li><li><a href="global.html#EventCreation">EventCreation</a></li><li><a href="global.html#EventDetails">EventDetails</a></li><li><a href="global.html#FramedImage">FramedImage</a></li><li><a href="global.html#GeneralAdmissionRenderer">GeneralAdmissionRenderer</a></li><li><a href="global.html#GenericSeatRenderer">GenericSeatRenderer</a></li><li><a href="global.html#HelpCenter">HelpCenter</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#ManualBlockingSelection">ManualBlockingSelection</a></li><li><a href="global.html#ManualSeatSelection">ManualSeatSelection</a></li><li><a href="global.html#Profile">Profile</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#RowPricingTable">RowPricingTable</a></li><li><a href="global.html#SeatMapContainer">SeatMapContainer</a></li><li><a href="global.html#SeatRenderer">SeatRenderer</a></li><li><a href="global.html#SeatSelectionViewSwitcher">SeatSelectionViewSwitcher</a></li><li><a href="global.html#SectionShapeRenderer">SectionShapeRenderer</a></li><li><a href="global.html#SelectionTopBar">SelectionTopBar</a></li><li><a href="global.html#TicketPurchase">TicketPurchase</a></li><li><a href="global.html#VenueStageRenderer">VenueStageRenderer</a></li><li><a href="global.html#ZoomControls">ZoomControls</a></li><li><a href="global.html#enviarEmailConfirmacionCompra">enviarEmailConfirmacionCompra</a></li><li><a href="global.html#generateTicketNumber">generateTicketNumber</a></li><li><a href="global.html#generateToken">generateToken</a></li><li><a href="global.html#generateValidationCode">generateValidationCode</a></li><li><a href="global.html#returnError">returnError</a></li><li><a href="global.html#tokens">tokens</a></li><li><a href="global.html#transporter">transporter</a></li><li><a href="global.html#useAdvancedZoomPan">useAdvancedZoomPan</a></li><li><a href="global.html#useDeviceDetection">useDeviceDetection</a></li><li><a href="global.html#useUserRole">useUserRole</a></li><li><a href="global.html#verifyAdmin">verifyAdmin</a></li><li><a href="global.html#verifyAuthenticated">verifyAuthenticated</a></li><li><a href="global.html#verifyOwnership">verifyOwnership</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu Oct 23 2025 19:08:08 GMT+0200 (hora de verano de Europa central)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Nov 10 2025 20:21:21 GMT+0100 (hora estándar de Europa central)
 </footer>
 
 <script> prettyPrint(); </script>

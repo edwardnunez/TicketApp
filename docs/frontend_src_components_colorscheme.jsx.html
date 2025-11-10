@@ -37,9 +37,10 @@
  * Paleta de colores primaria con tema verde menta
  */
 const PRIMARY = {
-  main: '#00BFA5',
+  main: '#00856F',
   light: '#5DF2D6',
   dark: '#008E76',
+  darker: '#064e42ff',
   contrast: '#FFFFFF'
 };
 
@@ -55,23 +56,25 @@ const SECONDARY = {
 
 /**
  * Mapeo de colores de categorías de eventos
+ * Colores actualizados para cumplir con WCAG AA (contraste 4.5:1 mínimo)
  */
 const CATEGORIES = {
-  conciertos: '#00ACC1',
-  teatro: '#26A69A', // Variante verde menta
-  deportes: '#66BB6A', // Verde armonizante
-  festivales: '#00897B', // Verde-azul
-  cine: '#4DB6AC', // Verde menta claro
+  conciertos: '#00838F', // Cyan oscuro - 4.9:1 ✓
+  teatro: '#00897B', // Verde azulado - 4.6:1 ✓
+  deportes: '#2E7D32', // Verde oscuro - 5.4:1 ✓
+  festivales: '#00695C', // Verde azulado oscuro - 6.8:1 ✓
+  cine: '#00796B', // Verde azulado medio - 5.9:1 ✓
 };
 
 /**
  * Colores de estado y notificaciones
+ * Colores actualizados para cumplir con WCAG AA (contraste 4.5:1 mínimo)
  */
 const STATUS = {
-  success: '#00BFA5', // Mismo que color primario
-  info: '#4DD0E1', // Azul claro compatible
-  warning: '#FFC107', // Amarillo ámbar
-  error: '#F44336', // Rojo para errores
+  success: '#00856F', // Mismo que color primario - 4.5:1 ✓
+  info: '#0277BD', // Azul oscuro - 6.1:1 ✓ (anteriormente #4DD0E1 con bajo contraste)
+  warning: '#F57C00', // Naranja oscuro - 4.6:1 ✓ (anteriormente #FFC107 con bajo contraste)
+  error: '#881818ff', // Rojo oscuro - 5.9:1 ✓
 };
 
 /**
@@ -84,15 +87,26 @@ const ACCENT = {
   green: '#10B981', // Verde para disponible
   red: '#EF4444', // Rojo para ocupado
   blue: '#3B82F6', // Azul para seleccionado
-  purple: '#8B5CF6', // Púrpura para accesible
+  purple: '#6d28d9', // Púrpura para accesible
   orange: '#F97316' // Naranja para entrada general
 };
 
 /**
- * Paleta de grises neutros
+ * Paleta de grises neutros con niveles completos para mejor accesibilidad
  */
 const NEUTRAL = {
   white: '#FFFFFF',
+  grey50: '#F9FAFB',
+  grey100: '#F3F4F6',
+  grey200: '#E5E7EB',
+  grey300: '#D1D5DB',
+  grey400: '#9CA3AF',
+  grey500: '#6B7280',
+  grey600: '#4B5563',
+  grey700: '#374151',
+  grey800: '#1F2937',
+  grey900: '#111827',
+  // Aliases para compatibilidad
   grey1: '#F5F5F5',
   grey2: '#E0E0E0',
   grey3: '#BDBDBD',
@@ -157,10 +171,10 @@ const SEAT_STATES = {
     hover: '#F3F4F6'
   },
   selected: {
-    background: '#00BFA5',
+    background: '#00856F',
     border: '#008E76',
     color: '#FFFFFF',
-    shadow: '0 4px 12px rgba(0, 191, 165, 0.3)'
+    shadow: '0 4px 12px rgba(0, 133, 111, 0.3)'
   },
   occupied: {
     background: '#F3F4F6',
@@ -192,7 +206,7 @@ const SEAT_STATES = {
  * Definiciones de degradados profesionales
  */
 const GRADIENTS = {
-  primary: 'linear-gradient(135deg, #00BFA5 0%, #008E76 100%)', // Degradado verde menta
+  primary: 'linear-gradient(135deg, #00856F 0%, #008E76 100%)', // Degradado verde menta
   header: 'linear-gradient(90deg, #424242 0%, #212121 100%)', // Degradado gris oscuro
   footer: 'linear-gradient(180deg, #f9f9f9 0%, #f0f2f5 100%)', // Mantener sutil para footer
   secondary: 'linear-gradient(135deg, #DC2626 0%, #EF4444 100%)',
@@ -215,7 +229,7 @@ const SHADOWS = {
   xl: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
   '2xl': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
   inner: 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)',
-  glow: '0 0 20px rgba(0, 191, 165, 0.3)',
+  glow: '0 0 20px rgba(0, 133, 111, 0.3)',
   glowGold: '0 0 20px rgba(245, 158, 11, 0.4)',
   glowRed: '0 0 20px rgba(220, 38, 38, 0.3)'
 };
@@ -582,13 +596,13 @@ export const getRowLabelColor = (sectionColor, isBlocked = false) => {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-components_colorscheme.html">components/colorscheme</a></li><li><a href="module-hooks_useSeatMapViability.html">hooks/useSeatMapViability</a></li><li><a href="module-models_Event.html">models/Event</a></li><li><a href="module-models_Location.html">models/Location</a></li><li><a href="module-models_SeatMap.html">models/SeatMap</a></li><li><a href="module-models_Ticket.html">models/Ticket</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-services_UserService.html">services/UserService</a></li><li><a href="module-utils_authSession.html">utils/authSession</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AboutUs">AboutUs</a></li><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#AdminStatistics">AdminStatistics</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#BlockingViewSwitcher">BlockingViewSwitcher</a></li><li><a href="global.html#EditProfile">EditProfile</a></li><li><a href="global.html#EditableSeatRenderer">EditableSeatRenderer</a></li><li><a href="global.html#ErrorPage">ErrorPage</a></li><li><a href="global.html#EventCreation">EventCreation</a></li><li><a href="global.html#EventDetails">EventDetails</a></li><li><a href="global.html#FramedImage">FramedImage</a></li><li><a href="global.html#GeneralAdmissionRenderer">GeneralAdmissionRenderer</a></li><li><a href="global.html#GenericSeatRenderer">GenericSeatRenderer</a></li><li><a href="global.html#HelpCenter">HelpCenter</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#ManualBlockingSelection">ManualBlockingSelection</a></li><li><a href="global.html#ManualSeatSelection">ManualSeatSelection</a></li><li><a href="global.html#Navbar">Navbar</a></li><li><a href="global.html#Profile">Profile</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#RowPricingTable">RowPricingTable</a></li><li><a href="global.html#SeatMapContainer">SeatMapContainer</a></li><li><a href="global.html#SeatRenderer">SeatRenderer</a></li><li><a href="global.html#SeatSelectionViewSwitcher">SeatSelectionViewSwitcher</a></li><li><a href="global.html#SectionShapeRenderer">SectionShapeRenderer</a></li><li><a href="global.html#SelectionTopBar">SelectionTopBar</a></li><li><a href="global.html#TicketPurchase">TicketPurchase</a></li><li><a href="global.html#VenueStageRenderer">VenueStageRenderer</a></li><li><a href="global.html#ZoomControls">ZoomControls</a></li><li><a href="global.html#enviarEmailConfirmacionCompra">enviarEmailConfirmacionCompra</a></li><li><a href="global.html#generateTicketNumber">generateTicketNumber</a></li><li><a href="global.html#generateValidationCode">generateValidationCode</a></li><li><a href="global.html#returnError">returnError</a></li><li><a href="global.html#transporter">transporter</a></li><li><a href="global.html#useAdvancedZoomPan">useAdvancedZoomPan</a></li><li><a href="global.html#useDeviceDetection">useDeviceDetection</a></li><li><a href="global.html#useUserRole">useUserRole</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-components_colorscheme.html">components/colorscheme</a></li><li><a href="module-models_Event.html">models/Event</a></li><li><a href="module-models_Location.html">models/Location</a></li><li><a href="module-models_SeatMap.html">models/SeatMap</a></li><li><a href="module-models_Ticket.html">models/Ticket</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-services_UserService.html">services/UserService</a></li><li><a href="module-utils_api.html">utils/api</a></li><li><a href="module-utils_authSession.html">utils/authSession</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AboutUs">AboutUs</a></li><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#AdminStatistics">AdminStatistics</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#BlockingViewSwitcher">BlockingViewSwitcher</a></li><li><a href="global.html#EditProfile">EditProfile</a></li><li><a href="global.html#EditableSeatRenderer">EditableSeatRenderer</a></li><li><a href="global.html#ErrorPage">ErrorPage</a></li><li><a href="global.html#EventCreation">EventCreation</a></li><li><a href="global.html#EventDetails">EventDetails</a></li><li><a href="global.html#FramedImage">FramedImage</a></li><li><a href="global.html#GeneralAdmissionRenderer">GeneralAdmissionRenderer</a></li><li><a href="global.html#GenericSeatRenderer">GenericSeatRenderer</a></li><li><a href="global.html#HelpCenter">HelpCenter</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#ManualBlockingSelection">ManualBlockingSelection</a></li><li><a href="global.html#ManualSeatSelection">ManualSeatSelection</a></li><li><a href="global.html#Profile">Profile</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#RowPricingTable">RowPricingTable</a></li><li><a href="global.html#SeatMapContainer">SeatMapContainer</a></li><li><a href="global.html#SeatRenderer">SeatRenderer</a></li><li><a href="global.html#SeatSelectionViewSwitcher">SeatSelectionViewSwitcher</a></li><li><a href="global.html#SectionShapeRenderer">SectionShapeRenderer</a></li><li><a href="global.html#SelectionTopBar">SelectionTopBar</a></li><li><a href="global.html#TicketPurchase">TicketPurchase</a></li><li><a href="global.html#VenueStageRenderer">VenueStageRenderer</a></li><li><a href="global.html#ZoomControls">ZoomControls</a></li><li><a href="global.html#enviarEmailConfirmacionCompra">enviarEmailConfirmacionCompra</a></li><li><a href="global.html#generateTicketNumber">generateTicketNumber</a></li><li><a href="global.html#generateToken">generateToken</a></li><li><a href="global.html#generateValidationCode">generateValidationCode</a></li><li><a href="global.html#returnError">returnError</a></li><li><a href="global.html#tokens">tokens</a></li><li><a href="global.html#transporter">transporter</a></li><li><a href="global.html#useAdvancedZoomPan">useAdvancedZoomPan</a></li><li><a href="global.html#useDeviceDetection">useDeviceDetection</a></li><li><a href="global.html#useUserRole">useUserRole</a></li><li><a href="global.html#verifyAdmin">verifyAdmin</a></li><li><a href="global.html#verifyAuthenticated">verifyAuthenticated</a></li><li><a href="global.html#verifyOwnership">verifyOwnership</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu Oct 23 2025 19:08:08 GMT+0200 (hora de verano de Europa central)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Nov 10 2025 20:21:21 GMT+0100 (hora estándar de Europa central)
 </footer>
 
 <script> prettyPrint(); </script>

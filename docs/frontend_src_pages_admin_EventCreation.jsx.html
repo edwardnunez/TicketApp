@@ -27,14 +27,14 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>import React, { useState, useEffect } from 'react';
-import { 
-  Layout, 
-  Form, 
-  Input, 
-  Button, 
-  DatePicker, 
-  Select, 
-  message, 
+import {
+  Layout,
+  Form,
+  Input,
+  Button,
+  DatePicker,
+  Select,
+  message,
   Modal,
   Alert,
   Card,
@@ -44,7 +44,6 @@ import {
   Space,
   Divider,
   Breadcrumb,
-  Tooltip,
   Tag,
   Upload,
   Table,
@@ -79,6 +78,7 @@ import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import { COLORS } from "../../components/colorscheme";
 import ImageCropperModal from "../../components/ImageCropperModal";
 import FramedImage from "../../components/FramedImage";
+import { authenticatedPost } from "../../utils/api";
 
 const { Content } = Layout;
 const { Option } = Select;
@@ -107,6 +107,7 @@ const RowPricingTable = React.memo(({ section, updateRowPrice, removeRowPrice, a
           value={text}
           onChange={(value) => updateRowPrice(section.sectionId, index, 'row', value)}
           style={{ width: '100%' }}
+          aria-label={`Número de fila ${index + 1}`}
         />
       )
     },
@@ -122,6 +123,7 @@ const RowPricingTable = React.memo(({ section, updateRowPrice, removeRowPrice, a
           onChange={(value) => updateRowPrice(section.sectionId, index, 'price', value)}
           style={{ width: '100%' }}
           prefix="€"
+          aria-label={`Precio para fila ${index + 1} en euros`}
         />
       )
     },
@@ -227,7 +229,7 @@ const EventCreation = () => {
   const stateColors = {
     activo: COLORS?.status?.success || "#52c41a",
     proximo: COLORS?.status?.info || "#1890ff",
-    finalizado: COLORS?.neutral?.grey4 || "#8c8c8c",
+    finalizado: COLORS?.neutral?.grey500 || "#6B7280",
     cancelado: COLORS?.status?.error || "#ff4d4f"
   };
 
@@ -304,7 +306,6 @@ const EventCreation = () => {
     if (!username) return;
     axios.get(`${gatewayUrl}/users/search?username=${username}`)
       .then(res => {
-        console.log('User data from search:', res.data);
         setCurrentUserId(res.data._id);
       })
       .catch(() => setCurrentUserId(null));
@@ -556,43 +557,6 @@ const EventCreation = () => {
     }
   };
 
-  // Función no utilizada - comentada para evitar warnings de linting
-  // const resizeImage = (file, maxWidth = 800, maxHeight = 600, quality = 0.8) => {
-  //   return new Promise((resolve) => {
-  //     const canvas = document.createElement('canvas');
-  //     const ctx = canvas.getContext('2d');
-  //     const img = new Image();
-      
-  //     img.onload = () => {
-  //       // Calcular nuevas dimensiones manteniendo proporción
-  //       let { width, height } = img;
-        
-  //       if (width > height) {
-  //         if (width > maxWidth) {
-  //           height = (height * maxWidth) / width;
-  //           width = maxWidth;
-  //         }
-  //       } else {
-  //         if (height > maxHeight) {
-  //           width = (width * maxHeight) / height;
-  //           height = maxHeight;
-  //         }
-  //       }
-        
-  //       canvas.width = width;
-  //       canvas.height = height;
-        
-  //       // Dibujar imagen redimensionada
-  //       ctx.drawImage(img, 0, 0, width, height);
-        
-  //       // Convertir a blob
-  //       canvas.toBlob(resolve, file.type, quality);
-  //     };
-      
-  //     img.src = URL.createObjectURL(file);
-  //   });
-  // };
-
   // Transforma la imagen a un lienzo fijo (contain) para que se vea entera en un marco 16:9
   const processImageToFixedCanvas = (file, targetWidth = 1280, targetHeight = 720, background = '#111', quality = 0.8) => {
     return new Promise((resolve) => {
@@ -659,8 +623,8 @@ const EventCreation = () => {
     
     try {
       // Crear el evento (solo para eventos sin seatmap)
-      await axios.post(`${gatewayUrl}/events`, eventDataToSave);
-      
+      await authenticatedPost('/events', eventDataToSave);
+
       message.success('Evento creado correctamente');
       setShowConfirmModal(false);
 
@@ -724,8 +688,6 @@ const EventCreation = () => {
         description: values.description,
         state: values.state || 'proximo'
       };
-
-      console.log('Event data before pricing:', eventData);
 
       // Añadir pricing según el tipo
       if (usesSectionPricing &amp;&amp; usesRowPricing &amp;&amp; sectionPricing.length > 0) {
@@ -811,8 +773,6 @@ const EventCreation = () => {
             price: Math.round((parseFloat(rowPrice.price) || 0) * 100) / 100
           }))
         }));
-        
-        console.log('EventCreation - Section pricing prepared:', eventData.sectionPricing);
 
         // Capacidad se calcula automáticamente en el backend
         eventData.capacity = sectionPricing.reduce((total, section) => {
@@ -858,17 +818,10 @@ const EventCreation = () => {
 
       eventData.createdBy = currentUserId || 'Anonymous admin';
 
-      console.log('Event data prepared:', eventData);
-      console.log('LocationObj:', locationObj);
-      console.log('LocationObj.seatMapId:', locationObj?.seatMapId);
-      console.log('Condition check:', locationObj &amp;&amp; locationObj.seatMapId);
-
       if (imageFile) {
         try {
-          console.log('Procesando imagen...');
           const imageData = await convertFileToBase64(imageFile);
           eventData.imageData = imageData;
-          console.log('Imagen procesada, tamaño final:', imageData.size);
         } catch (error) {
           console.error('Error al procesar imagen:', error);
           message.warning('Error al procesar la imagen, el evento se creará sin imagen');
@@ -876,12 +829,9 @@ const EventCreation = () => {
       }
       
       if (locationObj &amp;&amp; locationObj.seatMapId) {
-        // Si tiene seatmap, crear el evento directamente y redirigir a configuración
         try {
-          console.log('Creating event with seatmap, redirecting to configuration...');
-          
           // Crear el evento
-          const createEventResponse = await axios.post(`${gatewayUrl}/events`, eventData);
+          const createEventResponse = await authenticatedPost('/events', eventData);
           const createdEvent = createEventResponse.data;
           
           // Redirigir a la página de configuración del seatmap
@@ -1169,11 +1119,12 @@ const EventCreation = () => {
                         type="number"
                         value={section.defaultPrice || 0}
                         onChange={(e) => handleSectionDefaultPrice(section.sectionId, e.target.value)}
-                        prefix={&lt;EuroOutlined />}
+                        prefix={&lt;EuroOutlined style={{ color: COLORS?.neutral?.grey500 || '#6B7280' }} />}
                         placeholder="Ej: 25"
                         min={0}
                         step={0.01}
                         style={{ width: '100%' }}
+                        aria-label={`Precio por defecto para ${section.sectionName}`}
                       />
                     &lt;/Form.Item>
 
@@ -1217,6 +1168,7 @@ const EventCreation = () => {
                           max={section.maxCapacity || undefined}
                           style={{ width: '100%' }}
                           suffix="personas"
+                          aria-label={`Capacidad de ${section.sectionName}`}
                         />
                       &lt;/Form.Item>
                     )}
@@ -1331,8 +1283,71 @@ const EventCreation = () => {
   };
 
   return (
-    &lt;Layout style={{ backgroundColor: COLORS.neutral.grey1, minHeight: "100vh" }}>
-      &lt;Content style={{ padding: isMobile ? "18px 4px" : "40px 20px" }}>
+    &lt;>
+      &lt;style>
+        {`
+          /* Mejorar contraste de placeholders en Select */
+          .ant-select-selection-placeholder {
+            color: rgba(0, 0, 0, 0.65) !important;
+          }
+
+          /* Mejorar contraste del texto opcional en Form.Item */
+          .ant-form-item-optional {
+            color: rgba(0, 0, 0, 0.65) !important;
+          }
+
+          /* Mejorar contraste en textos de ayuda (help text) */
+          .ant-form-item-extra,
+          .ant-form-item-extra > div {
+            color: rgba(0, 0, 0, 0.65) !important;
+          }
+
+          /* Mejorar contraste del separador en Breadcrumb */
+          .ant-breadcrumb-separator {
+            color: rgba(0, 0, 0, 0.65) !important;
+          }
+
+          /* Mejorar contraste del contador de caracteres en TextArea */
+          .ant-input-textarea-show-count::after,
+          .ant-input-data-count {
+            color: rgba(0, 0, 0, 0.65) !important;
+          }
+
+          /* Ocultar completamente el textarea oculto de autosize */
+          textarea[aria-hidden="true"][name="hiddenTextarea"],
+          textarea[name="hiddenTextarea"] {
+            display: none !important;
+            visibility: hidden !important;
+            position: absolute !important;
+            left: -9999px !important;
+            top: -9999px !important;
+            width: 0 !important;
+            height: 0 !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            z-index: -9999 !important;
+          }
+
+          /* Ocultar tooltips con aria-describedby que causan broken ARIA */
+          .ant-form-item-label .ant-form-item-tooltip[aria-describedby],
+          .ant-form-item-label span.ant-form-item-tooltip[aria-describedby],
+          .ant-form-item-label .anticon-question-circle.ant-form-item-tooltip,
+          .ant-form-item-label [aria-describedby^=":r"].ant-form-item-tooltip {
+            display: none !important;
+            visibility: hidden !important;
+            position: absolute !important;
+            left: -9999px !important;
+            top: -9999px !important;
+            width: 0 !important;
+            height: 0 !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            z-index: -9999 !important;
+          }
+        `}
+      &lt;/style>
+      &lt;Layout style={{ backgroundColor: COLORS.neutral.grey1, minHeight: "100vh" }}>
+        &lt;Content style={{ padding: isMobile ? "18px 4px" : "40px 20px" }}>
         &lt;div style={{
           maxWidth: isMobile ? "100%" : "1200px",
           margin: "0 auto",
@@ -1342,21 +1357,21 @@ const EventCreation = () => {
           {/* Header with breadcrumb */}
           &lt;Row style={{ marginBottom: '24px' }}>
             &lt;Col span={24}>
-              &lt;Breadcrumb 
+              &lt;Breadcrumb
                 items={[
-                  { 
-                    title: &lt;Link to="/admin">Administración&lt;/Link> 
+                  {
+                    title: &lt;Link to="/admin" style={{ color: 'rgba(0, 0, 0, 0.85)' }}>Administración&lt;/Link>
                   },
-                  { 
-                    title: 'Crear evento' 
+                  {
+                    title: 'Crear evento'
                   }
                 ]}
                 style={{ marginBottom: '8px' }}
               />
-              &lt;Title 
-                level={2} 
-                style={{ 
-                  margin: 0, 
+              &lt;Title
+                level={2}
+                style={{
+                  margin: 0,
                   color: COLORS?.neutral?.darker || "#262626",
                   display: 'flex',
                   alignItems: 'center'
@@ -1365,7 +1380,7 @@ const EventCreation = () => {
                 &lt;FormOutlined style={{ marginRight: '12px', color: COLORS?.primary?.main || "#1890ff" }} />
                 Crear nuevo evento
               &lt;/Title>
-              &lt;Paragraph type="secondary" style={{ marginTop: '8px' }}>
+              &lt;Paragraph style={{ marginTop: '8px', color: 'rgba(0, 0, 0, 0.65)' }}>
                 Complete los detalles a continuación para crear un nuevo evento en el sistema
               &lt;/Paragraph>
             &lt;/Col>
@@ -1409,10 +1424,11 @@ const EventCreation = () => {
                     name="name"
                     rules={[{ required: true, message: 'Por favor ingrese el nombre del evento' }]}
                   >
-                    &lt;Input 
-                      placeholder="Ingrese el nombre del evento" 
-                      size="large" 
-                      prefix={&lt;AppstoreOutlined style={{ color: COLORS?.neutral?.grey3 || '#d9d9d9' }} />} 
+                    &lt;Input
+                      placeholder="Ingrese el nombre del evento"
+                      size="large"
+                      prefix={&lt;AppstoreOutlined style={{ color: COLORS?.neutral?.grey500 || '#6B7280' }} />}
+                      aria-label="Nombre del evento"
                     />
                   &lt;/Form.Item>
                 &lt;/Col>
@@ -1428,6 +1444,7 @@ const EventCreation = () => {
                       onChange={handleTypeChange}
                       size="large"
                       suffixIcon={&lt;TagOutlined style={{ color: COLORS?.primary?.main || '#1890ff' }} />}
+                      aria-label="Tipo de evento"
                     >
                       &lt;Option value="football">
                         &lt;Tag color={categoryColors.football} style={{ marginRight: '8px' }}>
@@ -1485,14 +1502,15 @@ const EventCreation = () => {
                       }
                     ]}
                   >
-                    &lt;DatePicker 
-                      showTime 
+                    &lt;DatePicker
+                      showTime
                       format="YYYY-MM-DD HH:mm"
-                      style={{ width: '100%' }} 
+                      style={{ width: '100%' }}
                       size="large"
                       suffixIcon={&lt;CalendarOutlined style={{ color: COLORS?.primary?.main || '#1890ff' }} />}
                       onChange={handleDateChange}
                       placeholder="Seleccionar fecha y hora"
+                      aria-label="Fecha y hora del evento"
                     />
                   &lt;/Form.Item>
                 &lt;/Col>
@@ -1501,9 +1519,19 @@ const EventCreation = () => {
                   &lt;Form.Item
                     label="Ubicación"
                     name="location"
-                    rules={[{ required: true, message: 'Por favor seleccione la ubicación del evento' }]}
+                    rules={[
+                      { required: true, message: 'Por favor seleccione la ubicación del evento' },
+                      {
+                        validator: (_, value) => {
+                          if (!value) {
+                            return Promise.reject('Debe seleccionar una ubicación válida');
+                          }
+                          return Promise.resolve();
+                        }
+                      }
+                    ]}
                   >
-                    &lt;Select 
+                    &lt;Select
                       placeholder="Seleccionar ubicación"
                       size="large"
                       suffixIcon={&lt;EnvironmentOutlined style={{ color: COLORS?.primary?.main || '#1890ff' }} />}
@@ -1512,44 +1540,34 @@ const EventCreation = () => {
                       onChange={handleLocationChange}
                       value={selectedLocation?._id}
                       filterOption={(input, option) =>
-                        option.children.props.children[0].props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                        option.label?.toLowerCase().indexOf(input.toLowerCase()) >= 0
                       }
+                      aria-label="Ubicación del evento"
                       notFoundContent={
-                        !type ? 
+                        !type ?
                           &lt;div style={{ textAlign: 'center', padding: '8px' }}>
                             &lt;InfoCircleOutlined style={{ marginRight: '8px' }} />
                             Por favor seleccione primero un tipo de evento
-                          &lt;/div> : 
-                          &lt;div style={{ textAlign: 'center', padding: '8px' }}>
-                            No se encontraron ubicaciones compatibles
+                          &lt;/div> :
+                          &lt;div style={{ textAlign: 'left', padding: '8px' }}>
+                            No hay ubicaciones disponibles
                           &lt;/div>
                       }
                     >
                       {locationOptions.map((location) => {
                         const seatMapInfo = location.seatMapId ? getSeatMapInfo(location.seatMapId) : null;
                         const hasCompatibleSeatMap = seatMapInfo?.isCompatible !== false;
-                        
+                        const labelSuffix = !location.seatMapId &amp;&amp; type === 'concert' ? ' (Entrada general)' : '';
+
                         return (
-                          &lt;Option key={location._id} value={location._id} disabled={seatMapInfo &amp;&amp; !hasCompatibleSeatMap}>
-                            &lt;div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              &lt;span style={{ 
-                                flex: 1,
-                                opacity: seatMapInfo &amp;&amp; !hasCompatibleSeatMap ? 0.5 : 1 
-                              }}>
-                                {location.name}
-                              &lt;/span>
-                              &lt;div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
-                                {!location.seatMapId &amp;&amp; type === 'concert' &amp;&amp; (
-                                  &lt;Tag 
-                                    color="orange" 
-                                    size="small" 
-                                    style={{ fontSize: '10px', margin: 0 }}
-                                  >
-                                    Entrada general
-                                  &lt;/Tag>
-                                )}
-                              &lt;/div>
-                            &lt;/div>
+                          &lt;Option
+                            key={location._id}
+                            value={location._id}
+                            disabled={seatMapInfo &amp;&amp; !hasCompatibleSeatMap}
+                            label={`${location.name}${labelSuffix}`}
+                          >
+                            {location.name}
+                            {!location.seatMapId &amp;&amp; type === 'concert' &amp;&amp; ' (Entrada general)'}
                           &lt;/Option>
                         );
                       })}
@@ -1565,11 +1583,12 @@ const EventCreation = () => {
                     name="description"
                     rules={[{ required: true, message: 'Por favor ingrese la descripción del evento' }]}
                   >
-                    &lt;Input.TextArea 
-                      placeholder="Ingrese la descripción del evento" 
-                      autoSize={{ minRows: 4, maxRows: 6 }} 
-                      showCount 
-                      maxLength={500} 
+                    &lt;Input.TextArea
+                      placeholder="Ingrese la descripción del evento"
+                      autoSize={{ minRows: 4, maxRows: 6 }}
+                      showCount
+                      maxLength={500}
+                      aria-label="Descripción del evento"
                     />
                   &lt;/Form.Item>
                 &lt;/Col>
@@ -1600,27 +1619,30 @@ const EventCreation = () => {
                         }
                       ]}
                     >
-                      &lt;Input 
-                        type="number" 
+                      &lt;Input
+                        type="number"
                         placeholder={isCapacityLocked ? "Capacidad establecida por el mapa de asientos" : "Ingrese la capacidad"}
                         disabled={isCapacityLocked}
-                        prefix={isCapacityLocked ? &lt;LockOutlined style={{ color: COLORS?.neutral?.grey3 || '#d9d9d9' }} /> : null}
+                        prefix={isCapacityLocked ? &lt;LockOutlined style={{ color: COLORS?.neutral?.grey500 || '#6B7280' }} /> : null}
                         suffix={
-                          &lt;span style={{ color: COLORS?.neutral?.grey3 || '#d9d9d9' }}>
+                          &lt;span style={{ color: COLORS?.neutral?.grey600 || '#4B5563' }}>
                             personas
                             {isCapacityLocked &amp;&amp; selectedLocation &amp;&amp; (
-                              &lt;Tooltip title={`Capacidad ${selectedLocation.seatMapId ? 'calculada desde el mapa de asientos' : 'fija'} de ${selectedLocation.name}`}>
-                                &lt;InfoCircleOutlined style={{ marginLeft: '4px' }} />
-                              &lt;/Tooltip>
+                              &lt;InfoCircleOutlined
+                                style={{ marginLeft: '4px' }}
+                                aria-label={`Capacidad ${selectedLocation.seatMapId ? 'calculada desde el mapa de asientos' : 'fija'} de ${selectedLocation.name}`}
+                                title={`Capacidad ${selectedLocation.seatMapId ? 'calculada desde el mapa de asientos' : 'fija'} de ${selectedLocation.name}`}
+                              />
                             )}
                           &lt;/span>
                         }
+                        aria-label="Capacidad del evento"
                       />
                     &lt;/Form.Item>
                     {selectedLocation &amp;&amp; selectedLocation.capacity > 0 &amp;&amp; !isCapacityLocked &amp;&amp; (
-                      &lt;div style={{ 
-                        fontSize: '12px', 
-                        color: COLORS?.neutral?.grey4 || '#8c8c8c',
+                      &lt;div style={{
+                        fontSize: '12px',
+                        color: COLORS?.neutral?.grey600 || '#4B5563',
                         marginTop: '-8px',
                         marginBottom: '16px'
                       }}>
@@ -1637,17 +1659,19 @@ const EventCreation = () => {
                         { required: true, message: 'Por favor ingrese el precio' },
                         { type: 'number', min: 0, message: 'El precio debe ser al menos 0', transform: (value) => Number(value) }
                       ]}
+                      help={
+                        &lt;span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>
+                          Precio base por entrada
+                        &lt;/span>
+                      }
                     >
-                      &lt;Input 
+                      &lt;Input
                         type="number"
-                        placeholder="Ingrese el precio" 
-                        prefix={&lt;EuroOutlined />}
-                        suffix={
-                          &lt;Tooltip title="Precio base por entrada">
-                            &lt;InfoCircleOutlined style={{ color: COLORS?.neutral?.grey3 || '#d9d9d9' }} />
-                          &lt;/Tooltip>
-                        } 
+                        placeholder="Ingrese el precio"
+                        prefix={&lt;EuroOutlined style={{ color: COLORS?.neutral?.grey500 || '#6B7280' }} />}
                         step={0.01}
+                        aria-label="Precio por entrada en euros"
+                        id="price-input"
                       />
                     &lt;/Form.Item>
                   &lt;/Col>
@@ -1659,13 +1683,22 @@ const EventCreation = () => {
                   &lt;Form.Item
                     label="Imagen del evento"
                     name="image"
-                    help="Formatos soportados: JPG, PNG, GIF. Tamaño máximo: 5MB"
+                    help={
+                      &lt;span style={{ color: 'rgba(0, 0, 0, 0.65)' }}>
+                        Formatos soportados: JPG, PNG, GIF. Tamaño máximo: 5MB
+                      &lt;/span>
+                    }
                   >
-                    &lt;Upload {...uploadProps} listType="picture">
-                      &lt;Button 
-                        icon={&lt;UploadOutlined />} 
+                    &lt;Upload
+                      {...uploadProps}
+                      listType="picture"
+                      aria-label="Subir imagen del evento"
+                    >
+                      &lt;Button
+                        icon={&lt;UploadOutlined />}
                         loading={uploadLoading}
                         disabled={loading}
+                        aria-label={imageFile ? 'Cambiar imagen del evento' : 'Seleccionar imagen del evento'}
                       >
                         {imageFile ? 'Cambiar imagen' : 'Seleccionar imagen'}
                       &lt;/Button>
@@ -1919,7 +1952,8 @@ const EventCreation = () => {
           &lt;/p>
         &lt;/div>
       &lt;/Modal>
-    &lt;/Layout>
+      &lt;/Layout>
+    &lt;/>
   );
 };
 
@@ -1933,13 +1967,13 @@ export default EventCreation;</code></pre>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-components_colorscheme.html">components/colorscheme</a></li><li><a href="module-hooks_useSeatMapViability.html">hooks/useSeatMapViability</a></li><li><a href="module-models_Event.html">models/Event</a></li><li><a href="module-models_Location.html">models/Location</a></li><li><a href="module-models_SeatMap.html">models/SeatMap</a></li><li><a href="module-models_Ticket.html">models/Ticket</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-services_UserService.html">services/UserService</a></li><li><a href="module-utils_authSession.html">utils/authSession</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AboutUs">AboutUs</a></li><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#AdminStatistics">AdminStatistics</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#BlockingViewSwitcher">BlockingViewSwitcher</a></li><li><a href="global.html#EditProfile">EditProfile</a></li><li><a href="global.html#EditableSeatRenderer">EditableSeatRenderer</a></li><li><a href="global.html#ErrorPage">ErrorPage</a></li><li><a href="global.html#EventCreation">EventCreation</a></li><li><a href="global.html#EventDetails">EventDetails</a></li><li><a href="global.html#FramedImage">FramedImage</a></li><li><a href="global.html#GeneralAdmissionRenderer">GeneralAdmissionRenderer</a></li><li><a href="global.html#GenericSeatRenderer">GenericSeatRenderer</a></li><li><a href="global.html#HelpCenter">HelpCenter</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#ManualBlockingSelection">ManualBlockingSelection</a></li><li><a href="global.html#ManualSeatSelection">ManualSeatSelection</a></li><li><a href="global.html#Navbar">Navbar</a></li><li><a href="global.html#Profile">Profile</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#RowPricingTable">RowPricingTable</a></li><li><a href="global.html#SeatMapContainer">SeatMapContainer</a></li><li><a href="global.html#SeatRenderer">SeatRenderer</a></li><li><a href="global.html#SeatSelectionViewSwitcher">SeatSelectionViewSwitcher</a></li><li><a href="global.html#SectionShapeRenderer">SectionShapeRenderer</a></li><li><a href="global.html#SelectionTopBar">SelectionTopBar</a></li><li><a href="global.html#TicketPurchase">TicketPurchase</a></li><li><a href="global.html#VenueStageRenderer">VenueStageRenderer</a></li><li><a href="global.html#ZoomControls">ZoomControls</a></li><li><a href="global.html#enviarEmailConfirmacionCompra">enviarEmailConfirmacionCompra</a></li><li><a href="global.html#generateTicketNumber">generateTicketNumber</a></li><li><a href="global.html#generateValidationCode">generateValidationCode</a></li><li><a href="global.html#returnError">returnError</a></li><li><a href="global.html#transporter">transporter</a></li><li><a href="global.html#useAdvancedZoomPan">useAdvancedZoomPan</a></li><li><a href="global.html#useDeviceDetection">useDeviceDetection</a></li><li><a href="global.html#useUserRole">useUserRole</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-components_colorscheme.html">components/colorscheme</a></li><li><a href="module-models_Event.html">models/Event</a></li><li><a href="module-models_Location.html">models/Location</a></li><li><a href="module-models_SeatMap.html">models/SeatMap</a></li><li><a href="module-models_Ticket.html">models/Ticket</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-services_UserService.html">services/UserService</a></li><li><a href="module-utils_api.html">utils/api</a></li><li><a href="module-utils_authSession.html">utils/authSession</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AboutUs">AboutUs</a></li><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#AdminStatistics">AdminStatistics</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#BlockingViewSwitcher">BlockingViewSwitcher</a></li><li><a href="global.html#EditProfile">EditProfile</a></li><li><a href="global.html#EditableSeatRenderer">EditableSeatRenderer</a></li><li><a href="global.html#ErrorPage">ErrorPage</a></li><li><a href="global.html#EventCreation">EventCreation</a></li><li><a href="global.html#EventDetails">EventDetails</a></li><li><a href="global.html#FramedImage">FramedImage</a></li><li><a href="global.html#GeneralAdmissionRenderer">GeneralAdmissionRenderer</a></li><li><a href="global.html#GenericSeatRenderer">GenericSeatRenderer</a></li><li><a href="global.html#HelpCenter">HelpCenter</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#ManualBlockingSelection">ManualBlockingSelection</a></li><li><a href="global.html#ManualSeatSelection">ManualSeatSelection</a></li><li><a href="global.html#Profile">Profile</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#RowPricingTable">RowPricingTable</a></li><li><a href="global.html#SeatMapContainer">SeatMapContainer</a></li><li><a href="global.html#SeatRenderer">SeatRenderer</a></li><li><a href="global.html#SeatSelectionViewSwitcher">SeatSelectionViewSwitcher</a></li><li><a href="global.html#SectionShapeRenderer">SectionShapeRenderer</a></li><li><a href="global.html#SelectionTopBar">SelectionTopBar</a></li><li><a href="global.html#TicketPurchase">TicketPurchase</a></li><li><a href="global.html#VenueStageRenderer">VenueStageRenderer</a></li><li><a href="global.html#ZoomControls">ZoomControls</a></li><li><a href="global.html#enviarEmailConfirmacionCompra">enviarEmailConfirmacionCompra</a></li><li><a href="global.html#generateTicketNumber">generateTicketNumber</a></li><li><a href="global.html#generateToken">generateToken</a></li><li><a href="global.html#generateValidationCode">generateValidationCode</a></li><li><a href="global.html#returnError">returnError</a></li><li><a href="global.html#tokens">tokens</a></li><li><a href="global.html#transporter">transporter</a></li><li><a href="global.html#useAdvancedZoomPan">useAdvancedZoomPan</a></li><li><a href="global.html#useDeviceDetection">useDeviceDetection</a></li><li><a href="global.html#useUserRole">useUserRole</a></li><li><a href="global.html#verifyAdmin">verifyAdmin</a></li><li><a href="global.html#verifyAuthenticated">verifyAuthenticated</a></li><li><a href="global.html#verifyOwnership">verifyOwnership</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu Oct 23 2025 19:08:08 GMT+0200 (hora de verano de Europa central)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Nov 10 2025 20:21:21 GMT+0100 (hora estándar de Europa central)
 </footer>
 
 <script> prettyPrint(); </script>

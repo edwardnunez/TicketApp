@@ -32,7 +32,6 @@ import cors from 'cors';
 import Event from './event-model.js';
 import axios from 'axios';
 import multer from 'multer';
-import path from 'path';
 import EventStateService from './event-state-service.js';
 import nodemailer from 'nodemailer';
 
@@ -204,11 +203,6 @@ const createSectionPricing = (seatMapInfo, pricingData) => {
  * @returns {Object} Created event data
  */
 app.post("/event", largePayloadMiddleware, largeUrlEncodedMiddleware, async (req, res) => {
-  const requestId = Math.random().toString(36).substr(2, 9);
-  console.log(`=== INICIO CREACIÓN DE EVENTO [${requestId}] ===`);
-  console.log('Timestamp:', new Date().toISOString());
-  console.log('Body recibido:', JSON.stringify(req.body, null, 2));
-  
   try {
     const { 
       name, 
@@ -259,7 +253,7 @@ app.post("/event", largePayloadMiddleware, largeUrlEncodedMiddleware, async (req
       }
     }
 
-    let eventData = {
+    const eventData = {
       name,
       date: eventDate,
       location: location._id? location._id : location,
@@ -343,31 +337,15 @@ app.post("/event", largePayloadMiddleware, largeUrlEncodedMiddleware, async (req
     }
 
     // Validación: no permitir eventos en la misma ubicación con menos de 24h de diferencia
-    const eventDateStart = new Date(eventDate.getTime() - 24 * 60 * 60 * 1000); // 24h antes
-    const eventDateEnd = new Date(eventDate.getTime() + 24 * 60 * 60 * 1000); // 24h después
-    
-    console.log('Validando conflicto de eventos:');
-    console.log('Fecha del nuevo evento:', eventDate);
-    console.log('Rango de búsqueda:', eventDateStart, 'a', eventDateEnd);
-    console.log('Ubicación:', eventData.location);
-    console.log('Nombre del nuevo evento:', eventData.name);
-    
+    const eventDateStart = new Date(eventDate.getTime() - 24 * 60 * 60 * 1000);
+    const eventDateEnd = new Date(eventDate.getTime() + 24 * 60 * 60 * 1000);
+
     const conflictEvent = await EventModel.findOne({
       location: eventData.location,
       date: { $gte: eventDateStart, $lte: eventDateEnd },
-      state: { $ne: 'cancelado' } // Excluir eventos cancelados
+      state: { $ne: 'cancelado' }
     });
-    
-    console.log('Evento conflictivo encontrado:', conflictEvent);
-    if (conflictEvent) {
-      console.log('Detalles del conflicto:');
-      console.log('- Evento existente ID:', conflictEvent._id);
-      console.log('- Evento existente nombre:', conflictEvent.name);
-      console.log('- Evento existente fecha:', conflictEvent.date);
-      console.log('- Evento existente estado:', conflictEvent.state);
-      console.log('- Nuevo evento nombre:', eventData.name);
-      console.log('- Nuevo evento fecha:', eventDate);
-    }
+
     if (conflictEvent) {
       return res.status(400).json({
         error: "Ya existe un evento en esta ubicación con menos de 24 horas de diferencia.",
@@ -379,17 +357,9 @@ app.post("/event", largePayloadMiddleware, largeUrlEncodedMiddleware, async (req
       });
     }
 
-    console.log('=== GUARDANDO EVENTO ===');
-    console.log('EventData a guardar:', JSON.stringify(eventData, null, 2));
-    
     const newEvent = new EventModel(eventData);
     await newEvent.save();
-    
-    console.log('=== EVENTO GUARDADO ===');
-    console.log('ID del evento creado:', newEvent._id);
-    console.log('Nombre del evento creado:', newEvent.name);
-    console.log('Fecha del evento creado:', newEvent.date);
-    
+
     const savedEvent = await EventModel.findById(newEvent._id);
     const eventObj = savedEvent.toObject();
     eventObj.location = location;
@@ -398,7 +368,6 @@ app.post("/event", largePayloadMiddleware, largeUrlEncodedMiddleware, async (req
       eventObj.imageUrl = savedEvent.getImageDataUrl();
     }
 
-    console.log(`=== FIN CREACIÓN DE EVENTO [${requestId}] ===`);
     res.status(201).json(eventObj);
   } catch (error) {
     console.error("Error creating event:", error);
@@ -606,15 +575,6 @@ app.get("/events/:eventId", stateService.updateStatesMiddleware.bind(stateServic
         max: event.getMaxPrice(),
         display: event.getPriceRange()
       };
-      
-      // Log para depuración
-      console.log('Event pricing debug:', {
-        eventId: eventObj._id,
-        usesSectionPricing: eventObj.usesSectionPricing,
-        usesRowPricing: eventObj.usesRowPricing,
-        sectionPricing: eventObj.sectionPricing,
-        priceRange: eventObj.priceRange
-      });
     } else {
       eventObj.priceRange = {
         min: eventObj.price,
@@ -830,14 +790,10 @@ app.patch("/events/:eventId/state", async (req, res) => {
   }
 });
 
-// Ruta para actualizar un evento completo
 app.put("/events/:eventId", async (req, res) => {
   try {
     const { eventId } = req.params;
     const eventData = req.body;
-
-    console.log(`=== ACTUALIZANDO EVENTO ${eventId} ===`);
-    console.log('Datos recibidos:', JSON.stringify(eventData, null, 2));
 
     // Verificar que el evento existe
     const existingEvent = await EventModel.findById(eventId);
@@ -845,19 +801,50 @@ app.put("/events/:eventId", async (req, res) => {
       return res.status(404).json({ error: "Evento no encontrado" });
     }
 
+    // Validar tipo de evento
+    const validTypes = ['football', 'cinema', 'concert', 'theater', 'festival'];
+    if (eventData.type &amp;&amp; !validTypes.includes(eventData.type)) {
+      return res.status(400).json({
+        error: `Tipo de evento inválido. Los tipos válidos son: ${validTypes.join(', ')}`
+      });
+    }
+
+    // Validar estado de evento
+    const validStates = ['activo', 'proximo', 'finalizado', 'cancelado'];
+    if (eventData.state &amp;&amp; !validStates.includes(eventData.state)) {
+      return res.status(400).json({
+        error: `Estado de evento inválido. Los estados válidos son: ${validStates.join(', ')}`
+      });
+    }
+
+    // Validar campos requeridos
+    if (!eventData.name || !eventData.date || !eventData.location || !eventData.type) {
+      return res.status(400).json({
+        error: "Faltan campos requeridos: nombre, fecha, ubicación y tipo son obligatorios"
+      });
+    }
+
+    // Validar precios (no pueden ser negativos)
+    if (eventData.price !== undefined &amp;&amp; eventData.price &lt; 0) {
+      return res.status(400).json({
+        error: "El precio no puede ser negativo"
+      });
+    }
+
+    // Validar capacidad (debe ser positiva)
+    if (eventData.capacity !== undefined &amp;&amp; eventData.capacity &lt;= 0) {
+      return res.status(400).json({
+        error: "La capacidad debe ser mayor que cero"
+      });
+    }
+
     // Validar conflicto de eventos (excluyendo el evento actual)
     const eventDate = new Date(eventData.date);
-    const startRange = new Date(eventDate.getTime() - 12 * 60 * 60 * 1000); // 12 horas antes
-    const endRange = new Date(eventDate.getTime() + 12 * 60 * 60 * 1000); // 12 horas después
-
-    console.log('Validando conflicto de eventos:');
-    console.log('Fecha del evento a actualizar:', eventData.date);
-    console.log('Rango de búsqueda:', startRange.toISOString(), 'a', endRange.toISOString());
-    console.log('Ubicación:', eventData.location);
-    console.log('Nombre del evento a actualizar:', eventData.name);
+    const startRange = new Date(eventDate.getTime() - 12 * 60 * 60 * 1000);
+    const endRange = new Date(eventDate.getTime() + 12 * 60 * 60 * 1000);
 
     const conflictEvent = await EventModel.findOne({
-      _id: { $ne: eventId }, // Excluir el evento actual
+      _id: { $ne: eventId },
       location: eventData.location,
       date: {
         $gte: startRange,
@@ -865,21 +852,7 @@ app.put("/events/:eventId", async (req, res) => {
       }
     });
 
-    console.log('Evento conflictivo encontrado:', conflictEvent ? {
-      id: conflictEvent._id,
-      name: conflictEvent.name,
-      date: conflictEvent.date
-    } : null);
-
     if (conflictEvent) {
-      console.log('Detalles del conflicto:');
-      console.log('- Evento existente ID:', conflictEvent._id);
-      console.log('- Evento existente nombre:', conflictEvent.name);
-      console.log('- Evento existente fecha:', conflictEvent.date);
-      console.log('- Evento existente estado:', conflictEvent.state);
-      console.log('- Nuevo evento nombre:', eventData.name);
-      console.log('- Nuevo evento fecha:', eventData.date);
-
       return res.status(400).json({
         error: 'Ya existe un evento en esta ubicación con menos de 24 horas de diferencia.',
         conflictEvent: {
@@ -909,20 +882,11 @@ app.put("/events/:eventId", async (req, res) => {
       seatMapConfiguration: eventData.seatMapConfiguration
     };
 
-    console.log('=== ACTUALIZANDO EVENTO ===');
-    console.log('Datos a actualizar:', JSON.stringify(updateData, null, 2));
-
-    // Actualizar el evento
     const updatedEvent = await EventModel.findByIdAndUpdate(
       eventId,
       updateData,
       { new: true, runValidators: true }
     );
-
-    console.log('=== EVENTO ACTUALIZADO ===');
-    console.log('ID del evento actualizado:', updatedEvent._id);
-    console.log('Nombre del evento actualizado:', updatedEvent.name);
-    console.log('Fecha del evento actualizado:', updatedEvent.date);
 
     res.json({
       success: true,
@@ -932,9 +896,27 @@ app.put("/events/:eventId", async (req, res) => {
 
   } catch (error) {
     console.error('Error actualizando evento:', error);
-    res.status(500).json({ 
-      error: 'Error interno del servidor', 
-      details: error.message 
+
+    // Si es un error de validación de Mongoose, devolver 400
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        error: 'Datos inválidos',
+        details: error.message
+      });
+    }
+
+    // Si es un error de CastError (ID inválido), devolver 400
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        error: 'ID de evento inválido',
+        details: error.message
+      });
+    }
+
+    // Cualquier otro error es 500
+    res.status(500).json({
+      error: 'Error interno del servidor',
+      details: error.message
     });
   }
 });
@@ -964,14 +946,7 @@ app.put("/events/:eventId/seat-blocks", async (req, res) => {
       };
     }
 
-
-
     await event.save();
-
-    console.log(`Updated seat blocks for event ${eventId}:`, {
-      blockedSeats: event.seatMapConfiguration?.blockedSeats?.length || 0,
-      blockedSections: event.seatMapConfiguration?.blockedSections?.length || 0
-    });
 
     res.status(200).json({
       message: "Bloqueos de asientos actualizados exitosamente",
@@ -1039,22 +1014,18 @@ app.delete("/events/:eventId/cancel", async (req, res) => {
           emailsEnviados.add(emailDestino);
         }
       }
-      console.log(`Emails de cancelación enviados a ${emailsEnviados.size} compradores`);
     } catch (err) {
       console.error('Error al enviar emails de cancelación:', err);
     }
-    // === FIN EMAILS ===
-
     try {
       await axiosInstance.delete(`${ticketServiceUrl}/tickets/event/${eventId}`);
-      console.log(`Tickets eliminados para el evento ${eventId}`);
     } catch (ticketError) {
       console.warn(`Error eliminando tickets para evento ${eventId}:`, ticketError.message);
     }
-    // Cambiar el estado del evento a cancelado
+
     event.state = 'cancelado';
     await event.save();
-    console.log(`Evento ${eventId} cancelado correctamente`);
+
     res.status(200).json({
       success: true,
       message: "Evento cancelado y tickets asociados eliminados correctamente",
@@ -1076,7 +1047,7 @@ app.get("/events/admin/statistics", async (req, res) => {
     const { eventType, eventState, dateFrom, dateTo, search } = req.query;
 
     // Construir filtros para eventos
-    let eventFilters = {};
+    const eventFilters = {};
     
     if (eventType &amp;&amp; eventType !== 'all') {
       eventFilters.type = eventType;
@@ -1222,12 +1193,12 @@ app.delete("/events/:eventId", async (req, res) => {
     }
     try {
       await axiosInstance.delete(`${ticketServiceUrl}/tickets/event/${eventId}`);
-      console.log(`Tickets eliminados para el evento ${eventId}`);
     } catch (ticketError) {
       console.warn(`Error eliminando tickets para evento ${eventId}:`, ticketError.message);
     }
+
     await EventModel.findByIdAndDelete(eventId);
-    console.log(`Evento ${eventId} eliminado de la base de datos`);
+
     res.status(200).json({
       success: true,
       message: "Evento y tickets asociados eliminados de la base de datos",
@@ -1245,18 +1216,11 @@ app.delete("/events/:eventId", async (req, res) => {
 
 const server = app.listen(port, async () => {
   console.log(`🚀 Event Service listening at http://localhost:${port}`);
-  
+
   stateService.startCronJobs();
-  
-  // Ejecutar actualización inicial después de 2 segundos
+
   setTimeout(async () => {
-    console.log('🔄 Ejecutando actualización inicial de estados...');
-    const result = await stateService.updateEventStates();
-    if (result.finalizados > 0 || result.activados > 0) {
-      console.log('✅ Actualización inicial completada:', result);
-    } else {
-      console.log('✅ Estados ya actualizados');
-    }
+    await stateService.updateEventStates();
   }, 2000);
 });
 
@@ -1281,13 +1245,13 @@ export default server;</code></pre>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-components_colorscheme.html">components/colorscheme</a></li><li><a href="module-hooks_useSeatMapViability.html">hooks/useSeatMapViability</a></li><li><a href="module-models_Event.html">models/Event</a></li><li><a href="module-models_Location.html">models/Location</a></li><li><a href="module-models_SeatMap.html">models/SeatMap</a></li><li><a href="module-models_Ticket.html">models/Ticket</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-services_UserService.html">services/UserService</a></li><li><a href="module-utils_authSession.html">utils/authSession</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AboutUs">AboutUs</a></li><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#AdminStatistics">AdminStatistics</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#BlockingViewSwitcher">BlockingViewSwitcher</a></li><li><a href="global.html#EditProfile">EditProfile</a></li><li><a href="global.html#EditableSeatRenderer">EditableSeatRenderer</a></li><li><a href="global.html#ErrorPage">ErrorPage</a></li><li><a href="global.html#EventCreation">EventCreation</a></li><li><a href="global.html#EventDetails">EventDetails</a></li><li><a href="global.html#FramedImage">FramedImage</a></li><li><a href="global.html#GeneralAdmissionRenderer">GeneralAdmissionRenderer</a></li><li><a href="global.html#GenericSeatRenderer">GenericSeatRenderer</a></li><li><a href="global.html#HelpCenter">HelpCenter</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#ManualBlockingSelection">ManualBlockingSelection</a></li><li><a href="global.html#ManualSeatSelection">ManualSeatSelection</a></li><li><a href="global.html#Navbar">Navbar</a></li><li><a href="global.html#Profile">Profile</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#RowPricingTable">RowPricingTable</a></li><li><a href="global.html#SeatMapContainer">SeatMapContainer</a></li><li><a href="global.html#SeatRenderer">SeatRenderer</a></li><li><a href="global.html#SeatSelectionViewSwitcher">SeatSelectionViewSwitcher</a></li><li><a href="global.html#SectionShapeRenderer">SectionShapeRenderer</a></li><li><a href="global.html#SelectionTopBar">SelectionTopBar</a></li><li><a href="global.html#TicketPurchase">TicketPurchase</a></li><li><a href="global.html#VenueStageRenderer">VenueStageRenderer</a></li><li><a href="global.html#ZoomControls">ZoomControls</a></li><li><a href="global.html#enviarEmailConfirmacionCompra">enviarEmailConfirmacionCompra</a></li><li><a href="global.html#generateTicketNumber">generateTicketNumber</a></li><li><a href="global.html#generateValidationCode">generateValidationCode</a></li><li><a href="global.html#returnError">returnError</a></li><li><a href="global.html#transporter">transporter</a></li><li><a href="global.html#useAdvancedZoomPan">useAdvancedZoomPan</a></li><li><a href="global.html#useDeviceDetection">useDeviceDetection</a></li><li><a href="global.html#useUserRole">useUserRole</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-components_colorscheme.html">components/colorscheme</a></li><li><a href="module-models_Event.html">models/Event</a></li><li><a href="module-models_Location.html">models/Location</a></li><li><a href="module-models_SeatMap.html">models/SeatMap</a></li><li><a href="module-models_Ticket.html">models/Ticket</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-services_UserService.html">services/UserService</a></li><li><a href="module-utils_api.html">utils/api</a></li><li><a href="module-utils_authSession.html">utils/authSession</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AboutUs">AboutUs</a></li><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#AdminStatistics">AdminStatistics</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#BlockingViewSwitcher">BlockingViewSwitcher</a></li><li><a href="global.html#EditProfile">EditProfile</a></li><li><a href="global.html#EditableSeatRenderer">EditableSeatRenderer</a></li><li><a href="global.html#ErrorPage">ErrorPage</a></li><li><a href="global.html#EventCreation">EventCreation</a></li><li><a href="global.html#EventDetails">EventDetails</a></li><li><a href="global.html#FramedImage">FramedImage</a></li><li><a href="global.html#GeneralAdmissionRenderer">GeneralAdmissionRenderer</a></li><li><a href="global.html#GenericSeatRenderer">GenericSeatRenderer</a></li><li><a href="global.html#HelpCenter">HelpCenter</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#ManualBlockingSelection">ManualBlockingSelection</a></li><li><a href="global.html#ManualSeatSelection">ManualSeatSelection</a></li><li><a href="global.html#Profile">Profile</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#RowPricingTable">RowPricingTable</a></li><li><a href="global.html#SeatMapContainer">SeatMapContainer</a></li><li><a href="global.html#SeatRenderer">SeatRenderer</a></li><li><a href="global.html#SeatSelectionViewSwitcher">SeatSelectionViewSwitcher</a></li><li><a href="global.html#SectionShapeRenderer">SectionShapeRenderer</a></li><li><a href="global.html#SelectionTopBar">SelectionTopBar</a></li><li><a href="global.html#TicketPurchase">TicketPurchase</a></li><li><a href="global.html#VenueStageRenderer">VenueStageRenderer</a></li><li><a href="global.html#ZoomControls">ZoomControls</a></li><li><a href="global.html#enviarEmailConfirmacionCompra">enviarEmailConfirmacionCompra</a></li><li><a href="global.html#generateTicketNumber">generateTicketNumber</a></li><li><a href="global.html#generateToken">generateToken</a></li><li><a href="global.html#generateValidationCode">generateValidationCode</a></li><li><a href="global.html#returnError">returnError</a></li><li><a href="global.html#tokens">tokens</a></li><li><a href="global.html#transporter">transporter</a></li><li><a href="global.html#useAdvancedZoomPan">useAdvancedZoomPan</a></li><li><a href="global.html#useDeviceDetection">useDeviceDetection</a></li><li><a href="global.html#useUserRole">useUserRole</a></li><li><a href="global.html#verifyAdmin">verifyAdmin</a></li><li><a href="global.html#verifyAuthenticated">verifyAuthenticated</a></li><li><a href="global.html#verifyOwnership">verifyOwnership</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu Oct 23 2025 19:08:08 GMT+0200 (hora de verano de Europa central)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Nov 10 2025 20:21:21 GMT+0100 (hora estándar de Europa central)
 </footer>
 
 <script> prettyPrint(); </script>

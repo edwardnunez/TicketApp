@@ -84,6 +84,21 @@ const TicketPurchase = () => {
   const [selectedSeats, setSelectedSeats] = useState(() => {
     // Intentar recuperar del sessionStorage al inicializar
     const saved = sessionStorage.getItem(`selectedSeats_${id}`);
+    const timestamp = sessionStorage.getItem(`selectedSeats_${id}_timestamp`);
+
+    // Verificar si han pasado más de 1 hora
+    if (saved &amp;&amp; timestamp) {
+      const oneHourInMs = 60 * 60 * 1000;
+      const elapsed = Date.now() - parseInt(timestamp, 10);
+
+      if (elapsed > oneHourInMs) {
+        // Limpiar cache si ha pasado más de 1 hora
+        sessionStorage.removeItem(`selectedSeats_${id}`);
+        sessionStorage.removeItem(`selectedSeats_${id}_timestamp`);
+        return [];
+      }
+      return JSON.parse(saved);
+    }
     return saved ? JSON.parse(saved) : [];
   });
   const [occupiedSeats, setOccupiedSeats] = useState([]);
@@ -91,7 +106,18 @@ const TicketPurchase = () => {
   // Inicializar quantity basado en los asientos guardados
   const [quantity, setQuantity] = useState(() => {
     const saved = sessionStorage.getItem(`selectedSeats_${id}`);
-    if (saved) {
+    const timestamp = sessionStorage.getItem(`selectedSeats_${id}_timestamp`);
+
+    if (saved &amp;&amp; timestamp) {
+      const oneHourInMs = 60 * 60 * 1000;
+      const elapsed = Date.now() - parseInt(timestamp, 10);
+
+      if (elapsed > oneHourInMs) {
+        sessionStorage.removeItem(`selectedSeats_${id}`);
+        sessionStorage.removeItem(`selectedSeats_${id}_timestamp`);
+        return 1;
+      }
+
       const seats = JSON.parse(saved);
       return seats.length > 0 ? seats.length : 1;
     }
@@ -138,33 +164,72 @@ const TicketPurchase = () => {
   useEffect(() => {
     if (purchaseComplete) {
       sessionStorage.removeItem(`selectedSeats_${id}`);
+      sessionStorage.removeItem(`selectedSeats_${id}_timestamp`);
     }
   }, [id, purchaseComplete]);
 
-  // Limpiar sessionStorage si el usuario sale completamente de la página
+  // Limpiar sessionStorage si el usuario sale de la compra del evento
   useEffect(() => {
-    const handleBeforeUnload = () => {
-      // Solo limpiar si sale navegando a otra URL, no en refresh
-      if (!purchaseComplete) {
-        const currentPath = window.location.pathname;
-        if (!currentPath.includes(`/purchase/${id}`)) {
-          sessionStorage.removeItem(`selectedSeats_${id}`);
-        }
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
+      // Se ejecuta cuando el componente se desmonta
+      if (!purchaseComplete) {
+        sessionStorage.removeItem(`selectedSeats_${id}`);
+        sessionStorage.removeItem(`selectedSeats_${id}_timestamp`);
+      }
     };
   }, [id, purchaseComplete]);
 
+  // Escuchar cambios en la autenticación y limpiar cache si se cierra sesión
+  useEffect(() => {
+    const handleAuthChange = () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        // El usuario cerró sesión, limpiar todos los asientos guardados
+        Object.keys(sessionStorage).forEach(key => {
+          if (key.startsWith('selectedSeats_')) {
+            sessionStorage.removeItem(key);
+          }
+        });
+      }
+    };
+
+    window.addEventListener('authChange', handleAuthChange);
+
+    return () => {
+      window.removeEventListener('authChange', handleAuthChange);
+    };
+  }, []);
+
+  // Limpieza automática después de 1 hora
+  useEffect(() => {
+    const timestamp = sessionStorage.getItem(`selectedSeats_${id}_timestamp`);
+    if (timestamp) {
+      const oneHourInMs = 60 * 60 * 1000;
+      const elapsed = Date.now() - parseInt(timestamp, 10);
+      const remaining = oneHourInMs - elapsed;
+
+      if (remaining > 0) {
+        const timerId = setTimeout(() => {
+          sessionStorage.removeItem(`selectedSeats_${id}`);
+          sessionStorage.removeItem(`selectedSeats_${id}_timestamp`);
+          setSelectedSeats([]);
+          setQuantity(1);
+        }, remaining);
+
+        return () => clearTimeout(timerId);
+      }
+    }
+  }, [id]);
+
   useEffect(() => {
     const username = localStorage.getItem("username");
-    if (username) {
+    const token = localStorage.getItem("token");
+    if (username &amp;&amp; token) {
       axios.get(`${gatewayUrl}/users/search`, {
-        params: { username }
+        params: { username },
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       }).then(res => {
         setUserData(res.data);
       }).catch(err => {
@@ -204,8 +269,9 @@ const TicketPurchase = () => {
   const handleSeatSelect = (seats) => {
     setSelectedSeats(seats);
     setQuantity(seats.length);
-    // Guardar en sessionStorage para mantener la selección entre navegaciones
+    // Guardar en sessionStorage con timestamp para mantener la selección entre navegaciones
     sessionStorage.setItem(`selectedSeats_${id}`, JSON.stringify(seats));
+    sessionStorage.setItem(`selectedSeats_${id}_timestamp`, String(Date.now()));
   };
 
   const requiresSeatMap = () => {
@@ -319,10 +385,14 @@ const TicketPurchase = () => {
       const username = localStorage.getItem("username");
       
       let userId = null;
-      if (username) {
+      const token = localStorage.getItem('token');
+      if (username &amp;&amp; token) {
         try {
           const userResponse = await axios.get(`${gatewayUrl}/users/search`, {
-            params: { username }
+            params: { username },
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
           });
           userId = userResponse.data._id;
         } catch (error) {
@@ -378,9 +448,11 @@ const TicketPurchase = () => {
           }
         };
 
-      console.log('Enviando datos del ticket con PayPal:', ticketData);
-
-      const response = await axios.post(`${gatewayUrl}/tickets/purchase`, ticketData);
+      const response = await axios.post(`${gatewayUrl}/tickets/purchase`, ticketData, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       
       if (response.data.success) {
         setTicketInfo({
@@ -566,7 +638,7 @@ const TicketPurchase = () => {
             &lt;Button 
               type="text" 
               icon={&lt;ArrowLeftOutlined />}
-              style={{ color: COLORS.primary.main, marginBottom: '16px' }}
+              style={{ color: COLORS.primary.darker, marginBottom: '16px' }}
             >
               Volver al evento
             &lt;/Button>
@@ -585,13 +657,13 @@ const TicketPurchase = () => {
               &lt;div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
                 &lt;div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   &lt;CalendarOutlined style={{ color: COLORS.primary.main }} />
-                  &lt;Text style={{ color: COLORS.neutral.grey4 }}>
+                  &lt;Text style={{ color: COLORS.neutral.grey600 }}>
                     {dayjs(event.date).format("dddd, DD [de] MMMM [de] YYYY")}
                   &lt;/Text>
                 &lt;/div>
                 &lt;div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   &lt;EnvironmentOutlined style={{ color: COLORS.primary.main }} />
-                  &lt;Text style={{ color: COLORS.neutral.grey4 }}>
+                  &lt;Text style={{ color: COLORS.neutral.grey600 }}>
                     {typeof event.location === 'string' ? event.location : event.location?.name || 'Ubicación no especificada'}
                   &lt;/Text>
                 &lt;/div>
@@ -683,13 +755,13 @@ export default TicketPurchase;</code></pre>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-components_colorscheme.html">components/colorscheme</a></li><li><a href="module-hooks_useSeatMapViability.html">hooks/useSeatMapViability</a></li><li><a href="module-models_Event.html">models/Event</a></li><li><a href="module-models_Location.html">models/Location</a></li><li><a href="module-models_SeatMap.html">models/SeatMap</a></li><li><a href="module-models_Ticket.html">models/Ticket</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-services_UserService.html">services/UserService</a></li><li><a href="module-utils_authSession.html">utils/authSession</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AboutUs">AboutUs</a></li><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#AdminStatistics">AdminStatistics</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#BlockingViewSwitcher">BlockingViewSwitcher</a></li><li><a href="global.html#EditProfile">EditProfile</a></li><li><a href="global.html#EditableSeatRenderer">EditableSeatRenderer</a></li><li><a href="global.html#ErrorPage">ErrorPage</a></li><li><a href="global.html#EventCreation">EventCreation</a></li><li><a href="global.html#EventDetails">EventDetails</a></li><li><a href="global.html#FramedImage">FramedImage</a></li><li><a href="global.html#GeneralAdmissionRenderer">GeneralAdmissionRenderer</a></li><li><a href="global.html#GenericSeatRenderer">GenericSeatRenderer</a></li><li><a href="global.html#HelpCenter">HelpCenter</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#ManualBlockingSelection">ManualBlockingSelection</a></li><li><a href="global.html#ManualSeatSelection">ManualSeatSelection</a></li><li><a href="global.html#Navbar">Navbar</a></li><li><a href="global.html#Profile">Profile</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#RowPricingTable">RowPricingTable</a></li><li><a href="global.html#SeatMapContainer">SeatMapContainer</a></li><li><a href="global.html#SeatRenderer">SeatRenderer</a></li><li><a href="global.html#SeatSelectionViewSwitcher">SeatSelectionViewSwitcher</a></li><li><a href="global.html#SectionShapeRenderer">SectionShapeRenderer</a></li><li><a href="global.html#SelectionTopBar">SelectionTopBar</a></li><li><a href="global.html#TicketPurchase">TicketPurchase</a></li><li><a href="global.html#VenueStageRenderer">VenueStageRenderer</a></li><li><a href="global.html#ZoomControls">ZoomControls</a></li><li><a href="global.html#enviarEmailConfirmacionCompra">enviarEmailConfirmacionCompra</a></li><li><a href="global.html#generateTicketNumber">generateTicketNumber</a></li><li><a href="global.html#generateValidationCode">generateValidationCode</a></li><li><a href="global.html#returnError">returnError</a></li><li><a href="global.html#transporter">transporter</a></li><li><a href="global.html#useAdvancedZoomPan">useAdvancedZoomPan</a></li><li><a href="global.html#useDeviceDetection">useDeviceDetection</a></li><li><a href="global.html#useUserRole">useUserRole</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-components_colorscheme.html">components/colorscheme</a></li><li><a href="module-models_Event.html">models/Event</a></li><li><a href="module-models_Location.html">models/Location</a></li><li><a href="module-models_SeatMap.html">models/SeatMap</a></li><li><a href="module-models_Ticket.html">models/Ticket</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-services_UserService.html">services/UserService</a></li><li><a href="module-utils_api.html">utils/api</a></li><li><a href="module-utils_authSession.html">utils/authSession</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AboutUs">AboutUs</a></li><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#AdminStatistics">AdminStatistics</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#BlockingViewSwitcher">BlockingViewSwitcher</a></li><li><a href="global.html#EditProfile">EditProfile</a></li><li><a href="global.html#EditableSeatRenderer">EditableSeatRenderer</a></li><li><a href="global.html#ErrorPage">ErrorPage</a></li><li><a href="global.html#EventCreation">EventCreation</a></li><li><a href="global.html#EventDetails">EventDetails</a></li><li><a href="global.html#FramedImage">FramedImage</a></li><li><a href="global.html#GeneralAdmissionRenderer">GeneralAdmissionRenderer</a></li><li><a href="global.html#GenericSeatRenderer">GenericSeatRenderer</a></li><li><a href="global.html#HelpCenter">HelpCenter</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#ManualBlockingSelection">ManualBlockingSelection</a></li><li><a href="global.html#ManualSeatSelection">ManualSeatSelection</a></li><li><a href="global.html#Profile">Profile</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#RowPricingTable">RowPricingTable</a></li><li><a href="global.html#SeatMapContainer">SeatMapContainer</a></li><li><a href="global.html#SeatRenderer">SeatRenderer</a></li><li><a href="global.html#SeatSelectionViewSwitcher">SeatSelectionViewSwitcher</a></li><li><a href="global.html#SectionShapeRenderer">SectionShapeRenderer</a></li><li><a href="global.html#SelectionTopBar">SelectionTopBar</a></li><li><a href="global.html#TicketPurchase">TicketPurchase</a></li><li><a href="global.html#VenueStageRenderer">VenueStageRenderer</a></li><li><a href="global.html#ZoomControls">ZoomControls</a></li><li><a href="global.html#enviarEmailConfirmacionCompra">enviarEmailConfirmacionCompra</a></li><li><a href="global.html#generateTicketNumber">generateTicketNumber</a></li><li><a href="global.html#generateToken">generateToken</a></li><li><a href="global.html#generateValidationCode">generateValidationCode</a></li><li><a href="global.html#returnError">returnError</a></li><li><a href="global.html#tokens">tokens</a></li><li><a href="global.html#transporter">transporter</a></li><li><a href="global.html#useAdvancedZoomPan">useAdvancedZoomPan</a></li><li><a href="global.html#useDeviceDetection">useDeviceDetection</a></li><li><a href="global.html#useUserRole">useUserRole</a></li><li><a href="global.html#verifyAdmin">verifyAdmin</a></li><li><a href="global.html#verifyAuthenticated">verifyAuthenticated</a></li><li><a href="global.html#verifyOwnership">verifyOwnership</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu Oct 23 2025 19:08:08 GMT+0200 (hora de verano de Europa central)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Nov 10 2025 20:21:21 GMT+0100 (hora estándar de Europa central)
 </footer>
 
 <script> prettyPrint(); </script>

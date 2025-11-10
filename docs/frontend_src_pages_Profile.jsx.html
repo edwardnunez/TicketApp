@@ -231,11 +231,25 @@ const Profile = () => {
   const filterTicketsByStatus = (tickets, status) => {
     switch (status) {
       case 'active':
-        return tickets.filter(ticket => ticket.status === 'paid');
+        // Solo mostrar tickets pagados de eventos que aún no han pasado
+        return tickets.filter(ticket => {
+          if (ticket.status !== 'paid') return false;
+          const event = events[ticket.eventId];
+          if (!event || !event.date) return true; // Incluir si no hay fecha
+          return dayjs(event.date).isAfter(dayjs());
+        });
       case 'pending':
         return tickets.filter(ticket => ticket.status === 'pending');
       case 'cancelled':
         return tickets.filter(ticket => ticket.status === 'cancelled');
+      case 'past':
+        // Mostrar tickets pagados de eventos que ya pasaron
+        return tickets.filter(ticket => {
+          if (ticket.status !== 'paid') return false;
+          const event = events[ticket.eventId];
+          if (!event || !event.date) return false; // Excluir si no hay fecha
+          return dayjs(event.date).isBefore(dayjs());
+        });
       default:
         return tickets;
     }
@@ -518,6 +532,7 @@ const Profile = () => {
     const activeTickets = filterTicketsByStatus(tickets, 'active');
     const pendingTickets = filterTicketsByStatus(tickets, 'pending');
     const cancelledTickets = filterTicketsByStatus(tickets, 'cancelled');
+    const pastTickets = filterTicketsByStatus(tickets, 'past');
 
     const renderTicketTab = (ticketsList, emptyMessage) => {
       if (ticketsList.length === 0) {
@@ -538,14 +553,14 @@ const Profile = () => {
       }
 
       const groupedTickets = groupTicketsByEvent(ticketsList);
-      return Object.entries(groupedTickets).map(([eventId, eventGroup]) => 
+      return Object.entries(groupedTickets).map(([eventId, eventGroup]) =>
         renderEventGroup(eventId, eventGroup)
       );
     };
 
     return (
-      &lt;Tabs 
-        activeKey={activeTab} 
+      &lt;Tabs
+        activeKey={activeTab}
         onChange={setActiveTab}
         items={[
           {
@@ -557,6 +572,11 @@ const Profile = () => {
             key: 'pending',
             label: `Pendientes (${pendingTickets.length})`,
             children: renderTicketTab(pendingTickets, "No tienes entradas pendientes")
+          },
+          {
+            key: 'past',
+            label: `Pasadas (${pastTickets.length})`,
+            children: renderTicketTab(pastTickets, "No tienes entradas pasadas")
           },
           {
             key: 'cancelled',
@@ -625,6 +645,7 @@ const Profile = () => {
                   &lt;Avatar
                     size={120}
                     src={user.avatar}
+                    alt={user.avatar ? "Avatar del usuario seleccionado" : "Avatar genérico del usuario"}
                     icon={!user.avatar &amp;&amp; &lt;UserOutlined />}
                     style={{
                       border: `4px solid ${COLORS.neutral.white}`,
@@ -653,7 +674,12 @@ const Profile = () => {
                   &lt;div style={{ display: 'flex', gap: '16px', marginTop: '16px' }}>
                     &lt;div style={{ textAlign: 'center' }}>
                       &lt;Text strong style={{ display: 'block', fontSize: '20px', color: COLORS.primary.main }}>
-                        {tickets.filter(t => t.status === 'paid').length}
+                        {tickets.filter(t => {
+                          if (t.status !== 'paid') return false;
+                          const event = events[t.eventId];
+                          if (!event || !event.date) return true;
+                          return dayjs(event.date).isAfter(dayjs());
+                        }).length}
                       &lt;/Text>
                       &lt;Text style={{ color: COLORS.neutral.grey4, fontSize: '12px' }}>
                         Entradas activas
@@ -874,13 +900,13 @@ export default Profile;</code></pre>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-components_colorscheme.html">components/colorscheme</a></li><li><a href="module-hooks_useSeatMapViability.html">hooks/useSeatMapViability</a></li><li><a href="module-models_Event.html">models/Event</a></li><li><a href="module-models_Location.html">models/Location</a></li><li><a href="module-models_SeatMap.html">models/SeatMap</a></li><li><a href="module-models_Ticket.html">models/Ticket</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-services_UserService.html">services/UserService</a></li><li><a href="module-utils_authSession.html">utils/authSession</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AboutUs">AboutUs</a></li><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#AdminStatistics">AdminStatistics</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#BlockingViewSwitcher">BlockingViewSwitcher</a></li><li><a href="global.html#EditProfile">EditProfile</a></li><li><a href="global.html#EditableSeatRenderer">EditableSeatRenderer</a></li><li><a href="global.html#ErrorPage">ErrorPage</a></li><li><a href="global.html#EventCreation">EventCreation</a></li><li><a href="global.html#EventDetails">EventDetails</a></li><li><a href="global.html#FramedImage">FramedImage</a></li><li><a href="global.html#GeneralAdmissionRenderer">GeneralAdmissionRenderer</a></li><li><a href="global.html#GenericSeatRenderer">GenericSeatRenderer</a></li><li><a href="global.html#HelpCenter">HelpCenter</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#ManualBlockingSelection">ManualBlockingSelection</a></li><li><a href="global.html#ManualSeatSelection">ManualSeatSelection</a></li><li><a href="global.html#Navbar">Navbar</a></li><li><a href="global.html#Profile">Profile</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#RowPricingTable">RowPricingTable</a></li><li><a href="global.html#SeatMapContainer">SeatMapContainer</a></li><li><a href="global.html#SeatRenderer">SeatRenderer</a></li><li><a href="global.html#SeatSelectionViewSwitcher">SeatSelectionViewSwitcher</a></li><li><a href="global.html#SectionShapeRenderer">SectionShapeRenderer</a></li><li><a href="global.html#SelectionTopBar">SelectionTopBar</a></li><li><a href="global.html#TicketPurchase">TicketPurchase</a></li><li><a href="global.html#VenueStageRenderer">VenueStageRenderer</a></li><li><a href="global.html#ZoomControls">ZoomControls</a></li><li><a href="global.html#enviarEmailConfirmacionCompra">enviarEmailConfirmacionCompra</a></li><li><a href="global.html#generateTicketNumber">generateTicketNumber</a></li><li><a href="global.html#generateValidationCode">generateValidationCode</a></li><li><a href="global.html#returnError">returnError</a></li><li><a href="global.html#transporter">transporter</a></li><li><a href="global.html#useAdvancedZoomPan">useAdvancedZoomPan</a></li><li><a href="global.html#useDeviceDetection">useDeviceDetection</a></li><li><a href="global.html#useUserRole">useUserRole</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-components_colorscheme.html">components/colorscheme</a></li><li><a href="module-models_Event.html">models/Event</a></li><li><a href="module-models_Location.html">models/Location</a></li><li><a href="module-models_SeatMap.html">models/SeatMap</a></li><li><a href="module-models_Ticket.html">models/Ticket</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-services_UserService.html">services/UserService</a></li><li><a href="module-utils_api.html">utils/api</a></li><li><a href="module-utils_authSession.html">utils/authSession</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AboutUs">AboutUs</a></li><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#AdminStatistics">AdminStatistics</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#BlockingViewSwitcher">BlockingViewSwitcher</a></li><li><a href="global.html#EditProfile">EditProfile</a></li><li><a href="global.html#EditableSeatRenderer">EditableSeatRenderer</a></li><li><a href="global.html#ErrorPage">ErrorPage</a></li><li><a href="global.html#EventCreation">EventCreation</a></li><li><a href="global.html#EventDetails">EventDetails</a></li><li><a href="global.html#FramedImage">FramedImage</a></li><li><a href="global.html#GeneralAdmissionRenderer">GeneralAdmissionRenderer</a></li><li><a href="global.html#GenericSeatRenderer">GenericSeatRenderer</a></li><li><a href="global.html#HelpCenter">HelpCenter</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#ManualBlockingSelection">ManualBlockingSelection</a></li><li><a href="global.html#ManualSeatSelection">ManualSeatSelection</a></li><li><a href="global.html#Profile">Profile</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#RowPricingTable">RowPricingTable</a></li><li><a href="global.html#SeatMapContainer">SeatMapContainer</a></li><li><a href="global.html#SeatRenderer">SeatRenderer</a></li><li><a href="global.html#SeatSelectionViewSwitcher">SeatSelectionViewSwitcher</a></li><li><a href="global.html#SectionShapeRenderer">SectionShapeRenderer</a></li><li><a href="global.html#SelectionTopBar">SelectionTopBar</a></li><li><a href="global.html#TicketPurchase">TicketPurchase</a></li><li><a href="global.html#VenueStageRenderer">VenueStageRenderer</a></li><li><a href="global.html#ZoomControls">ZoomControls</a></li><li><a href="global.html#enviarEmailConfirmacionCompra">enviarEmailConfirmacionCompra</a></li><li><a href="global.html#generateTicketNumber">generateTicketNumber</a></li><li><a href="global.html#generateToken">generateToken</a></li><li><a href="global.html#generateValidationCode">generateValidationCode</a></li><li><a href="global.html#returnError">returnError</a></li><li><a href="global.html#tokens">tokens</a></li><li><a href="global.html#transporter">transporter</a></li><li><a href="global.html#useAdvancedZoomPan">useAdvancedZoomPan</a></li><li><a href="global.html#useDeviceDetection">useDeviceDetection</a></li><li><a href="global.html#useUserRole">useUserRole</a></li><li><a href="global.html#verifyAdmin">verifyAdmin</a></li><li><a href="global.html#verifyAuthenticated">verifyAuthenticated</a></li><li><a href="global.html#verifyOwnership">verifyOwnership</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu Oct 23 2025 19:08:08 GMT+0200 (hora de verano de Europa central)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Nov 10 2025 20:21:21 GMT+0100 (hora estándar de Europa central)
 </footer>
 
 <script> prettyPrint(); </script>

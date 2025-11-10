@@ -26,26 +26,26 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>import { useEffect, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom"; 
-import { 
-  Layout, 
-  Typography, 
-  Card, 
-  Row, 
-  Col, 
-  Button, 
-  Tag, 
+            <pre class="prettyprint source linenums"><code>import { useEffect, useState, useCallback } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import {
+  Layout,
+  Typography,
+  Card,
+  Row,
+  Col,
+  Button,
+  Tag,
   Space,
   Skeleton,
   Alert,
   Divider,
-  Table
+  Table,
+  notification
 } from "antd";
-import { notification } from 'antd';
-import { 
-  CalendarOutlined, 
-  EnvironmentOutlined, 
+import {
+  CalendarOutlined,
+  EnvironmentOutlined,
   TeamOutlined,
   ClockCircleOutlined,
   ArrowLeftOutlined,
@@ -56,17 +56,17 @@ import {
   PictureOutlined,
   EuroOutlined,
   StopOutlined,
-  CheckCircleOutlined
+  CheckCircleOutlined,
+  PauseCircleOutlined,
+  PlayCircleOutlined
 } from "@ant-design/icons";
 import axios from "axios";
 import dayjs from "dayjs";
 import "dayjs/locale/es";
 
-// Import color scheme
 import { COLORS } from "../components/colorscheme";
 import FramedImage from "../components/FramedImage";
 
-// Configure dayjs in Spanish
 dayjs.locale('es');
 
 // CSS for spinner animation
@@ -100,6 +100,7 @@ const EventDetails = () => {
   const [error, setError] = useState(null);
   const [ticketAvailability, setTicketAvailability] = useState(null);
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
+  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true);
   const showNotification = (type, message, description) => {
     notification[type]({
       message,
@@ -121,7 +122,7 @@ const EventDetails = () => {
   }, []);
 
   // Robust calculation of total event capacity
-  const computeEventCapacity = (evt) => {
+  const computeEventCapacity = useCallback((evt) => {
     if (!evt) return 0;
     // If detailed section information is available, sum capacities
     if (evt.usesSectionPricing &amp;&amp; Array.isArray(evt.sectionPricingInfo) &amp;&amp; evt.sectionPricingInfo.length > 0) {
@@ -131,22 +132,22 @@ const EventDetails = () => {
     if (typeof evt.capacity === 'number' &amp;&amp; evt.capacity > 0) return evt.capacity;
     if (evt.location &amp;&amp; typeof evt.location.capacity === 'number') return evt.location.capacity || 0;
     return 0;
-  };
+  }, []);
 
   // Function to get ticket availability
-  const fetchTicketAvailability = async (evtParam) => {
+  const fetchTicketAvailability = useCallback(async (evtParam) => {
     if (!id) return;
     const currentEvent = evtParam || event;
-    
+
     setAvailabilityLoading(true);
     try {
       const response = await axios.get(`${gatewayUrl}/tickets/event/${id}`);
       const ticketStats = response.data.statistics || [];
-      
+
       // Process statistics to get availability
       let soldTickets = 0;
       let pendingTickets = 0;
-      
+
       ticketStats.forEach(stat => {
         if (stat._id === 'paid') {
           soldTickets = stat.totalTickets || 0;
@@ -175,7 +176,7 @@ const EventDetails = () => {
     } finally {
       setAvailabilityLoading(false);
     }
-  };
+  }, [id, event, gatewayUrl, computeEventCapacity]);
 
   useEffect(() => {
     if (!id) {
@@ -194,10 +195,10 @@ const EventDetails = () => {
           // Map event type to category for consistency with Home
           category: mapEventTypeToCategory(res.data.type)
         };
-        
+
         setEvent(eventData);
         setLoading(false);
-        
+
         // Load availability using the newly obtained event to avoid capacity 0
         fetchTicketAvailability(eventData);
       })
@@ -207,25 +208,26 @@ const EventDetails = () => {
         setLoading(false);
         showNotification('error', 'Error', 'No se pudieron cargar los detalles del evento. Por favor, inténtalo de nuevo más tarde.');
       });
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       }, [id, gatewayUrl]);
 
   // Configure automatic availability update every 30 seconds
   useEffect(() => {
-    if (!event) return;
+    if (!event || !autoRefreshEnabled) return;
 
     const interval = setInterval(() => {
       fetchTicketAvailability();
     }, 30000); // Actualizar cada 30 segundos
 
     return () => clearInterval(interval);
-  }, [event]);
+  }, [event, fetchTicketAvailability, autoRefreshEnabled]);
 
   // Refrescar disponibilidad inmediatamente cuando el evento cambia
   useEffect(() => {
     if (event) {
       fetchTicketAvailability();
     }
-  }, [event]);
+  }, [event, fetchTicketAvailability]);
 
   const mapEventTypeToCategory = (type) => {
     const typeMap = {
@@ -410,30 +412,52 @@ const EventDetails = () => {
         marginTop: '24px',
         borderLeft: `4px solid ${isSoldOut ? COLORS.secondary.main : COLORS.accent.green}`
       }}>
-        &lt;Title level={5} style={{ 
-          color: COLORS.neutral.grey800,
-          marginBottom: '12px',
+        &lt;div style={{
           display: 'flex',
-          alignItems: 'center'
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '12px'
         }}>
-          &lt;TeamOutlined style={{ 
-            marginRight: '8px', 
-            color: isSoldOut ? COLORS.secondary.main : COLORS.accent.green 
-          }} />
-          Disponibilidad de entradas
-          {availabilityLoading &amp;&amp; (
-            &lt;div style={{ marginLeft: '8px' }}>
-              &lt;div style={{ 
-                width: '12px', 
-                height: '12px', 
-                border: '2px solid #f3f3f3',
-                borderTop: '2px solid #1890ff',
-                borderRadius: '50%',
-                animation: 'spin 1s linear infinite'
-              }} />
-            &lt;/div>
-          )}
-        &lt;/Title>
+          &lt;Title level={5} style={{
+            color: COLORS.neutral.grey800,
+            margin: 0,
+            display: 'flex',
+            alignItems: 'center'
+          }}>
+            &lt;TeamOutlined style={{
+              marginRight: '8px',
+              color: isSoldOut ? COLORS.secondary.main : COLORS.accent.green
+            }} />
+            Disponibilidad de entradas
+            {availabilityLoading &amp;&amp; (
+              &lt;div style={{ marginLeft: '8px' }}>
+                &lt;div style={{
+                  width: '12px',
+                  height: '12px',
+                  border: '2px solid #f3f3f3',
+                  borderTop: '2px solid #1890ff',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite'
+                }} />
+              &lt;/div>
+            )}
+          &lt;/Title>
+          &lt;Button
+            type="text"
+            size="small"
+            icon={autoRefreshEnabled ? &lt;PauseCircleOutlined /> : &lt;PlayCircleOutlined />}
+            onClick={() => setAutoRefreshEnabled(!autoRefreshEnabled)}
+            style={{
+              color: COLORS.primary.main,
+              display: 'flex',
+              alignItems: 'center'
+            }}
+            title={autoRefreshEnabled ? 'Pausar actualizaciones automáticas' : 'Reanudar actualizaciones automáticas'}
+            aria-label={autoRefreshEnabled ? 'Pausar actualizaciones automáticas' : 'Reanudar actualizaciones automáticas'}
+          >
+            {autoRefreshEnabled ? 'Pausar' : 'Reanudar'}
+          &lt;/Button>
+        &lt;/div>
         
         &lt;Row gutter={[16, 8]}>
           &lt;Col xs={24} sm={8}>
@@ -502,13 +526,14 @@ const EventDetails = () => {
           &lt;/div>
         )}
         
-        &lt;Text style={{ 
-          fontSize: '10px', 
+        &lt;Text style={{
+          fontSize: '10px',
           color: COLORS.neutral.grey3,
           marginTop: '8px',
           display: 'block'
         }}>
           Última actualización: {dayjs(lastUpdated).format('HH:mm:ss')}
+          {!autoRefreshEnabled &amp;&amp; ' (Actualizaciones pausadas)'}
         &lt;/Text>
       &lt;/Card>
     );
@@ -912,13 +937,13 @@ export default EventDetails;</code></pre>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-components_colorscheme.html">components/colorscheme</a></li><li><a href="module-hooks_useSeatMapViability.html">hooks/useSeatMapViability</a></li><li><a href="module-models_Event.html">models/Event</a></li><li><a href="module-models_Location.html">models/Location</a></li><li><a href="module-models_SeatMap.html">models/SeatMap</a></li><li><a href="module-models_Ticket.html">models/Ticket</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-services_UserService.html">services/UserService</a></li><li><a href="module-utils_authSession.html">utils/authSession</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AboutUs">AboutUs</a></li><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#AdminStatistics">AdminStatistics</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#BlockingViewSwitcher">BlockingViewSwitcher</a></li><li><a href="global.html#EditProfile">EditProfile</a></li><li><a href="global.html#EditableSeatRenderer">EditableSeatRenderer</a></li><li><a href="global.html#ErrorPage">ErrorPage</a></li><li><a href="global.html#EventCreation">EventCreation</a></li><li><a href="global.html#EventDetails">EventDetails</a></li><li><a href="global.html#FramedImage">FramedImage</a></li><li><a href="global.html#GeneralAdmissionRenderer">GeneralAdmissionRenderer</a></li><li><a href="global.html#GenericSeatRenderer">GenericSeatRenderer</a></li><li><a href="global.html#HelpCenter">HelpCenter</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#ManualBlockingSelection">ManualBlockingSelection</a></li><li><a href="global.html#ManualSeatSelection">ManualSeatSelection</a></li><li><a href="global.html#Navbar">Navbar</a></li><li><a href="global.html#Profile">Profile</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#RowPricingTable">RowPricingTable</a></li><li><a href="global.html#SeatMapContainer">SeatMapContainer</a></li><li><a href="global.html#SeatRenderer">SeatRenderer</a></li><li><a href="global.html#SeatSelectionViewSwitcher">SeatSelectionViewSwitcher</a></li><li><a href="global.html#SectionShapeRenderer">SectionShapeRenderer</a></li><li><a href="global.html#SelectionTopBar">SelectionTopBar</a></li><li><a href="global.html#TicketPurchase">TicketPurchase</a></li><li><a href="global.html#VenueStageRenderer">VenueStageRenderer</a></li><li><a href="global.html#ZoomControls">ZoomControls</a></li><li><a href="global.html#enviarEmailConfirmacionCompra">enviarEmailConfirmacionCompra</a></li><li><a href="global.html#generateTicketNumber">generateTicketNumber</a></li><li><a href="global.html#generateValidationCode">generateValidationCode</a></li><li><a href="global.html#returnError">returnError</a></li><li><a href="global.html#transporter">transporter</a></li><li><a href="global.html#useAdvancedZoomPan">useAdvancedZoomPan</a></li><li><a href="global.html#useDeviceDetection">useDeviceDetection</a></li><li><a href="global.html#useUserRole">useUserRole</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-components_colorscheme.html">components/colorscheme</a></li><li><a href="module-models_Event.html">models/Event</a></li><li><a href="module-models_Location.html">models/Location</a></li><li><a href="module-models_SeatMap.html">models/SeatMap</a></li><li><a href="module-models_Ticket.html">models/Ticket</a></li><li><a href="module-models_User.html">models/User</a></li><li><a href="module-services_UserService.html">services/UserService</a></li><li><a href="module-utils_api.html">utils/api</a></li><li><a href="module-utils_authSession.html">utils/authSession</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AboutUs">AboutUs</a></li><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#AdminStatistics">AdminStatistics</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#BlockingViewSwitcher">BlockingViewSwitcher</a></li><li><a href="global.html#EditProfile">EditProfile</a></li><li><a href="global.html#EditableSeatRenderer">EditableSeatRenderer</a></li><li><a href="global.html#ErrorPage">ErrorPage</a></li><li><a href="global.html#EventCreation">EventCreation</a></li><li><a href="global.html#EventDetails">EventDetails</a></li><li><a href="global.html#FramedImage">FramedImage</a></li><li><a href="global.html#GeneralAdmissionRenderer">GeneralAdmissionRenderer</a></li><li><a href="global.html#GenericSeatRenderer">GenericSeatRenderer</a></li><li><a href="global.html#HelpCenter">HelpCenter</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#ManualBlockingSelection">ManualBlockingSelection</a></li><li><a href="global.html#ManualSeatSelection">ManualSeatSelection</a></li><li><a href="global.html#Profile">Profile</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#RowPricingTable">RowPricingTable</a></li><li><a href="global.html#SeatMapContainer">SeatMapContainer</a></li><li><a href="global.html#SeatRenderer">SeatRenderer</a></li><li><a href="global.html#SeatSelectionViewSwitcher">SeatSelectionViewSwitcher</a></li><li><a href="global.html#SectionShapeRenderer">SectionShapeRenderer</a></li><li><a href="global.html#SelectionTopBar">SelectionTopBar</a></li><li><a href="global.html#TicketPurchase">TicketPurchase</a></li><li><a href="global.html#VenueStageRenderer">VenueStageRenderer</a></li><li><a href="global.html#ZoomControls">ZoomControls</a></li><li><a href="global.html#enviarEmailConfirmacionCompra">enviarEmailConfirmacionCompra</a></li><li><a href="global.html#generateTicketNumber">generateTicketNumber</a></li><li><a href="global.html#generateToken">generateToken</a></li><li><a href="global.html#generateValidationCode">generateValidationCode</a></li><li><a href="global.html#returnError">returnError</a></li><li><a href="global.html#tokens">tokens</a></li><li><a href="global.html#transporter">transporter</a></li><li><a href="global.html#useAdvancedZoomPan">useAdvancedZoomPan</a></li><li><a href="global.html#useDeviceDetection">useDeviceDetection</a></li><li><a href="global.html#useUserRole">useUserRole</a></li><li><a href="global.html#verifyAdmin">verifyAdmin</a></li><li><a href="global.html#verifyAuthenticated">verifyAuthenticated</a></li><li><a href="global.html#verifyOwnership">verifyOwnership</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu Oct 23 2025 19:08:08 GMT+0200 (hora de verano de Europa central)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Nov 10 2025 20:21:21 GMT+0100 (hora estándar de Europa central)
 </footer>
 
 <script> prettyPrint(); </script>
