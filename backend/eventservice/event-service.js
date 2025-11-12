@@ -19,7 +19,7 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use('/event', express.json({ limit: '10mb' }));
 app.use('/events/*/image', express.json({ limit: '10mb' }));
 
-// Increased limits only for routes with images or large payloads
+// Límites aumentados solo para rutas con imágenes o payloads grandes
 const largePayloadMiddleware = express.json({ limit: '10mb' });
 const largeUrlEncodedMiddleware = express.urlencoded({ limit: '10mb', extended: true });
 
@@ -28,7 +28,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ 
   storage: storage,
   fileFilter: (req, file, cb) => {
-    // Only allow images
+    // Solo permitir imágenes
     if (file.mimetype.startsWith('image/')) {
       cb(null, true);
     } else {
@@ -36,7 +36,7 @@ const upload = multer({
     }
   },
   limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB limit
+    fileSize: 5 * 1024 * 1024 // Límite de 5MB
   }
 });
 
@@ -60,7 +60,7 @@ const stateService = new EventStateService();
 stateService.setEventModel(EventModel);
 
 /**
- * Nodemailer transporter configuration for sending emails
+ * Configuración del transporter de Nodemailer para envío de emails
  */
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
@@ -154,25 +154,25 @@ const createSectionPricing = (seatMapInfo, pricingData) => {
 };
 
 /**
- * Create a new event
+ * Crear un nuevo evento
  * @route POST /event
- * @param {Object} req.body - Event data
- * @param {string} req.body.name - Event name
- * @param {string} req.body.date - Event date
- * @param {string} req.body.location - Location ID
- * @param {string} req.body.type - Event type
- * @param {string} req.body.description - Event description
- * @param {number} req.body.capacity - Event capacity
- * @param {number} req.body.price - Event price
- * @param {string} req.body.state - Event state
- * @param {Array} [req.body.sectionPricing] - Section pricing configuration
- * @param {boolean} [req.body.usesSectionPricing] - Whether event uses section pricing
- * @param {boolean} [req.body.usesRowPricing] - Whether event uses row pricing
- * @param {Array} [req.body.blockedSeats] - List of blocked seats
- * @param {Array} [req.body.blockedSections] - List of blocked sections
- * @param {Object} [req.body.seatMapConfiguration] - Seat map configuration
- * @param {string} [req.body.imageData] - Base64 encoded image data
- * @returns {Object} Created event data
+ * @param {Object} req.body - Datos del evento
+ * @param {string} req.body.name - Nombre del evento
+ * @param {string} req.body.date - Fecha del evento
+ * @param {string} req.body.location - ID de la ubicación
+ * @param {string} req.body.type - Tipo de evento
+ * @param {string} req.body.description - Descripción del evento
+ * @param {number} req.body.capacity - Capacidad del evento
+ * @param {number} req.body.price - Precio del evento
+ * @param {string} req.body.state - Estado del evento
+ * @param {Array} [req.body.sectionPricing] - Configuración de precios por sección
+ * @param {boolean} [req.body.usesSectionPricing] - Si el evento usa precios por sección
+ * @param {boolean} [req.body.usesRowPricing] - Si el evento usa precios por fila
+ * @param {Array} [req.body.blockedSeats] - Lista de asientos bloqueados
+ * @param {Array} [req.body.blockedSections] - Lista de secciones bloqueadas
+ * @param {Object} [req.body.seatMapConfiguration] - Configuración del mapa de asientos
+ * @param {string} [req.body.imageData] - Datos de imagen codificados en base64
+ * @returns {Object} Datos del evento creado
  */
 app.post("/event", largePayloadMiddleware, largeUrlEncodedMiddleware, async (req, res) => {
   try {
@@ -348,11 +348,11 @@ app.post("/event", largePayloadMiddleware, largeUrlEncodedMiddleware, async (req
 });
 
 /**
- * Update event image
+ * Actualizar imagen del evento
  * @route PATCH /events/:eventId/image
- * @param {string} req.params.eventId - Event ID
- * @param {File} req.file - Image file
- * @returns {Object} Updated event with new image URL
+ * @param {string} req.params.eventId - ID del evento
+ * @param {File} req.file - Archivo de imagen
+ * @returns {Object} Evento actualizado con nueva URL de imagen
  */
 app.patch("/events/:eventId/image", largePayloadMiddleware, largeUrlEncodedMiddleware, upload.single('image'), async (req, res) => {
   try {
@@ -400,10 +400,10 @@ app.patch("/events/:eventId/image", largePayloadMiddleware, largeUrlEncodedMiddl
 });
 
 /**
- * Get event image
+ * Obtener imagen del evento
  * @route GET /events/:eventId/image
- * @param {string} req.params.eventId - Event ID
- * @returns {Object} Event image data including URL and metadata
+ * @param {string} req.params.eventId - ID del evento
+ * @returns {Object} Datos de imagen del evento incluyendo URL y metadatos
  */
 app.get("/events/:eventId/image", async (req, res) => {
   try {
@@ -434,9 +434,9 @@ app.get("/events/:eventId/image", async (req, res) => {
 });
 
 /**
- * Get all events with location data and pricing information
+ * Obtener todos los eventos con datos de ubicación e información de precios
  * @route GET /events
- * @returns {Array} List of events with location data and price ranges
+ * @returns {Array} Lista de eventos con datos de ubicación y rangos de precios
  */
 app.get("/events", stateService.updateStatesMiddleware.bind(stateService), async (req, res) => {
   try {
@@ -501,10 +501,10 @@ app.get("/events", stateService.updateStatesMiddleware.bind(stateService), async
 });
 
 /**
- * Get specific event by ID with location and seatmap data
+ * Obtener evento específico por ID con datos de ubicación y mapa de asientos
  * @route GET /events/:eventId
- * @param {string} req.params.eventId - Event ID
- * @returns {Object} Event details with location and seatmap information
+ * @param {string} req.params.eventId - ID del evento
+ * @returns {Object} Detalles del evento con información de ubicación y mapa de asientos
  */
 app.get("/events/:eventId", stateService.updateStatesMiddleware.bind(stateService), async (req, res) => {
   try {
@@ -574,13 +574,13 @@ app.get("/events/:eventId", stateService.updateStatesMiddleware.bind(stateServic
 });
 
 /**
- * Get price for a specific seat
+ * Obtener precio de un asiento específico
  * @route GET /events/:eventId/seat-price/:sectionId/:row/:seat
- * @param {string} req.params.eventId - Event ID
- * @param {string} req.params.sectionId - Section ID
- * @param {string} req.params.row - Row number
- * @param {string} req.params.seat - Seat number
- * @returns {Object} Seat price and blocking status
+ * @param {string} req.params.eventId - ID del evento
+ * @param {string} req.params.sectionId - ID de la sección
+ * @param {string} req.params.row - Número de fila
+ * @param {string} req.params.seat - Número de asiento
+ * @returns {Object} Precio del asiento y estado de bloqueo
  */
 app.get("/events/:eventId/seat-price/:sectionId/:row/:seat", async (req, res) => {
   try {
@@ -610,12 +610,12 @@ app.get("/events/:eventId/seat-price/:sectionId/:row/:seat", async (req, res) =>
 });
 
 /**
- * Get pricing for multiple seats
+ * Obtener precios de múltiples asientos
  * @route POST /events/:eventId/seats-pricing
- * @param {string} req.params.eventId - Event ID
- * @param {Object} req.body - Request body
- * @param {Array} req.body.seats - Array of seat objects with sectionId, row, seat
- * @returns {Array} Array of seat pricing information
+ * @param {string} req.params.eventId - ID del evento
+ * @param {Object} req.body - Cuerpo de la solicitud
+ * @param {Array} req.body.seats - Array de objetos de asientos con sectionId, row, seat
+ * @returns {Array} Array de información de precios de asientos
  */
 app.post("/events/:eventId/seats-pricing", async (req, res) => {
   try {
@@ -664,9 +664,9 @@ app.post("/events/:eventId/seats-pricing", async (req, res) => {
 });
 
 /**
- * Manually update event states
+ * Actualizar manualmente los estados de los eventos
  * @route POST /events/update-states
- * @returns {Object} State update results and statistics
+ * @returns {Object} Resultados de actualización de estados y estadísticas
  */
 app.post("/events/update-states", async (req, res) => {
   try {
@@ -686,9 +686,9 @@ app.post("/events/update-states", async (req, res) => {
 
 // Ruta para obtener estadísticas de eventos por estado
 /**
- * Get event statistics grouped by state
+ * Obtener estadísticas de eventos agrupadas por estado
  * @route GET /events/stats/states
- * @returns {Object} Event statistics grouped by state with counts and event lists
+ * @returns {Object} Estadísticas de eventos agrupadas por estado con conteos y listas de eventos
  */
 app.get("/events/stats/states", async (req, res) => {
   try {
@@ -952,7 +952,7 @@ app.delete("/events/:eventId/cancel", async (req, res) => {
       const ticketServiceUrl = process.env.TICKET_SERVICE_URL || 'http://localhost:8002';
       const ticketsRes = await axiosInstance.get(`${ticketServiceUrl}/tickets/event/${eventId}`);
       const tickets = ticketsRes.data.tickets || [];
-      
+
       // Usar un Set para evitar emails duplicados
       const emailsEnviados = new Set();
       for (const ticket of tickets) {

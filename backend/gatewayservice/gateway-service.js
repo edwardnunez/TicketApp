@@ -29,7 +29,7 @@ const secretKey = process.env.JWT_SECRET;
 
 if (!secretKey) {
   console.error('ERROR: JWT_SECRET no está definido en las variables de entorno');
-  console.error('Make sure JWT_SECRET is set in .env (local) or docker-compose.yml (Docker)');
+  console.error('Asegúrese de que JWT_SECRET esté configurado en .env (local) o docker-compose.yml (Docker)');
   process.exit(1);
 }
 
@@ -42,11 +42,11 @@ const largePayloadMiddleware = express.json({ limit: '50mb' });
 app.set("json spaces", 40);
 
 /**
- * Middleware to verify admin authentication
- * Checks for roleToken in Authorization header and verifies admin role
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @param {Function} next - Express next middleware function
+ * Middleware para verificar autenticación de administrador
+ * Verifica el roleToken en el encabezado Authorization y valida el rol de administrador
+ * @param {Object} req - Objeto de solicitud Express
+ * @param {Object} res - Objeto de respuesta Express
+ * @param {Function} next - Función del siguiente middleware Express
  */
 const verifyAdmin = (req, res, next) => {
   try {

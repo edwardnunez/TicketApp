@@ -19,7 +19,7 @@ const mongoUri = process.env.MONGODB_URI || "mongodb://localhost:27017/ticketdb"
 mongoose.connect(mongoUri, { useNewUrlParser: true, useUnifiedTopology: true });
 
 /**
- * Nodemailer transporter configuration for sending emails
+ * Configuración del transporter de Nodemailer para envío de emails
  */
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
@@ -35,11 +35,11 @@ const transporter = nodemailer.createTransport({
 });
 
 /**
- * Sends purchase confirmation email to users
- * @param {Object} params - Email parameters
- * @param {string} params.to - Recipient email address
- * @param {string} params.subject - Email subject
- * @param {string} params.html - Email HTML content
+ * Envía email de confirmación de compra a usuarios
+ * @param {Object} params - Parámetros del email
+ * @param {string} params.to - Dirección de email del destinatario
+ * @param {string} params.subject - Asunto del email
+ * @param {string} params.html - Contenido HTML del email
  */
 async function enviarEmailConfirmacionCompra({ to, subject, html }) {
   const mailOptions = {
@@ -57,8 +57,8 @@ async function enviarEmailConfirmacionCompra({ to, subject, html }) {
 }
 
 /**
- * Generates a unique ticket number
- * @returns {string} Unique ticket number
+ * Genera un número de ticket único
+ * @returns {string} Número de ticket único
  */
 const generateTicketNumber = () => {
   const timestamp = Date.now().toString(36);
@@ -67,8 +67,8 @@ const generateTicketNumber = () => {
 };
 
 /**
- * Generates a validation code for ticket verification
- * @returns {string} Hexadecimal validation code
+ * Genera un código de validación para verificación de tickets
+ * @returns {string} Código de validación hexadecimal
  */
 const generateValidationCode = () => {
   return crypto.randomBytes(16).toString('hex').toUpperCase();
@@ -143,10 +143,10 @@ const getEventDetails = async (eventId) => {
 };
 
 /**
- * Verifies a PayPal payment by communicating directly with PayPal API
- * @param {string} orderId - PayPal order ID to verify
- * @returns {Promise<Object>} PayPal order details if valid
- * @throws {Error} If payment verification fails
+ * Verifica un pago de PayPal comunicándose directamente con la API de PayPal
+ * @param {string} orderId - ID de orden de PayPal a verificar
+ * @returns {Promise<Object>} Detalles de la orden de PayPal si es válida
+ * @throws {Error} Si la verificación del pago falla
  */
 const verifyPayPalPayment = async (orderId) => {
   const clientId = process.env.PAYPAL_CLIENT_ID;

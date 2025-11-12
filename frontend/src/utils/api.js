@@ -1,7 +1,7 @@
 /**
- * @file API utility functions for authenticated requests
+ * @file Funciones utilitarias de API para solicitudes autenticadas
  * @module utils/api
- * @description Provides helper functions to make authenticated HTTP requests with tokens
+ * @description Proporciona funciones auxiliares para realizar solicitudes HTTP autenticadas con tokens
  */
 
 import axios from 'axios';
@@ -9,8 +9,8 @@ import axios from 'axios';
 const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
 
 /**
- * Gets the admin authentication headers (roleToken for admin operations)
- * @returns {Object} Headers object with Authorization roleToken
+ * Obtiene los encabezados de autenticación de administrador (roleToken para operaciones de administrador)
+ * @returns {Object} Objeto de encabezados con roleToken de autorización
  */
 export const getAdminHeaders = () => {
   const roleToken = localStorage.getItem('roleToken');
@@ -25,8 +25,8 @@ export const getAdminHeaders = () => {
 };
 
 /**
- * Gets the user authentication headers (token for user operations)
- * @returns {Object} Headers object with Authorization token
+ * Obtiene los encabezados de autenticación de usuario (token para operaciones de usuario)
+ * @returns {Object} Objeto de encabezados con token de autorización
  */
 export const getUserHeaders = () => {
   const token = localStorage.getItem('token');
@@ -41,12 +41,12 @@ export const getUserHeaders = () => {
 };
 
 /**
- * Gets the authentication headers (tries roleToken for admin, falls back to token)
- * @deprecated Use getAdminHeaders() or getUserHeaders() instead
- * @returns {Object} Headers object with Authorization token
+ * Obtiene los encabezados de autenticación (intenta roleToken para admin, regresa a token)
+ * @deprecated Use getAdminHeaders() o getUserHeaders() en su lugar
+ * @returns {Object} Objeto de encabezados con token de autorización
  */
 export const getAuthHeaders = () => {
-  // For backwards compatibility, prefer roleToken (admin) but fallback to token (user)
+  // Para compatibilidad hacia atrás, prefiere roleToken (admin) pero regresa a token (usuario)
   const roleToken = localStorage.getItem('roleToken');
   const token = localStorage.getItem('token');
 
@@ -62,10 +62,10 @@ export const getAuthHeaders = () => {
 };
 
 /**
- * Makes an authenticated GET request (uses roleToken for admin operations)
- * @param {string} endpoint - API endpoint (without base URL)
- * @param {Object} config - Additional axios config
- * @returns {Promise} Axios response promise
+ * Realiza una solicitud GET autenticada (usa roleToken para operaciones de administrador)
+ * @param {string} endpoint - Endpoint de API (sin URL base)
+ * @param {Object} config - Configuración adicional de axios
+ * @returns {Promise} Promesa de respuesta de Axios
  */
 export const authenticatedGet = (endpoint, config = {}) => {
   return axios.get(`${gatewayUrl}${endpoint}`, {
@@ -78,11 +78,11 @@ export const authenticatedGet = (endpoint, config = {}) => {
 };
 
 /**
- * Makes an authenticated POST request (uses roleToken for admin operations)
- * @param {string} endpoint - API endpoint (without base URL)
- * @param {Object} data - Request body data
- * @param {Object} config - Additional axios config
- * @returns {Promise} Axios response promise
+ * Realiza una solicitud POST autenticada (usa roleToken para operaciones de administrador)
+ * @param {string} endpoint - Endpoint de API (sin URL base)
+ * @param {Object} data - Datos del cuerpo de la solicitud
+ * @param {Object} config - Configuración adicional de axios
+ * @returns {Promise} Promesa de respuesta de Axios
  */
 export const authenticatedPost = (endpoint, data, config = {}) => {
   return axios.post(`${gatewayUrl}${endpoint}`, data, {
@@ -95,11 +95,11 @@ export const authenticatedPost = (endpoint, data, config = {}) => {
 };
 
 /**
- * Makes an authenticated PUT request (uses roleToken for admin operations)
- * @param {string} endpoint - API endpoint (without base URL)
- * @param {Object} data - Request body data
- * @param {Object} config - Additional axios config
- * @returns {Promise} Axios response promise
+ * Realiza una solicitud PUT autenticada (usa roleToken para operaciones de administrador)
+ * @param {string} endpoint - Endpoint de API (sin URL base)
+ * @param {Object} data - Datos del cuerpo de la solicitud
+ * @param {Object} config - Configuración adicional de axios
+ * @returns {Promise} Promesa de respuesta de Axios
  */
 export const authenticatedPut = (endpoint, data, config = {}) => {
   return axios.put(`${gatewayUrl}${endpoint}`, data, {
@@ -112,11 +112,11 @@ export const authenticatedPut = (endpoint, data, config = {}) => {
 };
 
 /**
- * Makes an authenticated PATCH request (uses roleToken for admin operations)
- * @param {string} endpoint - API endpoint (without base URL)
- * @param {Object} data - Request body data
- * @param {Object} config - Additional axios config
- * @returns {Promise} Axios response promise
+ * Realiza una solicitud PATCH autenticada (usa roleToken para operaciones de administrador)
+ * @param {string} endpoint - Endpoint de API (sin URL base)
+ * @param {Object} data - Datos del cuerpo de la solicitud
+ * @param {Object} config - Configuración adicional de axios
+ * @returns {Promise} Promesa de respuesta de Axios
  */
 export const authenticatedPatch = (endpoint, data, config = {}) => {
   return axios.patch(`${gatewayUrl}${endpoint}`, data, {
@@ -129,10 +129,10 @@ export const authenticatedPatch = (endpoint, data, config = {}) => {
 };
 
 /**
- * Makes an authenticated DELETE request (uses roleToken for admin operations)
- * @param {string} endpoint - API endpoint (without base URL)
- * @param {Object} config - Additional axios config
- * @returns {Promise} Axios response promise
+ * Realiza una solicitud DELETE autenticada (usa roleToken para operaciones de administrador)
+ * @param {string} endpoint - Endpoint de API (sin URL base)
+ * @param {Object} config - Configuración adicional de axios
+ * @returns {Promise} Promesa de respuesta de Axios
  */
 export const authenticatedDelete = (endpoint, config = {}) => {
   return axios.delete(`${gatewayUrl}${endpoint}`, {
@@ -145,10 +145,10 @@ export const authenticatedDelete = (endpoint, config = {}) => {
 };
 
 /**
- * Makes a user-authenticated GET request (uses regular token, not roleToken)
- * @param {string} endpoint - API endpoint (without base URL)
- * @param {Object} config - Additional axios config
- * @returns {Promise} Axios response promise
+ * Realiza una solicitud GET autenticada de usuario (usa token regular, no roleToken)
+ * @param {string} endpoint - Endpoint de API (sin URL base)
+ * @param {Object} config - Configuración adicional de axios
+ * @returns {Promise} Promesa de respuesta de Axios
  */
 export const userAuthenticatedGet = (endpoint, config = {}) => {
   return axios.get(`${gatewayUrl}${endpoint}`, {
@@ -161,11 +161,11 @@ export const userAuthenticatedGet = (endpoint, config = {}) => {
 };
 
 /**
- * Makes a user-authenticated POST request (uses regular token, not roleToken)
- * @param {string} endpoint - API endpoint (without base URL)
- * @param {Object} data - Request body data
- * @param {Object} config - Additional axios config
- * @returns {Promise} Axios response promise
+ * Realiza una solicitud POST autenticada de usuario (usa token regular, no roleToken)
+ * @param {string} endpoint - Endpoint de API (sin URL base)
+ * @param {Object} data - Datos del cuerpo de la solicitud
+ * @param {Object} config - Configuración adicional de axios
+ * @returns {Promise} Promesa de respuesta de Axios
  */
 export const userAuthenticatedPost = (endpoint, data, config = {}) => {
   return axios.post(`${gatewayUrl}${endpoint}`, data, {
@@ -178,11 +178,11 @@ export const userAuthenticatedPost = (endpoint, data, config = {}) => {
 };
 
 /**
- * Makes a user-authenticated PUT request (uses regular token, not roleToken)
- * @param {string} endpoint - API endpoint (without base URL)
- * @param {Object} data - Request body data
- * @param {Object} config - Additional axios config
- * @returns {Promise} Axios response promise
+ * Realiza una solicitud PUT autenticada de usuario (usa token regular, no roleToken)
+ * @param {string} endpoint - Endpoint de API (sin URL base)
+ * @param {Object} data - Datos del cuerpo de la solicitud
+ * @param {Object} config - Configuración adicional de axios
+ * @returns {Promise} Promesa de respuesta de Axios
  */
 export const userAuthenticatedPut = (endpoint, data, config = {}) => {
   return axios.put(`${gatewayUrl}${endpoint}`, data, {
@@ -195,19 +195,19 @@ export const userAuthenticatedPut = (endpoint, data, config = {}) => {
 };
 
 const api = {
-  // Admin operations (use roleToken)
+  // Operaciones de administrador (usan roleToken)
   get: authenticatedGet,
   post: authenticatedPost,
   put: authenticatedPut,
   patch: authenticatedPatch,
   delete: authenticatedDelete,
 
-  // User operations (use regular token)
+  // Operaciones de usuario (usan token regular)
   userGet: userAuthenticatedGet,
   userPost: userAuthenticatedPost,
   userPut: userAuthenticatedPut,
 
-  // Headers
+  // Encabezados
   getAdminHeaders,
   getUserHeaders,
   getAuthHeaders

@@ -130,10 +130,10 @@ const eventSchema = new mongoose.Schema({
   
   sectionPricing: [sectionPricingSchema],
   
-  // Flag para indicar si el evento usa pricing por secciones con filas
-  usesSectionPricing: { 
-    type: Boolean, 
-    default: false 
+  // Bandera para indicar si el evento usa precios por secciones con filas
+  usesSectionPricing: {
+    type: Boolean,
+    default: false
   },
   
   usesRowPricing: { 
@@ -144,7 +144,7 @@ const eventSchema = new mongoose.Schema({
   seatMapConfiguration: seatMapConfigurationSchema,
 
   imageData: {
-    data: String, // Base64 string de la imagen
+    data: String, // Cadena Base64 de la imagen
     contentType: String, // Tipo MIME (image/jpeg, image/png, etc.)
     filename: String, // Nombre original del archivo
     size: Number, // Tamaño en bytes
@@ -158,7 +158,7 @@ const eventSchema = new mongoose.Schema({
 /**
  * Middleware pre-guardado para calcular la capacidad total basada en precios por sección
  * @function
- * @param {Function} next - Callback para continuar al siguiente middleware
+ * @param {Function} next - Función de retorno para continuar al siguiente middleware
  */
 eventSchema.pre('save', function(next) {
   if (this.usesSectionPricing && this.sectionPricing && this.sectionPricing.length > 0) {
