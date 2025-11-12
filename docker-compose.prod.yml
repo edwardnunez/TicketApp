@@ -37,6 +37,9 @@ services:
       - SMTP_USER=${SMTP_USER}
       - SMTP_PASS=${SMTP_PASS}
       - SMTP_FROM=${SMTP_FROM}
+      - PAYPAL_CLIENT_ID=${PAYPAL_CLIENT_ID}
+      - PAYPAL_CLIENT_SECRET=${PAYPAL_CLIENT_SECRET}
+      - PAYPAL_MODE=${PAYPAL_MODE}
       - USER_SERVICE_URL=http://userservice:8001
       - EVENT_SERVICE_URL=http://eventservice:8003
       - NODE_TLS_REJECT_UNAUTHORIZED=0

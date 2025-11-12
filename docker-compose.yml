@@ -30,6 +30,9 @@ services:
       - SMTP_USER=${SMTP_USER}
       - SMTP_PASS=${SMTP_PASS}
       - SMTP_FROM=${SMTP_FROM:-TicketApp <no-reply@ticketapp.com>}
+      - PAYPAL_CLIENT_ID=${PAYPAL_CLIENT_ID}
+      - PAYPAL_CLIENT_SECRET=${PAYPAL_CLIENT_SECRET}
+      - PAYPAL_MODE=${PAYPAL_MODE:-sandbox}
       - USER_SERVICE_URL=http://userservice:8001
       - EVENT_SERVICE_URL=http://eventservice:8003
       - NODE_TLS_REJECT_UNAUTHORIZED=0
@@ -92,5 +95,8 @@ services:
       - "3000:3000"
     environment:
       - REACT_API_URL=http://gateway:8000
+      - REACT_APP_API_ENDPOINT=${REACT_APP_API_ENDPOINT:-http://localhost:8000}
+      - REACT_APP_PAYPAL_CLIENT_ID=${REACT_APP_PAYPAL_CLIENT_ID}
+      - REACT_APP_PAYPAL_ENVIRONMENT=${REACT_APP_PAYPAL_ENVIRONMENT:-sandbox}
     depends_on:
       - gateway

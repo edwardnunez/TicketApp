@@ -142,6 +142,63 @@ const getEventDetails = async (eventId) => {
   }
 };
 
+/**
+ * Verifies a PayPal payment by communicating directly with PayPal API
+ * @param {string} orderId - PayPal order ID to verify
+ * @returns {Promise<Object>} PayPal order details if valid
+ * @throws {Error} If payment verification fails
+ */
+const verifyPayPalPayment = async (orderId) => {
+  const clientId = process.env.PAYPAL_CLIENT_ID;
+  const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
+
+  if (!clientId || !clientSecret) {
+    throw new Error('PayPal credentials not configured');
+  }
+
+  try {
+    // Determine PayPal API URL based on environment
+    const baseURL = process.env.PAYPAL_MODE === 'live'
+      ? 'https://api-m.paypal.com'
+      : 'https://api-m.sandbox.paypal.com';
+
+    // Get access token from PayPal
+    const authResponse = await axios.post(
+      `${baseURL}/v1/oauth2/token`,
+      'grant_type=client_credentials',
+      {
+        headers: {
+          'Accept': 'application/json',
+          'Accept-Language': 'en_US',
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        auth: {
+          username: clientId,
+          password: clientSecret
+        }
+      }
+    );
+
+    const accessToken = authResponse.data.access_token;
+
+    // Verify the order with PayPal
+    const orderResponse = await axios.get(
+      `${baseURL}/v2/checkout/orders/${orderId}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    return orderResponse.data;
+  } catch (error) {
+    console.error('Error verifying PayPal payment:', error.response?.data || error.message);
+    throw new Error('Failed to verify payment with PayPal');
+  }
+};
+
 //obtener asientos ocupados por evento
 app.get('/tickets/occupied/:eventId', validateObjectId, async (req, res) => {
   try {
@@ -269,6 +326,65 @@ app.post('/tickets/purchase', async (req, res) => {
       });
     }
 
+    // === VALIDACIÓN DE PAGO CON PAYPAL ===
+    if (!paymentInfo || !paymentInfo.paypalOrderId) {
+      return res.status(400).json({
+        error: "Información de pago faltante",
+        message: "No se proporcionó información de pago válida de PayPal"
+      });
+    }
+
+    // Verificar el pago con la API de PayPal
+    let paypalOrder;
+    try {
+      paypalOrder = await verifyPayPalPayment(paymentInfo.paypalOrderId);
+
+      // Verificar que el pago fue completado
+      if (paypalOrder.status !== 'COMPLETED') {
+        return res.status(400).json({
+          error: "Pago no completado",
+          message: `El pago de PayPal tiene estado: ${paypalOrder.status}. Se requiere estado COMPLETED.`
+        });
+      }
+
+      // Verificar que el monto pagado coincide con el total esperado
+      const paypalAmount = parseFloat(paypalOrder.purchase_units[0].amount.value);
+      const expectedTotal = price * quantity;
+      const tolerance = 0.02; // Tolerancia de 2 centavos por posibles diferencias de redondeo
+
+      if (Math.abs(paypalAmount - expectedTotal) > tolerance) {
+        console.error(`Monto no coincide: PayPal=${paypalAmount}, Esperado=${expectedTotal}`);
+        return res.status(400).json({
+          error: "Monto no coincide",
+          message: "El monto pagado no coincide con el total de la compra",
+          details: {
+            paid: paypalAmount,
+            expected: expectedTotal
+          }
+        });
+      }
+
+      // Verificar que el currency code es correcto
+      const paypalCurrency = paypalOrder.purchase_units[0].amount.currency_code;
+      if (paypalCurrency !== 'EUR') {
+        return res.status(400).json({
+          error: "Moneda incorrecta",
+          message: `El pago se realizó en ${paypalCurrency}, se requiere EUR`
+        });
+      }
+
+      console.log(`✅ Pago verificado con PayPal: Order ${paymentInfo.paypalOrderId} - Amount: ${paypalAmount} EUR`);
+
+    } catch (error) {
+      console.error('Error verificando pago de PayPal:', error.message);
+      return res.status(400).json({
+        error: "Verificación de pago fallida",
+        message: "No se pudo verificar el pago con PayPal. Por favor contacta con soporte.",
+        details: error.message
+      });
+    }
+    // === FIN VALIDACIÓN DE PAGO ===
+
     // Generar identificadores únicos
     const ticketNumber = generateTicketNumber();
     const validationCode = generateValidationCode();
@@ -307,15 +423,25 @@ app.post('/tickets/purchase', async (req, res) => {
       selectedSeats: allSelectedSeats, // Usar el array combinado
       status: 'paid',
       customerInfo,
-      paymentInfo: paymentInfo || {
-        method: 'demo',
-        transactionId: `TXN-${Date.now()}`
+      paymentInfo: {
+        ...paymentInfo,
+        verified: true, // Marcar como verificado con PayPal
+        verifiedAt: new Date(),
+        paypalStatus: paypalOrder.status,
+        paypalAmount: parseFloat(paypalOrder.purchase_units[0].amount.value)
       },
       metadata: {
         ...metadata,
         usesSpecificSeats: usesSpecificSeats || false,
         hasGeneralAdmission: generalAdmissionSeats && generalAdmissionSeats.length > 0,
-        hasNumberedSeats: selectedSeats && selectedSeats.length > 0
+        hasNumberedSeats: selectedSeats && selectedSeats.length > 0,
+        paymentVerified: true,
+        paypalOrderDetails: {
+          orderId: paypalOrder.id,
+          status: paypalOrder.status,
+          createTime: paypalOrder.create_time,
+          updateTime: paypalOrder.update_time
+        }
       },
       ticketNumber,
       validationCode,

@@ -39,6 +39,7 @@ Una plataforma completa de gestión y venta de tickets desarrollada con arquitec
 
 ### Características técnicas
 - 🔐 **Autenticación JWT**: Sistema seguro de autenticación y autorización basado en roles
+- 💳 **Validación de pagos server-side**: Verificación directa con API de PayPal para prevenir fraudes
 - 🎨 **Diseño responsive**: Optimizado para móviles, tablets y escritorio
 - ⚡ **Performance optimizado**: Renderizado eficiente de mapas de asientos complejos
 - 🔄 **Actualización de estados**: Sistema automático de actualización de estados de eventos
@@ -145,10 +146,25 @@ TicketApp está construida siguiendo una arquitectura de microservicios, donde c
    SMTP_PASS=tu-app-password
    SMTP_FROM=TicketApp <no-reply@ticketapp.com>
 
-   # PayPal Configuration (opcional)
+   # PayPal Configuration (REQUERIDO para validación de pagos)
+   # Backend - Credenciales de API para verificar pagos
+   PAYPAL_CLIENT_ID=tu-paypal-client-id
+   PAYPAL_CLIENT_SECRET=tu-paypal-client-secret
+   PAYPAL_MODE=sandbox
+   # Modo: sandbox (desarrollo) o live (producción)
+
+   # Frontend - Client ID público
    REACT_APP_PAYPAL_CLIENT_ID=tu-paypal-client-id
    REACT_APP_PAYPAL_ENVIRONMENT=sandbox
    ```
+
+   > **⚠️ Importante**: Las credenciales de PayPal son **obligatorias**. El backend valida todos los pagos directamente con la API de PayPal antes de emitir tickets. Sin estas credenciales, las compras no funcionarán.
+
+   **Cómo obtener credenciales de PayPal:**
+   1. Visita [PayPal Developer Dashboard](https://developer.paypal.com/dashboard/)
+   2. Crea una aplicación en el entorno Sandbox
+   3. Copia el **Client ID** y **Secret** de tu aplicación
+   4. Usa el mismo Client ID para `PAYPAL_CLIENT_ID` y `REACT_APP_PAYPAL_CLIENT_ID`
 
 3. **Iniciar la aplicación**
    ```bash
@@ -211,13 +227,27 @@ TicketApp incluye configuración completa para despliegue automatizado en Azure 
 
 Para despliegue en producción, configura estos secrets en GitHub:
 
+**Infraestructura:**
 - `AZURE_VM_HOST`: IP pública de tu VM
 - `AZURE_VM_USER`: Usuario SSH de la VM
 - `AZURE_VM_SSH_KEY`: Clave privada SSH
-- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`
-- `REACT_APP_API_ENDPOINT`: URL del API Gateway
-- `REACT_APP_PAYPAL_CLIENT_ID`: ID de cliente de PayPal
+
+**Email:**
+- `SMTP_HOST`: Host del servidor SMTP
+- `SMTP_PORT`: Puerto SMTP (587 recomendado)
+- `SMTP_USER`: Usuario/email para autenticación SMTP
+- `SMTP_PASS`: Contraseña de aplicación SMTP
+- `SMTP_FROM`: Dirección de remitente
+
+**PayPal (REQUERIDO):**
+- `PAYPAL_CLIENT_ID`: Client ID de PayPal para backend
+- `PAYPAL_CLIENT_SECRET`: Client Secret de PayPal para validación de pagos
+- `PAYPAL_MODE`: `sandbox` (desarrollo) o `live` (producción)
+- `REACT_APP_PAYPAL_CLIENT_ID`: Client ID para frontend (mismo que PAYPAL_CLIENT_ID)
 - `REACT_APP_PAYPAL_ENVIRONMENT`: `sandbox` o `production`
+
+**Aplicación:**
+- `REACT_APP_API_ENDPOINT`: URL del API Gateway (ej: `https://tu-dominio.com:8000`)
 
 #### Desarrollo Local
 
