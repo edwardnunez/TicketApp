@@ -11,7 +11,6 @@ Una plataforma completa de gestión y venta de tickets desarrollada con arquitec
 
 - [Características](#-características)
 - [Arquitectura](#-arquitectura)
-- [Tecnologías](#-tecnologías)
 - [Instalación](#-instalación)
   - [Desarrollo Local](#desarrollo-local-con-docker)
   - [Comandos útiles](#comandos-útiles)
@@ -41,19 +40,6 @@ Una plataforma completa de gestión y venta de tickets desarrollada con arquitec
 - 💰 **Análisis de ventas**: Reportes detallados de ingresos por evento y categoría
 - 📈 **Estadísticas en tiempo real**: Monitoreo de ventas y disponibilidad
 - 🔄 **Renderizador especializado**: Vista optimizada de seatmaps para administración
-
-### Características técnicas
-- 🔐 **Autenticación JWT**: Sistema seguro de autenticación y autorización basado en roles
-- 💳 **Validación de pagos server-side**: Verificación directa con API de PayPal para prevenir fraudes
-- 🎨 **Diseño responsive**: Optimizado para móviles, tablets y escritorio
-- ⚡ **Performance optimizado**: Renderizado eficiente de mapas de asientos complejos con zoom y pan
-- 🔄 **Actualización de estados**: Sistema automático de actualización de estados de eventos
-- 🖼️ **Gestión de imágenes**: Carga y recorte de imágenes para eventos y avatares con modal interactivo
-- 📦 **Arquitectura de microservicios**: Servicios independientes y escalables
-- 🧪 **Testing completo**: Tests E2E con Cypress y unitarios con Jest
-- 📖 **Documentación automática**: JSDoc con despliegue continuo a GitHub Pages
-- 🎯 **Sistema de temas**: Soporte para esquemas de color personalizables
-- 🔍 **Linting**: Análisis de código con ESLint para mantener calidad
 
 ## 🏗️ Arquitectura
 
@@ -97,44 +83,6 @@ TicketApp está construida siguiendo una arquitectura de microservicios, donde c
 | **Event Service** | 8003 | CRUD de eventos y gestión de estados |
 | **Location Service** | 8004 | Gestión de venues y mapas de asientos |
 | **MongoDB** | 27017 | Base de datos (múltiples DBs) |
-
-## 🛠️ Tecnologías
-
-### Frontend
-- **React 18.2.0**: Framework de UI
-- **React Router 6**: Navegación SPA
-- **Ant Design 5**: Biblioteca de componentes UI
-- **Ant Design Icons**: Iconografía
-- **Axios**: Cliente HTTP
-- **React Easy Crop**: Recorte de imágenes
-- **PayPal SDK**: Integración de pagos
-
-### Backend
-- **Node.js**: Runtime de JavaScript
-- **Express.js**: Framework web
-- **MongoDB**: Base de datos NoSQL
-- **Mongoose**: ODM para MongoDB
-- **JWT (jsonwebtoken)**: Autenticación basada en tokens
-- **Nodemailer**: Envío de emails
-- **QRCode**: Generación de códigos QR
-- **Bcrypt**: Hash de contraseñas
-
-### DevOps
-- **Docker & Docker Compose**: Contenedorización
-- **GitHub Actions**: CI/CD
-- **GitHub Container Registry**: Registro de imágenes Docker
-- **GitHub Pages**: Hosting de documentación
-- **Azure VM**: Hosting en la nube
-
-### Testing & Quality
-- **Cypress**: Testing E2E
-- **Jest**: Testing unitario (backend y hooks)
-- **ESLint**: Linting y análisis de código
-- **SuperTest**: Testing de APIs
-
-### Documentación
-- **JSDoc**: Generación de documentación de código
-- **GitHub Pages**: Publicación automática de docs
 
 ## 🚀 Instalación
 
@@ -191,7 +139,6 @@ TicketApp está construida siguiendo una arquitectura de microservicios, donde c
 4. **Acceder a la aplicación**
    - Frontend: [http://localhost:3000](http://localhost:3000)
    - API Gateway: [http://localhost:8000](http://localhost:8000)
-   - Health Check: [http://localhost:8000/health](http://localhost:8000/health)
 
 5. **Ver logs**
    ```bash
@@ -257,45 +204,6 @@ cd frontend
 npm install
 npm start
 ```
-
-### Despliegue en Azure
-
-TicketApp incluye configuración completa para despliegue automatizado en Azure VM usando GitHub Actions.
-
-**Opción Gratuita**: Azure for Students ofrece $100 de crédito gratis por 12 meses.
-
-#### Despliegue de la aplicación
-
-El workflow [deploy.yml](.github/workflows/deploy.yml) se encarga del despliegue automático de la aplicación:
-
-1. **Crear una VM en Azure**
-   - Sistema operativo: Ubuntu 20.04 o superior
-   - Configurar acceso SSH
-   - Instalar Docker y Docker Compose
-
-2. **Configurar GitHub Secrets**
-   - `AZURE_VM_HOST`: IP pública de la VM
-   - `AZURE_VM_USER`: Usuario SSH
-   - `AZURE_VM_SSH_KEY`: Clave privada SSH
-   - Variables de entorno (SMTP, PayPal, etc.)
-
-3. **Despliegue automático**
-   - Push a `main` → GitHub Actions construye imágenes Docker
-   - Las imágenes se publican en GitHub Container Registry
-   - Se despliegan automáticamente en la VM usando `docker-compose.prod.yml`
-
-#### Despliegue de documentación
-
-El workflow [deploy-docs.yml](.github/workflows/deploy-docs.yml) despliega la documentación JSDoc:
-
-- **Trigger**: Push a `main` o ejecución manual
-- **Proceso**:
-  1. Genera documentación con `npm run docs`
-  2. Publica automáticamente a GitHub Pages
-- **URL**: https://iyanfdezz.github.io/ticketapp/
-- **Contenido**: Documentación completa del código backend y frontend
-
-**Coste**: $0 durante 12 meses con Azure for Students (aplicación) + GitHub Pages gratuito (docs)
 
 ## ⚙️ Configuración
 
