@@ -14,8 +14,10 @@ Una plataforma completa de gestión y venta de tickets desarrollada con arquitec
 - [Tecnologías](#-tecnologías)
 - [Instalación](#-instalación)
   - [Desarrollo Local](#desarrollo-local-con-docker)
+  - [Comandos útiles](#comandos-útiles)
   - [Despliegue en Azure](#despliegue-en-azure)
 - [Configuración](#-configuración)
+- [Documentación](#-documentación)
 - [Estructura del Proyecto](#-estructura-del-proyecto)
 - [Autores](#-autores)
 
@@ -24,27 +26,34 @@ Una plataforma completa de gestión y venta de tickets desarrollada con arquitec
 ### Para usuarios
 - 🔍 **Búsqueda y filtrado**: Explora eventos por categoría, fecha, ubicación y precio
 - 🎫 **Compra de entradas**: Proceso de compra intuitivo con múltiples métodos de pago (PayPal, tarjeta)
-- 🪑 **Selección interactiva de asientos**: Mapas de asientos visuales con diferentes diseños según el tipo de venue
-- 📱 **Entradas digitales**: Códigos QR únicos enviados por email para cada entradas
-- 👤 **Gestión de perfil**: Historial de compras y personalización de avatar
+- 🪑 **Selección interactiva de asientos**: Mapas de asientos visuales con zoom/pan y diferentes diseños según el tipo de venue
+- 📱 **Entradas digitales**: Códigos QR únicos enviados por email para cada entrada
+- 👤 **Gestión de perfil**: Historial de compras, edición de perfil y personalización de avatar
 - 📧 **Notificaciones por email**: Confirmaciones de compra y recordatorios de eventos
+- ℹ️ **Información y ayuda**: Páginas de Sobre Nosotros y Centro de Ayuda
 
 ### Para administradores
 - 📊 **Panel de control**: Vista completa de ventas, ingresos y estadísticas
 - 🎭 **Gestión de eventos**: Crear, editar y cancelar eventos con imágenes personalizadas
-- 🏟️ **Editor de seatmaps**: Herramienta visual para diseñar mapas de asientos personalizados
+- 🏟️ **Editor avanzado de seatmaps**: Herramienta visual para diseñar mapas de asientos con múltiples tipos de layouts
+- 🎨 **Sistema de bloqueo de asientos**: Bloqueo manual y por vista para gestión flexible
 - 📍 **Gestión de ubicaciones**: Administrar venues con capacidades y tipos de configuración
 - 💰 **Análisis de ventas**: Reportes detallados de ingresos por evento y categoría
 - 📈 **Estadísticas en tiempo real**: Monitoreo de ventas y disponibilidad
+- 🔄 **Renderizador especializado**: Vista optimizada de seatmaps para administración
 
 ### Características técnicas
 - 🔐 **Autenticación JWT**: Sistema seguro de autenticación y autorización basado en roles
 - 💳 **Validación de pagos server-side**: Verificación directa con API de PayPal para prevenir fraudes
 - 🎨 **Diseño responsive**: Optimizado para móviles, tablets y escritorio
-- ⚡ **Performance optimizado**: Renderizado eficiente de mapas de asientos complejos
+- ⚡ **Performance optimizado**: Renderizado eficiente de mapas de asientos complejos con zoom y pan
 - 🔄 **Actualización de estados**: Sistema automático de actualización de estados de eventos
-- 🖼️ **Gestión de imágenes**: Carga y recorte de imágenes para eventos y avatares
+- 🖼️ **Gestión de imágenes**: Carga y recorte de imágenes para eventos y avatares con modal interactivo
 - 📦 **Arquitectura de microservicios**: Servicios independientes y escalables
+- 🧪 **Testing completo**: Tests E2E con Cypress y unitarios con Jest
+- 📖 **Documentación automática**: JSDoc con despliegue continuo a GitHub Pages
+- 🎯 **Sistema de temas**: Soporte para esquemas de color personalizables
+- 🔍 **Linting**: Análisis de código con ESLint para mantener calidad
 
 ## 🏗️ Arquitectura
 
@@ -95,6 +104,7 @@ TicketApp está construida siguiendo una arquitectura de microservicios, donde c
 - **React 18.2.0**: Framework de UI
 - **React Router 6**: Navegación SPA
 - **Ant Design 5**: Biblioteca de componentes UI
+- **Ant Design Icons**: Iconografía
 - **Axios**: Cliente HTTP
 - **React Easy Crop**: Recorte de imágenes
 - **PayPal SDK**: Integración de pagos
@@ -104,7 +114,7 @@ TicketApp está construida siguiendo una arquitectura de microservicios, donde c
 - **Express.js**: Framework web
 - **MongoDB**: Base de datos NoSQL
 - **Mongoose**: ODM para MongoDB
-- **JWT**: Autenticación basada en tokens
+- **JWT (jsonwebtoken)**: Autenticación basada en tokens
 - **Nodemailer**: Envío de emails
 - **QRCode**: Generación de códigos QR
 - **Bcrypt**: Hash de contraseñas
@@ -113,11 +123,18 @@ TicketApp está construida siguiendo una arquitectura de microservicios, donde c
 - **Docker & Docker Compose**: Contenedorización
 - **GitHub Actions**: CI/CD
 - **GitHub Container Registry**: Registro de imágenes Docker
+- **GitHub Pages**: Hosting de documentación
 - **Azure VM**: Hosting en la nube
 
-### Testing
+### Testing & Quality
 - **Cypress**: Testing E2E
-- **Jest**: Testing unitario
+- **Jest**: Testing unitario (backend y hooks)
+- **ESLint**: Linting y análisis de código
+- **SuperTest**: Testing de APIs
+
+### Documentación
+- **JSDoc**: Generación de documentación de código
+- **GitHub Pages**: Publicación automática de docs
 
 ## 🚀 Instalación
 
@@ -131,7 +148,7 @@ TicketApp está construida siguiendo una arquitectura de microservicios, donde c
 
 1. **Clonar el repositorio**
    ```bash
-   git clone https://github.com/your-username/ticketapp.git
+   git clone https://github.com/iyanfdezz/ticketapp.git
    cd ticketapp
    ```
 
@@ -185,6 +202,41 @@ TicketApp está construida siguiendo una arquitectura de microservicios, donde c
    ```bash
    docker-compose down
    ```
+
+### Comandos útiles
+
+#### Testing
+```bash
+# Frontend - Testing E2E con Cypress
+cd frontend
+npm run cypress:open           # Abrir interfaz de Cypress
+npm run test:e2e              # Ejecutar tests E2E
+
+# Backend - Testing unitario con Jest
+cd backend/userservice         # O cualquier otro servicio
+npm test                       # Ejecutar tests
+npm run test:watch            # Modo watch
+npm run test:coverage         # Con reporte de cobertura
+```
+
+#### Documentación
+```bash
+# Generar documentación JSDoc
+npm run docs
+
+# Modo watch (regenera al detectar cambios)
+npm run docs:watch
+
+# Ver documentación generada
+# Abrir ./docs/index.html en el navegador
+```
+
+#### Linting
+```bash
+# Backend - Ejecutar ESLint
+cd backend/userservice         # O cualquier otro servicio
+npm run lint
+```
 
 ### Desarrollo sin Docker
 
@@ -253,80 +305,144 @@ Para despliegue en producción, configura estos secrets en GitHub:
 
 Ver archivo `.env` de ejemplo arriba.
 
+## 📚 Documentación
+
+### Documentación del código (JSDoc)
+
+El proyecto incluye documentación completa del código generada automáticamente con JSDoc.
+
+**Ver documentación publicada**: [https://iyanfdezz.github.io/ticketapp/](https://iyanfdezz.github.io/ticketapp/)
+
+La documentación se despliega automáticamente a GitHub Pages cada vez que se hace push a la rama `main` gracias al workflow de GitHub Actions.
+
+**Generar documentación localmente:**
+```bash
+# En la raíz del proyecto
+npm run docs
+
+# La documentación se generará en ./docs/
+# Abrir ./docs/index.html en el navegador
+```
+
+La documentación incluye:
+- Descripción detallada de todos los servicios backend
+- Modelos de datos (User, Event, Ticket, Location, Seatmap)
+- Endpoints de API y sus parámetros
+- Componentes React del frontend
+- Hooks personalizados
+- Utilidades y helpers
 
 ## 📁 Estructura del proyecto
 
 ```
 ticketapp/
 ├── backend/
-│   ├── gatewayservice/         # API Gateway - Enrutamiento central
-│   │   ├── gateway-service.js
+│   ├── gatewayservice/              # API Gateway - Enrutamiento central
+│   │   ├── __tests__/               # Tests unitarios
+│   │   ├── gateway-service.js       # Servicio principal
 │   │   ├── Dockerfile
 │   │   └── package.json
-│   ├── userservice/            # Servicio de usuarios
-│   │   ├── user-service.js     # Autenticación y gestión de usuarios
-│   │   ├── user-model.js       # Modelo de datos de usuario
+│   ├── userservice/                 # Servicio de usuarios
+│   │   ├── __tests__/               # Tests unitarios
+│   │   ├── user-service.js          # Autenticación y gestión de usuarios
+│   │   ├── user-model.js            # Modelo de datos de usuario
 │   │   ├── Dockerfile
 │   │   └── package.json
-│   ├── eventservice/           # Servicio de eventos
-│   │   ├── event-service.js    # CRUD de eventos
-│   │   ├── event-model.js      # Modelo de datos de evento
-│   │   ├── event-state-service.js  # Actualización automática de estados
+│   ├── eventservice/                # Servicio de eventos
+│   │   ├── __tests__/               # Tests unitarios
+│   │   ├── event-service.js         # CRUD de eventos
+│   │   ├── event-model.js           # Modelo de datos de evento
+│   │   ├── event-state-service.js   # Actualización automática de estados
 │   │   ├── Dockerfile
 │   │   └── package.json
-│   ├── ticketservice/          # Servicio de tickets
-│   │   ├── ticket-service.js   # Compra y generación de tickets
-│   │   ├── ticket-model.js     # Modelo de datos de ticket
+│   ├── ticketservice/               # Servicio de tickets
+│   │   ├── __tests__/               # Tests unitarios
+│   │   ├── ticket-service.js        # Compra y generación de tickets
+│   │   ├── ticket-model.js          # Modelo de datos de ticket
 │   │   ├── Dockerfile
 │   │   └── package.json
-│   └── locationservice/        # Servicio de ubicaciones
-│       ├── location-service.js # Gestión de venues
-│       ├── location-model.js   # Modelo de ubicación
-│       ├── seatmap-model.js    # Modelo de mapa de asientos
-│       ├── Dockerfile
-│       └── package.json
+│   ├── locationservice/             # Servicio de ubicaciones
+│   │   ├── __tests__/               # Tests unitarios
+│   │   ├── location-service.js      # Gestión de venues
+│   │   ├── location-model.js        # Modelo de ubicación
+│   │   ├── seatmap-model.js         # Modelo de mapa de asientos
+│   │   ├── Dockerfile
+│   │   └── package.json
+│   ├── server.js                    # Servidor compartido (opcional)
+│   └── package.json                 # Dependencias compartidas
 ├── frontend/
 │   ├── src/
-│   │   ├── components/         # Componentes reutilizables
+│   │   ├── components/              # Componentes reutilizables
+│   │   │   ├── __tests__/           # Tests de componentes
 │   │   │   ├── Navbar.jsx
 │   │   │   ├── Footer.jsx
 │   │   │   ├── ProtectedRoute.jsx
-│   │   │   └── AdminRoute.jsx
-│   │   ├── pages/              # Páginas de la aplicación
-│   │   │   ├── Home.jsx        # Página principal
+│   │   │   ├── AdminRoute.jsx
+│   │   │   ├── colorscheme.jsx      # Sistema de temas de color
+│   │   │   ├── FramedImage.jsx      # Componente de imagen enmarcada
+│   │   │   └── ImageCropperModal.jsx # Modal para recorte de imágenes
+│   │   ├── pages/                   # Páginas de la aplicación
+│   │   │   ├── Home.jsx
 │   │   │   ├── Login.jsx
 │   │   │   ├── Register.jsx
 │   │   │   ├── Profile.jsx
+│   │   │   ├── EditProfile.jsx      # Editar perfil de usuario
 │   │   │   ├── EventDetails.jsx
 │   │   │   ├── TicketPurchase.jsx
-│   │   │   ├── admin/          # Panel de administración
+│   │   │   ├── AboutUs.jsx          # Página sobre nosotros
+│   │   │   ├── HelpCenter.jsx       # Centro de ayuda
+│   │   │   ├── ErrorPage.jsx        # Página de errores
+│   │   │   ├── admin/               # Panel de administración
+│   │   │   │   ├── components/      # Componentes específicos de admin
+│   │   │   │   │   ├── BlockingViewSwitcher.jsx
+│   │   │   │   │   └── ManualBlockingSelection.jsx
 │   │   │   │   ├── AdminDashboard.jsx
+│   │   │   │   ├── AdminSeatMapRenderer.jsx  # Renderizador de seatmaps admin
 │   │   │   │   ├── EventCreation.jsx
+│   │   │   │   ├── EventSeatmapEditor.jsx    # Editor visual de seatmaps
 │   │   │   │   ├── LocationCreation.jsx
 │   │   │   │   └── AdminStatistics.jsx
-│   │   │   └── steps/          # Pasos del proceso de compra
+│   │   │   └── steps/               # Pasos del proceso de compra
 │   │   │       ├── TicketSelection.jsx
 │   │   │       ├── BuyerInfo.jsx
 │   │   │       ├── PaymentMethod.jsx
-│   │   │       └── PurchaseConfirmation.jsx
-│   │   ├── hooks/              # Custom React Hooks
+│   │   │       ├── PurchaseConfirmation.jsx
+│   │   │       └── seatmaps/        # Sistema de seatmaps
+│   │   │           ├── components/  # Componentes de seatmap
+│   │   │           ├── containers/  # Contenedores
+│   │   │           ├── renderers/   # Renderizadores por tipo
+│   │   │           ├── styles/      # Estilos
+│   │   │           └── ui/          # Componentes UI
+│   │   ├── hooks/                   # Custom React Hooks
 │   │   │   ├── useUserRole.js
+│   │   │   ├── useUserRole.test.js  # Tests del hook
 │   │   │   ├── useDeviceDetection.js
-│   │   │   └── useSeatMapPerformance.js
-│   │   ├── utils/              # Utilidades
+│   │   │   ├── useDeviceDetection.test.js
+│   │   │   └── useAdvancedZoomPan.js # Hook para zoom/pan en seatmaps
+│   │   ├── utils/                   # Utilidades
 │   │   │   └── authSession.js
-│   │   ├── App.jsx             # Componente principal
-│   │   └── index.js            # Punto de entrada
+│   │   ├── App.jsx                  # Componente principal
+│   │   ├── index.js                 # Punto de entrada
+│   │   ├── index.css                # Estilos globales
+│   │   └── setupTests.js            # Configuración de tests
 │   ├── public/
-│   │   ├── avatars/            # Avatares de usuario
-│   │   └── event-images/       # Imágenes de eventos
+│   │   ├── avatars/                 # Avatares de usuario
+│   │   └── event-images/            # Imágenes de eventos
+│   ├── cypress/                     # Tests E2E
 │   ├── Dockerfile
 │   └── package.json
+├── docs/                            # Documentación JSDoc generada
+│   └── index.html                   # Punto de entrada de la documentación
 ├── .github/
 │   └── workflows/
-│       └── deploy.yml          # GitHub Actions CI/CD
-├── docker-compose.yml          # Orquestación de servicios (desarrollo)
-├── docker-compose.prod.yml     # Configuración de producción
+│       ├── deploy.yml               # CI/CD - Despliegue en Azure
+│       └── deploy-docs.yml          # Despliegue de docs a GitHub Pages
+├── nginx/                           # Configuración de Nginx (opcional)
+├── scripts/                         # Scripts de utilidad
+├── jsdoc.json                       # Configuración de JSDoc
+├── docker-compose.yml               # Orquestación de servicios (desarrollo)
+├── docker-compose.prod.yml          # Configuración de producción
+├── package.json                     # Dependencias raíz y scripts de docs
 └── README.md
 ```
 
