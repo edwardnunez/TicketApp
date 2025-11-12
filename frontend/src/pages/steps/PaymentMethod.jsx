@@ -35,14 +35,18 @@ export default function PaymentMethod({
     // Add debug mode for better error reporting
     debug: true
   };
-
   const handlePayPalSuccess = (details, data) => {
-    message.loading('Validando pago con el servidor...', 0);
+    const loadingMessage = message.loading('Validando pago con el servidor...', 0);
 
     // Llama a la función para completar la compra
     if (onPaymentSuccess) {
       onPaymentSuccess(details, data);
     }
+    
+    // Cierra el mensaje de carga
+    setTimeout(() => {
+      message.destroy(loadingMessage);
+    }, 500);
   };
 
   const handlePayPalError = (error) => {
