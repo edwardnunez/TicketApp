@@ -264,12 +264,38 @@ TicketApp incluye configuración completa para despliegue automatizado en Azure 
 
 **Opción Gratuita**: Azure for Students ofrece $100 de crédito gratis por 12 meses.
 
-**Resumen:**
-1. Crear una VM en Azure
-2. Configurar GitHub Secrets en tu repositorio
-3. Hacer push a la rama `main` → GitHub Actions despliega automáticamente
+#### Despliegue de la aplicación
 
-**Coste**: $0 durante 12 meses con Azure for Students
+El workflow [deploy.yml](.github/workflows/deploy.yml) se encarga del despliegue automático de la aplicación:
+
+1. **Crear una VM en Azure**
+   - Sistema operativo: Ubuntu 20.04 o superior
+   - Configurar acceso SSH
+   - Instalar Docker y Docker Compose
+
+2. **Configurar GitHub Secrets**
+   - `AZURE_VM_HOST`: IP pública de la VM
+   - `AZURE_VM_USER`: Usuario SSH
+   - `AZURE_VM_SSH_KEY`: Clave privada SSH
+   - Variables de entorno (SMTP, PayPal, etc.)
+
+3. **Despliegue automático**
+   - Push a `main` → GitHub Actions construye imágenes Docker
+   - Las imágenes se publican en GitHub Container Registry
+   - Se despliegan automáticamente en la VM usando `docker-compose.prod.yml`
+
+#### Despliegue de documentación
+
+El workflow [deploy-docs.yml](.github/workflows/deploy-docs.yml) despliega la documentación JSDoc:
+
+- **Trigger**: Push a `main` o ejecución manual
+- **Proceso**:
+  1. Genera documentación con `npm run docs`
+  2. Publica automáticamente a GitHub Pages
+- **URL**: https://iyanfdezz.github.io/ticketapp/
+- **Contenido**: Documentación completa del código backend y frontend
+
+**Coste**: $0 durante 12 meses con Azure for Students (aplicación) + GitHub Pages gratuito (docs)
 
 ## ⚙️ Configuración
 
@@ -437,13 +463,14 @@ ticketapp/
 │   └── workflows/
 │       ├── deploy.yml               # CI/CD - Despliegue en Azure
 │       └── deploy-docs.yml          # Despliegue de docs a GitHub Pages
-├── nginx/                           # Configuración de Nginx (opcional)
-├── scripts/                         # Scripts de utilidad
+├── .env.example                     # Ejemplo de variables de entorno
+├── .gitignore                       # Archivos ignorados por Git
 ├── jsdoc.json                       # Configuración de JSDoc
 ├── docker-compose.yml               # Orquestación de servicios (desarrollo)
 ├── docker-compose.prod.yml          # Configuración de producción
 ├── package.json                     # Dependencias raíz y scripts de docs
-└── README.md
+├── package-lock.json                # Lock de dependencias
+└── README.md                        # Este archivo
 ```
 
 ## 👥 Autores
