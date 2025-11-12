@@ -10,12 +10,12 @@ Una plataforma completa de gestión y venta de tickets desarrollada con arquitec
 ## 📋 Tabla de contenidos
 
 - [Características](#-características)
-- [Arquitectura](#-arquitectura)
+- [Arquitectura](#️-arquitectura)
 - [Instalación](#-instalación)
-  - [Desarrollo Local](#desarrollo-local-con-docker)
+  - [Desarrollo Local con Docker](#desarrollo-local-con-docker)
   - [Comandos útiles](#comandos-útiles)
   - [Despliegue en Azure](#despliegue-en-azure)
-- [Configuración](#-configuración)
+- [Configuración](#️-configuración)
 - [Documentación](#-documentación)
 - [Estructura del Proyecto](#-estructura-del-proyecto)
 - [Autores](#-autores)
@@ -205,6 +205,30 @@ npm install
 npm start
 ```
 
+### Despliegue en Azure
+
+TicketApp incluye configuración completa para despliegue automatizado en Azure VM usando GitHub Actions.
+
+#### Despliegue de la aplicación
+
+El workflow [deploy.yml](.github/workflows/deploy.yml) se encarga del despliegue automático de la aplicación:
+
+1. **Crear una VM en Azure**
+   - Sistema operativo: Ubuntu 20.04 o superior
+   - Configurar acceso SSH
+   - Instalar Docker y Docker Compose
+
+2. **Configurar GitHub Secrets**
+   - `AZURE_VM_HOST`: IP pública de la VM
+   - `AZURE_VM_USER`: Usuario SSH
+   - `AZURE_VM_SSH_KEY`: Clave privada SSH
+   - Variables de entorno (SMTP, PayPal, etc.)
+
+3. **Despliegue automático**
+   - Push a `main` → GitHub Actions construye imágenes Docker
+   - Las imágenes se publican en GitHub Container Registry
+   - Se despliegan automáticamente en la VM usando `docker-compose.prod.yml`
+
 ## ⚙️ Configuración
 
 ### Variables de entorno
@@ -272,31 +296,36 @@ La documentación incluye:
 ticketapp/
 ├── backend/
 │   ├── gatewayservice/              # API Gateway - Enrutamiento central
-│   │   ├── __tests__/               # Tests unitarios
+│   │   ├── __tests__/
+│   │   │   └── gateway-service.test.js  # Tests del gateway
 │   │   ├── gateway-service.js       # Servicio principal
 │   │   ├── Dockerfile
 │   │   └── package.json
 │   ├── userservice/                 # Servicio de usuarios
-│   │   ├── __tests__/               # Tests unitarios
+│   │   ├── __tests__/
+│   │   │   └── user-service.test.js     # Tests de autenticación y usuarios
 │   │   ├── user-service.js          # Autenticación y gestión de usuarios
 │   │   ├── user-model.js            # Modelo de datos de usuario
 │   │   ├── Dockerfile
 │   │   └── package.json
 │   ├── eventservice/                # Servicio de eventos
-│   │   ├── __tests__/               # Tests unitarios
+│   │   ├── __tests__/
+│   │   │   └── event-service.test.js    # Tests de eventos
 │   │   ├── event-service.js         # CRUD de eventos
 │   │   ├── event-model.js           # Modelo de datos de evento
 │   │   ├── event-state-service.js   # Actualización automática de estados
 │   │   ├── Dockerfile
 │   │   └── package.json
 │   ├── ticketservice/               # Servicio de tickets
-│   │   ├── __tests__/               # Tests unitarios
+│   │   ├── __tests__/
+│   │   │   └── ticket-service.test.js   # Tests de compra y tickets
 │   │   ├── ticket-service.js        # Compra y generación de tickets
 │   │   ├── ticket-model.js          # Modelo de datos de ticket
 │   │   ├── Dockerfile
 │   │   └── package.json
 │   ├── locationservice/             # Servicio de ubicaciones
-│   │   ├── __tests__/               # Tests unitarios
+│   │   ├── __tests__/
+│   │   │   └── location-service.test.js # Tests de ubicaciones y seatmaps
 │   │   ├── location-service.js      # Gestión de venues
 │   │   ├── location-model.js        # Modelo de ubicación
 │   │   ├── seatmap-model.js         # Modelo de mapa de asientos
@@ -307,7 +336,6 @@ ticketapp/
 ├── frontend/
 │   ├── src/
 │   │   ├── components/              # Componentes reutilizables
-│   │   │   ├── __tests__/           # Tests de componentes
 │   │   │   ├── Navbar.jsx
 │   │   │   ├── Footer.jsx
 │   │   │   ├── ProtectedRoute.jsx
@@ -354,7 +382,10 @@ ticketapp/
 │   │   │   ├── useDeviceDetection.test.js
 │   │   │   └── useAdvancedZoomPan.js # Hook para zoom/pan en seatmaps
 │   │   ├── utils/                   # Utilidades
-│   │   │   └── authSession.js
+│   │   │   ├── api.js               # Cliente API y configuración de axios
+│   │   │   ├── api.test.js          # Tests de API
+│   │   │   ├── authSession.js       # Gestión de sesiones y tokens
+│   │   │   └── authSession.test.js  # Tests de autenticación
 │   │   ├── App.jsx                  # Componente principal
 │   │   ├── index.js                 # Punto de entrada
 │   │   ├── index.css                # Estilos globales
