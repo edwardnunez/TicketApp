@@ -269,9 +269,6 @@ Ver archivo `.env` de ejemplo arriba.
 
 El proyecto incluye documentación completa del código generada automáticamente con JSDoc.
 
-**Ver documentación publicada**: [https://iyanfdezz.github.io/ticketapp/](https://iyanfdezz.github.io/ticketapp/)
-
-La documentación se despliega automáticamente a GitHub Pages cada vez que se hace push a la rama `main` gracias al workflow de GitHub Actions.
 
 **Generar documentación localmente:**
 ```bash
