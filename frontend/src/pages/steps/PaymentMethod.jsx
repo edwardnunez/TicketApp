@@ -27,7 +27,7 @@ export default function PaymentMethod({
 
   const paypalOptions = {
     // Use PayPal's demo client ID for testing, or your actual sandbox client ID
-    "client-id": process.env.REACT_APP_PAYPAL_CLIENT_ID || "AYpqOVhiMKXGmKSH2Y6peiiNbli_pBvXC2Z6t39wniR1wdcil1378moLgNsKlgvACVUxY2zfgtNICerw",
+    "client-id": process.env.REACT_APP_PAYPAL_CLIENT_ID,
     currency: "EUR",
     intent: "capture",
     // Remove disable-funding to allow more payment methods during testing
@@ -37,8 +37,8 @@ export default function PaymentMethod({
   };
 
   const handlePayPalSuccess = (details, data) => {
-    message.success('¡Pago procesado exitosamente!');
-    
+    message.loading('Validando pago con el servidor...', 0);
+
     // Llama a la función para completar la compra
     if (onPaymentSuccess) {
       onPaymentSuccess(details, data);

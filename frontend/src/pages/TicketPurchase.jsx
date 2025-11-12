@@ -352,6 +352,9 @@ const TicketPurchase = () => {
   const handlePayPalSuccess = async (paypalDetails, paypalData) => {
     try {
       setProcessing(true);
+
+      // Cerrar cualquier mensaje de carga anterior
+      message.destroy();
       
       const formData = form.getFieldsValue();
       const username = localStorage.getItem("username");
