@@ -296,6 +296,14 @@ app.post('/seatmaps', async (req, res) => {
       });
     }
 
+    // Validar que exista al menos una sección
+    if (!seatMapData.sections || !Array.isArray(seatMapData.sections) || seatMapData.sections.length === 0) {
+      return res.status(400).json({
+        error: 'Secciones requeridas',
+        message: 'Debe agregar al menos una sección al mapa de asientos'
+      });
+    }
+
     // Validar secciones
     if (seatMapData.sections && Array.isArray(seatMapData.sections)) {
       for (const section of seatMapData.sections) {
