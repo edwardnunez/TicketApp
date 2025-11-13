@@ -13,10 +13,18 @@ export default function BuyerInfo({
   selectedSeats,
   event,
   getTotalPrice,
-  requiresSeatMap
+  requiresSeatMap,
+  onPhonePrefixChange
 }) {
   const [isMobile, setIsMobile] = useState(false);
   const [phonePrefix, setPhonePrefix] = useState('+34');
+
+  const handlePrefixChange = (value) => {
+    setPhonePrefix(value);
+    if (onPhonePrefixChange) {
+      onPhonePrefixChange(value);
+    }
+  };
 
   // Lista de prefijos de países comunes
   const countryPrefixes = [
@@ -71,7 +79,7 @@ export default function BuyerInfo({
   const prefixSelector = (
     <Select
       value={phonePrefix}
-      onChange={setPhonePrefix}
+      onChange={handlePrefixChange}
       style={{ width: 140 }}
       showSearch
       optionFilterProp="children"

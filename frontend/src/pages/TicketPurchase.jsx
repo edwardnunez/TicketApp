@@ -99,7 +99,9 @@ const TicketPurchase = () => {
 
   const [userData, setUserData] = useState(null); // datos reales del usuario
   const [useAccountData, setUseAccountData] = useState(false);
-  
+  const [customerFormData, setCustomerFormData] = useState(null); // Guardar datos del formulario validado
+  const [phonePrefix, setPhonePrefix] = useState('+34'); // Prefijo telefónico
+
   const gatewayUrl = process.env.REACT_APP_API_ENDPOINT || "http://localhost:8000";
 
   useEffect(() => {
@@ -325,7 +327,9 @@ const TicketPurchase = () => {
       }
       setCurrentStep(1);
     } else if (currentStep === 1) {
-      form.validateFields().then(() => {
+      form.validateFields().then((values) => {
+        // Guardar los valores del formulario validado
+        setCustomerFormData(values);
         setCurrentStep(2);
       }).catch(() => {
         api.warning({
@@ -356,8 +360,21 @@ const TicketPurchase = () => {
 
       // Cerrar cualquier mensaje de carga anterior
       message.destroy();
-      
-      const formData = form.getFieldsValue();
+
+      // Usar los datos guardados del formulario validado
+      const formData = customerFormData || form.getFieldsValue();
+
+      // Validar que tenemos los datos del cliente
+      if (!formData || !formData.firstName || !formData.email) {
+        api.error({
+          message: 'Error en datos del comprador',
+          description: 'No se pudieron obtener los datos del comprador. Por favor regresa al paso anterior y verifica la información.',
+          placement: 'top',
+        });
+        setProcessing(false);
+        return;
+      }
+
       const username = localStorage.getItem("username");
       
       let userId = null;
@@ -400,29 +417,38 @@ const TicketPurchase = () => {
         });
       }
 
-              const ticketData = {
-          userId: userId,
-          eventId: id,
-          quantity: finalQuantity,
-          price: unitPrice,
-          totalPrice: totalPrice,
-          selectedSeats: validSelectedSeats,
-          usesSpecificSeats: usesSpecificSeats,
-          customerInfo: {
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            email: formData.email,
-            phone: formData.phone
-          },
-          // Información de PayPal para referencia
-          paymentInfo: {
-            paypalOrderId: paypalData.orderID,
-            paypalPayerId: paypalDetails.payer.payer_id,
-            paypalTransactionId: paypalDetails.purchase_units[0].payments.captures[0].id,
-            paymentMethod: 'paypal',
-            paymentStatus: 'completed'
-          }
-        };
+      // Construir customerInfo con todos los campos requeridos
+      // Combinar prefijo con número de teléfono si existe
+      const fullPhone = formData.phone ? `${phonePrefix} ${formData.phone}` : '';
+
+      const customerInfo = {
+        firstName: formData.firstName || '',
+        lastName: formData.lastName || '',
+        email: formData.email || '',
+        phone: fullPhone
+      };
+
+      // Log para debugging (se puede ver en consola del navegador)
+      console.log('Customer info being sent:', customerInfo);
+
+      const ticketData = {
+        userId: userId,
+        eventId: id,
+        quantity: finalQuantity,
+        price: unitPrice,
+        totalPrice: totalPrice,
+        selectedSeats: validSelectedSeats,
+        usesSpecificSeats: usesSpecificSeats,
+        customerInfo: customerInfo,
+        // Información de PayPal para referencia
+        paymentInfo: {
+          paypalOrderId: paypalData.orderID,
+          paypalPayerId: paypalDetails.payer.payer_id,
+          paypalTransactionId: paypalDetails.purchase_units[0].payments.captures[0].id,
+          paymentMethod: 'paypal',
+          paymentStatus: 'completed'
+        }
+      };
 
       const response = await axios.post(`${gatewayUrl}/tickets/purchase`, ticketData, {
         headers: {
@@ -458,19 +484,33 @@ const TicketPurchase = () => {
       
     } catch (error) {
       console.error('Error purchasing tickets:', error);
-      
+      console.error('Error details:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        config: error.config
+      });
+
       let errorMessage = 'Hubo un problema al procesar tu compra. Por favor intenta nuevamente.';
-      
-      if (error.response?.data?.message) {
+
+      if (error.response?.status === 400) {
+        if (error.response?.data?.message) {
+          errorMessage = error.response.data.message;
+        } else if (error.response?.data?.details) {
+          errorMessage = error.response.data.details;
+        } else {
+          errorMessage = 'Datos de compra inválidos. Por favor verifica la información e intenta nuevamente.';
+        }
+      } else if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
       } else if (error.response?.data?.details) {
         errorMessage = error.response.data.details;
       }
-      
+
       api.error({
         message: 'Error en la compra',
         description: errorMessage,
         placement: 'top',
+        duration: 8,
       });
     } finally {
       setProcessing(false);
@@ -569,6 +609,7 @@ const TicketPurchase = () => {
              getTotalPrice={getTotalPrice}
              selectedSeats={selectedSeats}
              requiresSeatMap={requiresSeatMap}
+             onPhonePrefixChange={setPhonePrefix}
            />
         );
       case 2:
