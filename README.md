@@ -96,7 +96,7 @@ TicketApp está construida siguiendo una arquitectura de microservicios, donde c
 
 1. **Clonar el repositorio**
    ```bash
-   git clone https://github.com/iyanfdezz/ticketapp.git
+   git clone https://github.com/edwardnunez/TicketApp.git
    cd ticketapp
    ```
 
