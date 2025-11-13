@@ -109,6 +109,9 @@ jobs:
             SMTP_USER=${{ secrets.SMTP_USER }}
             SMTP_PASS=${{ secrets.SMTP_PASS }}
             SMTP_FROM=${{ secrets.SMTP_FROM }}
+            PAYPAL_CLIENT_ID=${{ secrets.PAYPAL_CLIENT_ID }}
+            PAYPAL_CLIENT_SECRET=${{ secrets.PAYPAL_CLIENT_SECRET }}
+            PAYPAL_MODE=${{ secrets.PAYPAL_MODE }}
             REACT_APP_API_ENDPOINT=${{ secrets.REACT_APP_API_ENDPOINT }}
             REACT_APP_PAYPAL_CLIENT_ID=${{ secrets.REACT_APP_PAYPAL_CLIENT_ID }}
             REACT_APP_PAYPAL_ENVIRONMENT=${{ secrets.REACT_APP_PAYPAL_ENVIRONMENT }}
