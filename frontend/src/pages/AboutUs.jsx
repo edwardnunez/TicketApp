@@ -66,8 +66,8 @@ const AboutUs = () => {
       name: "Xiomarah María Guzmán Guzmán",
       UO: "-",
       email: "guzmanxiomarah@uniovi.es",
-      github: "tutor2",
-      githubUrl: "https://github.com/tutor2",
+      github: "guzmanxiomarah",
+      githubUrl: "https://github.com/guzmanxiomarah",
       avatar: null
     }
   ];
