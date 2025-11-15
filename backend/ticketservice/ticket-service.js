@@ -40,13 +40,15 @@ const transporter = nodemailer.createTransport({
  * @param {string} params.to - Dirección de email del destinatario
  * @param {string} params.subject - Asunto del email
  * @param {string} params.html - Contenido HTML del email
+ * @param {Array} params.attachments - Adjuntos del email (opcional)
  */
-async function enviarEmailConfirmacionCompra({ to, subject, html }) {
+async function enviarEmailConfirmacionCompra({ to, subject, html, attachments = [] }) {
   const mailOptions = {
     from: process.env.SMTP_FROM || 'TicketApp <no-reply@ticketapp.com>',
     to,
     subject,
     html,
+    attachments,
   };
   try {
     await transporter.sendMail(mailOptions);
@@ -482,7 +484,12 @@ app.post('/tickets/purchase', async (req, res) => {
       } catch (err) {
         console.warn('No se pudo obtener detalles del evento:', err.message);
       }
-      // Construir HTML del email
+
+      // Convertir Data URL a buffer para adjuntar
+      const qrBase64 = qrCodeString.replace(/^data:image\/png;base64,/, '');
+      const qrBuffer = Buffer.from(qrBase64, 'base64');
+
+      // Construir HTML del email con CID para la imagen
       const html = `
         <h2>¡Gracias por tu compra en TicketApp!</h2>
         <p>Has comprado <b>${savedTicket.quantity}</b> entrada(s) para el evento <b>${evento?.name || 'Evento'}</b>.</p>
@@ -493,15 +500,24 @@ app.post('/tickets/purchase', async (req, res) => {
           <li><b>Número de ticket:</b> ${savedTicket.ticketNumber}</li>
         </ul>
         <p>Adjunto encontrarás el código QR de tu entrada:</p>
-        <img src="${qrCodeString}" alt="QR de tu entrada" style="width:200px;" />
+        <img src="cid:qrcode" alt="QR de tu entrada" style="width:200px; height:200px;" />
         <p>Guarda este email y presenta el QR en la entrada del evento.</p>
         <hr/>
         <p>Si tienes dudas, responde a este correo o contacta con soporte.</p>
       `;
+
       await enviarEmailConfirmacionCompra({
         to: emailDestino,
         subject: `Confirmación de compra - ${evento?.name || 'Evento'}`,
         html,
+        attachments: [
+          {
+            filename: 'qr-entrada.png',
+            content: qrBuffer,
+            cid: 'qrcode', // Content-ID referenciado en el HTML como cid:qrcode
+            contentType: 'image/png'
+          }
+        ]
       });
     } else {
       console.warn('No se pudo enviar email de confirmación: email no disponible');
