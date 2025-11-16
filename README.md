@@ -397,8 +397,7 @@ ticketapp/
 │   └── index.html                   # Punto de entrada de la documentación
 ├── .github/
 │   └── workflows/
-│       ├── deploy.yml               # CI/CD - Despliegue en Azure
-│       └── deploy-docs.yml          # Despliegue de docs a GitHub Pages
+│       └── deploy.yml               # CI/CD - Despliegue en Azure
 ├── .env.example                     # Ejemplo de variables de entorno
 ├── .gitignore                       # Archivos ignorados por Git
 ├── jsdoc.json                       # Configuración de JSDoc
