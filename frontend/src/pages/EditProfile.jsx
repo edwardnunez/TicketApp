@@ -116,21 +116,19 @@ const EditProfile = () => {
     if (username && token) {
       setLoading(true);
       axios
-        .get(gatewayUrl + `/users`)
+        .get(`${gatewayUrl}/users/search?username=${encodeURIComponent(username)}`)
         .then((res) => {
-          const u = res.data.find((u) => u.username === username);
-  
-          if (u) {
+          if (res.data) {
             setUserData({
-              name: u.name,
-              surname: u.surname || "", // Incluir surname
-              email: u.email,
-              username: u.username,
+              name: res.data.name,
+              surname: res.data.surname || "", // Incluir surname
+              email: res.data.email,
+              username: res.data.username,
             });
-            setUserId(u._id);
+            setUserId(res.data._id);
             // Usar el avatar del usuario tal como está, sin asignar un valor por defecto
             // Si el usuario no tiene avatar (null), mantener null para que aparezca "Ninguno" seleccionado
-            setSelectedAvatar(u.avatar ?? null);
+            setSelectedAvatar(res.data.avatar ?? null);
           } else {
             message.error("Usuario no encontrado.");
           }

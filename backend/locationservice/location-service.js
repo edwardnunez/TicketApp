@@ -72,7 +72,7 @@ app.post("/location", async (req, res) => {
     }
 
     // Validar categoría antes de intentar guardar
-    const validCategories = ['stadium', 'theater', 'cinema', 'festival', 'arena', 'auditorium'];
+    const validCategories = ['stadium', 'theater', 'cinema', 'festival', 'arena', 'auditorium', 'concert'];
     if (category && !validCategories.includes(category)) {
       return res.status(400).json({
         error: `Categoría inválida. Las categorías válidas son: ${validCategories.join(', ')}`

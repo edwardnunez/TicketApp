@@ -442,26 +442,26 @@ const LocationCreation = () => {
         config: {
           ...(values.type === 'football' && {
             stadiumName: values.name,
-            fieldDimensions: { width: 400, height: 260 }
+            fieldDimensions: { width: 900, height: 520 }
           }),
           ...(values.type === 'cinema' && {
             cinemaName: values.name,
-            screenWidth: 300
+            screenWidth: 900
           }),
           ...(values.type === 'theater' && {
             theaterName: values.name,
-            stageWidth: 250
+            stageWidth: 850
           }),
           ...(values.type === 'concert' && {
             venueName: values.name,
             stagePosition: 'center',
-            stageDimensions: { width: 80, height: 50 },
+            stageDimensions: { width: 450, height: 450 },
             allowsGeneralAdmission: true
           }),
           ...(values.type === 'arena' && {
             venueName: values.name,
             stagePosition: 'center',
-            stageDimensions: { width: 80, height: 50 },
+            stageDimensions: { width: 450, height: 450 },
             allowsGeneralAdmission: true
           })
         },
