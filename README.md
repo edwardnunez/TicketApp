@@ -25,7 +25,7 @@ Una plataforma completa de gestión y venta de tickets desarrollada con arquitec
 ### Para usuarios
 - 🔍 **Búsqueda y filtrado**: Explora eventos por categoría, fecha, ubicación y precio
 - 🎫 **Compra de entradas**: Proceso de compra intuitivo con múltiples métodos de pago (PayPal, tarjeta)
-- 🪑 **Selección interactiva de asientos**: Mapas de asientos visuales con zoom/pan y diferentes diseños según el tipo de venue
+- 🪑 **Selección interactiva de asientos**: Mapas de asientos visuales con zoom/pan y diferentes diseños según el tipo de ubicación
 - 📱 **Entradas digitales**: Códigos QR únicos enviados por email para cada entrada
 - 👤 **Gestión de perfil**: Historial de compras, edición de perfil y personalización de avatar
 - 📧 **Notificaciones por email**: Confirmaciones de compra y recordatorios de eventos
@@ -36,7 +36,7 @@ Una plataforma completa de gestión y venta de tickets desarrollada con arquitec
 - 🎭 **Gestión de eventos**: Crear, editar y cancelar eventos con imágenes personalizadas
 - 🏟️ **Editor avanzado de seatmaps**: Herramienta visual para diseñar mapas de asientos con múltiples tipos de layouts
 - 🎨 **Sistema de bloqueo de asientos**: Bloqueo manual y por vista para gestión flexible
-- 📍 **Gestión de ubicaciones**: Administrar venues con capacidades y tipos de configuración
+- 📍 **Gestión de ubicaciones**: Crear ubicaciones y mapas de asientos persinalizados
 - 💰 **Análisis de ventas**: Reportes detallados de ingresos por evento y categoría
 - 📈 **Estadísticas en tiempo real**: Monitoreo de ventas y disponibilidad
 - 🔄 **Renderizador especializado**: Vista optimizada de seatmaps para administración
@@ -81,7 +81,7 @@ TicketApp está construida siguiendo una arquitectura de microservicios, donde c
 | **User Service** | 8001 | Autenticación, registro y gestión de usuarios |
 | **Ticket Service** | 8002 | Compra de tickets, generación de QR y emails |
 | **Event Service** | 8003 | CRUD de eventos y gestión de estados |
-| **Location Service** | 8004 | Gestión de venues y mapas de asientos |
+| **Location Service** | 8004 | Gestión de ubicaciones y mapas de asientos |
 | **MongoDB** | 27017 | Base de datos (múltiples DBs) |
 
 ## 🚀 Instalación
@@ -323,7 +323,7 @@ ticketapp/
 │   ├── locationservice/             # Servicio de ubicaciones
 │   │   ├── __tests__/
 │   │   │   └── location-service.test.js # Tests de ubicaciones y seatmaps
-│   │   ├── location-service.js      # Gestión de venues
+│   │   ├── location-service.js      # Gestión de ubicaciones
 │   │   ├── location-model.js        # Modelo de ubicación
 │   │   ├── seatmap-model.js         # Modelo de mapa de asientos
 │   │   ├── Dockerfile
