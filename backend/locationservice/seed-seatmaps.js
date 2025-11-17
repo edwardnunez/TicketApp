@@ -281,7 +281,7 @@ const seedSeatMaps = async (dbConnection) => {
     {
       id: 'concert2',
       name: 'Palau Sant Jordi',
-      type: 'concert',
+      type: 'arena',
       subtype: 'indoor_arena',
       compatibleEventTypes: ['concert'],
       config: {
