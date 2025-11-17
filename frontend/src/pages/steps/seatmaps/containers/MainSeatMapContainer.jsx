@@ -414,23 +414,28 @@ const MainSeatMapContainer = ({
     const sectionsByArea = new Map();
     
     sections.forEach(s => {
-      const nameLC = (s.name || '').toLowerCase();
-      const idLC = (s.id || '').toLowerCase();
-      
-      // Determinar el área de esta sección
-      if (nameLC.includes('norte') || idLC.includes('norte') || nameLC.includes('north') || idLC.includes('north')) {
+      const pos = (s.position || '').toLowerCase();
+
+      if (pos.includes('north') || pos.includes('fondo-norte')) {
         sectionsByArea.set('norte', s);
-      } else if (nameLC.includes('este') || idLC.includes('este') || nameLC.includes('east') || idLC.includes('east')) {
-        sectionsByArea.set('este', s);
-      } else if (nameLC.includes('oeste') || idLC.includes('oeste') || nameLC.includes('west') || idLC.includes('west')) {
-        sectionsByArea.set('oeste', s);
-      } else if (nameLC.includes('sur') || idLC.includes('sur') || nameLC.includes('south') || idLC.includes('south')) {
+
+      } else if (pos.includes('south') || pos.includes('fondo-sur')) {
         sectionsByArea.set('sur', s);
-      } else if (nameLC.includes('vip') || idLC.includes('vip')) {
-        sectionsByArea.set('vip', s);
+
+      } else if (pos.includes('east') || pos.includes('lateral-este')) {
+        sectionsByArea.set('este', s);
+
+      } else if (pos.includes('west') || pos.includes('lateral-oeste')) {
+        sectionsByArea.set('oeste', s);
+
+      } else if (pos.includes('vip')) {
+        if (!sectionsByArea.has('vip-premium')) {
+          sectionsByArea.set('vip-premium', []);
+        }
+        sectionsByArea.get('vip-premium').push(s);
       }
     });
-
+    
     return (
       <div className="football-stadium-layout">
         {/* Tribuna Norte */}
@@ -522,21 +527,21 @@ const MainSeatMapContainer = ({
     const sectionsByArea = new Map();
     
     sections.forEach(s => {
-      const nameLC = (s.name || '').toLowerCase();
-      const idLC = (s.id || '').toLowerCase();
-      
-      if (nameLC.includes('norte') || idLC.includes('norte') || nameLC.includes('north') || idLC.includes('north')) {
+      const pos = (s.position || '').toLowerCase();
+
+      if (pos.includes('north') || pos.includes('fondo-norte')) {
         sectionsByArea.set('norte', s);
-      } else if (nameLC.includes('este') || idLC.includes('este') || nameLC.includes('east') || idLC.includes('east')) {
-        sectionsByArea.set('este', s);
-      } else if (nameLC.includes('oeste') || idLC.includes('oeste') || nameLC.includes('west') || idLC.includes('west')) {
-        sectionsByArea.set('oeste', s);
-      } else if (nameLC.includes('sur') || idLC.includes('sur') || nameLC.includes('south') || idLC.includes('south')) {
+
+      } else if (pos.includes('south') || pos.includes('fondo-sur')) {
         sectionsByArea.set('sur', s);
-      } else if (nameLC.includes('pista') || idLC.includes('pista') || nameLC.includes('general') || idLC.includes('general')) {
-        sectionsByArea.set('pista', s);
-      } else if (nameLC.includes('vip') || idLC.includes('vip') || nameLC.includes('palco') || idLC.includes('palco') || nameLC.includes('premium') || idLC.includes('premium')) {
-        // Guardar secciones VIP/Premium en un array
+
+      } else if (pos.includes('east') || pos.includes('lateral-este')) {
+        sectionsByArea.set('este', s);
+
+      } else if (pos.includes('west') || pos.includes('lateral-oeste')) {
+        sectionsByArea.set('oeste', s);
+
+      } else if (pos.includes('vip')) {
         if (!sectionsByArea.has('vip-premium')) {
           sectionsByArea.set('vip-premium', []);
         }
