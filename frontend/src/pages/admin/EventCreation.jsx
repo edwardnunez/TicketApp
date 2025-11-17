@@ -919,7 +919,8 @@ const EventCreation = () => {
       // Verificar compatibilidad con el tipo de evento
       const isCompatible = seatMap.compatibleEventTypes?.includes(type) || 
                           seatMap.type === type ||
-                          (type === 'concert' && seatMap.type === 'football'); // Conciertos pueden usar mapas de estadio
+                          (type === 'concert' && seatMap.type === 'football')
+                          || (type === 'concert' && seatMap.type === 'arena');
       return { ...seatMap, isCompatible };
     }
     return seatMap;
