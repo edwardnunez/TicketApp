@@ -396,13 +396,13 @@ const MainSeatMapContainer = ({
       case 'football':
         return renderFootballStadiumLayout();
       case 'concert':
-        return renderConcertVenueLayout();
+        return renderConcertTheaterLayout();
+      case 'arena':
+        return renderConcertStadiumLayout();
       case 'cinema':
         return renderCinemaLayout();
       case 'theater':
         return renderTheaterLayout();
-      case 'arena':
-        return renderArenaLayout();
       default:
         return renderGenericLayout();
     }
@@ -493,33 +493,6 @@ const MainSeatMapContainer = ({
         )}
       </div>
     );
-  };
-
-  const renderConcertVenueLayout = () => {
-    // Detectar si es un concierto tipo estadio o tipo teatro
-    const hasDirectionalSections = sections.some(s => {
-      const nameLC = (s.name || '').toLowerCase();
-      const idLC = (s.id || '').toLowerCase();
-      
-      return (
-        nameLC.includes('norte') || idLC.includes('norte') ||
-        nameLC.includes('north') || idLC.includes('north') ||
-        nameLC.includes('sur') || idLC.includes('sur') ||
-        nameLC.includes('south') || idLC.includes('south') ||
-        nameLC.includes('este') || idLC.includes('este') ||
-        nameLC.includes('east') || idLC.includes('east') ||
-        nameLC.includes('oeste') || idLC.includes('oeste') ||
-        nameLC.includes('west') || idLC.includes('west')
-      );
-    });
-
-    if (hasDirectionalSections) {
-      // Layout tipo estadio para conciertos
-      return renderConcertStadiumLayout();
-    } else {
-      // Layout tipo teatro para conciertos
-      return renderConcertTheaterLayout();
-    }
   };
 
   // Layout de concierto tipo estadio
@@ -804,70 +777,6 @@ const MainSeatMapContainer = ({
         {sectionsByArea.has('vip') && (
           <div className="vip-section">
             {renderProfessionalSection(sectionsByArea.get('vip'))}
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  // Layout para arena
-  const renderArenaLayout = () => {
-    const sectionsByArea = new Map();
-    const lowerSections = [];
-    const upperSections = [];
-    const vipSections = [];
-    
-    sections.forEach(s => {
-      const nameLC = (s.name || '').toLowerCase();
-      const idLC = (s.id || '').toLowerCase();
-      
-      if (nameLC.includes('pista') || idLC.includes('pista')) {
-        sectionsByArea.set('pista', s);
-      } else if (nameLC.includes('lower') || idLC.includes('lower')) {
-        lowerSections.push(s);
-      } else if (nameLC.includes('upper') || idLC.includes('upper')) {
-        upperSections.push(s);
-      } else if (nameLC.includes('vip') || idLC.includes('vip')) {
-        vipSections.push(s);
-      }
-    });
-
-    return (
-      <div className="arena-layout">
-        {/* VIP */}
-        {vipSections.length > 0 && (
-          <div className="vip-container">
-            {vipSections.map(section => renderProfessionalSection(section))}
-          </div>
-        )}
-
-        {/* Secciones superiores */}
-        {upperSections.length > 0 && (
-          <div className="upper-sections">
-            {upperSections.map(section => renderProfessionalSection(section))}
-          </div>
-        )}
-
-        {/* Escenario */}
-        <div className="stage-container">
-          <VenueStageRenderer
-            type="arena"
-            config={config}
-            venueColors={venueColors}
-          />
-        </div>
-
-        {/* Pista */}
-        {sectionsByArea.has('pista') && (
-          <div className="pista-section">
-            {renderProfessionalSection(sectionsByArea.get('pista'))}
-          </div>
-        )}
-
-        {/* Secciones inferiores */}
-        {lowerSections.length > 0 && (
-          <div className="lower-sections">
-            {lowerSections.map(section => renderProfessionalSection(section))}
           </div>
         )}
       </div>
