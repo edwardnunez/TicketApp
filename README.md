@@ -412,6 +412,6 @@ ticketapp/
 
 - **Iyán Fernández** - Desarrollador - [iyanfdezz](https://github.com/iyanfdezz)
 - **Edward Núñez** - Tutor - [edwardnunez](https://github.com/edwardnunez)
-- **Xiomarah Guzmán** - Tutora - [xiomarah](https://github.com/xiomarah)
+- **Xiomarah Guzmán** - Tutora - [guzmanxiomarah](https://github.com/guzmanxiomarah)
 
 **⭐ Si este proyecto te resultó útil, considera darle una estrella en GitHub**
