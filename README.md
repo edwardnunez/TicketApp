@@ -295,41 +295,29 @@ ticketapp/
 │   ├── gatewayservice/              # API Gateway - Enrutamiento central
 │   │   ├── __tests__/
 │   │   │   └── gateway-service.test.js  # Tests del gateway
-│   │   ├── gateway-service.js       # Servicio principal
-│   │   ├── Dockerfile
-│   │   └── package.json
+│   │   └── gateway-service.js       # Servicio principal
 │   ├── userservice/                 # Servicio de usuarios
 │   │   ├── __tests__/
 │   │   │   └── user-service.test.js     # Tests de autenticación y usuarios
 │   │   ├── user-service.js          # Autenticación y gestión de usuarios
-│   │   ├── user-model.js            # Modelo de datos de usuario
-│   │   ├── Dockerfile
-│   │   └── package.json
+│   │   └── user-model.js            # Modelo de datos de usuario
 │   ├── eventservice/                # Servicio de eventos
 │   │   ├── __tests__/
 │   │   │   └── event-service.test.js    # Tests de eventos
 │   │   ├── event-service.js         # CRUD de eventos
 │   │   ├── event-model.js           # Modelo de datos de evento
-│   │   ├── event-state-service.js   # Actualización automática de estados
-│   │   ├── Dockerfile
-│   │   └── package.json
+│   │   └── event-state-service.js   # Actualización automática de estados
 │   ├── ticketservice/               # Servicio de tickets
 │   │   ├── __tests__/
 │   │   │   └── ticket-service.test.js   # Tests de compra y tickets
 │   │   ├── ticket-service.js        # Compra y generación de tickets
-│   │   ├── ticket-model.js          # Modelo de datos de ticket
-│   │   ├── Dockerfile
-│   │   └── package.json
-│   ├── locationservice/             # Servicio de ubicaciones
-│   │   ├── __tests__/
-│   │   │   └── location-service.test.js # Tests de ubicaciones y seatmaps
-│   │   ├── location-service.js      # Gestión de venues
-│   │   ├── location-model.js        # Modelo de ubicación
-│   │   ├── seatmap-model.js         # Modelo de mapa de asientos
-│   │   ├── Dockerfile
-│   │   └── package.json
-│   ├── server.js                    # Servidor compartido (opcional)
-│   └── package.json                 # Dependencias compartidas
+│   │   └── ticket-model.js          # Modelo de datos de ticket
+│   └── locationservice/             # Servicio de ubicaciones
+│       ├── __tests__/
+│       │   └── location-service.test.js # Tests de ubicaciones y seatmaps
+│       ├── location-service.js      # Gestión de venues
+│       ├── location-model.js        # Modelo de ubicación
+│       └── seatmap-model.js         # Modelo de mapa de asientos
 ├── frontend/
 │   ├── src/
 │   │   ├── components/              # Componentes reutilizables
@@ -373,26 +361,10 @@ ticketapp/
 │   │   │           ├── styles/      # Estilos
 │   │   │           └── ui/          # Componentes UI
 │   │   ├── hooks/                   # Custom React Hooks
-│   │   │   ├── useUserRole.js
-│   │   │   ├── useUserRole.test.js  # Tests del hook
-│   │   │   ├── useDeviceDetection.js
-│   │   │   ├── useDeviceDetection.test.js
-│   │   │   └── useAdvancedZoomPan.js # Hook para zoom/pan en seatmaps
 │   │   ├── utils/                   # Utilidades
-│   │   │   ├── api.js               # Cliente API y configuración de axios
-│   │   │   ├── api.test.js          # Tests de API
-│   │   │   ├── authSession.js       # Gestión de sesiones y tokens
-│   │   │   └── authSession.test.js  # Tests de autenticación
 │   │   ├── App.jsx                  # Componente principal
-│   │   ├── index.js                 # Punto de entrada
-│   │   ├── index.css                # Estilos globales
-│   │   └── setupTests.js            # Configuración de tests
-│   ├── public/
-│   │   ├── avatars/                 # Avatares de usuario
-│   │   └── event-images/            # Imágenes de eventos
-│   ├── cypress/                     # Tests E2E
-│   ├── Dockerfile
-│   └── package.json
+│   ├── public/                      # Archivos estáticos de la interfaz
+│   └── cypress/                     # Tests E2E
 ├── docs/                            # Documentación JSDoc generada
 │   └── index.html                   # Punto de entrada de la documentación
 ├── .github/
@@ -403,8 +375,6 @@ ticketapp/
 ├── jsdoc.json                       # Configuración de JSDoc
 ├── docker-compose.yml               # Orquestación de servicios (desarrollo)
 ├── docker-compose.prod.yml          # Configuración de producción
-├── package.json                     # Dependencias raíz y scripts de docs
-├── package-lock.json                # Lock de dependencias
 └── README.md                        # Este archivo
 ```
 
