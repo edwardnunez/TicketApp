@@ -315,7 +315,7 @@ ticketapp/
 │   └── locationservice/             # Servicio de ubicaciones
 │       ├── __tests__/
 │       │   └── location-service.test.js # Tests de ubicaciones y seatmaps
-│       ├── location-service.js      # Gestión de venues
+│       ├── location-service.js      # Gestión de ubicaciones
 │       ├── location-model.js        # Modelo de ubicación
 │       └── seatmap-model.js         # Modelo de mapa de asientos
 ├── frontend/
