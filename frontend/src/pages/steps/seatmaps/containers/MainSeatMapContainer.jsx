@@ -520,6 +520,10 @@ const MainSeatMapContainer = ({
         }
         sectionsByArea.get('vip-premium').push(s);
       }
+      else if (pos.includes('pista') || nameLC.includes('pista') || 
+          pos.includes('pit') || nameLC.includes('pit')) {
+        sectionsByArea.set('pista', s);
+      }
     });
 
     return (
