@@ -254,7 +254,7 @@ Para despliegue en producción, configura estos secrets en GitHub:
 - `PAYPAL_CLIENT_SECRET`: Client Secret de PayPal para validación de pagos
 - `PAYPAL_MODE`: `sandbox` (desarrollo) o `live` (producción)
 - `REACT_APP_PAYPAL_CLIENT_ID`: Client ID para frontend (mismo que PAYPAL_CLIENT_ID)
-- `REACT_APP_PAYPAL_ENVIRONMENT`: `sandbox` o `production`
+- `REACT_APP_PAYPAL_ENVIRONMENT`: mismo que PAYPAL_MODE
 
 **Aplicación:**
 - `REACT_APP_API_ENDPOINT`: URL del API Gateway (ej: `https://tu-dominio.com:8000`)
